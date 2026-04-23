@@ -1,4 +1,5 @@
 import { PICTURE_DLC_MANIFESTS } from './generatedPictureDlcManifests';
+export { PICTURE_DLC_MANIFESTS };
 
 function toMediaSrc(basePath, mediaFile) {
   if (!basePath || !mediaFile) return null;
