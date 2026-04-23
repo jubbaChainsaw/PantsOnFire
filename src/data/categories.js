@@ -438,7 +438,7 @@ OPINION_ROUNDS.push(
   ...buildOpinionBatch(true, 50)
 );
 
-const PICTURE_CLUBS = [
+const PICTURE_PROMPTS = [
   {
     id: 'places',
     name: 'Places',
@@ -549,43 +549,43 @@ const PICTURE_CLUBS = [
   },
 ];
 
-function toPhotoKeywords(title, clubName) {
+function toPhotoKeywords(title, groupName) {
   const titleTokens = String(title || '')
     .toLowerCase()
     .replace(/[^a-z0-9\s]/g, ' ')
     .split(/\s+/)
     .filter(Boolean);
-  const clubTokens = String(clubName || '')
+  const groupTokens = String(groupName || '')
     .toLowerCase()
     .replace(/[^a-z0-9\s]/g, ' ')
     .split(/\s+/)
     .filter(Boolean);
-  const merged = [...new Set([...titleTokens, ...clubTokens])].slice(0, 6);
+  const merged = [...new Set([...titleTokens, ...groupTokens])].slice(0, 6);
   return merged.join(',');
 }
 
-function createPicturePhotoUrl({ title, clubName, lockId }) {
-  const keywords = toPhotoKeywords(title, clubName) || 'travel,landmark,photo';
+function createPicturePhotoUrl({ title, groupName, lockId }) {
+  const keywords = toPhotoKeywords(title, groupName) || 'travel,landmark,photo';
   return `https://loremflickr.com/960/640/${keywords}?lock=${lockId}`;
 }
 
-function buildPictureClubRounds() {
-  return PICTURE_CLUBS.flatMap((club, clubIndex) => (
-    club.pairs.map(([main, imposter], index) => {
-      const lockBase = ((clubIndex + 1) * 1000) + (index * 10);
+function buildPicturePromptRounds() {
+  return PICTURE_PROMPTS.flatMap((group, groupIndex) => (
+    group.pairs.map(([main, imposter], index) => {
+      const lockBase = ((groupIndex + 1) * 1000) + (index * 10);
       return {
-      hint: `Picture Club • ${club.name} ${index + 1}`,
+      hint: `Picture Prompt • ${group.name} ${index + 1}`,
       main,
       imposter,
-      previewLabel: `Photo clue from the ${club.name} club.`,
+      previewLabel: `Photo clue from the ${group.name} picture prompts.`,
       mainImageSrc: createPicturePhotoUrl({
         title: main,
-        clubName: `${club.name} club`,
+        groupName: `${group.name} picture prompts`,
         lockId: lockBase + 1,
       }),
       imposterImageSrc: createPicturePhotoUrl({
         title: imposter,
-        clubName: `${club.name} club`,
+        groupName: `${group.name} picture prompts`,
         lockId: lockBase + 2,
       }),
       };
@@ -594,7 +594,7 @@ function buildPictureClubRounds() {
 }
 
 export const MEDIA_ROUNDS = {
-  picture: buildPictureClubRounds(),
+  picture: buildPicturePromptRounds(),
   sound: [
     { hint: 'Sound Clue', main: 'arcade-coin-drop', imposter: 'slot-machine-jingle', previewLabel: 'Audio round placeholder' },
     { hint: 'Sound Clue', main: 'lion-roar', imposter: 'tiger-growl', previewLabel: 'Audio round placeholder' },
