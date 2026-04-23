@@ -549,80 +549,47 @@ const PICTURE_CLUBS = [
   },
 ];
 
-function escapeSvgText(value) {
-  return String(value || '')
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&apos;');
+function toPhotoKeywords(title, clubName) {
+  const titleTokens = String(title || '')
+    .toLowerCase()
+    .replace(/[^a-z0-9\s]/g, ' ')
+    .split(/\s+/)
+    .filter(Boolean);
+  const clubTokens = String(clubName || '')
+    .toLowerCase()
+    .replace(/[^a-z0-9\s]/g, ' ')
+    .split(/\s+/)
+    .filter(Boolean);
+  const merged = [...new Set([...titleTokens, ...clubTokens])].slice(0, 6);
+  return merged.join(',');
 }
 
-function splitTitleLines(title, maxChars = 24, maxLines = 2) {
-  const words = String(title || '').split(/\s+/).filter(Boolean);
-  if (!words.length) return ['Unknown'];
-  const lines = [];
-  let currentLine = '';
-  for (const word of words) {
-    const candidate = currentLine ? `${currentLine} ${word}` : word;
-    if (candidate.length <= maxChars || !currentLine) {
-      currentLine = candidate;
-    } else {
-      lines.push(currentLine);
-      currentLine = word;
-      if (lines.length >= maxLines - 1) break;
-    }
-  }
-  if (currentLine && lines.length < maxLines) lines.push(currentLine);
-  if (words.join(' ').length > lines.join(' ').length && lines.length) {
-    lines[lines.length - 1] = `${lines[lines.length - 1].slice(0, Math.max(0, maxChars - 1))}…`;
-  }
-  return lines;
-}
-
-function createPictureCardImage({ title, clubName, emoji, palette }) {
-  const [line1, line2] = splitTitleLines(title);
-  const [startColor, endColor] = palette || ['#0284c7', '#1d4ed8'];
-  const svg = `
-<svg xmlns="http://www.w3.org/2000/svg" width="960" height="640" viewBox="0 0 960 640">
-  <defs>
-    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stop-color="${escapeSvgText(startColor)}" />
-      <stop offset="100%" stop-color="${escapeSvgText(endColor)}" />
-    </linearGradient>
-  </defs>
-  <rect width="960" height="640" fill="url(#bg)" rx="40" ry="40" />
-  <circle cx="840" cy="120" r="90" fill="rgba(255,255,255,0.12)" />
-  <circle cx="120" cy="520" r="110" fill="rgba(0,0,0,0.12)" />
-  <text x="72" y="120" fill="#ffffff" font-family="Inter, Arial, sans-serif" font-size="64">${escapeSvgText(emoji || '🖼️')}</text>
-  <text x="72" y="188" fill="rgba(255,255,255,0.92)" font-family="Inter, Arial, sans-serif" font-size="32" font-weight="700">${escapeSvgText(clubName)}</text>
-  <text x="72" y="360" fill="#ffffff" font-family="Inter, Arial, sans-serif" font-size="68" font-weight="800">${escapeSvgText(line1 || '')}</text>
-  <text x="72" y="440" fill="#ffffff" font-family="Inter, Arial, sans-serif" font-size="62" font-weight="700">${escapeSvgText(line2 || '')}</text>
-</svg>
-`.trim();
-  return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
+function createPicturePhotoUrl({ title, clubName, lockId }) {
+  const keywords = toPhotoKeywords(title, clubName) || 'travel,landmark,photo';
+  return `https://loremflickr.com/960/640/${keywords}?lock=${lockId}`;
 }
 
 function buildPictureClubRounds() {
-  return PICTURE_CLUBS.flatMap((club) => (
-    club.pairs.map(([main, imposter], index) => ({
+  return PICTURE_CLUBS.flatMap((club, clubIndex) => (
+    club.pairs.map(([main, imposter], index) => {
+      const lockBase = ((clubIndex + 1) * 1000) + (index * 10);
+      return {
       hint: `Picture Club • ${club.name} ${index + 1}`,
       main,
       imposter,
-      previewLabel: `Image clue from the ${club.name} club.`,
-      mainImageSrc: createPictureCardImage({
+      previewLabel: `Photo clue from the ${club.name} club.`,
+      mainImageSrc: createPicturePhotoUrl({
         title: main,
-        clubName: `${club.emoji} ${club.name} Club`,
-        emoji: club.emoji,
-        palette: club.palette,
+        clubName: `${club.name} club`,
+        lockId: lockBase + 1,
       }),
-      imposterImageSrc: createPictureCardImage({
+      imposterImageSrc: createPicturePhotoUrl({
         title: imposter,
-        clubName: `${club.emoji} ${club.name} Club`,
-        emoji: club.emoji,
-        palette: [...club.palette].reverse(),
+        clubName: `${club.name} club`,
+        lockId: lockBase + 2,
       }),
-    }))
+      };
+    })
   ));
 }
 
