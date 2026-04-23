@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.1.0",
   "type": "module",
-  "main": "node_modules/expo/AppEntry.js",
+  "main": "src/main.tsx",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
@@ -16,11 +16,15 @@
   "dependencies": {
     "expo": "^55.0.17",
     "framer-motion": "^11.3.19",
+    "jspdf": "^4.2.1",
+    "jszip": "^3.10.1",
     "lucide-react": "^0.453.0",
+    "papaparse": "^5.5.3",
     "react": "^19.2.5",
     "react-dom": "^19.2.5",
     "react-native": "^0.85.2",
-    "react-native-webview": "^13.16.1"
+    "react-native-webview": "^13.16.1",
+    "typescript": "^5.9.3"
   },
   "devDependencies": {
     "@vitejs/plugin-react": "^4.3.1",
