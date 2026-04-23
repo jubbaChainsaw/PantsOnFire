@@ -438,15 +438,196 @@ OPINION_ROUNDS.push(
   ...buildOpinionBatch(true, 50)
 );
 
+const PICTURE_CLUBS = [
+  {
+    id: 'places',
+    name: 'Places',
+    emoji: '📍',
+    palette: ['#0ea5e9', '#1d4ed8'],
+    pairs: [
+      ['Eiffel Tower, Paris', 'Big Ben, London'],
+      ['Times Square, New York', 'Shibuya Crossing, Tokyo'],
+      ['Grand Canyon, Arizona', 'Bryce Canyon, Utah'],
+      ['Santorini, Greece', 'Amalfi Coast, Italy'],
+      ['Sydney Opera House', 'Marina Bay Sands'],
+      ['Golden Gate Bridge', 'Brooklyn Bridge'],
+      ['Niagara Falls', 'Victoria Falls'],
+      ['Machu Picchu', 'Petra, Jordan'],
+      ['Sahara Desert Dunes', 'Gobi Desert'],
+      ['Banff National Park', 'Yosemite Valley'],
+    ],
+  },
+  {
+    id: 'animals',
+    name: 'Animals',
+    emoji: '🐾',
+    palette: ['#10b981', '#047857'],
+    pairs: [
+      ['African Lion', 'Bengal Tiger'],
+      ['Giant Panda', 'Red Panda'],
+      ['Emperor Penguin', 'Puffin'],
+      ['Sea Turtle', 'Manta Ray'],
+      ['Koala', 'Sloth'],
+      ['Arctic Fox', 'Fennec Fox'],
+      ['Dolphin Pod', 'Orca Pod'],
+      ['Snow Leopard', 'Clouded Leopard'],
+      ['Giraffe Herd', 'Zebra Herd'],
+      ['Bald Eagle', 'Golden Eagle'],
+    ],
+  },
+  {
+    id: 'foods',
+    name: 'Foods',
+    emoji: '🍽️',
+    palette: ['#f97316', '#c2410c'],
+    pairs: [
+      ['Margherita Pizza', 'Pepperoni Pizza'],
+      ['Sushi Platter', 'Sashimi Platter'],
+      ['Cheeseburger', 'Chicken Burger'],
+      ['Tacos al Pastor', 'Beef Burrito'],
+      ['Ramen Bowl', 'Pho Bowl'],
+      ['Butter Chicken', 'Chicken Tikka Masala'],
+      ['Croissant', 'Pain au Chocolat'],
+      ['Blueberry Pancakes', 'Belgian Waffles'],
+      ['Caesar Salad', 'Greek Salad'],
+      ['Chocolate Cake', 'Chocolate Brownie'],
+    ],
+  },
+  {
+    id: 'celebrities',
+    name: 'Celebrities',
+    emoji: '🌟',
+    palette: ['#ec4899', '#be185d'],
+    pairs: [
+      ['Taylor Swift', 'Ariana Grande'],
+      ['Dwayne Johnson', 'John Cena'],
+      ['Lionel Messi', 'Cristiano Ronaldo'],
+      ['Zendaya', 'Sydney Sweeney'],
+      ['Rihanna', 'Beyonce'],
+      ['Keanu Reeves', 'Ryan Reynolds'],
+      ['Tom Holland', 'Timothee Chalamet'],
+      ['Emma Stone', 'Jennifer Lawrence'],
+      ['Gordon Ramsay', 'Jamie Oliver'],
+      ['MrBeast', 'KSI'],
+    ],
+  },
+  {
+    id: 'sports',
+    name: 'Sports',
+    emoji: '🏟️',
+    palette: ['#8b5cf6', '#6d28d9'],
+    pairs: [
+      ['Football Stadium', 'Rugby Stadium'],
+      ['Formula 1 Car', 'IndyCar'],
+      ['Tennis Court', 'Badminton Court'],
+      ['NBA Arena', 'NHL Arena'],
+      ['Olympic Swimming Pool', 'Water Polo Pool'],
+      ['Baseball Diamond', 'Cricket Pitch'],
+      ['Boxing Ring', 'MMA Octagon'],
+      ['Golf Course', 'Disc Golf Course'],
+      ['Skate Park', 'BMX Park'],
+      ['Ski Resort', 'Snowboard Park'],
+    ],
+  },
+  {
+    id: 'travel',
+    name: 'Travel',
+    emoji: '✈️',
+    palette: ['#14b8a6', '#0f766e'],
+    pairs: [
+      ['Airplane Cabin', 'High-Speed Train Cabin'],
+      ['Luxury Hotel Lobby', 'Boutique Hotel Lobby'],
+      ['Tropical Beach Resort', 'Mountain Ski Resort'],
+      ['Street Market in Bangkok', 'Souk in Marrakech'],
+      ['Venice Gondola Ride', 'Amsterdam Canal Cruise'],
+      ['Northern Lights in Iceland', 'Milky Way in Desert'],
+      ['Safari Jeep in Kenya', 'Desert Jeep in Dubai'],
+      ['Tokyo Metro Station', 'London Underground Station'],
+      ['Paris Cafe Terrace', 'Rome Piazza Cafe'],
+      ['Dubai Skyline', 'Singapore Skyline'],
+    ],
+  },
+];
+
+function escapeSvgText(value) {
+  return String(value || '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&apos;');
+}
+
+function splitTitleLines(title, maxChars = 24, maxLines = 2) {
+  const words = String(title || '').split(/\s+/).filter(Boolean);
+  if (!words.length) return ['Unknown'];
+  const lines = [];
+  let currentLine = '';
+  for (const word of words) {
+    const candidate = currentLine ? `${currentLine} ${word}` : word;
+    if (candidate.length <= maxChars || !currentLine) {
+      currentLine = candidate;
+    } else {
+      lines.push(currentLine);
+      currentLine = word;
+      if (lines.length >= maxLines - 1) break;
+    }
+  }
+  if (currentLine && lines.length < maxLines) lines.push(currentLine);
+  if (words.join(' ').length > lines.join(' ').length && lines.length) {
+    lines[lines.length - 1] = `${lines[lines.length - 1].slice(0, Math.max(0, maxChars - 1))}…`;
+  }
+  return lines;
+}
+
+function createPictureCardImage({ title, clubName, emoji, palette }) {
+  const [line1, line2] = splitTitleLines(title);
+  const [startColor, endColor] = palette || ['#0284c7', '#1d4ed8'];
+  const svg = `
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="640" viewBox="0 0 960 640">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="${escapeSvgText(startColor)}" />
+      <stop offset="100%" stop-color="${escapeSvgText(endColor)}" />
+    </linearGradient>
+  </defs>
+  <rect width="960" height="640" fill="url(#bg)" rx="40" ry="40" />
+  <circle cx="840" cy="120" r="90" fill="rgba(255,255,255,0.12)" />
+  <circle cx="120" cy="520" r="110" fill="rgba(0,0,0,0.12)" />
+  <text x="72" y="120" fill="#ffffff" font-family="Inter, Arial, sans-serif" font-size="64">${escapeSvgText(emoji || '🖼️')}</text>
+  <text x="72" y="188" fill="rgba(255,255,255,0.92)" font-family="Inter, Arial, sans-serif" font-size="32" font-weight="700">${escapeSvgText(clubName)}</text>
+  <text x="72" y="360" fill="#ffffff" font-family="Inter, Arial, sans-serif" font-size="68" font-weight="800">${escapeSvgText(line1 || '')}</text>
+  <text x="72" y="440" fill="#ffffff" font-family="Inter, Arial, sans-serif" font-size="62" font-weight="700">${escapeSvgText(line2 || '')}</text>
+</svg>
+`.trim();
+  return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
+}
+
+function buildPictureClubRounds() {
+  return PICTURE_CLUBS.flatMap((club) => (
+    club.pairs.map(([main, imposter], index) => ({
+      hint: `Picture Club • ${club.name} ${index + 1}`,
+      main,
+      imposter,
+      previewLabel: `Image clue from the ${club.name} club.`,
+      mainImageSrc: createPictureCardImage({
+        title: main,
+        clubName: `${club.emoji} ${club.name} Club`,
+        emoji: club.emoji,
+        palette: club.palette,
+      }),
+      imposterImageSrc: createPictureCardImage({
+        title: imposter,
+        clubName: `${club.emoji} ${club.name} Club`,
+        emoji: club.emoji,
+        palette: [...club.palette].reverse(),
+      }),
+    }))
+  ));
+}
+
 export const MEDIA_ROUNDS = {
-  picture: [
-    { hint: 'Picture Clue', main: 'retro-arcade-cabinet', imposter: 'pinball-machine', previewLabel: 'Picture round placeholder' },
-    { hint: 'Picture Clue', main: 'hedgehog-in-sunglasses', imposter: 'guinea-pig-in-sunglasses', previewLabel: 'Picture round placeholder' },
-    { hint: 'Picture Clue', main: 'neon-skatepark', imposter: 'roller-disco-rink', previewLabel: 'Picture round placeholder' },
-    { hint: 'Picture Clue', main: 'pirate-ship-deck', imposter: 'viking-longboat', previewLabel: 'Picture round placeholder' },
-    { hint: 'Picture Clue', main: 'zombie-prom-night', imposter: 'vampire-ballroom', previewLabel: 'Picture round placeholder' },
-    { hint: 'Picture Clue', main: 'robot-chef-kitchen', imposter: 'android-barista-cafe', previewLabel: 'Picture round placeholder' },
-  ],
+  picture: buildPictureClubRounds(),
   sound: [
     { hint: 'Sound Clue', main: 'arcade-coin-drop', imposter: 'slot-machine-jingle', previewLabel: 'Audio round placeholder' },
     { hint: 'Sound Clue', main: 'lion-roar', imposter: 'tiger-growl', previewLabel: 'Audio round placeholder' },
@@ -462,13 +643,6 @@ export const MEDIA_ROUNDS = {
 };
 
 const MEDIA_EXPANSION = {
-  picture: {
-    hint: 'Picture Clue',
-    regularMain: ['street-food-market', 'retro-neon-diner', 'volcano-lava-flow', 'skater-halfpipe-trick', 'rainy-city-crosswalk'],
-    regularImposter: ['night-market-lanterns', 'classic-50s-diner', 'geysir-eruption', 'bmx-dirt-jump', 'foggy-city-crosswalk'],
-    adultMain: ['afterparty-rooftop-neon', 'hotel-room-service-tray', 'romantic-city-sunset', 'champagne-bucket-vip', 'slow-dance-club-corner'],
-    adultImposter: ['awkward-afterparty-lobby', 'messy-takeaway-bedside', 'stormy-city-night', 'spilled-drinks-vip', 'jealous-club-dancefloor'],
-  },
   sound: {
     hint: 'Sound Clue',
     regularMain: ['crowd-goal-cheer', 'engine-rev-quick', 'rain-on-window', 'crow-caw-echo', 'train-brake-screech'],
@@ -498,7 +672,6 @@ function buildMediaBatch(type, adultOnly = false, count = 50) {
   }));
 }
 
-MEDIA_ROUNDS.picture.push(...buildMediaBatch('picture', false, 50), ...buildMediaBatch('picture', true, 50));
 MEDIA_ROUNDS.sound.push(...buildMediaBatch('sound', false, 50), ...buildMediaBatch('sound', true, 50));
 MEDIA_ROUNDS.video.push(...buildMediaBatch('video', false, 50), ...buildMediaBatch('video', true, 50));
 
