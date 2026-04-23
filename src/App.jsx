@@ -17,7 +17,7 @@ import { PASS_THE_PHONE_ROUND_TYPES, ROUND_TYPES } from './data/roundTypes';
 import { THEME_META } from './data/themes';
 import { getThemeAssets } from './data/themeAssets';
 import { NAME_POOLS, randomNameFromTheme } from './data/names';
-import { COPY_BANK, createCopyPicker } from './data/copy';
+import { COPY_BANK, createCopyPicker } from './data/gameTextContent';
 import {
   DEFAULT_CATEGORIES,
   OPINION_ROUNDS,
