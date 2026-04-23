@@ -103,6 +103,7 @@ function buildRound(players, category, roundNumber, liarCount = 1, recentPromptK
     imposterPrompt: selectedRoundType.id === 'opinion' ? null : selected.prompt.imposter,
     aiPrompt: selected.prompt.aiPrompt || null,
     mediaPreviewLabel: selected.prompt.previewLabel || null,
+    mediaPackId: selected.prompt.picturePackId || null,
     isAdultPrompt: Boolean(selected.prompt.adultOnly),
     bannedWords: mode === 'chaos' ? bannedWords : [],
     mode,

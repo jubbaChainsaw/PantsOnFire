@@ -549,45 +549,39 @@ const PICTURE_PROMPTS = [
   },
 ];
 
-function toPhotoKeywords(title, groupName) {
-  const titleTokens = String(title || '')
+function toAssetSlug(value) {
+  return String(value || '')
     .toLowerCase()
-    .replace(/[^a-z0-9\s]/g, ' ')
-    .split(/\s+/)
-    .filter(Boolean);
-  const groupTokens = String(groupName || '')
-    .toLowerCase()
-    .replace(/[^a-z0-9\s]/g, ' ')
-    .split(/\s+/)
-    .filter(Boolean);
-  const merged = [...new Set([...titleTokens, ...groupTokens])].slice(0, 6);
-  return merged.join(',');
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
 }
 
-function createPicturePhotoUrl({ title, groupName, lockId }) {
-  const keywords = toPhotoKeywords(title, groupName) || 'travel,landmark,photo';
-  return `https://loremflickr.com/960/640/${keywords}?lock=${lockId}`;
+const PICTURE_GRAPHIC_PACKS = {
+  coreV1: {
+    id: 'core-v1',
+    label: 'Core Picture Prompt Pack',
+    basePath: '/assets/graphic-packs/picture/core-v1/images',
+  },
+};
+
+function toPackImageSrc(pack, groupId, pairIndex, main, imposter, variant) {
+  const groupSlug = toAssetSlug(groupId);
+  const pairSlug = `${String(pairIndex + 1).padStart(2, '0')}-${toAssetSlug(main)}-vs-${toAssetSlug(imposter)}`;
+  return `${pack.basePath}/${groupSlug}-${pairSlug}-${variant}.png`;
 }
 
 function buildPicturePromptRounds() {
-  return PICTURE_PROMPTS.flatMap((group, groupIndex) => (
+  const defaultPack = PICTURE_GRAPHIC_PACKS.coreV1;
+  return PICTURE_PROMPTS.flatMap((group) => (
     group.pairs.map(([main, imposter], index) => {
-      const lockBase = ((groupIndex + 1) * 1000) + (index * 10);
       return {
       hint: `Picture Prompt • ${group.name} ${index + 1}`,
       main,
       imposter,
-      previewLabel: `Photo clue from the ${group.name} picture prompts.`,
-      mainImageSrc: createPicturePhotoUrl({
-        title: main,
-        groupName: `${group.name} picture prompts`,
-        lockId: lockBase + 1,
-      }),
-      imposterImageSrc: createPicturePhotoUrl({
-        title: imposter,
-        groupName: `${group.name} picture prompts`,
-        lockId: lockBase + 2,
-      }),
+      picturePackId: defaultPack.id,
+      previewLabel: `Graphic pack clue from the ${group.name} picture prompts.`,
+      mainImageSrc: toPackImageSrc(defaultPack, group.id, index, main, imposter, 'main'),
+      imposterImageSrc: toPackImageSrc(defaultPack, group.id, index, main, imposter, 'imposter'),
       };
     })
   ));
