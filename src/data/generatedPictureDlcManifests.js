@@ -3,6 +3,28 @@
 
 export const PICTURE_DLC_MANIFESTS = [
   {
+    "id": "coastal-v1",
+    "version": 1,
+    "label": "Coastal Picture Prompt Pack",
+    "category": "picture",
+    "releaseChannel": "dlc",
+    "enabled": true,
+    "basePath": "/assets/graphic-packs/picture/coastal-v1/images",
+    "entries": [
+      {
+        "entryId": "sample-01",
+        "groupId": "sample",
+        "groupName": "Sample",
+        "hint": "Picture Prompt • Sample 1",
+        "main": "Sample Main Prompt",
+        "imposter": "Sample Imposter Prompt",
+        "mainMediaFile": "sample-01-main.png",
+        "imposterMediaFile": "sample-01-imposter.png",
+        "previewLabel": "Graphic pack clue from sample prompts."
+      }
+    ]
+  },
+  {
     "id": "core-v1",
     "version": 1,
     "label": "Core Picture Prompt Pack",

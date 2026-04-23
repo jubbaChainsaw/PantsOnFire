@@ -34,13 +34,13 @@ Use explicit, domain-focused file names for data modules. Prefer names that desc
 - Source of truth is JSON manifests:
   - `public/assets/graphic-packs/picture/<pack-id>/manifest.json`
 - Sync generated JS registry before commit:
-  - `npm run manifests:sync`
+  - `npm run dlc:sync-picture-manifests`
 - Runtime reads generated data module:
   - `src/data/generatedPictureDlcManifests.js`
 - Add a new picture pack without touching core logic:
   1. Add `manifest.json` under the pack directory
   2. Add referenced media files under that pack's `images/`
-  3. Run `npm run manifests:sync`
+  3. Run `npm run dlc:sync-picture-manifests`
   4. Build and commit
 
 ## Category-specific standard packs (non-DLC updates)
