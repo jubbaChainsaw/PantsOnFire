@@ -1,63 +1,144 @@
-# Pants on Fire - Cursor Test Build
+# Pants on Fire: Find the Liar
 
-This package is prepared for local testing in Cursor / Vite.
+![Pants on Fire Logo](public/assets/images/logo.png)
 
-## Quick start
+🔥 **Catch the liar... or become the liar.**  
+🎭 **Choose the chaos. Then survive it.**
+
+`Pants on Fire` is a loud, chaotic, pass-the-phone party game built for arguments, bad bluffs, fake confidence, and zero trust.  
+Think social deduction meets gameshow energy, with neon arcade style and rapid-fire rounds.
+
+---
+
+## Why This Game Slaps
+
+- Fast setup, instant chaos
+- Hidden info + social mind games
+- Multiple round types with different bluff styles
+- Replayable categories, prompts, themes, and host stingers
+- Built for in-person party sessions first
+
+---
+
+## Core Gameplay Loop
+
+1. Home
+2. Setup lobby
+3. Rules splash
+4. Pick round type / category
+5. Pass-the-phone reveal (one player at a time)
+6. Discussion or interrogation
+7. Voting
+8. Suspense liar reveal
+9. Results + scoring
+10. Next round or final winner
+
+---
+
+## Round Types
+
+### Hot Seat (Classic)
+- Truthful players share one prompt
+- Liars get a different prompt
+- Blend in without over-explaining
+
+### Truth or Twisted
+- Everyone receives the same scenario
+- Truthful players respond honestly
+- Liars must argue against their natural take and still look legit
+
+### Flash Frame
+- Visual clue round in pass-the-phone flow
+- Great for fast, high-confusion rounds
+
+### Grill 'Em (AI Round)
+- Players interrogate AI host **Blaze Byte**
+- Liars are shown hidden AI context and try to steer suspicion
+- Mic input + spoken AI responses are supported where available
+- Questions per player auto-scale to target ~20 total questions per round
+
+---
+
+## Modes & Rules
+
+### Classic
+- Standard deduction rules
+
+### Chaos
+- Adds banned words + extra verbal pressure
+
+### Win Condition (choose one)
+- **Points mode:** first to target score wins
+- **Rounds mode:** fixed rounds per player
+
+### 18+ Mode
+- Optional toggle in Settings
+- Unlocks adult-only / risqué prompt sets
+- Home + Setup surfaces show a clear `18+ Active` badge
+
+---
+
+## Themes & Personality
+
+Theme system drives:
+- Name pools
+- Copy tone
+- Host stingers
+- Theme art surfaces (banner, character card, icon sheet)
+
+Asset structure is organized under:
+- `public/assets/themes/<theme>/characters`
+- `public/assets/themes/<theme>/icons`
+- `public/assets/themes/<theme>/ui`
+
+---
+
+## Tech Highlights
+
+- React + Vite frontend
+- Local data-driven architecture:
+  - `src/data/categories.js`
+  - `src/data/roundTypes.js`
+  - `src/data/copy.js`
+  - `src/data/names.js`
+  - `src/data/themes.js`
+  - `src/data/themeAssets.js`
+- Expo mobile test shell (`App.js` with WebView wrapper)
+
+---
+
+## Quick Start
 
 ```bash
 npm install
 npm run dev
 ```
 
-## Expo mobile test shell
+---
 
-This repo now includes an Expo wrapper so you can test on mobile quickly.
+## Expo Mobile Test Shell
 
 ```bash
-# Terminal 1: run the web game
+# Terminal 1
 npm run dev
 
-# Terminal 2: run Expo
+# Terminal 2
 npm run expo:start
 ```
 
-- The Expo app embeds the web game via WebView from `App.js`.
-- Default URL is `http://10.0.2.2:5173` on Android emulator and `http://localhost:5173` on iOS.
-- You can override with:
+- Android emulator default URL: `http://10.0.2.2:5173`
+- iOS default URL: `http://localhost:5173`
+- Override URL:
   - `EXPO_PUBLIC_GAME_URL=http://YOUR-IP:5173 npm run expo:start`
 
-The current game logo is included at `public/assets/images/logo.png`. Replace it any time with your final asset.
+---
 
-# Pants on Fire: Find the Liar
+## What’s Next
 
-Multi-file refactor of the party game prototype.
+- Online lobby + real party chat
+- Device-per-player sessions (Jackbox style)
+- More premium content packs
+- Enhanced animation + SFX pass
 
-## Included
-- Home / Setup / Store / Settings
-- Round types: prompt, opinion, picture placeholder, sound placeholder, video placeholder
-- Classic / Chaos mode
-- Rules splash screen
-- Suspense liar reveal screen
-- Themed names and theme metadata
-- Data split into separate files for easier maintenance
-- Placeholder assets you can replace:
-  - `public/assets/images/logo-placeholder.svg`
-  - `public/assets/images/flame-placeholder.svg`
-  - `public/assets/sfx/heartbeat-placeholder.wav`
-
-## Replace later
-- add your final logo in `public/assets/images/`
-- replace placeholder flame art if desired
-- replace heartbeat WAV with your preferred audio file and update `HEARTBEAT_SFX_SRC` in `src/App.jsx`
-- expand category/prompt data in `src/data/categories.js`
-- expand copy in `src/data/copy.js`
-- expand names in `src/data/names.js`
-
-## Audio Architecture Requirement
-- `Grill 'Em` requires voice I/O:
-  - player questions captured via device microphone
-  - AI responses spoken back using TTS
-- This same voice pipeline should be designed as shared infrastructure for future online mode party chat (Jackbox-style multi-device sessions).
-
-## Notes
-This repo uses lightweight local UI wrappers in `src/components/ui/` so it can run without shadcn setup.
+If it feels too clean, it's wrong.  
+This game should feel loud, suspicious, and a little unhinged.
