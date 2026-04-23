@@ -31,6 +31,12 @@ export function sanitizeBannedWords(categoryName, hint, main, imposter, words) {
   }).slice(0, 5);
 }
 
+import {
+  PICTURE_DLC_MANIFESTS,
+  buildPictureRoundsFromManifest,
+  validatePictureDlcManifest,
+} from './pictureDlcManifests';
+
 export const DEFAULT_CATEGORIES = [
   { id: 'sports', name: 'Sports', emoji: '🏀', prompts: [
     { hint: 'Ball Sport', main: 'Basketball', imposter: 'Baseball' },
@@ -438,153 +444,10 @@ OPINION_ROUNDS.push(
   ...buildOpinionBatch(true, 50)
 );
 
-const PICTURE_PROMPTS = [
-  {
-    id: 'places',
-    name: 'Places',
-    emoji: '📍',
-    palette: ['#0ea5e9', '#1d4ed8'],
-    pairs: [
-      ['Eiffel Tower, Paris', 'Big Ben, London'],
-      ['Times Square, New York', 'Shibuya Crossing, Tokyo'],
-      ['Grand Canyon, Arizona', 'Bryce Canyon, Utah'],
-      ['Santorini, Greece', 'Amalfi Coast, Italy'],
-      ['Sydney Opera House', 'Marina Bay Sands'],
-      ['Golden Gate Bridge', 'Brooklyn Bridge'],
-      ['Niagara Falls', 'Victoria Falls'],
-      ['Machu Picchu', 'Petra, Jordan'],
-      ['Sahara Desert Dunes', 'Gobi Desert'],
-      ['Banff National Park', 'Yosemite Valley'],
-    ],
-  },
-  {
-    id: 'animals',
-    name: 'Animals',
-    emoji: '🐾',
-    palette: ['#10b981', '#047857'],
-    pairs: [
-      ['African Lion', 'Bengal Tiger'],
-      ['Giant Panda', 'Red Panda'],
-      ['Emperor Penguin', 'Puffin'],
-      ['Sea Turtle', 'Manta Ray'],
-      ['Koala', 'Sloth'],
-      ['Arctic Fox', 'Fennec Fox'],
-      ['Dolphin Pod', 'Orca Pod'],
-      ['Snow Leopard', 'Clouded Leopard'],
-      ['Giraffe Herd', 'Zebra Herd'],
-      ['Bald Eagle', 'Golden Eagle'],
-    ],
-  },
-  {
-    id: 'foods',
-    name: 'Foods',
-    emoji: '🍽️',
-    palette: ['#f97316', '#c2410c'],
-    pairs: [
-      ['Margherita Pizza', 'Pepperoni Pizza'],
-      ['Sushi Platter', 'Sashimi Platter'],
-      ['Cheeseburger', 'Chicken Burger'],
-      ['Tacos al Pastor', 'Beef Burrito'],
-      ['Ramen Bowl', 'Pho Bowl'],
-      ['Butter Chicken', 'Chicken Tikka Masala'],
-      ['Croissant', 'Pain au Chocolat'],
-      ['Blueberry Pancakes', 'Belgian Waffles'],
-      ['Caesar Salad', 'Greek Salad'],
-      ['Chocolate Cake', 'Chocolate Brownie'],
-    ],
-  },
-  {
-    id: 'celebrities',
-    name: 'Celebrities',
-    emoji: '🌟',
-    palette: ['#ec4899', '#be185d'],
-    pairs: [
-      ['Taylor Swift', 'Ariana Grande'],
-      ['Dwayne Johnson', 'John Cena'],
-      ['Lionel Messi', 'Cristiano Ronaldo'],
-      ['Zendaya', 'Sydney Sweeney'],
-      ['Rihanna', 'Beyonce'],
-      ['Keanu Reeves', 'Ryan Reynolds'],
-      ['Tom Holland', 'Timothee Chalamet'],
-      ['Emma Stone', 'Jennifer Lawrence'],
-      ['Gordon Ramsay', 'Jamie Oliver'],
-      ['MrBeast', 'KSI'],
-    ],
-  },
-  {
-    id: 'sports',
-    name: 'Sports',
-    emoji: '🏟️',
-    palette: ['#8b5cf6', '#6d28d9'],
-    pairs: [
-      ['Football Stadium', 'Rugby Stadium'],
-      ['Formula 1 Car', 'IndyCar'],
-      ['Tennis Court', 'Badminton Court'],
-      ['NBA Arena', 'NHL Arena'],
-      ['Olympic Swimming Pool', 'Water Polo Pool'],
-      ['Baseball Diamond', 'Cricket Pitch'],
-      ['Boxing Ring', 'MMA Octagon'],
-      ['Golf Course', 'Disc Golf Course'],
-      ['Skate Park', 'BMX Park'],
-      ['Ski Resort', 'Snowboard Park'],
-    ],
-  },
-  {
-    id: 'travel',
-    name: 'Travel',
-    emoji: '✈️',
-    palette: ['#14b8a6', '#0f766e'],
-    pairs: [
-      ['Airplane Cabin', 'High-Speed Train Cabin'],
-      ['Luxury Hotel Lobby', 'Boutique Hotel Lobby'],
-      ['Tropical Beach Resort', 'Mountain Ski Resort'],
-      ['Street Market in Bangkok', 'Souk in Marrakech'],
-      ['Venice Gondola Ride', 'Amsterdam Canal Cruise'],
-      ['Northern Lights in Iceland', 'Milky Way in Desert'],
-      ['Safari Jeep in Kenya', 'Desert Jeep in Dubai'],
-      ['Tokyo Metro Station', 'London Underground Station'],
-      ['Paris Cafe Terrace', 'Rome Piazza Cafe'],
-      ['Dubai Skyline', 'Singapore Skyline'],
-    ],
-  },
-];
-
-function toAssetSlug(value) {
-  return String(value || '')
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '');
-}
-
-const PICTURE_GRAPHIC_PACKS = {
-  coreV1: {
-    id: 'core-v1',
-    label: 'Core Picture Prompt Pack',
-    basePath: '/assets/graphic-packs/picture/core-v1/images',
-  },
-};
-
-function toPackImageSrc(pack, groupId, pairIndex, main, imposter, variant) {
-  const groupSlug = toAssetSlug(groupId);
-  const pairSlug = `${String(pairIndex + 1).padStart(2, '0')}-${toAssetSlug(main)}-vs-${toAssetSlug(imposter)}`;
-  return `${pack.basePath}/${groupSlug}-${pairSlug}-${variant}.png`;
-}
-
 function buildPicturePromptRounds() {
-  const defaultPack = PICTURE_GRAPHIC_PACKS.coreV1;
-  return PICTURE_PROMPTS.flatMap((group) => (
-    group.pairs.map(([main, imposter], index) => {
-      return {
-      hint: `Picture Prompt • ${group.name} ${index + 1}`,
-      main,
-      imposter,
-      picturePackId: defaultPack.id,
-      previewLabel: `Graphic pack clue from the ${group.name} picture prompts.`,
-      mainImageSrc: toPackImageSrc(defaultPack, group.id, index, main, imposter, 'main'),
-      imposterImageSrc: toPackImageSrc(defaultPack, group.id, index, main, imposter, 'imposter'),
-      };
-    })
-  ));
+  return PICTURE_DLC_MANIFESTS
+    .filter((manifest) => validatePictureDlcManifest(manifest))
+    .flatMap((manifest) => buildPictureRoundsFromManifest(manifest));
 }
 
 export const MEDIA_ROUNDS = {
