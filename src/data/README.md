@@ -28,3 +28,12 @@ Use explicit, domain-focused file names for data modules. Prefer names that desc
   - prompt entries (`entryId`, `hint`, `main`, `imposter`, `categoryTag`, optional `adultOnly`)
   - media file names (`mainMediaFile`, `imposterMediaFile`)
 - Build runtime round content by transforming manifest entries into game prompts (data-only onboarding for new DLC packs).
+
+## Category-specific standard packs (non-DLC updates)
+
+- Standard prompt content should live under:
+  - `src/data/packs/<category-id>/promptRoundData.js`
+- Aggregate all category packs through:
+  - `src/data/packs/categoryPromptPacks.js`
+- `categories.js` should consume the aggregate pack index to build `DEFAULT_CATEGORIES`.
+- For non-DLC prompt updates, add/edit files in `src/data/packs/...` rather than editing `categories.js` directly.
