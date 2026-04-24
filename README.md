@@ -143,12 +143,3 @@ npm run expo:start
 If it feels too clean, it's wrong.  
 This game should feel loud, suspicious, and a little unhinged.
 
----
-
-## Admin / Dev Tools
-
-Standalone admin tooling is kept separate from the game runtime under:
-
-- `Admin Tools/Pants-on-Fire-Card-Generator/`
-
-Use this workspace for prompt generation, structured round-text generation, and printable deck prep workflows.
