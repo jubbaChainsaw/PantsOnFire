@@ -189,6 +189,66 @@ for (const category of DEFAULT_CATEGORIES) {
   );
 }
 
+const CHAIN_PROMPTS_PER_CATEGORY = 20;
+const CHAIN_ADULT_PROMPTS_PER_CATEGORY = 4;
+const CHAIN_VIBE_WORDS = ['vibe', 'angle', 'energy', 'detail', 'moment', 'lore'];
+const CHAIN_HINT_WORDS = ['twist', 'theme', 'style', 'signal', 'scene', 'clue'];
+
+function simplifyLabel(text, fallback) {
+  const cleaned = String(text || '').split(/[(/:-]/)[0].trim();
+  return cleaned || fallback;
+}
+
+function buildChainWordDeck(topic, hint, seed = 0, isDecoy = false) {
+  const topicLabel = simplifyLabel(topic, isDecoy ? 'Decoy' : 'Anchor');
+  const hintLabel = simplifyLabel(hint, 'Round');
+  const cards = [
+    `${topicLabel} ${CHAIN_VIBE_WORDS[seed % CHAIN_VIBE_WORDS.length]}`,
+    `${hintLabel} ${CHAIN_HINT_WORDS[(seed + 1) % CHAIN_HINT_WORDS.length]}`,
+    `${topicLabel} ${CHAIN_HINT_WORDS[(seed + 2) % CHAIN_HINT_WORDS.length]}`,
+    `${hintLabel} ${CHAIN_VIBE_WORDS[(seed + 3) % CHAIN_VIBE_WORDS.length]}`,
+  ];
+  return [...new Set(cards)].slice(0, 4);
+}
+
+function toChainPrompt(prompt, index, adultOnly = false) {
+  const chainHint = simplifyLabel(prompt.hint, 'Chain Prompt');
+  return {
+    hint: `Chain Reaction ${index + 1}: ${chainHint}`,
+    main: prompt.main,
+    imposter: prompt.imposter,
+    mainWords: buildChainWordDeck(prompt.main, prompt.hint, index, false),
+    imposterWords: buildChainWordDeck(prompt.imposter, prompt.hint, index + 2, true),
+    ...(adultOnly ? { adultOnly: true } : {}),
+  };
+}
+
+function buildChainRoundsForCategory(category) {
+  const prompts = category.prompts || [];
+  const regularPrompts = prompts.filter((prompt) => !prompt?.adultOnly);
+  const adultPrompts = prompts.filter((prompt) => prompt?.adultOnly);
+  const regularCount = Math.max(0, CHAIN_PROMPTS_PER_CATEGORY - CHAIN_ADULT_PROMPTS_PER_CATEGORY);
+  const chainRounds = [];
+
+  for (let i = 0; i < regularCount; i += 1) {
+    const source = regularPrompts[i % regularPrompts.length] || prompts[i % prompts.length];
+    if (!source) break;
+    chainRounds.push(toChainPrompt(source, i, false));
+  }
+
+  for (let i = 0; i < CHAIN_ADULT_PROMPTS_PER_CATEGORY; i += 1) {
+    const source = adultPrompts[i % adultPrompts.length] || regularPrompts[i % regularPrompts.length] || prompts[i % prompts.length];
+    if (!source) break;
+    chainRounds.push(toChainPrompt(source, regularCount + i, true));
+  }
+
+  return chainRounds.slice(0, CHAIN_PROMPTS_PER_CATEGORY);
+}
+
+export const CHAIN_REACTION_ROUNDS = Object.fromEntries(
+  DEFAULT_CATEGORIES.map((category) => [category.id, buildChainRoundsForCategory(category)])
+);
+
 export const OPINION_ROUNDS = [
   { hint: 'Controversial Take', main: 'Pineapple absolutely belongs on pizza.', imposter: 'Pineapple absolutely does not belong on pizza.' },
   { hint: 'Hot Take', main: 'Cinema is better than watching films at home.', imposter: 'Watching films at home is better than the cinema.' },
@@ -524,6 +584,10 @@ function ensureBannedWordCoverage() {
   DEFAULT_CATEGORIES.forEach((category) => {
     category.prompts.forEach((prompt, index) => {
       const key = `prompt::${category.id}::${index}`;
+      BANNED_WORD_BANK[key] = autoBannedWords(prompt, BANNED_WORD_BANK[key] || []);
+    });
+    (CHAIN_REACTION_ROUNDS[category.id] || []).forEach((prompt, index) => {
+      const key = `chain::${category.id}::${index}`;
       BANNED_WORD_BANK[key] = autoBannedWords(prompt, BANNED_WORD_BANK[key] || []);
     });
   });

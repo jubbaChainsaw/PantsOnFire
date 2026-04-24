@@ -81,6 +81,13 @@ export const COPY_BANK = {
     'Describe just enough to survive, not enough to expose yourself.',
     'One image, ten theories, zero peace.',
   ],
+  hostStingerChain: [
+    'Everyone gets a different link card, so listen for the one that does not belong.',
+    'Sell your clue card without sounding like you memorised the wrong chain.',
+    'Truth players are connected. Liars have a broken link to hide.',
+    'Do not read your card verbatim. Make it sound natural and specific.',
+    'Find the player whose clue feels almost right, but never fully fits.',
+  ],
   hostStingerGrill: [
     'Mic up and ask sharp questions. I only answer what you earn.',
     'I speak in clues, not confessions. Listen between the lines.',
