@@ -138,6 +138,22 @@ For deployed environments, set the frontend env var:
 VITE_LOBBY_SERVER_URL=https://your-lobby-server.example.com npm run dev
 ```
 
+#### Durable lobby storage (Redis)
+
+By default, the lobby server uses an in-memory store (good for local quick testing).
+To persist lobbies/session tokens across server restarts and support multi-instance scale,
+set a Redis URL before starting the lobby server:
+
+```bash
+export LOBBY_REDIS_URL=redis://localhost:6379
+npm run lobby:server
+```
+
+Optional durability/security env vars:
+
+- `LOBBY_REDIS_NAMESPACE` (default: `pof:lobby`)
+- `LOBBY_SESSION_TOKEN_TTL_MS` (default: `43200000`, i.e. 12h)
+
 ---
 
 ## Expo Mobile Test Shell
