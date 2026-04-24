@@ -201,23 +201,90 @@ function buildFallbackPromptBatch(category, adultOnly = false, count = BULK_PROM
   });
 }
 
+const DARK_ADULT_HINT_STEMS = [
+  'Unhinged Night',
+  'Bad Idea Olympics',
+  'Public Embarrassment Deluxe',
+  'Career-Limiting Move',
+  'Questionable Morals',
+  'Cancelled by Breakfast',
+  'Shameless Behaviour',
+  'Cursed Adulting',
+];
+const DARK_ADULT_MAIN_THEMES = [
+  'Texting your ex during a team meeting',
+  'Explaining a mysterious bruise with zero context',
+  'Accidentally starting drama in the family group chat',
+  'Pretending your bad decision was a “growth experience”',
+  'Turning a polite dinner into a confession booth',
+  'Treating HR policy like optional fan fiction',
+  'Making a toast that should have stayed in drafts',
+  'Flirting with chaos and calling it confidence',
+  'Oversharing your romantic history to strangers',
+  'Calling your terrible choice “self-care”',
+  'Posting through a minor emotional collapse',
+  'Using sarcasm as your entire personality',
+  'Bringing rebound energy to a serious conversation',
+  'Making eye contact while doubling down on nonsense',
+  'Turning one drink into a reputational side quest',
+  'Blaming the moon for your own behaviour',
+  'Turning “just one lie” into a trilogy',
+  'Starting a rumor and acting shocked it spread',
+  'Delivering brutal honesty with zero invitation',
+  'Making everyone uncomfortable and calling it banter',
+];
+const DARK_ADULT_IMPOSTER_THEMES = [
+  'Sending a polite typo apology and leaving it there',
+  'Quietly pretending you never saw the chaos',
+  'Keeping your dignity mostly intact in public',
+  'Taking the safe route and boring everyone',
+  'Defusing drama with suspicious maturity',
+  'Choosing water and avoiding a headline',
+  'Staying calm when everyone else is spiraling',
+  'Giving bland advice nobody asked for',
+  'Trying to be wholesome in a cursed group chat',
+  'Being responsible at exactly the wrong party',
+  'Soft-launching damage control before sunrise',
+  'Nodding politely while judging silently',
+  'Keeping secrets because prison sounds expensive',
+  'Acting normal while the room burns socially',
+  'Exiting early before the screenshot era begins',
+  'Offering practical help during a public meltdown',
+  'Refusing to gossip and becoming the villain',
+  'Taking accountability like a boring adult',
+  'Choosing peace when chaos looked fun',
+  'Drinking water and ruining the narrative',
+];
+
+function buildDarkAdultPromptBatch(category, count = BULK_PROMPTS_PER_CATEGORY) {
+  const categoryLabel = simplifyLabel(category?.name, 'Category');
+  return Array.from({ length: count }, (_, index) => ({
+    hint: `${DARK_ADULT_HINT_STEMS[index % DARK_ADULT_HINT_STEMS.length]} • ${categoryLabel} (18+)`,
+    main: DARK_ADULT_MAIN_THEMES[index % DARK_ADULT_MAIN_THEMES.length],
+    imposter: DARK_ADULT_IMPOSTER_THEMES[(index + 1) % DARK_ADULT_IMPOSTER_THEMES.length],
+    adultOnly: true,
+  }));
+}
+
 for (const category of DEFAULT_CATEGORIES) {
   const expansionConfig = CATEGORY_EXPANSION_CONFIG[category.id];
   if (expansionConfig) {
     category.prompts.push(
       ...buildPromptBatch(expansionConfig, false),
-      ...buildPromptBatch(expansionConfig, true)
+      ...buildPromptBatch(expansionConfig, true),
+      ...buildDarkAdultPromptBatch(category)
     );
   } else {
     category.prompts.push(
       ...buildFallbackPromptBatch(category, false),
-      ...buildFallbackPromptBatch(category, true)
+      ...buildFallbackPromptBatch(category, true),
+      ...buildDarkAdultPromptBatch(category)
     );
   }
 }
 
 const CATEGORY_ROUNDS_PER_CATEGORY = 100;
-const CATEGORY_ADULT_ROUNDS_PER_CATEGORY = 20;
+const CATEGORY_ADULT_ROUNDS_PER_CATEGORY = 35;
 const CHAIN_PROMPTS_PER_CATEGORY = CATEGORY_ROUNDS_PER_CATEGORY;
 const CHAIN_ADULT_PROMPTS_PER_CATEGORY = CATEGORY_ADULT_ROUNDS_PER_CATEGORY;
 const CHAIN_VIBE_WORDS = ['vibe', 'angle', 'energy', 'detail', 'moment', 'lore'];
@@ -289,17 +356,23 @@ const MEME_DECODER_HINTS = [
   'Chronically Online Mood',
 ];
 const MEME_DECODER_FORMATS = ['image macro', 'reaction GIF', 'text-post meme', 'short video meme', 'reply meme'];
+const MEME_DECODER_ADULT_FORMATS = ['deep-fried meme', 'cursed screenshot meme', 'thirst-trap caption meme', 'late-night text meme', 'toxic group-chat meme'];
 const MEME_DECODER_MAIN_THEMES = ['When the group chat says "be there in 5"', 'When your alarm snoozes itself into tomorrow', 'When the Wi-Fi dies mid-episode', 'When someone says "quick meeting"', 'When your food delivery says "arriving now"', 'When your playlist queues the saddest song at the party', 'When the app asks "are you still watching?"', 'When your mate says "I have a tiny secret"', 'When your battery hits 1% outside', 'When someone says "trust me, no drama"', 'When your holiday budget vanishes day one', 'When your room looks clean from one angle', 'When your crush replies with "lol"', 'When the zoom call camera flips on unexpectedly', 'When your train gets delayed again', 'When your teammate says "I did my part"', 'When you check your bank app after the weekend', 'When the group votes for chaos mode', 'When your friend says "don’t tell anyone"', 'When you remember the deadline at 11:58 PM'];
 const MEME_DECODER_IMPOSTER_THEMES = ['When the family group chat sends 42 voice notes', 'When your coffee order gets your name hilariously wrong', 'When your luggage appears with no wheel', 'When you open the fridge for inspiration', 'When your playlist shuffles into guilty pleasures', 'When your "short nap" becomes a full sleep cycle', 'When your map app says "recalculating..."', 'When your dog judges your life choices', 'When your browser opens with 27 tabs', 'When your printer jams before submission', 'When your ex watches your story instantly', 'When your boss says "quick favor"', 'When your takeaway arrives missing sauce', 'When your keyboard autocorrect betrays you', 'When your mate says "I’m outside" but isn’t', 'When you hear "we need to talk"', 'When your shopping cart doubles the total', 'When the weather app says "light rain" then storms', 'When your code works on the third random try', 'When your alarm volume is set to whispers'];
+const MEME_DECODER_ADULT_MAIN_THEMES = ['When your ex texts “miss u” during your probation review', 'When your situationship reacts with “seen” after the overshare', 'When your thirst trap reaches the family group chat', 'When you drunk-confess to the wrong person and commit anyway', 'When your “private” story gets screenshotted in 4K', 'When your late-night standards are legally questionable', 'When your rebound becomes your therapist’s new subplot', 'When your chaotic dating history needs a flow chart', 'When your apology starts with “to be fair…”', 'When your one red flag turns out to be a full bunting set', 'When your group chat votes you “Most Likely to Regret This”', 'When your “harmless flirt” requires a meeting next day', 'When your afterparty lies collide in public', 'When your fake confidence survives exactly six minutes', 'When your hookup leaves before your food order arrives', 'When your toxic trait gets fact-checked live', 'When your “it’s complicated” turns into “it’s evidence”', 'When your shame spiral still has better posture than you', 'When your friend says “this will end badly” and is right', 'When your reputation enters witness protection'];
+const MEME_DECODER_ADULT_IMPOSTER_THEMES = ['When you actually go home at a reasonable hour', 'When you hydrate and ruin the scandal arc', 'When your apology is sincere and disappointingly effective', 'When you set boundaries and nobody knows how to react', 'When you leave the party with dignity still equipped', 'When your situationship communicates like an adult', 'When your text has punctuation and emotional stability', 'When your “bad decision” is just ordering dessert', 'When your secret stays secret for once', 'When your mates try chaos but you choose peace', 'When your date is polite and medically boring', 'When your “toxic era” lasts eight minutes', 'When your gossip is fully sourced and harmless', 'When your ex is blocked and stays blocked', 'When your walk of shame is actually a normal commute', 'When your late-night plan includes sleep and self-respect', 'When your hangover is mild and emotionally manageable', 'When your romance plot has HR approval', 'When your friend group acts suspiciously functional', 'When you learn from mistakes and kill the content'];
 
 function buildMemeDecoderPrompt(category, index, adultOnly = false) {
   const topicLabel = simplifyLabel(category?.name, 'General');
-  const formatMain = MEME_DECODER_FORMATS[index % MEME_DECODER_FORMATS.length];
-  const formatImposter = MEME_DECODER_FORMATS[(index + 2) % MEME_DECODER_FORMATS.length];
+  const formatPool = adultOnly ? MEME_DECODER_ADULT_FORMATS : MEME_DECODER_FORMATS;
+  const mainPool = adultOnly ? MEME_DECODER_ADULT_MAIN_THEMES : MEME_DECODER_MAIN_THEMES;
+  const imposterPool = adultOnly ? MEME_DECODER_ADULT_IMPOSTER_THEMES : MEME_DECODER_IMPOSTER_THEMES;
+  const formatMain = formatPool[index % formatPool.length];
+  const formatImposter = formatPool[(index + 2) % formatPool.length];
   return {
     hint: `${MEME_DECODER_HINTS[index % MEME_DECODER_HINTS.length]} • ${topicLabel}`,
-    main: `${MEME_DECODER_MAIN_THEMES[index % MEME_DECODER_MAIN_THEMES.length]} as a ${formatMain}`,
-    imposter: `${MEME_DECODER_IMPOSTER_THEMES[index % MEME_DECODER_IMPOSTER_THEMES.length]} as a ${formatImposter}`,
+    main: `${mainPool[index % mainPool.length]} as a ${formatMain}`,
+    imposter: `${imposterPool[index % imposterPool.length]} as a ${formatImposter}`,
     previewLabel: 'Explain the meme vibe and format without quoting exact text.',
     ...(adultOnly ? { adultOnly: true } : {}),
   };
@@ -333,8 +406,8 @@ const SOUND_OFF_HINTS = [
 ];
 const SOUND_OFF_MAIN = ['Waves hitting jagged rocks', 'Blob monster hallway gurgle', 'Creaky door in the dark', 'Distant thunder before rain', 'Cat knocking something off a shelf', 'Car engine refusing to start', 'Arcade machine startup jingle', 'Ghost whisper in an empty room', 'Crowd roar after a goal', 'Helicopter passing overhead', 'Tiny dog growling at a vacuum', 'Lift doors opening with a chime', 'Microwave beeping aggressively', 'Heavy footsteps upstairs at midnight', 'Train braking into a station', 'Forest wind through tall trees', 'Glass bottle rolling on tiles', 'Phone vibration on a wooden table', 'Fire crackling in a fireplace', 'Alien hatch opening sound'];
 const SOUND_OFF_IMPOSTER = ['Waves lapping on a calm beach', 'Zombie groan in a corridor', 'Window banging in wind', 'Fireworks echo over rooftops', 'Dog tags jingling on stairs', 'Scooter engine revving up', 'Casino slot-machine jingle', 'Demon laugh in a cave', 'Crowd boo after a miss', 'Motorbike racing past', 'Parrot screech at sunrise', 'Escalator hum in a mall', 'Oven timer ding', 'Slow dragging footsteps in sand', 'Tram bell and brake squeal', 'Swamp insects at dusk', 'Can rolling on concrete', 'Phone ringtone in a bag', 'Bonfire popping in rain', 'Spaceship alarm in cockpit'];
-const SOUND_OFF_ADULT_MAIN = ['Bedroom headboard rhythm', 'Late-night kiss-and-laugh combo', 'Heels and keys in a hallway', 'Shower plus steamy mirror wipe', 'Breathy whispered flirting', 'Squeaky mattress panic moment'];
-const SOUND_OFF_ADULT_IMPOSTER = ['Awkward couch springs at 2AM', 'Door chain rattle and footsteps', 'Bathroom tap with nervous humming', 'Wardrobe door slam and silence', 'Throat-clear and fake laugh', 'Taxi horn outside after midnight'];
+const SOUND_OFF_ADULT_MAIN = ['Bedroom headboard rhythm', 'Late-night kiss-and-laugh combo', 'Heels and keys in a hallway', 'Shower plus steamy mirror wipe', 'Breathy whispered flirting', 'Squeaky mattress panic moment', 'Walk-of-shame keys dropped at sunrise', 'Door lock click followed by suspicious silence', 'Muted argument through thin apartment walls', 'Unhappy air mattress squeak symphony', 'Phone buzz avalanche from three exes', 'High heels sprinting down hotel stairs', 'Mini-fridge raid after bad decisions', 'Discreet Uber pull-up at dawn', 'Kettle whistle during an awkward morning after', 'Bathroom fan hiding a terrible conversation', 'Neighbour knocking at precisely the wrong moment', 'Drunk hiccup followed by fake confidence laugh', 'Lipstick cap snapping in tactical panic', 'Cab meter beeping while someone says “keep driving”'];
+const SOUND_OFF_ADULT_IMPOSTER = ['Awkward couch springs at 2AM', 'Door chain rattle and footsteps', 'Bathroom tap with nervous humming', 'Wardrobe door slam and silence', 'Throat-clear and fake laugh', 'Taxi horn outside after midnight', 'Flatmate yell of “who is that?”', 'Alarm going off in somebody else’s room', 'Perfume spray panic before sunrise', 'Three rapid “new message” pings of doom', 'Elevator ding into absolute regret', 'Someone quietly crying while opening takeaway', 'Plastic cup crunch at an afterparty floor', 'A single clap from a deeply sarcastic friend', 'Hotel checkout printer while eyes avoid contact', 'Group chat notification storm mid-hangover', 'Doorbell ring you absolutely cannot answer', 'Bins clattering after a heroic bad night', 'Car seatbelt alarm refusing to stop', 'Nervous laughter in an empty kitchen'];
 
 function buildSoundOffPrompt(category, index, adultOnly = false) {
   const topicLabel = simplifyLabel(category?.name, 'General');
@@ -378,8 +451,8 @@ const OFFTOPIC_HINTS = [
 ];
 const OFFTOPIC_MAIN = ['Things you should never say to your mum', 'Worst excuses for being late', 'How to ruin a first impression', 'Bad ideas for a team meeting', 'Things that make a room go silent', 'Terrible opening lines at a party', 'Phrases that start pointless drama', 'Ways to make a queue hate you', 'What not to text after midnight', 'Things that should stay in your drafts', 'Worst things to shout in public', 'How to accidentally offend everyone', 'Topics to avoid at family dinner', 'Things you should not post online', 'Ways to lose an argument instantly', 'Worst replies to “we need to talk”', 'Things that make group chats implode', 'Phrases that sound guilty immediately', 'Ways to make your boss panic', 'What not to say in a taxi'];
 const OFFTOPIC_IMPOSTER = ['Best picnic snacks', 'How to pick comfy socks', 'Top signs your plant is thriving', 'Ways to organize your desk', 'Most relaxing evening routine', 'How to choose a bedtime tea', 'Tips for better posture', 'Best weather for a long walk', 'How to pick a gym playlist', 'Most wholesome weekend plans', 'How to improve your handwriting', 'Best breakfast combo', 'Ways to calm pre-meeting nerves', 'How to pack for a short trip', 'Best strategy for board game night', 'How to plan a museum day', 'How to clean headphones properly', 'Most reliable umbrella features', 'How to choose a study playlist', 'Best route for a sunset drive'];
-const OFFTOPIC_ADULT_MAIN = ['Things you should not text your ex at 1AM', 'Worst afterparty confessions', 'Phrases that kill bedroom vibes', 'Bad excuses after a walk of shame', 'What not to say on a first-night sleepover', 'Worst voice notes to send while drunk'];
-const OFFTOPIC_ADULT_IMPOSTER = ['Best laundry detergent scents', 'Tips for keeping towels fluffy', 'How to pick a reading lamp', 'Best lunchbox prep habits', 'How often to water houseplants', 'Ways to reduce screen glare'];
+const OFFTOPIC_ADULT_MAIN = ['Things you should not text your ex at 1AM', 'Worst afterparty confessions', 'Phrases that kill bedroom vibes', 'Bad excuses after a walk of shame', 'What not to say on a first-night sleepover', 'Worst voice notes to send while drunk', 'Worst things to shout during wedding vows', 'Most unhinged excuse for “new number, who dis?”', 'Lines guaranteed to get you removed from brunch', 'How to turn a casual date into a cautionary tale', 'Things you should never confess in a taxi', 'What not to announce at family Christmas', 'Worst ways to explain matching hickeys', 'Phrases that trigger instant group-chat mutiny', 'Things to never say while meeting parents', 'How to speedrun an HR investigation', 'Worst comments to drop at a funeral wake', 'Things you should never reveal on karaoke night', 'How to ruin a reunion in one sentence', 'Most cursed ways to say “I’m emotionally available”'];
+const OFFTOPIC_ADULT_IMPOSTER = ['Best laundry detergent scents', 'Tips for keeping towels fluffy', 'How to pick a reading lamp', 'Best lunchbox prep habits', 'How often to water houseplants', 'Ways to reduce screen glare', 'Best shelf layout for pantry jars', 'How to keep socks paired long-term', 'Calmest way to fold fitted sheets', 'Most sensible desk-chair posture tips', 'How to choose a mild herbal tea', 'Best neutral paint tones for hallways', 'Ways to track your water intake', 'How to organize charging cables neatly', 'Most practical route to the supermarket', 'How to stop your houseplants leaning', 'Best method for cleaning keyboard crumbs', 'How to set a weekly alarm routine', 'Most average weather for jogging', 'Best reusable bag for groceries'];
 
 function buildOffTopicPrompt(category, index, adultOnly = false) {
   const topicLabel = simplifyLabel(category?.name, 'General');
@@ -475,6 +548,16 @@ const OPINION_EXPANSION = {
     'Posting thirst traps while single is harmless.',
     'Honest red flags should be shared on date one.',
     'Drunk confessions are the purest kind of honesty.',
+    'Ghosting is kinder than pretending you care.',
+    'Oversharing on date one saves everyone time.',
+    'If the vibe is dead, leaving mid-date is fair.',
+    'Dating your friend’s ex is acceptable with warning.',
+    'Petty revenge texts are a valid closure technique.',
+    'White lies in dating profiles are just marketing.',
+    'Unhinged banter is better than mature communication.',
+    'Flirting in group chats is a competitive sport.',
+    'Blocking then unblocking your ex is self-care.',
+    'Public arguments are healthier than silent resentment.',
   ],
   adultImposter: [
     'First dates should stay safe and low key.',
@@ -487,6 +570,16 @@ const OPINION_EXPANSION = {
     'Posting thirst traps while single is messy.',
     'Red flags should not be shared on date one.',
     'Drunk confessions are just chaotic oversharing.',
+    'Ghosting is lazy and emotionally reckless.',
+    'Date one should stay respectful and low drama.',
+    'Leaving mid-date is rude unless unsafe.',
+    'Dating friends’ exes is usually a bad idea.',
+    'Revenge texts are immature and harmful.',
+    'Profiles should be honest, not strategic fiction.',
+    'Calm communication beats unhinged banter.',
+    'Group-chat flirting usually ends badly.',
+    'Blocking games are emotionally manipulative.',
+    'Public arguments are embarrassing and unhelpful.',
   ],
 };
 
@@ -534,15 +627,35 @@ const MEDIA_EXPANSION = {
     hint: 'Sound Clue',
     regularMain: ['crowd-goal-cheer', 'engine-rev-quick', 'rain-on-window', 'crow-caw-echo', 'train-brake-screech'],
     regularImposter: ['crowd-knockout-cheer', 'motorbike-rev', 'hail-on-window', 'raven-call-echo', 'tram-brake-screech'],
-    adultMain: ['club-bass-drop', 'glasses-clink-toast', 'heels-on-tile-floor', 'door-lock-click', 'kiss-pop-sfx'],
-    adultImposter: ['bar-last-orders-bell', 'bottle-smash-far', 'awkward-chair-scrape', 'door-chain-rattle', 'nervous-throat-clear'],
+    adultMain: [
+      'club-bass-drop', 'glasses-clink-toast', 'heels-on-tile-floor', 'door-lock-click', 'kiss-pop-sfx',
+      'bedframe-rhythm-loop', 'awkward-uber-arrival', 'fridge-door-at-3am', 'lipstick-cap-click',
+      'elevator-ding-of-regret', 'group-chat-notification-storm', 'hotel-keycard-fail', 'suspicious-laughter-cutoff',
+      'hangover-water-gulp', 'afterparty-door-slam',
+    ],
+    adultImposter: [
+      'bar-last-orders-bell', 'bottle-smash-far', 'awkward-chair-scrape', 'door-chain-rattle', 'nervous-throat-clear',
+      'snore-from-the-couch', 'kettle-boil-at-dawn', 'cab-meter-beep', 'toilet-flush-cover-noise',
+      'alarm-clock-in-wrong-room', 'shower-running-too-long', 'flatmate-knock-at-door',
+      'phone-vibrate-panic', 'plastic-cup-crunch', 'forced-apology-sigh',
+    ],
   },
   video: {
     hint: 'Video Clip',
     regularMain: ['skatepark-trick-landing', 'concert-crowd-wave', 'storm-over-sea', 'dog-splashing-lake', 'arcade-speedrun-closeup'],
     regularImposter: ['skatepark-trick-fall', 'concert-crowd-mosh', 'calm-sea-sunrise', 'dog-running-meadow', 'arcade-fightinggame-closeup'],
-    adultMain: ['rooftop-party-dancing', 'neon-city-date-night', 'hotel-lobby-checkin', 'slow-motion-champagne-pop', 'vip-booth-laughing'],
-    adultImposter: ['afterparty-walk-of-shame', 'neon-city-alone-night', 'hotel-lobby-argument', 'spill-drink-disaster', 'vip-booth-awkward-silence'],
+    adultMain: [
+      'rooftop-party-dancing', 'neon-city-date-night', 'hotel-lobby-checkin', 'slow-motion-champagne-pop', 'vip-booth-laughing',
+      'karaoke-mic-drop', 'messy-selfie-afterparty', 'cab-window-neon-stare', 'kitchen-after-midnight',
+      'club-exit-in-heels', 'slow-mo-regret-face', 'toxic-flirt-in-dms', 'brunch-walk-of-confidence',
+      'backseat-conversation-chaos', 'doorstep-goodbye-fumble',
+    ],
+    adultImposter: [
+      'afterparty-walk-of-shame', 'neon-city-alone-night', 'hotel-lobby-argument', 'spill-drink-disaster', 'vip-booth-awkward-silence',
+      'silent-ride-home', 'friend-holding-hair-back', 'hangover-pharmacy-run', 'apology-text-closeup',
+      'unread-message-spiral', 'party-exit-in-tears', 'lost-jacket-hunt', 'cold-pizza-breakfast',
+      'elevator-standoff', 'taxi-meter-panic',
+    ],
   },
 };
 
@@ -687,6 +800,9 @@ const GRILL_EXPANSION = {
   adultTopics: [
     'Awkward speed dating', 'Messy house party', 'Walk home at sunrise', 'VIP nightclub booth', 'Hotel minibar raid',
     'After-dark karaoke battle', 'Flirty rooftop drinks', 'Embarrassing ex reunion', 'Wild bachelor party', 'Late-night taxi confession',
+    'Group-chat breakup fallout', 'Brunch after no sleep', 'Regretful holiday fling', 'Office party scandal',
+    'Chaotic situationship', 'Accidental voice-note leak', 'Shaky apology dinner', 'Hangover airport sprint',
+    'Friends-with-benefits contract dispute', 'Public argument outside a club',
   ],
 };
 
