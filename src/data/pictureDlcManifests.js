@@ -9,6 +9,7 @@ function toMediaSrc(basePath, mediaFile) {
 export function buildPictureRoundsFromManifest(manifest) {
   if (!manifest || !Array.isArray(manifest.entries)) return [];
   return manifest.entries.map((entry, index) => ({
+    entryId: entry.entryId || `${manifest.id}-${index + 1}`,
     hint: entry.hint || `Picture Prompt • ${entry.groupName || manifest.label} ${index + 1}`,
     main: entry.main,
     imposter: entry.imposter,
@@ -20,10 +21,12 @@ export function buildPictureRoundsFromManifest(manifest) {
   }));
 }
 
+export function getValidatedPictureDlcManifests() {
+  return PICTURE_DLC_MANIFESTS.filter((manifest) => validatePictureDlcManifest(manifest));
+}
+
 export function buildAllPictureDlcRounds() {
-  return PICTURE_DLC_MANIFESTS
-    .filter((manifest) => validatePictureDlcManifest(manifest))
-    .flatMap((manifest) => buildPictureRoundsFromManifest(manifest));
+  return getValidatedPictureDlcManifests().flatMap((manifest) => buildPictureRoundsFromManifest(manifest));
 }
 
 export function validatePictureDlcManifest(manifest) {

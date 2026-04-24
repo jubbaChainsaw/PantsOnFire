@@ -42,11 +42,30 @@ function validateManifest(manifest, filePath) {
   if (!manifest?.basePath) problems.push('Missing basePath');
   if (!Array.isArray(manifest?.entries) || manifest.entries.length === 0) problems.push('entries must be a non-empty array');
   if (Array.isArray(manifest?.entries)) {
+    const entryIds = new Set();
     manifest.entries.forEach((entry, index) => {
+      if (!entry?.entryId) problems.push(`entries[${index}] missing entryId`);
+      if (entry?.entryId) {
+        if (entryIds.has(entry.entryId)) {
+          problems.push(`entries[${index}] duplicate entryId "${entry.entryId}"`);
+        } else {
+          entryIds.add(entry.entryId);
+        }
+      }
       if (!entry?.main) problems.push(`entries[${index}] missing main`);
       if (!entry?.imposter) problems.push(`entries[${index}] missing imposter`);
       if (!entry?.mainMediaFile) problems.push(`entries[${index}] missing mainMediaFile`);
       if (!entry?.imposterMediaFile) problems.push(`entries[${index}] missing imposterMediaFile`);
+      const mediaBase = path.join(repoRoot, 'public');
+      const basePath = String(manifest?.basePath || '').replace(/^\/+/, '');
+      const mainMediaPath = entry?.mainMediaFile ? path.join(mediaBase, basePath, entry.mainMediaFile) : null;
+      const imposterMediaPath = entry?.imposterMediaFile ? path.join(mediaBase, basePath, entry.imposterMediaFile) : null;
+      if (mainMediaPath && !fs.existsSync(mainMediaPath)) {
+        problems.push(`entries[${index}] main media file missing at ${mainMediaPath}`);
+      }
+      if (imposterMediaPath && !fs.existsSync(imposterMediaPath)) {
+        problems.push(`entries[${index}] imposter media file missing at ${imposterMediaPath}`);
+      }
     });
   }
   if (problems.length) {

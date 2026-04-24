@@ -35,6 +35,10 @@ Use explicit, domain-focused file names for data modules. Prefer names that desc
   - `public/assets/graphic-packs/picture/<pack-id>/manifest.json`
 - Sync generated JS registry before commit:
   - `npm run dlc:sync-picture-manifests`
+- Lint picture manifests before commit:
+  - `npm run dlc:lint-picture-manifests`
+- Scaffold a new picture pack:
+  - `npm run dlc:new-picture-pack -- <pack-id> "<Label>"`
 - Runtime reads generated data module:
   - `src/data/generatedPictureDlcManifests.js`
 - Add a new picture pack without touching core logic:
