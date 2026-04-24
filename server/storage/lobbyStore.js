@@ -204,7 +204,7 @@ function hydrateRound(rawRound, playerCount = 0) {
     phaseUpdatedAt: rawRound.phaseUpdatedAt || rawRound.createdAt || nowIso(),
     votesByPlayerId,
     voteCompletionCount: Math.max(0, Number(rawRound.voteCompletionCount ?? submittedVotes)),
-    voteTargetCount: Math.max(1, Number(rawRound.voteTargetCount ?? playerCount || 1)),
+    voteTargetCount: Math.max(1, Number(rawRound.voteTargetCount ?? playerCount ?? 1)),
     resolution: rawRound.resolution && typeof rawRound.resolution === 'object'
       ? rawRound.resolution
       : null,
