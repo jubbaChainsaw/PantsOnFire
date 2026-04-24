@@ -34,10 +34,12 @@ import {
 import { PICTURE_DLC_MANIFESTS } from './data/pictureDlcManifests';
 import {
   createLobbyTransport,
+  createNextRoundOnServer,
   createLobbyOnServer,
   createOnlinePlayer,
   joinLobbyOnServer,
   leaveLobbyOnServer,
+  readPrivateRoundOnServer,
   resumeLobbySessionOnServer,
   startLobbyOnServer,
   toGamePlayers,
@@ -49,7 +51,19 @@ const HEARTBEAT_SFX_SRC = '/assets/sfx/heartbeat.mp3';
 const MIN_PLAYERS = 3;
 const MAX_PLAYERS = 12;
 const ONLINE_VOICE_ACTIVE_SCREENS = new Set(['discussion', 'grill', 'round-type-choice', 'category-choice', 'results']);
-const ONLINE_CONNECTION_ACTIVE_SCREENS = new Set(['online-lobby-created', 'online-lobby-waiting']);
+const ONLINE_CONNECTION_ACTIVE_SCREENS = new Set([
+  'online-lobby-created',
+  'online-lobby-waiting',
+  'rules',
+  'host-intro',
+  'reveal',
+  'discussion',
+  'grill',
+  'voting',
+  'liar-reveal',
+  'results',
+  'final',
+]);
 
 function shuffle(arr) {
   const clone = [...arr];
@@ -113,9 +127,21 @@ function mapLobbyErrorToMessage(error, fallback = 'Unable to complete online lob
   if (code === 'resume-token-missing') return 'Session restore token missing. Rejoin the lobby from a fresh code.';
   if (code === 'lobby-session-expired' || code === 'session-player-missing') return 'Session expired because this player left the lobby.';
   if (code === 'host-only') return 'Only the host can start this lobby.';
+  if (code === 'lobby-not-started') return 'Lobby has not started yet.';
+  if (code === 'round-not-found') return 'Round data is not ready yet.';
+  if (code === 'round-player-missing') return 'Your player slot is no longer active in this lobby.';
+  if (code === 'round-generation-failed') return 'Server could not generate a new round. Try again.';
   if (code === 'not-enough-players') return `Need at least ${MIN_PLAYERS} players before starting.`;
   if (code === 'player-id-required') return 'Unable to leave lobby: missing player identity.';
   return fallback;
+}
+function toClientRoundFromServer(round) {
+  if (!round || typeof round !== 'object') return null;
+  return {
+    ...round,
+    promptsByPlayerId: {},
+    mediaByPlayerId: {},
+  };
 }
 function getCombinedCategories(customCategories) { return [...DEFAULT_CATEGORIES, ...customCategories]; }
 function getGrillQuestionsPerPlayer(playerCount) {
@@ -207,7 +233,7 @@ function applyPicturePackSelection(
   return weighted.length ? weighted : source;
 }
 
-function buildRound(
+function buildLocalRound(
   players,
   category,
   roundNumber,
@@ -322,6 +348,15 @@ function buildRound(
         return [player.id, liarIds.includes(player.id) ? selected.prompt.imposter : selected.prompt.main];
       })
     ),
+  };
+}
+
+function toClientRoundFromAuthoritativeRound(serverRound) {
+  if (!serverRound || typeof serverRound !== 'object') return null;
+  return {
+    ...serverRound,
+    promptsByPlayerId: {},
+    mediaByPlayerId: {},
   };
 }
 
@@ -706,12 +741,18 @@ function SetupScreen(props) {
     </TopFrame>
   );
 }
-function RevealScreen({ players, currentRevealIndex, round, totalRounds, onNext, passLine, normalLine, liarLine, theme, onlineMode = false, localPlayerName = '' }) {
+function RevealScreen({ players, currentRevealIndex, round, totalRounds, onNext, passLine, normalLine, liarLine, theme, onlineMode = false, localPlayerName = '', onlinePrivatePrompt = null, onlinePrivatePromptError = '', privatePromptLoading = false }) {
   const player = players[currentRevealIndex];
-  const prompt = round.promptsByPlayerId[player.id];
-  const mediaSrc = round.mediaByPlayerId?.[player.id] || null;
+  const prompt = onlineMode
+    ? (onlinePrivatePrompt?.prompt || '')
+    : round.promptsByPlayerId[player.id];
+  const mediaSrc = onlineMode
+    ? (onlinePrivatePrompt?.mediaSrc || null)
+    : (round.mediaByPlayerId?.[player.id] || null);
   const isLast = currentRevealIndex === players.length - 1;
-  const isImposter = (round.imposterIds || []).includes(player.id);
+  const isImposter = onlineMode
+    ? Boolean(onlinePrivatePrompt?.isImposter)
+    : (round.imposterIds || []).includes(player.id);
   const [cardFace, setCardFace] = useState('back');
   const [countdownValue, setCountdownValue] = useState(null);
   const [isCountingDown, setIsCountingDown] = useState(false);
@@ -763,6 +804,11 @@ function RevealScreen({ players, currentRevealIndex, round, totalRounds, onNext,
             {onlineMode ? `Reveal for ${localPlayerName || player.name}` : `Pass the phone to ${player.name}`}
           </h2>
           <p className="text-cyan-200/90 mt-3 font-medium">{passLine}</p>
+          {onlineMode && onlinePrivatePromptError && (
+            <div className="mt-4 rounded-2xl border border-red-300/30 bg-red-500/10 p-3 text-sm text-red-100">
+              {onlinePrivatePromptError}
+            </div>
+          )}
 
           <div className="mt-8 mx-auto w-full max-w-sm [perspective:1200px]">
             <motion.div
@@ -825,6 +871,11 @@ function RevealScreen({ players, currentRevealIndex, round, totalRounds, onNext,
                     <img src={mediaSrc} alt={`${round.hint} visual clue`} className="mt-3 w-full rounded-2xl border border-white/15 bg-black/20" />
                   )}
                   <div className={`mt-4 text-4xl font-black leading-tight ${isImposter ? 'text-yellow-300' : 'text-white'}`}>{prompt}</div>
+                  {onlineMode && privatePromptLoading && (
+                    <div className="mt-3 text-sm text-cyan-100/90">
+                      Loading your private prompt...
+                    </div>
+                  )}
                   <div className={`mt-3 text-sm font-semibold ${isImposter ? 'text-orange-200' : 'text-cyan-200'}`}>
                     {isImposter ? `🔥 ${liarLine} 🔥` : normalLine}
                   </div>
@@ -1209,6 +1260,8 @@ export default function App() {
   const [onlineLobbyStatus, setOnlineLobbyStatus] = useState('idle');
   const [onlineLobbyError, setOnlineLobbyError] = useState('');
   const [onlineJoinedPlayerId, setOnlineJoinedPlayerId] = useState('');
+  const [onlinePrivatePrompt, setOnlinePrivatePrompt] = useState(null);
+  const [onlinePrivatePromptError, setOnlinePrivatePromptError] = useState('');
   const onlineTransportRef = useRef(null);
   const onlineStartedRevisionHandledRef = useRef('');
   const onlineClientIdRef = useRef(getOrCreatePersistentClientId());
@@ -1372,11 +1425,14 @@ export default function App() {
         if (snapshot.status === 'started' && snapshot.startedRevision) {
           if (onlineStartedRevisionHandledRef.current !== snapshot.startedRevision) {
             onlineStartedRevisionHandledRef.current = snapshot.startedRevision;
-            const seededPlayers = toGamePlayers(snapshotPlayers);
-            if (seededPlayers.length) {
-              refreshCopy(['chooser']);
-              startGame(seededPlayers);
-            }
+            void syncAuthoritativeRound(
+              {
+                ...snapshot,
+                players: snapshotPlayers,
+                code: snapshot.code || effectiveLobbyCode,
+              },
+              { openHostIntro: true }
+            );
           }
         }
       },
@@ -1449,20 +1505,161 @@ export default function App() {
   const totalRounds = winCondition === 'rounds' ? (players.length * roundsPerPlayer) : 99;
   const hasScoreWinner = (list) => winCondition === 'points' && list.some((player) => player.score >= pointsToWin);
 
+  async function fetchOnlinePrivatePrompt({
+    lobbyCodeValue,
+    playerId,
+    sessionToken,
+    clearErrorOnSuccess = true,
+  }) {
+    const normalizedCode = String(lobbyCodeValue || '').trim().toUpperCase();
+    if (!normalizedCode || !playerId || !sessionToken) return null;
+    try {
+      const payload = await readPrivateRoundOnServer(normalizedCode, { playerId, sessionToken });
+      const nextPrompt = payload?.round || null;
+      if (nextPrompt) {
+        setOnlinePrivatePrompt(nextPrompt);
+        if (clearErrorOnSuccess) setOnlinePrivatePromptError('');
+      }
+      return nextPrompt;
+    } catch (error) {
+      setOnlinePrivatePromptError(
+        mapLobbyErrorToMessage(error, 'Unable to load your private prompt right now.')
+      );
+      return null;
+    }
+  }
+
+  async function createNextOnlineRound() {
+    if (!onlineMode || onlineRole !== 'host' || !lobbyCode) return null;
+    const currentSession = onlineSessionRef.current;
+    const hostSessionToken = currentSession?.sessionToken || '';
+    if (!hostSessionToken) {
+      setOnlineLobbyError('Host session token missing. Please leave and recreate the lobby.');
+      return null;
+    }
+    try {
+      const result = await createNextRoundOnServer(lobbyCode, {
+        hostClientId: onlineClientId,
+        sessionToken: hostSessionToken,
+      });
+      const rotatedHostToken = result?.rotatedSessionToken || hostSessionToken;
+      if (rotatedHostToken && rotatedHostToken !== hostSessionToken) {
+        const nextSession = {
+          ...(currentSession || {}),
+          sessionToken: rotatedHostToken,
+        };
+        onlineSessionRef.current = nextSession;
+        setStoredOnlineSession(nextSession);
+      }
+      const nextRound = result?.round || null;
+      if (nextRound) {
+        setRound(nextRound);
+        setRoundNumber(nextRound.roundNumber || (roundNumber + 1));
+        setRevealIndex(0);
+        refreshCopy(['passPhone', 'revealNormal', 'revealLiar']);
+        const stingerCopyKey = HOST_STINGER_COPY_KEYS[nextRound.roundTypeId] || HOST_STINGER_COPY_KEYS.prompt;
+        setCopyState((cur) => ({ ...cur, hostStinger: getLine(themedKey(stingerCopyKey)) }));
+      }
+      setOnlinePrivatePrompt(null);
+      setOnlinePrivatePromptError('');
+      setOnlineLobbyError('');
+      return nextRound;
+    } catch (error) {
+      setOnlineLobbyError(mapLobbyErrorToMessage(error, 'Unable to generate the next round.'));
+      return null;
+    }
+  }
+
+  async function syncAuthoritativeRound(snapshot, { openHostIntro = false } = {}) {
+    if (!snapshot?.activeRound) return null;
+    const snapshotPlayers = Array.isArray(snapshot.players) ? snapshot.players : [];
+    if (snapshotPlayers.length) {
+      setPlayers(toGamePlayers(snapshotPlayers));
+    }
+    const serverRound = snapshot.activeRound;
+    const stingerCopyKey = HOST_STINGER_COPY_KEYS[serverRound.roundTypeId] || HOST_STINGER_COPY_KEYS.prompt;
+    setRound(serverRound);
+    setRoundNumber(serverRound.roundNumber || 1);
+    setRevealIndex(0);
+    setVotesByPlayerId({});
+    setTally({});
+    setRoundGains({});
+    setRoundBreakdown({});
+    setImposterCaught(false);
+    setPendingResults(null);
+    setOnlinePrivatePrompt(null);
+    setOnlinePrivatePromptError('');
+    refreshCopy(['passPhone', 'revealNormal', 'revealLiar']);
+    setCopyState((cur) => ({ ...cur, hostStinger: getLine(themedKey(stingerCopyKey)) }));
+    const sessionSnapshot = onlineSessionRef.current;
+    if (sessionSnapshot?.playerId && sessionSnapshot?.sessionToken) {
+      await fetchOnlinePrivatePrompt({
+        lobbyCodeValue: snapshot.code || lobbyCode,
+        playerId: sessionSnapshot.playerId,
+        sessionToken: sessionSnapshot.sessionToken,
+      });
+    }
+    if (openHostIntro) {
+      setScreen('host-intro');
+    }
+    return serverRound;
+  }
+
+  async function handleAdvanceReveal() {
+    if (onlineMode) {
+      if (revealIndex < players.length - 1) {
+        setRevealIndex((currentIndex) => currentIndex + 1);
+        return;
+      }
+      if (round?.roundTypeId === 'grill') {
+        setScreen('grill');
+      } else {
+        refreshCopy(['discussion']);
+        setScreen('discussion');
+      }
+      return;
+    }
+    if (revealIndex < players.length - 1) {
+      setRevealIndex((r) => r + 1);
+      return;
+    }
+    if (round?.roundTypeId === 'grill') {
+      setScreen('grill');
+      return;
+    }
+    refreshCopy(['discussion']);
+    setScreen('discussion');
+  }
+
   function startGame(seedPlayers = null) {
     const basePlayers = seedPlayers && seedPlayers.length ? seedPlayers : players;
     const options = shuffle(activeCategories).slice(0, Math.min(4, activeCategories.length));
     if (!options.length) return;
     const resetPlayers = basePlayers.map((player) => ({ ...player, score: 0 }));
     setPlayers(resetPlayers);
-    setRoundNumber(1); setCurrentRoundOwnerIndex(0); setPreviousRoundType(null); setSelectedRoundType(null); setRoundTypeOptions([]);
-    setCategoryOptions(options); setRound({ chooserId: resetPlayers[0]?.id, roundNumber: 1 });
-    setRecentPromptKeys([]); setVotesByPlayerId({}); setTally({}); setRoundGains({}); setRoundBreakdown({}); setImposterCaught(false); refreshCopy(['chooser']); setScreen('rules');
+    setRoundNumber(1);
+    setCurrentRoundOwnerIndex(0);
+    setPreviousRoundType(null);
+    setSelectedRoundType(null);
+    setRoundTypeOptions([]);
+    setCategoryOptions(options);
+    setRound({ chooserId: resetPlayers[0]?.id, roundNumber: 1 });
+    setRecentPromptKeys([]);
+    setVotesByPlayerId({});
+    setTally({});
+    setRoundGains({});
+    setRoundBreakdown({});
+    setImposterCaught(false);
+    setOnlinePrivatePrompt(null);
+    setOnlinePrivatePromptError('');
+    refreshCopy(['chooser']);
+    setScreen('rules');
   }
   function chooseCategory(categoryId) {
-    const category = activeCategories.find((c) => c.id === categoryId); if (!category) return;
+    const category = activeCategories.find((c) => c.id === categoryId);
+    if (!category) return;
     const selectedTypeForRound = roundNumber === 1 ? pickRandom(PASS_THE_PHONE_ROUND_TYPES).id : selectedRoundType;
-    const built = buildRound(
+    const built = buildLocalRound(
       players,
       category,
       roundNumber,
@@ -1481,7 +1678,14 @@ export default function App() {
     );
     if (!built) return;
     const stingerCopyKey = HOST_STINGER_COPY_KEYS[built.roundTypeId] || HOST_STINGER_COPY_KEYS.prompt;
-    setRound(built); setPreviousRoundType(built.roundTypeId); setRecentPromptKeys((cur) => [...cur, built.promptKey]); setRevealIndex(0); setVotesByPlayerId({}); refreshCopy(['passPhone','revealNormal','revealLiar']);
+    setRound(built);
+    setPreviousRoundType(built.roundTypeId);
+    setRecentPromptKeys((cur) => [...cur, built.promptKey]);
+    setRevealIndex(0);
+    setVotesByPlayerId({});
+    setOnlinePrivatePrompt(null);
+    setOnlinePrivatePromptError('');
+    refreshCopy(['passPhone', 'revealNormal', 'revealLiar']);
     setCopyState((cur) => ({ ...cur, hostStinger: getLine(themedKey(stingerCopyKey)) }));
     setScreen('host-intro');
   }
@@ -1492,7 +1696,14 @@ export default function App() {
     setScreen('liar-reveal');
   }
   function finishLiarReveal() { if (pendingResults?.shouldEndGame) { refreshCopy(['winner']); setScreen('final'); } else setScreen('results'); setPendingResults(null); }
-  function nextRound() {
+  async function nextRound() {
+    if (onlineMode) {
+      const nextRoundData = await createNextOnlineRound();
+      if (nextRoundData) {
+        setScreen('host-intro');
+      }
+      return;
+    }
     const next = roundNumber + 1;
     const nextOwner = (currentRoundOwnerIndex + 1) % players.length;
     const eligibleRoundTypes = PASS_THE_PHONE_ROUND_TYPES.filter((type) => type.id !== previousRoundType);
@@ -1506,7 +1717,12 @@ export default function App() {
     refreshCopy(['chooser']);
     setScreen('round-type-choice');
   }
-  function endGame() { refreshCopy(['winner']); setScreen('final'); }
+  function endGame() {
+    setOnlinePrivatePrompt(null);
+    setOnlinePrivatePromptError('');
+    refreshCopy(['winner']);
+    setScreen('final');
+  }
   async function leaveOnlineLobby({ nextScreen = 'home' } = {}) {
     const normalizedCode = lobbyCode?.trim().toUpperCase();
     if (normalizedCode) {
@@ -1529,6 +1745,8 @@ export default function App() {
     setOnlineLobbyStatus('idle');
     setOnlineLobbyError('');
     setOnlineJoinedPlayerId('');
+    setOnlinePrivatePrompt(null);
+    setOnlinePrivatePromptError('');
     setOnlineVoiceEnabled(false);
     setOnlineVoiceMuted(false);
     if (nextScreen === 'home') {
@@ -1671,7 +1889,12 @@ export default function App() {
       onlineSessionRef.current = nextSession;
       setStoredOnlineSession(nextSession);
     }
-    onlineTransportRef.current?.syncSnapshot();
+    setOnlinePrivatePrompt(null);
+    setOnlinePrivatePromptError('');
+    const synced = await onlineTransportRef.current?.syncSnapshot();
+    if (synced?.activeRound) {
+      await syncAuthoritativeRound(synced, { openHostIntro: true });
+    }
   }
   function restartToHome() {
     setPlayers(createPlayers(3)); setLiarCount(1); setNameTheme('Default'); setMode('classic'); setWinCondition('rounds'); setPointsToWin(15); setRoundsPerPlayer(1); setGrillSettings({ micEnabled: true, ttsEnabled: true }); setRound(null); setRoundNumber(1); setCurrentRoundOwnerIndex(0); setPreviousRoundType(null); setRoundTypeOptions([]); setSelectedRoundType(null); setRevealIndex(0); setVotesByPlayerId({}); setTally({}); setRoundGains({}); setRoundBreakdown({}); setImposterCaught(false); setRecentPromptKeys([]); setPendingResults(null); refreshCopy(['home','onlineLobby']);
@@ -1779,18 +2002,20 @@ export default function App() {
     )}
     {screen === 'reveal' && round && (
       <RevealScreen
-        key={`${round.promptKey}-${revealIndex}`}
+        key={`${round.promptKey || round.id || 'online-round'}-${revealIndex}-${onlinePrivatePrompt?.roundId || 'local'}`}
         players={players}
         currentRevealIndex={revealIndex}
         round={round}
         totalRounds={totalRounds}
-        onNext={() => revealIndex < players.length - 1 ? setRevealIndex((r) => r + 1) : (round.roundTypeId === 'grill' ? setScreen('grill') : (refreshCopy(['discussion']), setScreen('discussion')))}
+        onNext={handleAdvanceReveal}
         passLine={copyState.passPhone}
         normalLine={copyState.revealNormal}
         liarLine={copyState.revealLiar}
         theme={nameTheme}
         onlineMode={onlineMode}
         localPlayerName={onlinePlayerName}
+        onlinePrivatePrompt={onlinePrivatePrompt}
+        onlinePrivatePromptError={onlinePrivatePromptError}
       />
     )}
     {screen === 'grill' && round && <GrillEmScreen players={players} round={round} totalRounds={totalRounds} onContinue={(grillData) => { setRound((cur) => ({ ...cur, grillData })); setVotesByPlayerId(Object.fromEntries(players.map((p) => [p.id, '']))); refreshCopy(['voting']); setScreen('voting'); }} theme={nameTheme} />}

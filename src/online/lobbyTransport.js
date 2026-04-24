@@ -120,6 +120,42 @@ export async function startLobbyOnServer(lobbyCode, { hostClientId, sessionToken
   };
 }
 
+export async function readCurrentRoundOnServer(lobbyCode) {
+  const normalizedCode = normalizeCode(lobbyCode);
+  const payload = await requestJson(`/lobbies/${encodeURIComponent(normalizedCode)}/round`);
+  return {
+    round: payload?.round || null,
+    activeRoundRevision: payload?.activeRoundRevision || null,
+  };
+}
+
+export async function readPrivateRoundOnServer(lobbyCode, { playerId, sessionToken } = {}) {
+  const normalizedCode = normalizeCode(lobbyCode);
+  const query = new URLSearchParams({
+    playerId: String(playerId || ''),
+    sessionToken: String(sessionToken || ''),
+  });
+  const payload = await requestJson(
+    `/lobbies/${encodeURIComponent(normalizedCode)}/round/private?${query.toString()}`
+  );
+  return {
+    round: payload?.round || null,
+  };
+}
+
+export async function createNextRoundOnServer(lobbyCode, { hostClientId, sessionToken } = {}) {
+  const normalizedCode = normalizeCode(lobbyCode);
+  const payload = await requestJson(`/lobbies/${encodeURIComponent(normalizedCode)}/rounds/next`, {
+    method: 'POST',
+    body: { hostClientId, sessionToken },
+  });
+  return {
+    lobby: payload?.lobby || null,
+    round: payload?.round || null,
+    rotatedSessionToken: payload?.rotatedSessionToken || '',
+  };
+}
+
 export function toGamePlayers(onlinePlayers = []) {
   return onlinePlayers.map((player) => ({
     id: player.id,

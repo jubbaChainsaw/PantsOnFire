@@ -193,6 +193,110 @@ app.post('/api/lobbies/:code/start', async (req, res) => {
   });
 });
 
+app.get('/api/lobbies/:code/round', async (req, res) => {
+  const code = normalizeCode(req.params.code);
+  const result = await store.getCurrentRound(code);
+  if (result.error === 'not-found') {
+    res.status(404).json({ error: 'lobby-not-found' });
+    return;
+  }
+  if (result.error === 'lobby-not-started') {
+    res.status(409).json({ error: 'lobby-not-started' });
+    return;
+  }
+  if (result.error === 'round-not-found') {
+    res.status(404).json({ error: 'round-not-found' });
+    return;
+  }
+  res.json({
+    round: result.round || null,
+    activeRoundRevision: result.round?.id || null,
+  });
+});
+
+app.get('/api/lobbies/:code/round/private', async (req, res) => {
+  const code = normalizeCode(req.params.code);
+  const playerId = String(req.query?.playerId || '');
+  const sessionToken = String(req.query?.sessionToken || '');
+  const result = await store.getPlayerRoundView(code, playerId, sessionToken);
+  if (result.error === 'not-found') {
+    res.status(404).json({ error: 'lobby-not-found' });
+    return;
+  }
+  if (result.error === 'lobby-not-started') {
+    res.status(409).json({ error: 'lobby-not-started' });
+    return;
+  }
+  if (result.error === 'round-not-found') {
+    res.status(404).json({ error: 'round-not-found' });
+    return;
+  }
+  if (result.error === 'player-id-required') {
+    res.status(400).json({ error: 'player-id-required' });
+    return;
+  }
+  if (result.error === 'session-token-required') {
+    res.status(400).json({ error: 'session-token-required' });
+    return;
+  }
+  if (result.error === 'invalid-session-token') {
+    res.status(401).json({ error: 'invalid-session-token' });
+    return;
+  }
+  if (result.error === 'session-token-expired') {
+    res.status(401).json({ error: 'session-token-expired' });
+    return;
+  }
+  if (result.error === 'session-player-missing' || result.error === 'round-player-missing') {
+    res.status(410).json({ error: result.error });
+    return;
+  }
+  res.json({
+    round: result.round || null,
+  });
+});
+
+app.post('/api/lobbies/:code/rounds/next', async (req, res) => {
+  const code = normalizeCode(req.params.code);
+  const hostClientId = String(req.body?.hostClientId || '');
+  const sessionToken = String(req.body?.sessionToken || '');
+  const result = await store.createNextRound(code, hostClientId, sessionToken);
+  if (result.error === 'not-found') {
+    res.status(404).json({ error: 'lobby-not-found' });
+    return;
+  }
+  if (result.error === 'lobby-not-started') {
+    res.status(409).json({ error: 'lobby-not-started' });
+    return;
+  }
+  if (result.error === 'host-only') {
+    res.status(403).json({ error: 'host-only' });
+    return;
+  }
+  if (result.error === 'host-session-token-required') {
+    res.status(400).json({ error: 'host-session-token-required' });
+    return;
+  }
+  if (result.error === 'token-rotation-required') {
+    res.status(401).json({ error: 'token-rotation-required' });
+    return;
+  }
+  if (result.error === 'session-token-expired') {
+    res.status(401).json({ error: 'session-token-expired' });
+    return;
+  }
+  if (result.error === 'round-generation-failed') {
+    res.status(500).json({ error: 'round-generation-failed' });
+    return;
+  }
+  broadcastSnapshot(code, result.lobby);
+  res.json({
+    lobby: toClientSnapshot(result.lobby),
+    round: result.round || null,
+    rotatedSessionToken: result.sessionToken || '',
+  });
+});
+
 io.on('connection', (socket) => {
   socket.on('lobby:subscribe', async ({ code }) => {
     const normalized = normalizeCode(code);
