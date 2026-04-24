@@ -216,8 +216,10 @@ for (const category of DEFAULT_CATEGORIES) {
   }
 }
 
-const CHAIN_PROMPTS_PER_CATEGORY = 20;
-const CHAIN_ADULT_PROMPTS_PER_CATEGORY = 4;
+const CATEGORY_ROUNDS_PER_CATEGORY = 100;
+const CATEGORY_ADULT_ROUNDS_PER_CATEGORY = 20;
+const CHAIN_PROMPTS_PER_CATEGORY = CATEGORY_ROUNDS_PER_CATEGORY;
+const CHAIN_ADULT_PROMPTS_PER_CATEGORY = CATEGORY_ADULT_ROUNDS_PER_CATEGORY;
 const CHAIN_VIBE_WORDS = ['vibe', 'angle', 'energy', 'detail', 'moment', 'lore'];
 const CHAIN_HINT_WORDS = ['twist', 'theme', 'style', 'signal', 'scene', 'clue'];
 
@@ -303,7 +305,11 @@ function buildMemeDecoderPrompt(category, index, adultOnly = false) {
   };
 }
 
-function buildMemeDecoderRoundsForCategory(category, count = 20, adultCount = 4) {
+function buildMemeDecoderRoundsForCategory(
+  category,
+  count = CATEGORY_ROUNDS_PER_CATEGORY,
+  adultCount = CATEGORY_ADULT_ROUNDS_PER_CATEGORY
+) {
   const regularCount = Math.max(0, count - adultCount);
   const rounds = [];
   for (let i = 0; i < regularCount; i += 1) rounds.push(buildMemeDecoderPrompt(category, i, false));
@@ -344,7 +350,11 @@ function buildSoundOffPrompt(category, index, adultOnly = false) {
   };
 }
 
-function buildSoundOffRoundsForCategory(category, count = 20, adultCount = 4) {
+function buildSoundOffRoundsForCategory(
+  category,
+  count = CATEGORY_ROUNDS_PER_CATEGORY,
+  adultCount = CATEGORY_ADULT_ROUNDS_PER_CATEGORY
+) {
   const regularCount = Math.max(0, count - adultCount);
   const rounds = [];
   for (let i = 0; i < regularCount; i += 1) rounds.push(buildSoundOffPrompt(category, i, false));
@@ -384,7 +394,11 @@ function buildOffTopicPrompt(category, index, adultOnly = false) {
   };
 }
 
-function buildOffTopicRoundsForCategory(category, count = 20, adultCount = 4) {
+function buildOffTopicRoundsForCategory(
+  category,
+  count = CATEGORY_ROUNDS_PER_CATEGORY,
+  adultCount = CATEGORY_ADULT_ROUNDS_PER_CATEGORY
+) {
   const regularCount = Math.max(0, count - adultCount);
   const rounds = [];
   for (let i = 0; i < regularCount; i += 1) rounds.push(buildOffTopicPrompt(category, i, false));
