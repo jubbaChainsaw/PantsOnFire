@@ -26,6 +26,7 @@ import {
   BANNED_WORD_BANK,
   sanitizeBannedWords,
 } from './data/categories';
+import { PICTURE_DLC_MANIFESTS } from './data/pictureDlcManifests';
 
 const LOGO_SRC = '/assets/images/logo.png';
 const FLAME_SRC = '/assets/images/flame-placeholder.svg';
@@ -56,7 +57,60 @@ function getGrillQuestionsPerPlayer(playerCount) {
   return Math.max(1, Math.round(20 / playerCount));
 }
 
-function buildRound(players, category, roundNumber, liarCount = 1, recentPromptKeys = [], mode = 'classic', selectedRoundTypeId = null, grillSettings = { micEnabled: true, ttsEnabled: true }, adultMode = false) {
+function normalizePackWeights(rawWeights = {}, manifests = []) {
+  const result = {};
+  manifests.forEach((manifest) => {
+    const id = manifest?.id;
+    if (!id) return;
+    const fallback = manifest.releaseChannel === 'base' ? 3 : 1;
+    const value = Number(rawWeights?.[id]);
+    result[id] = Number.isFinite(value) && value >= 0 ? value : fallback;
+  });
+  return result;
+}
+
+function normalizeEnabledPicturePacks(rawEnabled = {}, manifests = []) {
+  const result = {};
+  manifests.forEach((manifest) => {
+    const id = manifest?.id;
+    if (!id) return;
+    const enabledByManifest = manifest.enabled !== false;
+    result[id] = rawEnabled?.[id] === undefined ? enabledByManifest : Boolean(rawEnabled[id]);
+  });
+  return result;
+}
+
+function applyPicturePackSelection(promptOptions, selectedRoundTypeId, enabledPicturePacks, picturePackWeights) {
+  if (selectedRoundTypeId !== 'picture') return promptOptions;
+  const enabled = promptOptions.filter((item) => enabledPicturePacks[item.prompt?.picturePackId] !== false);
+  const source = enabled.length ? enabled : promptOptions;
+  const atLeastOnePositiveWeight = source.some((item) => {
+    const packId = item.prompt?.picturePackId;
+    const weight = Math.max(0, Number(picturePackWeights?.[packId] ?? 1));
+    return weight > 0;
+  });
+  const weighted = source.flatMap((item) => {
+    const packId = item.prompt?.picturePackId;
+    const weight = Math.max(0, Number(picturePackWeights?.[packId] ?? 1));
+    const copies = Math.min(8, atLeastOnePositiveWeight ? Math.round(weight) : 1);
+    if (copies <= 0) return [];
+    return Array.from({ length: copies }, () => item);
+  });
+  return weighted.length ? weighted : source;
+}
+
+function buildRound(
+  players,
+  category,
+  roundNumber,
+  liarCount = 1,
+  recentPromptKeys = [],
+  mode = 'classic',
+  selectedRoundTypeId = null,
+  grillSettings = { micEnabled: true, ttsEnabled: true },
+  adultMode = false,
+  picturePackConfig = { enabledPacks: {}, weights: {} }
+) {
   const selectedRoundType = selectedRoundTypeId
     ? ROUND_TYPES[selectedRoundTypeId]
     : pickRandom(PASS_THE_PHONE_ROUND_TYPES);
@@ -71,6 +125,12 @@ function buildRound(players, category, roundNumber, liarCount = 1, recentPromptK
   } else {
     promptOptions = (MEDIA_ROUNDS[selectedRoundType.id] || []).map((prompt, index) => ({ prompt, key: `${selectedRoundType.id}::global::${index}` }));
   }
+  promptOptions = applyPicturePackSelection(
+    promptOptions,
+    selectedRoundType.id,
+    picturePackConfig.enabledPacks,
+    picturePackConfig.weights
+  );
 
   const ageFilteredOptions = adultMode ? promptOptions : promptOptions.filter((item) => !item.prompt?.adultOnly);
   if (!ageFilteredOptions.length) return null;
@@ -664,10 +724,22 @@ function FinalScreen({ players, onRestart, line, theme }) {
 function StoreScreen({ onBack, theme }) {
   return <TopFrame theme={theme}><div className="mx-auto max-w-4xl space-y-6"><div className="flex justify-between items-center gap-4"><Button className="rounded-[1.4rem] bg-white/5 border border-white/10 px-4 py-2 text-white" onClick={onBack}>Back</Button><div className="text-center"><div className="text-xs uppercase tracking-[0.35em] text-cyan-200/80">Store</div><div className="text-white/80 text-sm mt-1">Future monetisation, premium packs, and category tools.</div></div><div className="w-[72px]" /></div><GlassPanel className="rounded-[2.5rem] p-8 border-fuchsia-400/20 bg-black/25"><div className="flex items-center gap-3 mb-4"><ShoppingBag className="h-6 w-6 text-yellow-300" /><h2 className="text-2xl font-black text-yellow-300">Category Editor</h2></div><p className="text-white/75">This is where players will buy premium tools like Category Editor, themed packs, and future prompt expansions.</p></GlassPanel></div></TopFrame>;
 }
-function SettingsScreen({ onBack, premiumEnabled, setPremiumEnabled, adultMode, setAdultMode, theme }) {
+function SettingsScreen({
+  onBack,
+  premiumEnabled,
+  setPremiumEnabled,
+  adultMode,
+  setAdultMode,
+  theme,
+  picturePackManifests,
+  enabledPicturePacks,
+  setEnabledPicturePacks,
+  picturePackWeights,
+  setPicturePackWeights,
+}) {
   const [effectsEnabled, setEffectsEnabled] = useState(true);
   const [largeText, setLargeText] = useState(false);
-  return <TopFrame theme={theme}><div className="mx-auto max-w-4xl space-y-6"><div className="flex justify-between items-center gap-4"><Button className="rounded-[1.4rem] bg-white/5 border border-white/10 px-4 py-2 text-white" onClick={onBack}>Back</Button><div className="text-center"><div className="text-xs uppercase tracking-[0.35em] text-cyan-200/80">Settings</div><div className="text-white/80 text-sm mt-1">UI and app behaviour options live here.</div></div><div className="w-[72px]" /></div><GlassPanel className="rounded-[2.5rem] p-8 border-cyan-400/20 bg-black/25 space-y-5"><div className="rounded-[1.75rem] border border-white/10 bg-white/5 p-5 flex items-center justify-between gap-4"><div><div className="font-black text-lg">18+ Mode</div><div className="text-sm text-white/60 mt-1">Enables risqué / non-PC prompts for adult groups.</div></div><Switch checked={adultMode} onCheckedChange={setAdultMode} /></div><div className="rounded-[1.75rem] border border-white/10 bg-white/5 p-5 flex items-center justify-between gap-4"><div><div className="font-black text-lg">Premium Mode Toggle</div><div className="text-sm text-white/60 mt-1">Prototype switch for premium/admin features.</div></div><Switch checked={premiumEnabled} onCheckedChange={setPremiumEnabled} /></div><div className="rounded-[1.75rem] border border-white/10 bg-white/5 p-5 flex items-center justify-between gap-4"><div><div className="font-black text-lg">Visual Effects</div><div className="text-sm text-white/60 mt-1">Future hook for motion, glows, and extra juice.</div></div><Switch checked={effectsEnabled} onCheckedChange={setEffectsEnabled} /></div><div className="rounded-[1.75rem] border border-white/10 bg-white/5 p-5 flex items-center justify-between gap-4"><div><div className="font-black text-lg">Large Text</div><div className="text-sm text-white/60 mt-1">Accessibility-focused sizing option placeholder.</div></div><Switch checked={largeText} onCheckedChange={setLargeText} /></div></GlassPanel></div></TopFrame>;
+  return <TopFrame theme={theme}><div className="mx-auto max-w-4xl space-y-6"><div className="flex justify-between items-center gap-4"><Button className="rounded-[1.4rem] bg-white/5 border border-white/10 px-4 py-2 text-white" onClick={onBack}>Back</Button><div className="text-center"><div className="text-xs uppercase tracking-[0.35em] text-cyan-200/80">Settings</div><div className="text-white/80 text-sm mt-1">UI and app behaviour options live here.</div></div><div className="w-[72px]" /></div><GlassPanel className="rounded-[2.5rem] p-8 border-cyan-400/20 bg-black/25 space-y-5"><div className="rounded-[1.75rem] border border-white/10 bg-white/5 p-5 flex items-center justify-between gap-4"><div><div className="font-black text-lg">18+ Mode</div><div className="text-sm text-white/60 mt-1">Enables risqué / non-PC prompts for adult groups.</div></div><Switch checked={adultMode} onCheckedChange={setAdultMode} /></div><div className="rounded-[1.75rem] border border-white/10 bg-white/5 p-5 flex items-center justify-between gap-4"><div><div className="font-black text-lg">Premium Mode Toggle</div><div className="text-sm text-white/60 mt-1">Prototype switch for premium/admin features.</div></div><Switch checked={premiumEnabled} onCheckedChange={setPremiumEnabled} /></div><div className="rounded-[1.75rem] border border-white/10 bg-white/5 p-5 flex items-center justify-between gap-4"><div><div className="font-black text-lg">Visual Effects</div><div className="text-sm text-white/60 mt-1">Future hook for motion, glows, and extra juice.</div></div><Switch checked={effectsEnabled} onCheckedChange={setEffectsEnabled} /></div><div className="rounded-[1.75rem] border border-white/10 bg-white/5 p-5 flex items-center justify-between gap-4"><div><div className="font-black text-lg">Large Text</div><div className="text-sm text-white/60 mt-1">Accessibility-focused sizing option placeholder.</div></div><Switch checked={largeText} onCheckedChange={setLargeText} /></div><div className="rounded-[1.75rem] border border-fuchsia-400/25 bg-fuchsia-500/10 p-5"><div className="font-black text-lg text-yellow-300">Picture Pack Controls</div><div className="text-sm text-white/70 mt-1">Enable packs and set weights to control round frequency.</div><div className="mt-4 space-y-3">{picturePackManifests.map((manifest) => { const enabled = enabledPicturePacks[manifest.id] !== false; const weight = picturePackWeights[manifest.id] ?? 1; return <div key={manifest.id} className="rounded-xl border border-white/10 bg-black/20 p-3"><div className="flex items-center justify-between gap-3"><div><div className="font-semibold">{manifest.label}</div><div className="text-xs text-white/55">{manifest.id} • {manifest.releaseChannel}</div></div><Switch checked={enabled} onCheckedChange={(next) => setEnabledPicturePacks((cur) => ({ ...cur, [manifest.id]: next }))} /></div><div className="mt-3 grid grid-cols-[1fr_auto] gap-3 items-center"><div className="text-xs uppercase tracking-[0.2em] text-cyan-200/80">Weight</div><Input type="number" min={0} max={8} step={1} value={weight} onChange={(event) => { const raw = Number(event.target.value); const next = Number.isFinite(raw) ? Math.max(0, Math.min(8, Math.round(raw))) : 1; setPicturePackWeights((cur) => ({ ...cur, [manifest.id]: next })); }} className="w-24 rounded-xl bg-white/5 border border-white/10 text-white" /></div></div>; })}</div></div></GlassPanel></div></TopFrame>;
 }
 function AdminDialog({ open, onOpenChange, premiumEnabled, customCategories, setCustomCategories }) {
   const [categoryName, setCategoryName] = useState('');
@@ -692,6 +764,8 @@ export default function App() {
   const [adultMode, setAdultMode] = useState(getStored('imposter-adult-mode-v1', false));
   const [customCategories, setCustomCategories] = useState(getStored('imposter-custom-categories-v2', []));
   const [enabledCategories, setEnabledCategories] = useState(getStored('imposter-enabled-categories-v2', Object.fromEntries(DEFAULT_CATEGORIES.map((c) => [c.id, true]))));
+  const [enabledPicturePacks, setEnabledPicturePacks] = useState(getStored('imposter-enabled-picture-packs-v1', normalizeEnabledPicturePacks({}, PICTURE_DLC_MANIFESTS)));
+  const [picturePackWeights, setPicturePackWeights] = useState(getStored('imposter-picture-pack-weights-v1', normalizePackWeights({}, PICTURE_DLC_MANIFESTS)));
   const [mode, setMode] = useState('classic');
   const [winCondition, setWinCondition] = useState('rounds');
   const [pointsToWin, setPointsToWin] = useState(15);
@@ -716,11 +790,21 @@ export default function App() {
   const getLine = useMemo(() => createCopyPicker(COPY_BANK), []);
   const [copyState, setCopyState] = useState({ home: COPY_BANK.home[0], setup: COPY_BANK.setup[0], chooser: COPY_BANK.chooser[0], passPhone: COPY_BANK.passPhone[0], revealNormal: COPY_BANK.revealNormal[0], revealLiar: COPY_BANK.revealLiar[0], discussion: COPY_BANK.discussion[0], voting: COPY_BANK.voting[0], result: COPY_BANK.caught[0], winner: COPY_BANK.winner[0], onlineLobby: COPY_BANK.onlineLobby[0], hostStinger: COPY_BANK.hostStingerPrompt[0] });
   const themeMeta = THEME_META[nameTheme] || THEME_META.Default;
+  const availablePicturePackManifests = useMemo(
+    () => (PICTURE_DLC_MANIFESTS || []),
+    []
+  );
   const allCategories = useMemo(() => getCombinedCategories(customCategories), [customCategories]);
   const activeCategories = useMemo(() => allCategories.filter((cat) => enabledCategories[cat.id] !== false), [allCategories, enabledCategories]);
   useEffect(() => setStored('imposter-enabled-categories-v2', enabledCategories), [enabledCategories]);
   useEffect(() => setStored('imposter-custom-categories-v2', customCategories), [customCategories]);
   useEffect(() => setStored('imposter-adult-mode-v1', adultMode), [adultMode]);
+  useEffect(() => setStored('imposter-enabled-picture-packs-v1', enabledPicturePacks), [enabledPicturePacks]);
+  useEffect(() => setStored('imposter-picture-pack-weights-v1', picturePackWeights), [picturePackWeights]);
+  useEffect(() => {
+    setEnabledPicturePacks((cur) => normalizeEnabledPicturePacks(cur, availablePicturePackManifests));
+    setPicturePackWeights((cur) => normalizePackWeights(cur, availablePicturePackManifests));
+  }, [availablePicturePackManifests]);
   useEffect(() => setLiarCount((cur) => Math.max(1, Math.min(Math.max(1, Math.floor(players.length / 2)), cur))), [players.length]);
   const themedKey = (key) => {
     if (nameTheme === 'Gangsters') {
@@ -778,7 +862,21 @@ export default function App() {
   function chooseCategory(categoryId) {
     const category = activeCategories.find((c) => c.id === categoryId); if (!category) return;
     const selectedTypeForRound = roundNumber === 1 ? pickRandom(PASS_THE_PHONE_ROUND_TYPES).id : selectedRoundType;
-    const built = buildRound(players, category, roundNumber, liarCount, recentPromptKeys.slice(-4), mode, selectedTypeForRound, grillSettings, adultMode);
+    const built = buildRound(
+      players,
+      category,
+      roundNumber,
+      liarCount,
+      recentPromptKeys.slice(-4),
+      mode,
+      selectedTypeForRound,
+      grillSettings,
+      adultMode,
+      {
+        enabledPacks: enabledPicturePacks,
+        weights: picturePackWeights,
+      }
+    );
     if (!built) return;
     const stingerCopyKey = HOST_STINGER_COPY_KEYS[built.roundTypeId] || HOST_STINGER_COPY_KEYS.prompt;
     setRound(built); setPreviousRoundType(built.roundTypeId); setRecentPromptKeys((cur) => [...cur, built.promptKey]); setRevealIndex(0); setVotesByPlayerId({}); refreshCopy(['passPhone','revealNormal','revealLiar']);
@@ -824,7 +922,7 @@ export default function App() {
     {screen === 'results' && round && <ResultsScreen players={players} round={round} totalRounds={totalRounds} tally={tally} roundGains={roundGains} roundBreakdown={roundBreakdown} imposterCaught={imposterCaught} onNextRound={winCondition === 'rounds' && round.roundNumber >= totalRounds ? endGame : nextRound} onEndGame={endGame} resultLine={copyState.result} theme={nameTheme} />}
     {screen === 'final' && <FinalScreen players={players} onRestart={restartToHome} line={copyState.winner} theme={nameTheme} />}
     {screen === 'store' && <StoreScreen onBack={() => setScreen('home')} theme={nameTheme} />}
-    {screen === 'settings' && <SettingsScreen onBack={() => setScreen('home')} premiumEnabled={premiumEnabled} setPremiumEnabled={setPremiumEnabled} adultMode={adultMode} setAdultMode={setAdultMode} theme={nameTheme} />}
+    {screen === 'settings' && <SettingsScreen onBack={() => setScreen('home')} premiumEnabled={premiumEnabled} setPremiumEnabled={setPremiumEnabled} adultMode={adultMode} setAdultMode={setAdultMode} theme={nameTheme} picturePackManifests={availablePicturePackManifests} enabledPicturePacks={enabledPicturePacks} setEnabledPicturePacks={setEnabledPicturePacks} picturePackWeights={picturePackWeights} setPicturePackWeights={setPicturePackWeights} />}
     <AdminDialog open={adminOpen} onOpenChange={setAdminOpen} premiumEnabled={premiumEnabled} customCategories={customCategories} setCustomCategories={setCustomCategories} />
   </>;
 }
