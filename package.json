@@ -8,6 +8,8 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
+    "dlc:sync-picture-manifests": "node scripts/syncPictureDlcManifests.cjs",
+    "dlc:new-picture-pack": "node scripts/newPictureDlcPack.cjs",
     "expo:start": "expo start",
     "expo:android": "expo run:android",
     "expo:ios": "expo run:ios",

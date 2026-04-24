@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  ShieldAlert, Users, Eye, EyeOff, Trophy, Lock, TimerReset, PlusCircle, Vote,
+  ShieldAlert, Users, EyeOff, Trophy, TimerReset, PlusCircle, Vote,
   SkipForward, Star, Flame, Dice6, Minus, Settings, ShoppingBag, Play,
   ChevronUp, ChevronDown, SlidersHorizontal, CheckCircle2, XCircle,
 } from 'lucide-react';
@@ -17,7 +17,7 @@ import { PASS_THE_PHONE_ROUND_TYPES, ROUND_TYPES } from './data/roundTypes';
 import { THEME_META } from './data/themes';
 import { getThemeAssets } from './data/themeAssets';
 import { NAME_POOLS, randomNameFromTheme } from './data/names';
-import { COPY_BANK, createCopyPicker } from './data/copy';
+import { COPY_BANK, createCopyPicker } from './data/gameTextContent';
 import {
   DEFAULT_CATEGORIES,
   OPINION_ROUNDS,
@@ -78,6 +78,16 @@ function buildRound(players, category, roundNumber, liarCount = 1, recentPromptK
   const selected = pickRandom(filteredOptions.length ? filteredOptions : ageFilteredOptions);
   const liarIds = shuffle(players).slice(0, Math.max(1, Math.min(liarCount, players.length - 1))).map((p) => p.id);
   const bannedWords = sanitizeBannedWords(category.name, selected.prompt.hint, selected.prompt.main, selected.prompt.imposter, BANNED_WORD_BANK[selected.key] || []);
+  const mediaByPlayerId = selectedRoundType.id === 'picture'
+    ? Object.fromEntries(
+      players.map((player) => [
+        player.id,
+        liarIds.includes(player.id)
+          ? (selected.prompt.imposterImageSrc || null)
+          : (selected.prompt.mainImageSrc || null),
+      ])
+    )
+    : {};
 
   return {
     roundNumber,
@@ -93,6 +103,8 @@ function buildRound(players, category, roundNumber, liarCount = 1, recentPromptK
     imposterPrompt: selectedRoundType.id === 'opinion' ? null : selected.prompt.imposter,
     aiPrompt: selected.prompt.aiPrompt || null,
     mediaPreviewLabel: selected.prompt.previewLabel || null,
+    mediaPackId: selected.prompt.picturePackId || null,
+    isAdultPrompt: Boolean(selected.prompt.adultOnly),
     bannedWords: mode === 'chaos' ? bannedWords : [],
     mode,
     imposterIds: liarIds,
@@ -105,6 +117,7 @@ function buildRound(players, category, roundNumber, liarCount = 1, recentPromptK
       transcript: [],
       askedCounts: {},
     },
+    mediaByPlayerId,
     promptsByPlayerId: Object.fromEntries(
       players.map((player) => {
         if (selectedRoundType.id === 'opinion') return [player.id, selected.prompt.main];
@@ -196,6 +209,10 @@ function ScoreStrip({ players, roundNumber, totalRounds }) {
   );
 }
 function ThemeArt({ src, alt, className = '' }) {
+  if (!src) return null;
+  return <img src={src} alt={alt} className={className} onError={(event) => { event.currentTarget.style.display = 'none'; }} />;
+}
+function RoundTypeLogo({ src, alt, className = '' }) {
   if (!src) return null;
   return <img src={src} alt={alt} className={className} onError={(event) => { event.currentTarget.style.display = 'none'; }} />;
 }
@@ -360,12 +377,146 @@ function SetupScreen(props) {
 function RevealScreen({ players, currentRevealIndex, round, totalRounds, onNext, passLine, normalLine, liarLine, theme }) {
   const player = players[currentRevealIndex];
   const prompt = round.promptsByPlayerId[player.id];
+  const mediaSrc = round.mediaByPlayerId?.[player.id] || null;
   const isLast = currentRevealIndex === players.length - 1;
   const isImposter = (round.imposterIds || []).includes(player.id);
-  const [revealed, setRevealed] = useState(false);
+  const [cardFace, setCardFace] = useState('back');
+  const [countdownValue, setCountdownValue] = useState(null);
+  const [isCountingDown, setIsCountingDown] = useState(false);
+  const themeAssets = getThemeAssets(theme);
+  const defaultPromptCards = getThemeAssets('Default');
+  const useAdultCardArt = Boolean(round.isAdultPrompt);
+  const cardBackSrc = useAdultCardArt
+    ? (themeAssets.adultPromptCardBack || defaultPromptCards.adultPromptCardBack)
+    : (themeAssets.promptCardBack || defaultPromptCards.promptCardBack);
+  const defaultRoundTypeFront = theme === 'Default'
+    ? (ROUND_TYPES[round.roundTypeId]?.defaultCardFrontSrc || null)
+    : null;
+  const cardFrontSrc = useAdultCardArt
+    ? (themeAssets.adultPromptCardFront || defaultPromptCards.adultPromptCardFront)
+    : (defaultRoundTypeFront || themeAssets.promptCardFront || defaultPromptCards.promptCardFront);
+  const roundTypeLogoSrc = ROUND_TYPES[round.roundTypeId]?.logoSrc || null;
+  const instructionLine = round.roundTypeId === 'picture'
+    ? 'Keep this private. You will reveal a picture prompt.'
+    : 'Keep this private. You will reveal your prompt.';
+
+  useEffect(() => {
+    if (!isCountingDown) return undefined;
+    if (countdownValue === 0) {
+      setIsCountingDown(false);
+      setCardFace('front');
+      return undefined;
+    }
+    const timer = setTimeout(() => {
+      setCountdownValue((value) => (typeof value === 'number' ? value - 1 : 0));
+    }, 700);
+    return () => clearTimeout(timer);
+  }, [isCountingDown, countdownValue]);
+
+  function startRevealCountdown() {
+    if (isCountingDown || cardFace === 'front') return;
+    setCountdownValue(3);
+    setIsCountingDown(true);
+  }
+
   return (
     <TopFrame theme={theme}>
-      <div className="mx-auto max-w-3xl space-y-6"><ScoreStrip players={players} roundNumber={round.roundNumber} totalRounds={totalRounds} /><GlassPanel className="rounded-[2.5rem] p-8 text-center border-white/15 bg-black/25"><Badge className="rounded-full bg-white/10 border border-white/10 px-4 py-1.5 text-white">Secret reveal {currentRevealIndex + 1} / {players.length}</Badge><div className="text-xs uppercase tracking-[0.3em] text-white/50 mt-4">{round.roundTypeName}</div><h2 className="text-4xl font-black mt-3 text-yellow-300">Pass the phone to {player.name}</h2><p className="text-cyan-200/90 mt-3 font-medium">{round.roundTypeTagline}</p><p className="text-white/70 mt-3">{passLine}</p><div className="mt-8 max-w-xl mx-auto"><AnimatePresence mode="wait">{!revealed ? <motion.div key="hidden" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}><GlassPanel className="rounded-[2rem] p-6 border-cyan-400/20 bg-black/30"><div className="flex items-center justify-center gap-2 text-white/70 mb-4"><Lock className="h-4 w-4" /> Secret nonsense shield enabled</div><Button className="rounded-[1.5rem] h-16 px-8 bg-yellow-300 text-zinc-950 border-2 border-white" onClick={() => setRevealed(true)}><Eye className="mr-2 h-5 w-5 inline" />Reveal prompt</Button></GlassPanel></motion.div> : <motion.div key="shown" initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }} className="space-y-5">{isImposter ? <div className="relative rounded-[2rem] p-[2px] bg-gradient-to-r from-red-500 via-orange-500 to-yellow-300"><div className="rounded-[calc(2rem-2px)] bg-slate-950/95 p-8"><div className="text-xs uppercase tracking-[0.3em] text-white/45">{round.roundTypeName} • {round.categoryEmoji} {round.categoryLabel}</div><div className="mt-3 inline-flex rounded-full border border-orange-300/30 bg-orange-500/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-orange-200">{round.hint}</div>{round.mediaPreviewLabel && <div className="mt-4 rounded-2xl border border-white/10 bg-white/5 p-4 text-sm text-white/70">{round.mediaPreviewLabel}</div>}<div className="text-5xl md:text-6xl font-black mt-4 text-yellow-300">{prompt}</div><div className="mt-4 text-sm font-black uppercase tracking-[0.12em] text-orange-300 animate-pulse">🔥 {liarLine} 🔥</div>{round.mode === 'chaos' && round.bannedWords.length > 0 && <div className="mt-5"><div className="text-xs uppercase tracking-[0.2em] text-red-300">🚫 Banned Words</div><div className="flex flex-wrap gap-2 mt-2">{round.bannedWords.map((word) => <span key={word} className="px-3 py-1 rounded-full bg-red-500/20 border border-red-400/30 text-red-200 text-xs">{word}</span>)}</div></div>}</div></div> : <div className="rounded-[2rem] p-[2px] bg-gradient-to-r from-fuchsia-500 via-cyan-500 to-yellow-300"><div className="rounded-[calc(2rem-2px)] bg-slate-950/95 p-8"><div className="text-xs uppercase tracking-[0.3em] text-white/45">{round.roundTypeName} • {round.categoryEmoji} {round.categoryLabel}</div><div className="mt-3 inline-flex rounded-full border border-cyan-300/30 bg-cyan-500/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-cyan-200">{round.hint}</div>{round.mediaPreviewLabel && <div className="mt-4 rounded-2xl border border-white/10 bg-white/5 p-4 text-sm text-white/70">{round.mediaPreviewLabel}</div>}<div className="text-5xl md:text-6xl font-black mt-4">{prompt}</div><div className="mt-4 text-sm text-cyan-200">{normalLine}</div>{round.mode === 'chaos' && round.bannedWords.length > 0 && <div className="mt-5"><div className="text-xs uppercase tracking-[0.2em] text-red-300">🚫 Banned Words</div><div className="flex flex-wrap gap-2 mt-2 justify-center">{round.bannedWords.map((word) => <span key={word} className="px-3 py-1 rounded-full bg-red-500/20 border border-red-400/30 text-red-200 text-xs">{word}</span>)}</div></div>}</div></div>}<Button className="rounded-[1.5rem] h-16 px-8 bg-white/10 border border-white/10 text-white" onClick={onNext}><EyeOff className="mr-2 h-5 w-5 inline" />{isLast ? 'Start discussion' : `Hide & pass to ${players[currentRevealIndex + 1].name}`}</Button></motion.div>}</AnimatePresence></div></GlassPanel></div>
+      <div className="mx-auto max-w-3xl space-y-6">
+        <ScoreStrip players={players} roundNumber={round.roundNumber} totalRounds={totalRounds} />
+        <GlassPanel className="rounded-[2.5rem] p-8 text-center border-white/15 bg-black/25">
+          <Badge className="rounded-full bg-white/10 border border-white/10 px-4 py-1.5 text-white">
+            Secret reveal {currentRevealIndex + 1} / {players.length}
+          </Badge>
+          <h2 className="text-4xl font-black mt-4 text-yellow-300">Pass the phone to {player.name}</h2>
+          <p className="text-cyan-200/90 mt-3 font-medium">{passLine}</p>
+
+          <div className="mt-8 mx-auto w-full max-w-sm [perspective:1200px]">
+            <motion.div
+              animate={{ rotateY: cardFace === 'front' ? 180 : 0 }}
+              transition={{ duration: 0.75, ease: 'easeInOut' }}
+              className="relative h-[560px] w-full [transform-style:preserve-3d]"
+            >
+              <div className="absolute inset-0 overflow-hidden rounded-[2rem] border-2 border-white/25 [backface-visibility:hidden]">
+                {cardBackSrc && <img src={cardBackSrc} alt="Prompt card back" className="absolute inset-0 h-full w-full object-cover" />}
+                <div className="absolute inset-0 bg-black/55" />
+                <div className="relative z-10 flex h-full flex-col p-6 text-white">
+                  <RoundTypeLogo
+                    src={roundTypeLogoSrc}
+                    alt={`${round.roundTypeName} logo`}
+                    className="mx-auto h-16 w-auto rounded-md border border-white/20 bg-black/25 px-2 py-1"
+                  />
+                  <div className="text-xs uppercase tracking-[0.3em] text-cyan-200">{round.roundTypeName}</div>
+                  <div className="mt-2 text-sm font-semibold text-white/90">Round {round.roundNumber}</div>
+                  <div className="mt-5 rounded-2xl border border-white/25 bg-black/35 p-4 text-sm text-white/90">
+                    {instructionLine}
+                    <div className="mt-2 text-white/70">{round.roundTypeTagline}</div>
+                  </div>
+                  <div className="mt-auto">
+                    <button
+                      type="button"
+                      onClick={startRevealCountdown}
+                      disabled={isCountingDown}
+                      className="w-full rounded-xl border border-yellow-200/60 bg-yellow-300/20 py-3 text-xl font-black tracking-[0.2em] text-yellow-100 disabled:opacity-60"
+                    >
+                      REVEAL
+                    </button>
+                  </div>
+                </div>
+                {isCountingDown && typeof countdownValue === 'number' && countdownValue > 0 && (
+                  <div className="absolute inset-0 z-20 grid place-items-center bg-black/75">
+                    <div className="text-8xl font-black text-yellow-300">{countdownValue}</div>
+                  </div>
+                )}
+              </div>
+
+              <div className={`absolute inset-0 overflow-hidden rounded-[2rem] border-2 [backface-visibility:hidden] [transform:rotateY(180deg)] ${isImposter ? 'border-red-400/60' : 'border-cyan-300/60'}`}>
+                {cardFrontSrc && <img src={cardFrontSrc} alt="Prompt card front" className="absolute inset-0 h-full w-full object-cover" />}
+                <div className={`absolute inset-0 ${isImposter ? 'bg-red-950/65' : 'bg-slate-950/65'}`} />
+                <div className="relative z-10 flex h-full flex-col p-6 text-left text-white">
+                  <div className="text-xs uppercase tracking-[0.3em] text-white/75">
+                    {round.roundTypeName} • {round.categoryEmoji} {round.categoryLabel}
+                  </div>
+                  <RoundTypeLogo
+                    src={roundTypeLogoSrc}
+                    alt={`${round.roundTypeName} logo`}
+                    className="mt-3 h-14 w-auto rounded-md border border-white/20 bg-black/25 px-2 py-1"
+                  />
+                  <div className={`mt-3 inline-flex rounded-full border px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] ${isImposter ? 'border-orange-300/30 bg-orange-500/10 text-orange-200' : 'border-cyan-300/30 bg-cyan-500/10 text-cyan-200'}`}>
+                    {round.hint}
+                  </div>
+                  {round.mediaPreviewLabel && (
+                    <div className="mt-3 rounded-2xl border border-white/20 bg-black/30 p-3 text-sm text-white/80">{round.mediaPreviewLabel}</div>
+                  )}
+                  {mediaSrc && (
+                    <img src={mediaSrc} alt={`${round.hint} visual clue`} className="mt-3 w-full rounded-2xl border border-white/15 bg-black/20" />
+                  )}
+                  <div className={`mt-4 text-4xl font-black leading-tight ${isImposter ? 'text-yellow-300' : 'text-white'}`}>{prompt}</div>
+                  <div className={`mt-3 text-sm font-semibold ${isImposter ? 'text-orange-200' : 'text-cyan-200'}`}>
+                    {isImposter ? `🔥 ${liarLine} 🔥` : normalLine}
+                  </div>
+                  {round.mode === 'chaos' && round.bannedWords.length > 0 && (
+                    <div className="mt-4">
+                      <div className="text-xs uppercase tracking-[0.2em] text-red-300">Banned Words</div>
+                      <div className="mt-2 flex flex-wrap gap-2">
+                        {round.bannedWords.map((word) => (
+                          <span key={word} className="px-3 py-1 rounded-full bg-red-500/20 border border-red-400/30 text-red-200 text-xs">{word}</span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </motion.div>
+          </div>
+
+          {cardFace === 'front' && (
+            <Button className="rounded-[1.5rem] h-16 px-8 mt-7 bg-white/10 border border-white/10 text-white" onClick={onNext}>
+              <EyeOff className="mr-2 h-5 w-5 inline" />
+              {isLast ? 'Start discussion' : `Hide & pass to ${players[currentRevealIndex + 1].name}`}
+            </Button>
+          )}
+        </GlassPanel>
+      </div>
     </TopFrame>
   );
 }
@@ -662,7 +813,7 @@ export default function App() {
     {screen === 'home' && <HomeScreen onNavigate={(to) => to === 'setup' ? (refreshCopy(['setup']), setScreen('setup')) : setScreen(to)} homeLine={copyState.home} onlineLobbyLine={copyState.onlineLobby} adultMode={adultMode} />}
     {screen === 'setup' && <SetupScreen players={players} setPlayers={setPlayers} liarCount={liarCount} setLiarCount={setLiarCount} nameTheme={nameTheme} setNameTheme={setNameTheme} mode={mode} setMode={setMode} winCondition={winCondition} setWinCondition={setWinCondition} pointsToWin={pointsToWin} setPointsToWin={setPointsToWin} roundsPerPlayer={roundsPerPlayer} setRoundsPerPlayer={setRoundsPerPlayer} grillSettings={grillSettings} setGrillSettings={setGrillSettings} adultMode={adultMode} enabledCategories={enabledCategories} onToggleCategory={(id) => setEnabledCategories((cur) => ({ ...cur, [id]: !cur[id] }))} premiumEnabled={premiumEnabled} setPremiumEnabled={setPremiumEnabled} categoryCount={activeCategories.length} onOpenAdmin={() => setAdminOpen(true)} onStart={startGame} onBack={() => setScreen('home')} setupLine={copyState.setup} />}
     {screen === 'rules' && <RulesSplashScreen mode={mode} onContinue={() => setScreen('category-choice')} theme={nameTheme} />}
-    {screen === 'round-type-choice' && round && <TopFrame theme={nameTheme}><div className="mx-auto max-w-3xl space-y-6"><ScoreStrip players={players} roundNumber={round.roundNumber} totalRounds={totalRounds} /><GlassPanel className="rounded-[2.5rem] p-8 text-center border-fuchsia-400/25 bg-black/25 relative overflow-hidden"><div className="text-xs uppercase tracking-[0.3em] text-white/50">Round owner: {players[currentRoundOwnerIndex]?.name}</div><h2 className="text-4xl font-black mt-3 text-yellow-300">Choose round type</h2><p className="text-white/70 mt-3">Pick one of two options. Previous round type is excluded.</p><div className="grid gap-3 sm:grid-cols-2 mt-8">{roundTypeOptions.map((type) => <div key={type.id} className="space-y-2"><RoundMascot roundTypeId={type.id} /><Button className={`rounded-[1.75rem] h-20 text-lg bg-gradient-to-r ${themeMeta.gradient} text-white border-2 border-white/20 shadow-lg w-full`} onClick={() => { setSelectedRoundType(type.id); setScreen('category-choice'); }}>{type.name}</Button></div>)}</div></GlassPanel></div></TopFrame>}
+    {screen === 'round-type-choice' && round && <TopFrame theme={nameTheme}><div className="mx-auto max-w-3xl space-y-6"><ScoreStrip players={players} roundNumber={round.roundNumber} totalRounds={totalRounds} /><GlassPanel className="rounded-[2.5rem] p-8 text-center border-fuchsia-400/25 bg-black/25 relative overflow-hidden"><div className="text-xs uppercase tracking-[0.3em] text-white/50">Round owner: {players[currentRoundOwnerIndex]?.name}</div><h2 className="text-4xl font-black mt-3 text-yellow-300">Choose round type</h2><p className="text-white/70 mt-3">Pick one of two options. Previous round type is excluded.</p><div className="grid gap-3 sm:grid-cols-2 mt-8">{roundTypeOptions.map((type) => <div key={type.id} className="space-y-2"><RoundMascot roundTypeId={type.id} /><div className="rounded-[1.5rem] border border-white/20 bg-black/20 p-3"><RoundTypeLogo src={type.logoSrc} alt={`${type.name} logo`} className="mx-auto h-16 w-auto rounded-md border border-white/20 bg-black/25 px-2 py-1" /><ThemeArt src={`/assets/themes/default/cards/prompt-front-${type.id}.svg`} alt={`${type.name} default card front`} className="mx-auto mt-3 h-28 w-auto rounded-xl border border-white/20 bg-black/25 p-1" /><div className="mt-3 text-xs uppercase tracking-[0.2em] text-white/60">Round Type Logo + Default Front Card</div></div><Button className={`rounded-[1.75rem] h-20 text-lg bg-gradient-to-r ${themeMeta.gradient} text-white border-2 border-white/20 shadow-lg w-full`} onClick={() => { setSelectedRoundType(type.id); setScreen('category-choice'); }}>{type.name}</Button></div>)}</div></GlassPanel></div></TopFrame>}
     {screen === 'category-choice' && round && <TopFrame theme={nameTheme}><div className="mx-auto max-w-3xl space-y-6"><ScoreStrip players={players} roundNumber={round.roundNumber} totalRounds={totalRounds} /><GlassPanel className="rounded-[2.5rem] p-8 text-center border-fuchsia-400/25 bg-black/25 relative overflow-hidden"><LightningBolt className="right-8 top-6" /><LightningBolt className="left-10 bottom-6" /><div className="text-xs uppercase tracking-[0.3em] text-white/50">Round owner: {players[currentRoundOwnerIndex]?.name}</div><h2 className="text-4xl font-black mt-3 text-yellow-300">Choose the next category</h2><p className="text-white/70 mt-3">{copyState.chooser}</p><div className="grid gap-3 sm:grid-cols-2 mt-8">{categoryOptions.map((category) => <Button key={category.id} className={`rounded-[1.75rem] h-24 text-lg bg-gradient-to-r ${themeMeta.gradient} text-white border-2 border-white/20 shadow-lg`} onClick={() => chooseCategory(category.id)}>{category.emoji} {category.name}</Button>)}</div></GlassPanel></div></TopFrame>}
     {screen === 'host-intro' && round && <HostIntroScreen round={round} stingerLine={copyState.hostStinger} onContinue={() => setScreen('reveal')} theme={nameTheme} />}
     {screen === 'reveal' && round && <RevealScreen key={`${round.promptKey}-${revealIndex}`} players={players} currentRevealIndex={revealIndex} round={round} totalRounds={totalRounds} onNext={() => revealIndex < players.length - 1 ? setRevealIndex((r) => r + 1) : (round.roundTypeId === 'grill' ? setScreen('grill') : (refreshCopy(['discussion']), setScreen('discussion')))} passLine={copyState.passPhone} normalLine={copyState.revealNormal} liarLine={copyState.revealLiar} theme={nameTheme} />}
