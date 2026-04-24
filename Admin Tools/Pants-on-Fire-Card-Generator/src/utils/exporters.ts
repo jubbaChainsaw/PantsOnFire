@@ -1,7 +1,7 @@
 import Papa from 'papaparse';
 import JSZip from 'jszip';
 import { jsPDF } from 'jspdf';
-import { AppExportBundle, GeneratedCardText, GeneratedPrompt, TextStyle } from '../types';
+import { AppExportBundle, BleedSize, GeneratedCardText, GeneratedPrompt, TextStyle } from '../types';
 
 export function downloadTextFile(filename: string, content: string): void {
   const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
@@ -48,6 +48,17 @@ export function parseCardTextJson(content: string): string[] {
   return parsed
     .map((entry) => entry.text?.trim())
     .filter((text): text is string => Boolean(text));
+}
+
+interface DeckRenderOptions {
+  cardsPerPage: 8 | 9 | 10;
+  bleed: boolean;
+  bleedSize: BleedSize;
+  cropMarks: boolean;
+  safeZones: boolean;
+  textStyle: TextStyle;
+  frontDesignDataUrl: string;
+  backDesignDataUrl: string;
 }
 
 interface PngExportOptions {
@@ -299,24 +310,48 @@ export async function exportDeckZip(
   URL.revokeObjectURL(url);
 }
 
-export function exportDeckPdf(
+export async function exportDeckPdf(
   title: string,
   cardTexts: string[],
-  cardsPerPage: 8 | 9 | 10,
-  includeBack: boolean
-): void {
+  includeBack: boolean,
+  options: DeckRenderOptions
+): Promise<void> {
   const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
   const margin = 10;
   const usableWidth = 190;
   const usableHeight = 277;
-  const cols = cardsPerPage >= 9 ? 3 : 2;
-  const rows = Math.ceil(cardsPerPage / cols);
+  const cols = options.cardsPerPage >= 9 ? 3 : 2;
+  const rows = Math.ceil(options.cardsPerPage / cols);
   const cellWidth = usableWidth / cols;
   const cellHeight = usableHeight / rows;
+  const bleedMm = options.bleed ? Number(options.bleedSize.replace('mm', '')) : 0;
+  const safeInset = options.safeZones ? 5 : 0;
 
   let cardIndex = 0;
+  const [frontImage, backImage] = await Promise.all([loadImage(options.frontDesignDataUrl), loadImage(options.backDesignDataUrl)]);
 
-  function drawPage(isBackPage: boolean): void {
+  async function addImageToPdf(
+    image: HTMLImageElement | null,
+    x: number,
+    y: number,
+    width: number,
+    height: number
+  ): Promise<void> {
+    if (!image) return;
+    const canvas = document.createElement('canvas');
+    canvas.width = 1000;
+    canvas.height = 1400;
+    const context = canvas.getContext('2d');
+    if (!context) return;
+
+    context.fillStyle = '#000000';
+    context.fillRect(0, 0, canvas.width, canvas.height);
+    drawContainedImage(context, image, 0, 0, canvas.width, canvas.height);
+    const dataUrl = canvas.toDataURL('image/png');
+    pdf.addImage(dataUrl, 'PNG', x, y, width, height, undefined, 'FAST');
+  }
+
+  async function drawPage(isBackPage: boolean): Promise<void> {
     pdf.setFontSize(10);
     pdf.text(`${title} ${isBackPage ? 'Back' : 'Front'}`, margin, 6);
 
@@ -324,27 +359,54 @@ export function exportDeckPdf(
       for (let col = 0; col < cols; col += 1) {
         if (cardIndex >= cardTexts.length) return;
 
-        const x = margin + col * cellWidth;
-        const y = margin + row * cellHeight;
-        pdf.rect(x, y, cellWidth - 2, cellHeight - 2, 'S');
+        const x = margin + col * cellWidth + bleedMm;
+        const y = margin + row * cellHeight + bleedMm;
+        const width = cellWidth - 2 - bleedMm * 2;
+        const height = cellHeight - 2 - bleedMm * 2;
+        pdf.rect(x, y, width, height, 'S');
 
         if (isBackPage) {
+          await addImageToPdf(backImage, x, y, width, height);
           pdf.setFontSize(12);
           pdf.text('Pants on Fire!', x + 4, y + 12);
           pdf.setFontSize(9);
           pdf.text('Find the Liar', x + 4, y + 18);
         } else {
-          const wrapped = pdf.splitTextToSize(cardTexts[cardIndex], cellWidth - 8);
+          await addImageToPdf(frontImage, x, y, width, height);
+          const wrapped = pdf.splitTextToSize(cardTexts[cardIndex], Math.max(20, width - 8 - safeInset * 2));
           pdf.setFontSize(8);
-          pdf.text(wrapped, x + 4, y + 12);
+          const textColor = options.textStyle === 'red-white-outline' ? '#ff2d2d' : '#ffffff';
+          pdf.setTextColor(textColor);
+          pdf.text(wrapped, x + 4 + safeInset, y + 12 + safeInset);
+          pdf.setTextColor('#000000');
           cardIndex += 1;
+        }
+
+        if (options.safeZones) {
+          pdf.setDrawColor(0, 255, 255);
+          pdf.rect(x + safeInset, y + safeInset, width - safeInset * 2, height - safeInset * 2, 'S');
+          pdf.setDrawColor(0, 0, 0);
+        }
+        if (options.cropMarks) {
+          pdf.setDrawColor(255, 0, 255);
+          const mark = 2;
+          pdf.line(x - mark, y, x, y);
+          pdf.line(x, y - mark, x, y);
+          pdf.line(x + width, y - mark, x + width, y);
+          pdf.line(x + width, y, x + width + mark, y);
+          pdf.line(x - mark, y + height, x, y + height);
+          pdf.line(x, y + height, x, y + height + mark);
+          pdf.line(x + width, y + height, x + width + mark, y + height);
+          pdf.line(x + width, y + height, x + width, y + height + mark);
+          pdf.setDrawColor(0, 0, 0);
         }
       }
     }
   }
 
   while (cardIndex < cardTexts.length) {
-    drawPage(false);
+    // eslint-disable-next-line no-await-in-loop
+    await drawPage(false);
 
     if (cardIndex < cardTexts.length) {
       pdf.addPage();
@@ -355,8 +417,9 @@ export function exportDeckPdf(
     pdf.addPage();
     cardIndex = 0;
     while (cardIndex < cardTexts.length) {
-      drawPage(true);
-      for (let i = 0; i < cardsPerPage; i += 1) {
+      // eslint-disable-next-line no-await-in-loop
+      await drawPage(true);
+      for (let i = 0; i < options.cardsPerPage; i += 1) {
         cardIndex += 1;
       }
       if (cardIndex < cardTexts.length) {

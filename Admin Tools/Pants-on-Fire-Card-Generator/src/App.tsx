@@ -21,6 +21,7 @@ import {
   downloadJsonFile,
   downloadTextFile,
   exportDeckPdf,
+  exportPngCardsZip,
   exportDeckZip,
   parseCardTextCsv,
   parseCardTextJson,
@@ -239,23 +240,59 @@ function App(): JSX.Element {
   }
 
   function onExportFullPdf(): void {
-    exportDeckPdf(deckState.deckName, parseDeckTextInput(deckState.textInput), deckState.cardsPerPage, true);
+    exportDeckPdf({
+      title: deckState.deckName,
+      cardTexts: parseDeckTextInput(deckState.textInput),
+      cardsPerPage: deckState.cardsPerPage,
+      includeBack: true,
+      frontDesignDataUrl: deckState.frontDesignDataUrl,
+      backDesignDataUrl: deckState.backDesignDataUrl,
+      textStyle: deckState.textStyle,
+      bleed: deckState.bleed,
+      bleedSize: deckState.bleedSize,
+      cropMarks: deckState.cropMarks,
+      safeZones: deckState.safeZones,
+      bleedGuides: deckState.bleedGuides
+    });
   }
 
   function onExportFrontPdf(): void {
-    exportDeckPdf(`${deckState.deckName}-front`, parseDeckTextInput(deckState.textInput), deckState.cardsPerPage, false);
+    exportDeckPdf({
+      title: `${deckState.deckName}-front`,
+      cardTexts: parseDeckTextInput(deckState.textInput),
+      cardsPerPage: deckState.cardsPerPage,
+      includeBack: false,
+      frontDesignDataUrl: deckState.frontDesignDataUrl,
+      backDesignDataUrl: deckState.backDesignDataUrl,
+      textStyle: deckState.textStyle,
+      bleed: deckState.bleed,
+      bleedSize: deckState.bleedSize,
+      cropMarks: deckState.cropMarks,
+      safeZones: deckState.safeZones,
+      bleedGuides: deckState.bleedGuides
+    });
   }
 
   function onExportBackPdf(): void {
-    exportDeckPdf(`${deckState.deckName}-back`, parseDeckTextInput(deckState.textInput), deckState.cardsPerPage, true);
+    exportDeckPdf({
+      title: `${deckState.deckName}-back`,
+      cardTexts: parseDeckTextInput(deckState.textInput),
+      cardsPerPage: deckState.cardsPerPage,
+      includeBack: true,
+      frontDesignDataUrl: deckState.frontDesignDataUrl,
+      backDesignDataUrl: deckState.backDesignDataUrl,
+      textStyle: deckState.textStyle,
+      bleed: deckState.bleed,
+      bleedSize: deckState.bleedSize,
+      cropMarks: deckState.cropMarks,
+      safeZones: deckState.safeZones,
+      bleedGuides: deckState.bleedGuides
+    });
   }
 
-  function onExportPngLike(): void {
-    const texts = parseDeckTextInput(deckState.textInput);
-    downloadJsonFile('pants-on-fire-png-cards.json', {
-      note: 'PNG export placeholder payload. Use design + text to render PNG cards in downstream tooling.',
-      count: texts.length,
-      cardTexts: texts,
+  async function onExportPngLike(): Promise<void> {
+    await exportPngCardsZip(deckState.deckName, parseDeckTextInput(deckState.textInput), {
+      textStyle: deckState.textStyle,
       frontDesignDataUrl: deckState.frontDesignDataUrl,
       backDesignDataUrl: deckState.backDesignDataUrl
     });
@@ -266,7 +303,8 @@ function App(): JSX.Element {
       deckState.deckName,
       deckState.frontDesignDataUrl,
       deckState.backDesignDataUrl,
-      parseDeckTextInput(deckState.textInput)
+      parseDeckTextInput(deckState.textInput),
+      deckState.textStyle
     );
   }
 

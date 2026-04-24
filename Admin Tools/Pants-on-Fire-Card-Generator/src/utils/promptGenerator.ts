@@ -111,12 +111,12 @@ function resolveVariants(version: PromptGeneratorState['version']): Array<'defau
 }
 
 function resolveSides(cardType: PromptGeneratorState['cardType']): Array<'back' | 'front'> {
-  return cardType === 'back' ? ['back'] : ['front'];
+  return cardType === 'back' ? ['back', 'front'] : ['front', 'back'];
 }
 
 export function generateArtworkPrompts(state: PromptGeneratorState, theme: Theme): GeneratedPrompt[] {
   const variants = resolveVariants(state.version);
-  const sides = state.version === 'both' ? (['back', 'front'] as Array<'back' | 'front'>) : resolveSides(state.cardType);
+  const sides = resolveSides(state.cardType);
 
   const prompts: GeneratedPrompt[] = [];
 
