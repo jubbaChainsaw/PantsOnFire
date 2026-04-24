@@ -20,6 +20,7 @@ import { NAME_POOLS, randomNameFromTheme } from './data/names';
 import { COPY_BANK, createCopyPicker } from './data/copy';
 import {
   DEFAULT_CATEGORIES,
+  CHAIN_REACTION_ROUNDS,
   OPINION_ROUNDS,
   MEDIA_ROUNDS,
   GRILL_EM_ROUNDS,
@@ -55,6 +56,10 @@ function getGrillQuestionsPerPlayer(playerCount) {
   if (!playerCount || playerCount < 1) return 1;
   return Math.max(1, Math.round(20 / playerCount));
 }
+function assignChainCardForPlayer(deck, index, fallbackLabel, fallbackTopic) {
+  if (!deck || !deck.length) return `${fallbackLabel}: ${fallbackTopic}`;
+  return `${fallbackLabel}: ${deck[index % deck.length]}`;
+}
 
 function buildRound(players, category, roundNumber, liarCount = 1, recentPromptKeys = [], mode = 'classic', selectedRoundTypeId = null, grillSettings = { micEnabled: true, ttsEnabled: true }, adultMode = false) {
   const selectedRoundType = selectedRoundTypeId
@@ -64,6 +69,8 @@ function buildRound(players, category, roundNumber, liarCount = 1, recentPromptK
 
   if (selectedRoundType.id === 'prompt') {
     promptOptions = (category.prompts || []).map((prompt, index) => ({ prompt, key: `prompt::${category.id}::${index}` }));
+  } else if (selectedRoundType.id === 'chain') {
+    promptOptions = (CHAIN_REACTION_ROUNDS[category.id] || []).map((prompt, index) => ({ prompt, key: `chain::${category.id}::${index}` }));
   } else if (selectedRoundType.id === 'opinion') {
     promptOptions = OPINION_ROUNDS.map((prompt, index) => ({ prompt, key: `opinion::global::${index}` }));
   } else if (selectedRoundType.id === 'grill') {
@@ -78,6 +85,10 @@ function buildRound(players, category, roundNumber, liarCount = 1, recentPromptK
   const selected = pickRandom(filteredOptions.length ? filteredOptions : ageFilteredOptions);
   const liarIds = shuffle(players).slice(0, Math.max(1, Math.min(liarCount, players.length - 1))).map((p) => p.id);
   const bannedWords = sanitizeBannedWords(category.name, selected.prompt.hint, selected.prompt.main, selected.prompt.imposter, BANNED_WORD_BANK[selected.key] || []);
+  const truthDeck = shuffle(selected.prompt.mainWords || []);
+  const liarDeck = shuffle(selected.prompt.imposterWords || []);
+  let truthCursor = 0;
+  let liarCursor = 0;
 
   return {
     roundNumber,
@@ -109,6 +120,16 @@ function buildRound(players, category, roundNumber, liarCount = 1, recentPromptK
       players.map((player) => {
         if (selectedRoundType.id === 'opinion') return [player.id, selected.prompt.main];
         if (selectedRoundType.id === 'grill') return [player.id, liarIds.includes(player.id) ? selected.prompt.aiPrompt : 'Interrogate the AI to discover the hidden prompt.'];
+        if (selectedRoundType.id === 'chain') {
+          if (liarIds.includes(player.id)) {
+            const value = assignChainCardForPlayer(liarDeck, liarCursor, 'Decoy link', selected.prompt.imposter);
+            liarCursor += 1;
+            return [player.id, value];
+          }
+          const value = assignChainCardForPlayer(truthDeck, truthCursor, 'Anchor link', selected.prompt.main);
+          truthCursor += 1;
+          return [player.id, value];
+        }
         return [player.id, liarIds.includes(player.id) ? selected.prompt.imposter : selected.prompt.main];
       })
     ),
@@ -203,6 +224,7 @@ const MASCOT_BY_ROUND_TYPE = {
   prompt: { name: 'Captain Spark', face: '🎤', blurb: 'Classic chaos host.' },
   opinion: { name: 'Captain Spark', face: '🎭', blurb: 'Debate instigator.' },
   picture: { name: 'Captain Spark', face: '🖼️', blurb: 'Flash-frame ringmaster.' },
+  chain: { name: 'Captain Spark', face: '🧩', blurb: 'Connect the clues, expose the break.' },
   grill: { name: 'Blaze Byte', face: '🤖', blurb: "AI host for Grill 'Em." },
 };
 function RoundMascot({ roundTypeId }) {
@@ -466,9 +488,11 @@ function GrillEmScreen({ players, round, totalRounds, onContinue, theme }) {
 function DiscussionScreen({ players, round, totalRounds, onContinue, line, theme }) {
   const roundRule = round.roundTypeId === 'opinion'
     ? "Truth or Twisted: everyone got the same scenario. Liars must ragebait and argue opposite to their natural take."
+    : (round.roundTypeId === 'chain'
+      ? 'Chain Reaction: everyone gets one clue card. Liars were fed decoy links, so listen for players describing the wrong chain.'
     : (round.roundTypeId === 'grill'
       ? "Grill 'Em: players ask by microphone and Blaze Byte talks back with AI answers. Liars already saw the hidden prompt and will try to steer the room."
-      : 'Give one clue, blend in, and avoid revealing your exact prompt.');
+      : 'Give one clue, blend in, and avoid revealing your exact prompt.'));
   return <TopFrame theme={theme}><div className="mx-auto max-w-3xl space-y-6"><ScoreStrip players={players} roundNumber={round.roundNumber} totalRounds={totalRounds} /><GlassPanel className="rounded-[2.5rem] p-8 text-center border-emerald-400/20 bg-black/25"><Badge className="rounded-full bg-emerald-500/20 border border-emerald-400/20 text-emerald-100 px-4 py-1.5">All prompts delivered</Badge><div className="text-xs uppercase tracking-[0.3em] text-white/50 mt-4">{round.roundTypeName}</div><h2 className="text-4xl font-black mt-3 text-yellow-300">{round.roundTypeTagline}</h2><p className="text-white/75 mt-3 max-w-2xl mx-auto">{line}</p><p className="text-cyan-200 mt-3 max-w-2xl mx-auto font-semibold">{roundRule}</p><Button className="rounded-[1.5rem] h-16 px-8 mt-8 bg-yellow-300 text-zinc-950 border-2 border-white" onClick={onContinue}><SkipForward className="mr-2 h-5 w-5 inline" />Finish discussion and vote</Button></GlassPanel></div></TopFrame>;
 }
 function VotingScreen({ players, round, totalRounds, votesByPlayerId, setVotesByPlayerId, onSubmitVotes, line, theme }) {
@@ -477,7 +501,10 @@ function VotingScreen({ players, round, totalRounds, votesByPlayerId, setVotesBy
   const allComplete = players.every((player) => votesByPlayerId[player.id]);
   const voteInstruction = round.roundTypeId === 'grill'
     ? "Vote for who sounded like they already knew the AI's hidden prompt."
+    : (round.roundTypeId === 'chain'
+      ? 'Vote for who sounded like they described the broken link.'
     : 'Vote for who sounded most suspicious.';
+    );
   return <TopFrame theme={theme}><div className="mx-auto max-w-5xl space-y-6"><ScoreStrip players={players} roundNumber={round.roundNumber} totalRounds={totalRounds} /><GlassPanel className="rounded-[2.5rem] p-8 border-fuchsia-400/20 bg-black/25"><div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4"><div><div className="text-xs uppercase tracking-[0.3em] text-white/50">{round.roundTypeName}</div><h2 className="text-4xl font-black mt-3 text-yellow-300">{round.roundTypeTagline}</h2><p className="text-white/70 mt-2">Pass the phone to <span className="font-semibold text-cyan-300">{leader?.name}</span>. {line}</p><p className="text-cyan-200 mt-2 font-semibold">{voteInstruction}</p></div><GlassPanel className="rounded-[1.75rem] p-4 min-w-[220px] border-cyan-400/20 bg-black/20"><div className="text-sm text-white/70">Votes completed</div><div className="text-3xl font-black mt-1 text-yellow-300">{completeCount}/{players.length}</div><Progress value={(completeCount / players.length) * 100} className="mt-3" /></GlassPanel></div><div className="grid gap-4 mt-8 md:grid-cols-2 xl:grid-cols-3">{players.map((voter) => <GlassPanel key={voter.id} className="rounded-[1.75rem] p-4 border-white/10 bg-black/20"><div className="font-black text-lg">{voter.name}</div><div className="text-sm text-white/55 mt-1">Who do they vote for?</div><div className="grid grid-cols-2 gap-2 mt-4">{players.filter((p) => p.id !== voter.id).map((target) => <Button key={target.id} className={`rounded-2xl h-11 ${votesByPlayerId[voter.id] === target.id ? 'bg-yellow-300 text-zinc-950' : 'bg-white/5 border border-white/10 text-white'}`} onClick={() => setVotesByPlayerId((cur) => ({ ...cur, [voter.id]: target.id }))}>{target.name}</Button>)}</div></GlassPanel>)}</div><div className="mt-8 flex justify-end"><Button className="rounded-[1.5rem] h-14 px-8 bg-yellow-300 text-zinc-950 border-2 border-white" disabled={!allComplete} onClick={onSubmitVotes}><Vote className="mr-2 h-5 w-5 inline" />Reveal results</Button></div></GlassPanel></div></TopFrame>;
 }
 function LiarRevealScreen({ players, round, onComplete, theme }) {
@@ -498,10 +525,12 @@ function LiarRevealScreen({ players, round, onComplete, theme }) {
 function ResultsScreen({ players, round, totalRounds, tally, roundGains, roundBreakdown, imposterCaught, onNextRound, onEndGame, resultLine, theme }) {
   const ranked = [...players].sort((a, b) => b.score - a.score);
   const lastRound = round.roundNumber >= totalRounds;
-  const roundInfoTitle = round.roundTypeId === 'grill' ? 'AI Hidden Prompt' : 'Liar Prompt';
+  const roundInfoTitle = round.roundTypeId === 'grill' ? 'AI Hidden Prompt' : (round.roundTypeId === 'chain' ? 'Broken Link Topic' : 'Liar Prompt');
   const roundInfoValue = round.roundTypeId === 'opinion'
     ? 'Truth or Twisted uses one shared scenario for everyone.'
-    : (round.imposterPrompt || round.aiPrompt || 'N/A');
+    : (round.roundTypeId === 'chain'
+      ? (round.imposterPrompt || 'N/A')
+      : (round.imposterPrompt || round.aiPrompt || 'N/A'));
 
   return <TopFrame theme={theme}><div className="mx-auto max-w-5xl space-y-6"><ScoreStrip players={players} roundNumber={round.roundNumber} totalRounds={totalRounds} /><GlassPanel className="rounded-[2.5rem] p-8 border-white/15 bg-black/25"><div className="space-y-6"><div className="text-center space-y-4"><div className="text-xs uppercase tracking-[0.3em] text-white/50">Liar Reveal</div><h2 className="text-5xl md:text-6xl font-black text-red-400">🔥 WHO WAS THE LIAR? 🔥</h2><div className={`text-2xl font-black ${imposterCaught ? 'text-yellow-300' : 'text-fuchsia-400'}`}>{imposterCaught ? 'LIAR EXPOSED 🔥' : 'THE LIAR ESCAPED 😈'}</div><div className="text-white/75">{resultLine}</div></div><div className="grid grid-cols-2 md:grid-cols-3 gap-4 mt-6">{players.map((player) => { const isLiar = (round.imposterIds || []).includes(player.id); const breakdown = roundBreakdown?.[player.id] || { voteHit: 0, liarSurvived: 0, grillTeamBonus: 0, grillLiarSwing: 0 }; return <div key={player.id} className={`relative rounded-[1.5rem] p-4 text-center border transition-all duration-300 ${isLiar ? 'bg-red-500/20 border-red-400 shadow-[0_0_20px_rgba(255,0,0,0.6)] scale-105' : 'bg-white/5 border-white/10'}`}><img src={FLAME_SRC} alt="flame" className={`absolute -top-4 right-2 h-8 w-8 ${isLiar ? 'block' : 'hidden'}`} />{isLiar && <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 text-xs font-black rounded-full bg-red-500 text-white">🔥 THE LIAR</div>}<div className={`text-lg font-bold ${isLiar ? 'text-red-300' : 'text-white'}`}>{player.name}</div><div className="text-xs text-white/60 mt-2">{round.promptsByPlayerId[player.id]}</div><div className="mt-3 text-sm font-bold text-cyan-200">+{roundGains?.[player.id] || 0} this round</div><div className="mt-2 text-[11px] text-white/70">Vote hit +{breakdown.voteHit} • Liar survived +{breakdown.liarSurvived}</div>{round.roundTypeId === 'grill' && <div className="mt-1 text-[11px] text-cyan-200">Team bonus +{breakdown.grillTeamBonus} • Swing {breakdown.grillLiarSwing >= 0 ? '+' : ''}{breakdown.grillLiarSwing}</div>}</div>; })}</div><div className="grid gap-6 lg:grid-cols-[1fr_0.9fr]"><div className="space-y-5"><div className="grid gap-4 md:grid-cols-2"><GlassPanel className="rounded-[1.75rem] p-5 border-cyan-400/20 bg-black/20"><div className="text-sm text-white/55">Hint / Subcategory</div><div className="text-2xl font-black mt-2">{round.hint}</div><div className="text-xs text-cyan-200 mt-2">{round.roundTypeTagline}</div></GlassPanel><GlassPanel className="rounded-[1.75rem] p-5 border-orange-400/20 bg-black/20"><div className="text-sm text-white/55">{roundInfoTitle}</div><div className="text-2xl font-black mt-2 text-orange-300">{roundInfoValue}</div></GlassPanel></div><GlassPanel className="rounded-[1.75rem] p-5 border-cyan-400/20 bg-black/20"><div className="text-sm text-white/55">Scoring rules</div><div className="mt-2 text-sm text-cyan-100">Correct liar vote: +1 point. Liar survives: +2 points to that liar.</div>{round.roundTypeId === 'grill' && <div className="mt-2 text-xs text-cyan-200">Grill 'Em bonus: if liars are caught, everyone gains +2. If liars survive, liars gain +2 and non-liars lose 1 (floor 0).</div>}</GlassPanel>{round.roundTypeId === 'grill' && (round.grillData?.transcript || []).length > 0 && <GlassPanel className="rounded-[1.75rem] p-5 border-fuchsia-400/20 bg-black/20"><div className="text-sm text-white/55 mb-3">Grill 'Em transcript</div><div className="space-y-2 max-h-56 overflow-auto pr-1">{round.grillData.transcript.map((row) => <div key={row.id} className="rounded-xl border border-white/10 bg-white/5 p-3"><div className="text-xs text-cyan-200">{row.player} • Q{row.turn}</div><div className="text-sm text-white mt-1">{row.question}</div><div className="text-xs text-fuchsia-200 mt-1">Blaze Byte: {row.answer}</div></div>)}</div></GlassPanel>}{round.mode === 'chaos' && round.bannedWords.length > 0 && <GlassPanel className="rounded-[1.75rem] p-5 border-red-400/20 bg-black/20"><div className="text-sm text-white/55 mb-3">Banned Words</div><div className="flex flex-wrap gap-2">{round.bannedWords.map((word) => <span key={word} className="px-3 py-1 rounded-full bg-red-500/20 border border-red-400/30 text-red-200 text-xs">{word}</span>)}</div></GlassPanel>}<GlassPanel className="rounded-[1.75rem] p-5 border-white/10 bg-black/20"><div className="text-sm text-white/55 mb-3">Vote tally</div><div className="grid gap-3 sm:grid-cols-2">{players.map((player) => <div key={player.id} className="rounded-2xl bg-white/5 border border-white/10 p-3 flex items-center justify-between gap-3"><span>{player.name}</span><Badge className="rounded-full bg-white/10 border border-white/10 text-white">{tally[player.id] || 0} votes</Badge></div>)}</div></GlassPanel></div><div className="space-y-5"><GlassPanel className="rounded-[1.75rem] p-5 border-yellow-300/20 bg-black/20"><div className="flex items-center gap-2 text-yellow-200"><Trophy className="h-5 w-5" /> Scoreboard</div><div className="space-y-3 mt-4">{ranked.map((player, index) => <div key={player.id} className="rounded-2xl bg-white/5 border border-white/10 p-4 flex items-center justify-between gap-3"><div><div className="text-sm text-white/55">Place {index + 1}</div><div className="font-semibold">{player.name}</div></div><div className="text-right"><div className="text-2xl font-black">{player.score}</div><div className="text-xs text-cyan-200">+{roundGains?.[player.id] || 0} this round</div></div></div>)}</div></GlassPanel>{!lastRound ? <Button className="rounded-[1.5rem] h-14 bg-yellow-300 text-zinc-950 w-full border-2 border-white" onClick={onNextRound}><TimerReset className="mr-2 h-5 w-5 inline" />Start next round</Button> : <Button className="rounded-[1.5rem] h-14 bg-yellow-300 text-zinc-950 w-full border-2 border-white" onClick={onEndGame}><Trophy className="mr-2 h-5 w-5 inline" />View final winner</Button>}</div></div></div></GlassPanel></div></TopFrame>;
 }
@@ -531,6 +560,7 @@ export default function App() {
     prompt: 'hostStingerPrompt',
     opinion: 'hostStingerOpinion',
     picture: 'hostStingerPicture',
+    chain: 'hostStingerChain',
     grill: 'hostStingerGrill',
   };
   const [screen, setScreen] = useState('home');

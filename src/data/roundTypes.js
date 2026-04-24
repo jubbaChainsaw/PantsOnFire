@@ -20,6 +20,13 @@ export const ROUND_TYPES = {
     passThePhoneReady: true,
     onlineOnly: false,
   },
+  chain: {
+    id: 'chain',
+    name: 'Chain Reaction',
+    tagline: 'Different clue cards, one hidden topic. Find the broken link.',
+    passThePhoneReady: true,
+    onlineOnly: false,
+  },
   grill: {
     id: 'grill',
     name: "Grill 'Em",
