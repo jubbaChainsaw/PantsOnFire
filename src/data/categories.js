@@ -180,13 +180,40 @@ function buildPromptBatch(config, adultOnly = false, count = BULK_PROMPTS_PER_CA
   });
 }
 
+function buildFallbackPromptBatch(category, adultOnly = false, count = BULK_PROMPTS_PER_CATEGORY) {
+  const prompts = category.prompts || [];
+  if (!prompts.length) return [];
+  const regularPrompts = prompts.filter((prompt) => !prompt?.adultOnly);
+  const adultPrompts = prompts.filter((prompt) => prompt?.adultOnly);
+  const sourcePool = adultOnly
+    ? (adultPrompts.length ? adultPrompts : regularPrompts.length ? regularPrompts : prompts)
+    : (regularPrompts.length ? regularPrompts : prompts);
+  const hintBase = simplifyLabel(category.name, 'Category');
+  return Array.from({ length: count }, (_, index) => {
+    const seed = sourcePool[index % sourcePool.length] || prompts[index % prompts.length] || prompts[0];
+    const alt = sourcePool[(index + 1) % sourcePool.length] || seed;
+    return {
+      hint: `${hintBase} Variant ${index + 1} (${adultOnly ? '18+' : 'Classic'})`,
+      main: seed.main,
+      imposter: alt.imposter || seed.imposter || seed.main,
+      ...(adultOnly ? { adultOnly: true } : {}),
+    };
+  });
+}
+
 for (const category of DEFAULT_CATEGORIES) {
   const expansionConfig = CATEGORY_EXPANSION_CONFIG[category.id];
-  if (!expansionConfig) continue;
-  category.prompts.push(
-    ...buildPromptBatch(expansionConfig, false),
-    ...buildPromptBatch(expansionConfig, true)
-  );
+  if (expansionConfig) {
+    category.prompts.push(
+      ...buildPromptBatch(expansionConfig, false),
+      ...buildPromptBatch(expansionConfig, true)
+    );
+  } else {
+    category.prompts.push(
+      ...buildFallbackPromptBatch(category, false),
+      ...buildFallbackPromptBatch(category, true)
+    );
+  }
 }
 
 const CHAIN_PROMPTS_PER_CATEGORY = 20;
@@ -248,6 +275,128 @@ function buildChainRoundsForCategory(category) {
 export const CHAIN_REACTION_ROUNDS = Object.fromEntries(
   DEFAULT_CATEGORIES.map((category) => [category.id, buildChainRoundsForCategory(category)])
 );
+
+const MEME_DECODER_HINTS = [
+  'POV Meme Prompt',
+  'Reaction Template',
+  'Caption Energy',
+  'Relatable Chaos',
+  'Comment Section Vibe',
+  'Group Chat Moment',
+  'Cringe-to-Iconic Arc',
+  'Chronically Online Mood',
+];
+const MEME_DECODER_FORMATS = ['image macro', 'reaction GIF', 'text-post meme', 'short video meme', 'reply meme'];
+const MEME_DECODER_MAIN_THEMES = ['When the group chat says "be there in 5"', 'When your alarm snoozes itself into tomorrow', 'When the Wi-Fi dies mid-episode', 'When someone says "quick meeting"', 'When your food delivery says "arriving now"', 'When your playlist queues the saddest song at the party', 'When the app asks "are you still watching?"', 'When your mate says "I have a tiny secret"', 'When your battery hits 1% outside', 'When someone says "trust me, no drama"', 'When your holiday budget vanishes day one', 'When your room looks clean from one angle', 'When your crush replies with "lol"', 'When the zoom call camera flips on unexpectedly', 'When your train gets delayed again', 'When your teammate says "I did my part"', 'When you check your bank app after the weekend', 'When the group votes for chaos mode', 'When your friend says "don’t tell anyone"', 'When you remember the deadline at 11:58 PM'];
+const MEME_DECODER_IMPOSTER_THEMES = ['When the family group chat sends 42 voice notes', 'When your coffee order gets your name hilariously wrong', 'When your luggage appears with no wheel', 'When you open the fridge for inspiration', 'When your playlist shuffles into guilty pleasures', 'When your "short nap" becomes a full sleep cycle', 'When your map app says "recalculating..."', 'When your dog judges your life choices', 'When your browser opens with 27 tabs', 'When your printer jams before submission', 'When your ex watches your story instantly', 'When your boss says "quick favor"', 'When your takeaway arrives missing sauce', 'When your keyboard autocorrect betrays you', 'When your mate says "I’m outside" but isn’t', 'When you hear "we need to talk"', 'When your shopping cart doubles the total', 'When the weather app says "light rain" then storms', 'When your code works on the third random try', 'When your alarm volume is set to whispers'];
+
+function buildMemeDecoderPrompt(category, index, adultOnly = false) {
+  const topicLabel = simplifyLabel(category?.name, 'General');
+  const formatMain = MEME_DECODER_FORMATS[index % MEME_DECODER_FORMATS.length];
+  const formatImposter = MEME_DECODER_FORMATS[(index + 2) % MEME_DECODER_FORMATS.length];
+  return {
+    hint: `${MEME_DECODER_HINTS[index % MEME_DECODER_HINTS.length]} • ${topicLabel}`,
+    main: `${MEME_DECODER_MAIN_THEMES[index % MEME_DECODER_MAIN_THEMES.length]} as a ${formatMain}`,
+    imposter: `${MEME_DECODER_IMPOSTER_THEMES[index % MEME_DECODER_IMPOSTER_THEMES.length]} as a ${formatImposter}`,
+    previewLabel: 'Explain the meme vibe and format without quoting exact text.',
+    ...(adultOnly ? { adultOnly: true } : {}),
+  };
+}
+
+function buildMemeDecoderRoundsForCategory(category, count = 20, adultCount = 4) {
+  const regularCount = Math.max(0, count - adultCount);
+  const rounds = [];
+  for (let i = 0; i < regularCount; i += 1) rounds.push(buildMemeDecoderPrompt(category, i, false));
+  for (let i = 0; i < adultCount; i += 1) rounds.push(buildMemeDecoderPrompt(category, regularCount + i, true));
+  return rounds;
+}
+
+export const MEME_DECODER_ROUNDS = Object.fromEntries(
+  DEFAULT_CATEGORIES.map((category) => [category.id, buildMemeDecoderRoundsForCategory(category)])
+);
+
+const SOUND_OFF_HINTS = [
+  'Ambient Noise',
+  'Creature Sound',
+  'Lifestyle Noise',
+  'Atmosphere Cue',
+  'Room Tone',
+  'Creepy Audio',
+  'Party Noise',
+  'Nature Sound',
+];
+const SOUND_OFF_MAIN = ['Waves hitting jagged rocks', 'Blob monster hallway gurgle', 'Creaky door in the dark', 'Distant thunder before rain', 'Cat knocking something off a shelf', 'Car engine refusing to start', 'Arcade machine startup jingle', 'Ghost whisper in an empty room', 'Crowd roar after a goal', 'Helicopter passing overhead', 'Tiny dog growling at a vacuum', 'Lift doors opening with a chime', 'Microwave beeping aggressively', 'Heavy footsteps upstairs at midnight', 'Train braking into a station', 'Forest wind through tall trees', 'Glass bottle rolling on tiles', 'Phone vibration on a wooden table', 'Fire crackling in a fireplace', 'Alien hatch opening sound'];
+const SOUND_OFF_IMPOSTER = ['Waves lapping on a calm beach', 'Zombie groan in a corridor', 'Window banging in wind', 'Fireworks echo over rooftops', 'Dog tags jingling on stairs', 'Scooter engine revving up', 'Casino slot-machine jingle', 'Demon laugh in a cave', 'Crowd boo after a miss', 'Motorbike racing past', 'Parrot screech at sunrise', 'Escalator hum in a mall', 'Oven timer ding', 'Slow dragging footsteps in sand', 'Tram bell and brake squeal', 'Swamp insects at dusk', 'Can rolling on concrete', 'Phone ringtone in a bag', 'Bonfire popping in rain', 'Spaceship alarm in cockpit'];
+const SOUND_OFF_ADULT_MAIN = ['Bedroom headboard rhythm', 'Late-night kiss-and-laugh combo', 'Heels and keys in a hallway', 'Shower plus steamy mirror wipe', 'Breathy whispered flirting', 'Squeaky mattress panic moment'];
+const SOUND_OFF_ADULT_IMPOSTER = ['Awkward couch springs at 2AM', 'Door chain rattle and footsteps', 'Bathroom tap with nervous humming', 'Wardrobe door slam and silence', 'Throat-clear and fake laugh', 'Taxi horn outside after midnight'];
+
+function buildSoundOffPrompt(category, index, adultOnly = false) {
+  const topicLabel = simplifyLabel(category?.name, 'General');
+  const mainPool = adultOnly ? SOUND_OFF_ADULT_MAIN : SOUND_OFF_MAIN;
+  const imposterPool = adultOnly ? SOUND_OFF_ADULT_IMPOSTER : SOUND_OFF_IMPOSTER;
+  return {
+    hint: `${SOUND_OFF_HINTS[index % SOUND_OFF_HINTS.length]} • ${topicLabel}`,
+    main: mainPool[index % mainPool.length],
+    imposter: imposterPool[index % imposterPool.length],
+    previewLabel: 'Make a sound/noise only. No words allowed.',
+    soundOnly: true,
+    ...(adultOnly ? { adultOnly: true } : {}),
+  };
+}
+
+function buildSoundOffRoundsForCategory(category, count = 20, adultCount = 4) {
+  const regularCount = Math.max(0, count - adultCount);
+  const rounds = [];
+  for (let i = 0; i < regularCount; i += 1) rounds.push(buildSoundOffPrompt(category, i, false));
+  for (let i = 0; i < adultCount; i += 1) rounds.push(buildSoundOffPrompt(category, regularCount + i, true));
+  return rounds;
+}
+
+export const SOUND_OFF_ROUNDS = Object.fromEntries(
+  DEFAULT_CATEGORIES.map((category) => [category.id, buildSoundOffRoundsForCategory(category)])
+);
+
+const OFFTOPIC_HINTS = [
+  'Debate Prompt',
+  'Scenario Defense',
+  'Explain This',
+  'Hot Seat Topic',
+  'Convince the Room',
+  'Questionable Claim',
+  'Social Situation',
+  'Group Argument',
+];
+const OFFTOPIC_MAIN = ['Things you should never say to your mum', 'Worst excuses for being late', 'How to ruin a first impression', 'Bad ideas for a team meeting', 'Things that make a room go silent', 'Terrible opening lines at a party', 'Phrases that start pointless drama', 'Ways to make a queue hate you', 'What not to text after midnight', 'Things that should stay in your drafts', 'Worst things to shout in public', 'How to accidentally offend everyone', 'Topics to avoid at family dinner', 'Things you should not post online', 'Ways to lose an argument instantly', 'Worst replies to “we need to talk”', 'Things that make group chats implode', 'Phrases that sound guilty immediately', 'Ways to make your boss panic', 'What not to say in a taxi'];
+const OFFTOPIC_IMPOSTER = ['Best picnic snacks', 'How to pick comfy socks', 'Top signs your plant is thriving', 'Ways to organize your desk', 'Most relaxing evening routine', 'How to choose a bedtime tea', 'Tips for better posture', 'Best weather for a long walk', 'How to pick a gym playlist', 'Most wholesome weekend plans', 'How to improve your handwriting', 'Best breakfast combo', 'Ways to calm pre-meeting nerves', 'How to pack for a short trip', 'Best strategy for board game night', 'How to plan a museum day', 'How to clean headphones properly', 'Most reliable umbrella features', 'How to choose a study playlist', 'Best route for a sunset drive'];
+const OFFTOPIC_ADULT_MAIN = ['Things you should not text your ex at 1AM', 'Worst afterparty confessions', 'Phrases that kill bedroom vibes', 'Bad excuses after a walk of shame', 'What not to say on a first-night sleepover', 'Worst voice notes to send while drunk'];
+const OFFTOPIC_ADULT_IMPOSTER = ['Best laundry detergent scents', 'Tips for keeping towels fluffy', 'How to pick a reading lamp', 'Best lunchbox prep habits', 'How often to water houseplants', 'Ways to reduce screen glare'];
+
+function buildOffTopicPrompt(category, index, adultOnly = false) {
+  const topicLabel = simplifyLabel(category?.name, 'General');
+  const mainPool = adultOnly ? OFFTOPIC_ADULT_MAIN : OFFTOPIC_MAIN;
+  const imposterPool = adultOnly ? OFFTOPIC_ADULT_IMPOSTER : OFFTOPIC_IMPOSTER;
+  return {
+    hint: `${OFFTOPIC_HINTS[index % OFFTOPIC_HINTS.length]} • ${topicLabel}`,
+    main: mainPool[index % mainPool.length],
+    imposter: imposterPool[index % imposterPool.length],
+    previewLabel: 'Everyone argues their case. Liars got an irrelevant topic.',
+    ...(adultOnly ? { adultOnly: true } : {}),
+  };
+}
+
+function buildOffTopicRoundsForCategory(category, count = 20, adultCount = 4) {
+  const regularCount = Math.max(0, count - adultCount);
+  const rounds = [];
+  for (let i = 0; i < regularCount; i += 1) rounds.push(buildOffTopicPrompt(category, i, false));
+  for (let i = 0; i < adultCount; i += 1) rounds.push(buildOffTopicPrompt(category, regularCount + i, true));
+  return rounds;
+}
+
+export const OFFTOPIC_DEFENSE_ROUNDS = Object.fromEntries(
+  DEFAULT_CATEGORIES.map((category) => [category.id, buildOffTopicRoundsForCategory(category)])
+);
+
+export const NOISE_OFF_ROUNDS = SOUND_OFF_ROUNDS;
 
 export const OPINION_ROUNDS = [
   { hint: 'Controversial Take', main: 'Pineapple absolutely belongs on pizza.', imposter: 'Pineapple absolutely does not belong on pizza.' },
@@ -588,6 +737,18 @@ function ensureBannedWordCoverage() {
     });
     (CHAIN_REACTION_ROUNDS[category.id] || []).forEach((prompt, index) => {
       const key = `chain::${category.id}::${index}`;
+      BANNED_WORD_BANK[key] = autoBannedWords(prompt, BANNED_WORD_BANK[key] || []);
+    });
+    (MEME_DECODER_ROUNDS[category.id] || []).forEach((prompt, index) => {
+      const key = `meme::${category.id}::${index}`;
+      BANNED_WORD_BANK[key] = autoBannedWords(prompt, BANNED_WORD_BANK[key] || []);
+    });
+    (SOUND_OFF_ROUNDS[category.id] || []).forEach((prompt, index) => {
+      const key = `noise::${category.id}::${index}`;
+      BANNED_WORD_BANK[key] = autoBannedWords(prompt, BANNED_WORD_BANK[key] || []);
+    });
+    (OFFTOPIC_DEFENSE_ROUNDS[category.id] || []).forEach((prompt, index) => {
+      const key = `offtopic::${category.id}::${index}`;
       BANNED_WORD_BANK[key] = autoBannedWords(prompt, BANNED_WORD_BANK[key] || []);
     });
   });
