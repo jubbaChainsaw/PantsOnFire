@@ -156,6 +156,41 @@ export async function createNextRoundOnServer(lobbyCode, { hostClientId, session
   };
 }
 
+export async function advanceRoundPhaseOnServer(lobbyCode, { playerId, sessionToken } = {}) {
+  const normalizedCode = normalizeCode(lobbyCode);
+  const payload = await requestJson(`/lobbies/${encodeURIComponent(normalizedCode)}/round/phase/advance`, {
+    method: 'POST',
+    body: { playerId, sessionToken },
+  });
+  return {
+    lobby: payload?.lobby || null,
+    round: payload?.round || null,
+    phase: payload?.phase || '',
+  };
+}
+
+export async function submitRoundVotesOnServer(
+  lobbyCode,
+  { playerId, sessionToken, votesByPlayerId } = {}
+) {
+  const normalizedCode = normalizeCode(lobbyCode);
+  const normalizedVotes = votesByPlayerId && typeof votesByPlayerId === 'object'
+    ? votesByPlayerId
+    : {};
+  const targetId = String(normalizedVotes[playerId] || '').trim();
+  const payload = await requestJson(`/lobbies/${encodeURIComponent(normalizedCode)}/round/votes`, {
+    method: 'POST',
+    body: { playerId, targetId, sessionToken },
+  });
+  return {
+    lobby: payload?.lobby || null,
+    round: payload?.round || null,
+    phase: payload?.phase || '',
+    votingComplete: Boolean(payload?.votingComplete),
+    results: payload?.results || null,
+  };
+}
+
 export function toGamePlayers(onlinePlayers = []) {
   return onlinePlayers.map((player) => ({
     id: player.id,

@@ -37,6 +37,8 @@ import {
   createNextRoundOnServer,
   createLobbyOnServer,
   createOnlinePlayer,
+  advanceRoundPhaseOnServer,
+  submitRoundVotesOnServer,
   joinLobbyOnServer,
   leaveLobbyOnServer,
   readPrivateRoundOnServer,
@@ -130,6 +132,10 @@ function mapLobbyErrorToMessage(error, fallback = 'Unable to complete online lob
   if (code === 'lobby-not-started') return 'Lobby has not started yet.';
   if (code === 'round-not-found') return 'Round data is not ready yet.';
   if (code === 'round-player-missing') return 'Your player slot is no longer active in this lobby.';
+  if (code === 'round-phase-not-advanceable') return 'Round cannot advance from the current phase.';
+  if (code === 'round-phase-not-voting') return 'Voting is not active yet.';
+  if (code === 'vote-target-required') return 'Select a player before submitting your vote.';
+  if (code === 'invalid-vote-target') return 'That vote target is invalid for this round.';
   if (code === 'round-generation-failed') return 'Server could not generate a new round. Try again.';
   if (code === 'not-enough-players') return `Need at least ${MIN_PLAYERS} players before starting.`;
   if (code === 'player-id-required') return 'Unable to leave lobby: missing player identity.';
@@ -349,62 +355,6 @@ function buildLocalRound(
       })
     ),
   };
-}
-
-function toClientRoundFromAuthoritativeRound(serverRound) {
-  if (!serverRound || typeof serverRound !== 'object') return null;
-  return {
-    ...serverRound,
-    promptsByPlayerId: {},
-    mediaByPlayerId: {},
-  };
-}
-
-function scoreRound(players, round, votesByPlayerId) {
-  const tally = {};
-  for (const voterId of Object.keys(votesByPlayerId)) {
-    const votedFor = votesByPlayerId[voterId];
-    if (!votedFor) continue;
-    tally[votedFor] = (tally[votedFor] || 0) + 1;
-  }
-  const liarIds = round.imposterIds || [];
-  const topVotes = Math.max(0, ...Object.values(tally));
-  const caughtLiars = liarIds.filter((id) => (tally[id] || 0) > 0 && (tally[id] || 0) === topVotes);
-  const imposterCaught = caughtLiars.length === liarIds.length;
-  const isGrillRound = round.roundTypeId === 'grill';
-  const roundGains = {};
-  const roundBreakdown = {};
-  const nextPlayers = players.map((player) => {
-    let gain = 0;
-    let voteHit = 0;
-    let liarSurvived = 0;
-    let grillTeamBonus = 0;
-    let grillLiarSwing = 0;
-    if (liarIds.includes(votesByPlayerId[player.id])) {
-      gain += 1;
-      voteHit = 1;
-    }
-    if (liarIds.includes(player.id) && !imposterCaught) {
-      gain += 2;
-      liarSurvived = 2;
-    }
-    if (isGrillRound) {
-      if (imposterCaught) {
-        gain += 2;
-        grillTeamBonus = 2;
-      } else if (liarIds.includes(player.id)) {
-        gain += 2;
-        grillLiarSwing = 2;
-      } else {
-        gain -= 1;
-        grillLiarSwing = -1;
-      }
-    }
-    roundGains[player.id] = gain;
-    roundBreakdown[player.id] = { voteHit, liarSurvived, grillTeamBonus, grillLiarSwing };
-    return { ...player, score: Math.max(0, player.score + gain) };
-  });
-  return { nextPlayers, tally, imposterCaught, roundGains, roundBreakdown };
 }
 
 function GlassPanel({ children, className = '' }) {
@@ -1034,7 +984,7 @@ function VoicePartyStatusStrip({ onlineVoiceEnabled, onlineVoiceMuted, setOnline
   );
 }
 
-function DiscussionScreen({ players, round, totalRounds, onContinue, line, theme, onlineVoiceEnabled = false, onlineVoiceMuted = false, setOnlineVoiceMuted = () => {}, canTalk = true }) {
+function DiscussionScreen({ players, round, totalRounds, onContinue, line, theme, onlineVoiceEnabled = false, onlineVoiceMuted = false, setOnlineVoiceMuted = () => {}, canTalk = true, submitPending = false }) {
   const roundRule = round.roundTypeId === 'opinion'
     ? "Truth or Twisted: everyone got the same scenario. Liars must ragebait and argue opposite to their natural take."
     : (round.roundTypeId === 'meme'
@@ -1048,9 +998,9 @@ function DiscussionScreen({ players, round, totalRounds, onContinue, line, theme
             : (round.roundTypeId === 'grill'
               ? "Grill 'Em: players ask by microphone and Blaze Byte talks back with AI answers. Liars already saw the hidden prompt and will try to steer the room."
               : 'Give one clue, blend in, and avoid revealing your exact prompt.')))));
-  return <TopFrame theme={theme}><div className="mx-auto max-w-3xl space-y-6"><ScoreStrip players={players} roundNumber={round.roundNumber} totalRounds={totalRounds} /><VoicePartyStatusStrip onlineVoiceEnabled={onlineVoiceEnabled} onlineVoiceMuted={onlineVoiceMuted} setOnlineVoiceMuted={setOnlineVoiceMuted} canTalk={canTalk} /><GlassPanel className="rounded-[2.5rem] p-8 text-center border-emerald-400/20 bg-black/25"><Badge className="rounded-full bg-emerald-500/20 border border-emerald-400/20 text-emerald-100 px-4 py-1.5">All prompts delivered</Badge><div className="text-xs uppercase tracking-[0.3em] text-white/50 mt-4">{round.roundTypeName}</div><h2 className="text-4xl font-black mt-3 text-yellow-300">{round.roundTypeTagline}</h2><p className="text-white/75 mt-3 max-w-2xl mx-auto">{line}</p><p className="text-cyan-200 mt-3 max-w-2xl mx-auto font-semibold">{roundRule}</p><Button className="rounded-[1.5rem] h-16 px-8 mt-8 bg-yellow-300 text-zinc-950 border-2 border-white" onClick={onContinue}><SkipForward className="mr-2 h-5 w-5 inline" />Finish discussion and vote</Button></GlassPanel></div></TopFrame>;
+  return <TopFrame theme={theme}><div className="mx-auto max-w-3xl space-y-6"><ScoreStrip players={players} roundNumber={round.roundNumber} totalRounds={totalRounds} /><VoicePartyStatusStrip onlineVoiceEnabled={onlineVoiceEnabled} onlineVoiceMuted={onlineVoiceMuted} setOnlineVoiceMuted={setOnlineVoiceMuted} canTalk={canTalk} /><GlassPanel className="rounded-[2.5rem] p-8 text-center border-emerald-400/20 bg-black/25"><Badge className="rounded-full bg-emerald-500/20 border border-emerald-400/20 text-emerald-100 px-4 py-1.5">All prompts delivered</Badge><div className="text-xs uppercase tracking-[0.3em] text-white/50 mt-4">{round.roundTypeName}</div><h2 className="text-4xl font-black mt-3 text-yellow-300">{round.roundTypeTagline}</h2><p className="text-white/75 mt-3 max-w-2xl mx-auto">{line}</p><p className="text-cyan-200 mt-3 max-w-2xl mx-auto font-semibold">{roundRule}</p><Button className="rounded-[1.5rem] h-16 px-8 mt-8 bg-yellow-300 text-zinc-950 border-2 border-white" onClick={onContinue} disabled={submitPending}><SkipForward className="mr-2 h-5 w-5 inline" />{submitPending ? 'Syncing...' : 'Finish discussion and vote'}</Button></GlassPanel></div></TopFrame>;
 }
-function VotingScreen({ players, round, totalRounds, votesByPlayerId, setVotesByPlayerId, onSubmitVotes, line, theme, onlineMode = false, onlineVoiceEnabled = false, onlineVoiceMuted = false, setOnlineVoiceMuted = () => {}, canTalk = true }) {
+function VotingScreen({ players, round, totalRounds, votesByPlayerId, setVotesByPlayerId, onSubmitVotes, line, theme, onlineMode = false, onlineVoiceEnabled = false, onlineVoiceMuted = false, setOnlineVoiceMuted = () => {}, canTalk = true, submitPending = false }) {
   const leader = players.find((p) => p.id === round.leaderId);
   const completeCount = Object.values(votesByPlayerId).filter(Boolean).length;
   const allComplete = players.every((player) => votesByPlayerId[player.id]);
@@ -1065,7 +1015,7 @@ function VotingScreen({ players, round, totalRounds, votesByPlayerId, setVotesBy
           : (round.roundTypeId === 'offtopic'
             ? 'Vote for who defended the wrong scenario.'
             : 'Vote for who sounded most suspicious.'))));
-  return <TopFrame theme={theme}><div className="mx-auto max-w-5xl space-y-6"><ScoreStrip players={players} roundNumber={round.roundNumber} totalRounds={totalRounds} />{onlineMode && <VoicePartyStatusStrip onlineVoiceEnabled={onlineVoiceEnabled} onlineVoiceMuted={onlineVoiceMuted} setOnlineVoiceMuted={setOnlineVoiceMuted} canTalk={canTalk} />}<GlassPanel className="rounded-[2.5rem] p-8 border-fuchsia-400/20 bg-black/25"><div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4"><div><div className="text-xs uppercase tracking-[0.3em] text-white/50">{round.roundTypeName}</div><h2 className="text-4xl font-black mt-3 text-yellow-300">{round.roundTypeTagline}</h2><p className="text-white/70 mt-2">{onlineMode ? 'Vote from your own device.' : <>Pass the phone to <span className="font-semibold text-cyan-300">{leader?.name}</span>. </>}{line}</p><p className="text-cyan-200 mt-2 font-semibold">{voteInstruction}</p></div><GlassPanel className="rounded-[1.75rem] p-4 min-w-[220px] border-cyan-400/20 bg-black/20"><div className="text-sm text-white/70">Votes completed</div><div className="text-3xl font-black mt-1 text-yellow-300">{completeCount}/{players.length}</div><Progress value={(completeCount / players.length) * 100} className="mt-3" /></GlassPanel></div><div className="grid gap-4 mt-8 md:grid-cols-2 xl:grid-cols-3">{players.map((voter) => <GlassPanel key={voter.id} className="rounded-[1.75rem] p-4 border-white/10 bg-black/20"><div className="font-black text-lg">{voter.name}</div><div className="text-sm text-white/55 mt-1">Who do they vote for?</div><div className="grid grid-cols-2 gap-2 mt-4">{players.filter((p) => p.id !== voter.id).map((target) => <Button key={target.id} className={`rounded-2xl h-11 ${votesByPlayerId[voter.id] === target.id ? 'bg-yellow-300 text-zinc-950' : 'bg-white/5 border border-white/10 text-white'}`} onClick={() => setVotesByPlayerId((cur) => ({ ...cur, [voter.id]: target.id }))}>{target.name}</Button>)}</div></GlassPanel>)}</div><div className="mt-8 flex justify-end"><Button className="rounded-[1.5rem] h-14 px-8 bg-yellow-300 text-zinc-950 border-2 border-white" disabled={!allComplete} onClick={onSubmitVotes}><Vote className="mr-2 h-5 w-5 inline" />Reveal results</Button></div></GlassPanel></div></TopFrame>;
+  return <TopFrame theme={theme}><div className="mx-auto max-w-5xl space-y-6"><ScoreStrip players={players} roundNumber={round.roundNumber} totalRounds={totalRounds} />{onlineMode && <VoicePartyStatusStrip onlineVoiceEnabled={onlineVoiceEnabled} onlineVoiceMuted={onlineVoiceMuted} setOnlineVoiceMuted={setOnlineVoiceMuted} canTalk={canTalk} />}<GlassPanel className="rounded-[2.5rem] p-8 border-fuchsia-400/20 bg-black/25"><div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4"><div><div className="text-xs uppercase tracking-[0.3em] text-white/50">{round.roundTypeName}</div><h2 className="text-4xl font-black mt-3 text-yellow-300">{round.roundTypeTagline}</h2><p className="text-white/70 mt-2">{onlineMode ? 'Vote from your own device.' : <>Pass the phone to <span className="font-semibold text-cyan-300">{leader?.name}</span>. </>}{line}</p><p className="text-cyan-200 mt-2 font-semibold">{voteInstruction}</p></div><GlassPanel className="rounded-[1.75rem] p-4 min-w-[220px] border-cyan-400/20 bg-black/20"><div className="text-sm text-white/70">Votes completed</div><div className="text-3xl font-black mt-1 text-yellow-300">{completeCount}/{players.length}</div><Progress value={(completeCount / players.length) * 100} className="mt-3" /></GlassPanel></div><div className="grid gap-4 mt-8 md:grid-cols-2 xl:grid-cols-3">{players.map((voter) => <GlassPanel key={voter.id} className="rounded-[1.75rem] p-4 border-white/10 bg-black/20"><div className="font-black text-lg">{voter.name}</div><div className="text-sm text-white/55 mt-1">Who do they vote for?</div><div className="grid grid-cols-2 gap-2 mt-4">{players.filter((p) => p.id !== voter.id).map((target) => <Button key={target.id} className={`rounded-2xl h-11 ${votesByPlayerId[voter.id] === target.id ? 'bg-yellow-300 text-zinc-950' : 'bg-white/5 border border-white/10 text-white'}`} onClick={() => setVotesByPlayerId((cur) => ({ ...cur, [voter.id]: target.id }))} disabled={submitPending}>{target.name}</Button>)}</div></GlassPanel>)}</div><div className="mt-8 flex justify-end"><Button className="rounded-[1.5rem] h-14 px-8 bg-yellow-300 text-zinc-950 border-2 border-white" disabled={!allComplete || submitPending} onClick={onSubmitVotes}><Vote className="mr-2 h-5 w-5 inline" />{submitPending ? 'Submitting votes...' : 'Reveal results'}</Button></div></GlassPanel></div></TopFrame>;
 }
 function LiarRevealScreen({ players, round, onComplete, theme }) {
   const liars = players.filter((p) => (round.imposterIds || []).includes(p.id));
@@ -1101,8 +1051,9 @@ function ResultsScreen({ players, round, totalRounds, tally, roundGains, roundBr
     : (round.roundTypeId === 'chain'
       ? (round.imposterPrompt || 'N/A')
       : (round.imposterPrompt || round.aiPrompt || 'N/A'));
+  const promptByPlayerId = round.promptsByPlayerId || {};
 
-  return <TopFrame theme={theme}><div className="mx-auto max-w-5xl space-y-6"><ScoreStrip players={players} roundNumber={round.roundNumber} totalRounds={totalRounds} /><GlassPanel className="rounded-[2.5rem] p-8 border-white/15 bg-black/25"><div className="space-y-6"><div className="text-center space-y-4"><div className="text-xs uppercase tracking-[0.3em] text-white/50">Liar Reveal</div><h2 className="text-5xl md:text-6xl font-black text-red-400">🔥 WHO WAS THE LIAR? 🔥</h2><div className={`text-2xl font-black ${imposterCaught ? 'text-yellow-300' : 'text-fuchsia-400'}`}>{imposterCaught ? 'LIAR EXPOSED 🔥' : 'THE LIAR ESCAPED 😈'}</div><div className="text-white/75">{resultLine}</div></div><div className="grid grid-cols-2 md:grid-cols-3 gap-4 mt-6">{players.map((player) => { const isLiar = (round.imposterIds || []).includes(player.id); const breakdown = roundBreakdown?.[player.id] || { voteHit: 0, liarSurvived: 0, grillTeamBonus: 0, grillLiarSwing: 0 }; return <div key={player.id} className={`relative rounded-[1.5rem] p-4 text-center border transition-all duration-300 ${isLiar ? 'bg-red-500/20 border-red-400 shadow-[0_0_20px_rgba(255,0,0,0.6)] scale-105' : 'bg-white/5 border-white/10'}`}><img src={FLAME_SRC} alt="flame" className={`absolute -top-4 right-2 h-8 w-8 ${isLiar ? 'block' : 'hidden'}`} />{isLiar && <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 text-xs font-black rounded-full bg-red-500 text-white">🔥 THE LIAR</div>}<div className={`text-lg font-bold ${isLiar ? 'text-red-300' : 'text-white'}`}>{player.name}</div><div className="text-xs text-white/60 mt-2">{round.promptsByPlayerId[player.id]}</div><div className="mt-3 text-sm font-bold text-cyan-200">+{roundGains?.[player.id] || 0} this round</div><div className="mt-2 text-[11px] text-white/70">Vote hit +{breakdown.voteHit} • Liar survived +{breakdown.liarSurvived}</div>{round.roundTypeId === 'grill' && <div className="mt-1 text-[11px] text-cyan-200">Team bonus +{breakdown.grillTeamBonus} • Swing {breakdown.grillLiarSwing >= 0 ? '+' : ''}{breakdown.grillLiarSwing}</div>}</div>; })}</div><div className="grid gap-6 lg:grid-cols-[1fr_0.9fr]"><div className="space-y-5"><div className="grid gap-4 md:grid-cols-2"><GlassPanel className="rounded-[1.75rem] p-5 border-cyan-400/20 bg-black/20"><div className="text-sm text-white/55">Hint / Subcategory</div><div className="text-2xl font-black mt-2">{round.hint}</div><div className="text-xs text-cyan-200 mt-2">{round.roundTypeTagline}</div></GlassPanel><GlassPanel className="rounded-[1.75rem] p-5 border-orange-400/20 bg-black/20"><div className="text-sm text-white/55">{roundInfoTitle}</div><div className="text-2xl font-black mt-2 text-orange-300">{roundInfoValue}</div></GlassPanel></div><GlassPanel className="rounded-[1.75rem] p-5 border-cyan-400/20 bg-black/20"><div className="text-sm text-white/55">Scoring rules</div><div className="mt-2 text-sm text-cyan-100">Correct liar vote: +1 point. Liar survives: +2 points to that liar.</div>{round.roundTypeId === 'grill' && <div className="mt-2 text-xs text-cyan-200">Grill 'Em bonus: if liars are caught, everyone gains +2. If liars survive, liars gain +2 and non-liars lose 1 (floor 0).</div>}</GlassPanel>{round.roundTypeId === 'grill' && (round.grillData?.transcript || []).length > 0 && <GlassPanel className="rounded-[1.75rem] p-5 border-fuchsia-400/20 bg-black/20"><div className="text-sm text-white/55 mb-3">Grill 'Em transcript</div><div className="space-y-2 max-h-56 overflow-auto pr-1">{round.grillData.transcript.map((row) => <div key={row.id} className="rounded-xl border border-white/10 bg-white/5 p-3"><div className="text-xs text-cyan-200">{row.player} • Q{row.turn}</div><div className="text-sm text-white mt-1">{row.question}</div><div className="text-xs text-fuchsia-200 mt-1">Blaze Byte: {row.answer}</div></div>)}</div></GlassPanel>}{round.mode === 'chaos' && round.bannedWords.length > 0 && <GlassPanel className="rounded-[1.75rem] p-5 border-red-400/20 bg-black/20"><div className="text-sm text-white/55 mb-3">Banned Words</div><div className="flex flex-wrap gap-2">{round.bannedWords.map((word) => <span key={word} className="px-3 py-1 rounded-full bg-red-500/20 border border-red-400/30 text-red-200 text-xs">{word}</span>)}</div></GlassPanel>}<GlassPanel className="rounded-[1.75rem] p-5 border-white/10 bg-black/20"><div className="text-sm text-white/55 mb-3">Vote tally</div><div className="grid gap-3 sm:grid-cols-2">{players.map((player) => <div key={player.id} className="rounded-2xl bg-white/5 border border-white/10 p-3 flex items-center justify-between gap-3"><span>{player.name}</span><Badge className="rounded-full bg-white/10 border border-white/10 text-white">{tally[player.id] || 0} votes</Badge></div>)}</div></GlassPanel></div><div className="space-y-5"><GlassPanel className="rounded-[1.75rem] p-5 border-yellow-300/20 bg-black/20"><div className="flex items-center gap-2 text-yellow-200"><Trophy className="h-5 w-5" /> Scoreboard</div><div className="space-y-3 mt-4">{ranked.map((player, index) => <div key={player.id} className="rounded-2xl bg-white/5 border border-white/10 p-4 flex items-center justify-between gap-3"><div><div className="text-sm text-white/55">Place {index + 1}</div><div className="font-semibold">{player.name}</div></div><div className="text-right"><div className="text-2xl font-black">{player.score}</div><div className="text-xs text-cyan-200">+{roundGains?.[player.id] || 0} this round</div></div></div>)}</div></GlassPanel>{!lastRound ? <Button className="rounded-[1.5rem] h-14 bg-yellow-300 text-zinc-950 w-full border-2 border-white" onClick={onNextRound}><TimerReset className="mr-2 h-5 w-5 inline" />Start next round</Button> : <Button className="rounded-[1.5rem] h-14 bg-yellow-300 text-zinc-950 w-full border-2 border-white" onClick={onEndGame}><Trophy className="mr-2 h-5 w-5 inline" />View final winner</Button>}</div></div></div></GlassPanel></div></TopFrame>;
+  return <TopFrame theme={theme}><div className="mx-auto max-w-5xl space-y-6"><ScoreStrip players={players} roundNumber={round.roundNumber} totalRounds={totalRounds} /><GlassPanel className="rounded-[2.5rem] p-8 border-white/15 bg-black/25"><div className="space-y-6"><div className="text-center space-y-4"><div className="text-xs uppercase tracking-[0.3em] text-white/50">Liar Reveal</div><h2 className="text-5xl md:text-6xl font-black text-red-400">🔥 WHO WAS THE LIAR? 🔥</h2><div className={`text-2xl font-black ${imposterCaught ? 'text-yellow-300' : 'text-fuchsia-400'}`}>{imposterCaught ? 'LIAR EXPOSED 🔥' : 'THE LIAR ESCAPED 😈'}</div><div className="text-white/75">{resultLine}</div></div><div className="grid grid-cols-2 md:grid-cols-3 gap-4 mt-6">{players.map((player) => { const isLiar = (round.imposterIds || []).includes(player.id); const breakdown = roundBreakdown?.[player.id] || { voteHit: 0, liarSurvived: 0, grillTeamBonus: 0, grillLiarSwing: 0 }; return <div key={player.id} className={`relative rounded-[1.5rem] p-4 text-center border transition-all duration-300 ${isLiar ? 'bg-red-500/20 border-red-400 shadow-[0_0_20px_rgba(255,0,0,0.6)] scale-105' : 'bg-white/5 border-white/10'}`}><img src={FLAME_SRC} alt="flame" className={`absolute -top-4 right-2 h-8 w-8 ${isLiar ? 'block' : 'hidden'}`} />{isLiar && <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 text-xs font-black rounded-full bg-red-500 text-white">🔥 THE LIAR</div>}<div className={`text-lg font-bold ${isLiar ? 'text-red-300' : 'text-white'}`}>{player.name}</div><div className="text-xs text-white/60 mt-2">{promptByPlayerId[player.id] || '—'}</div><div className="mt-3 text-sm font-bold text-cyan-200">+{roundGains?.[player.id] || 0} this round</div><div className="mt-2 text-[11px] text-white/70">Vote hit +{breakdown.voteHit} • Liar survived +{breakdown.liarSurvived}</div>{round.roundTypeId === 'grill' && <div className="mt-1 text-[11px] text-cyan-200">Team bonus +{breakdown.grillTeamBonus} • Swing {breakdown.grillLiarSwing >= 0 ? '+' : ''}{breakdown.grillLiarSwing}</div>}</div>; })}</div><div className="grid gap-6 lg:grid-cols-[1fr_0.9fr]"><div className="space-y-5"><div className="grid gap-4 md:grid-cols-2"><GlassPanel className="rounded-[1.75rem] p-5 border-cyan-400/20 bg-black/20"><div className="text-sm text-white/55">Hint / Subcategory</div><div className="text-2xl font-black mt-2">{round.hint}</div><div className="text-xs text-cyan-200 mt-2">{round.roundTypeTagline}</div></GlassPanel><GlassPanel className="rounded-[1.75rem] p-5 border-orange-400/20 bg-black/20"><div className="text-sm text-white/55">{roundInfoTitle}</div><div className="text-2xl font-black mt-2 text-orange-300">{roundInfoValue}</div></GlassPanel></div><GlassPanel className="rounded-[1.75rem] p-5 border-cyan-400/20 bg-black/20"><div className="text-sm text-white/55">Scoring rules</div><div className="mt-2 text-sm text-cyan-100">Correct liar vote: +1 point. Liar survives: +2 points to that liar.</div>{round.roundTypeId === 'grill' && <div className="mt-2 text-xs text-cyan-200">Grill 'Em bonus: if liars are caught, everyone gains +2. If liars survive, liars gain +2 and non-liars lose 1 (floor 0).</div>}</GlassPanel>{round.roundTypeId === 'grill' && (round.grillData?.transcript || []).length > 0 && <GlassPanel className="rounded-[1.75rem] p-5 border-fuchsia-400/20 bg-black/20"><div className="text-sm text-white/55 mb-3">Grill 'Em transcript</div><div className="space-y-2 max-h-56 overflow-auto pr-1">{round.grillData.transcript.map((row) => <div key={row.id} className="rounded-xl border border-white/10 bg-white/5 p-3"><div className="text-xs text-cyan-200">{row.player} • Q{row.turn}</div><div className="text-sm text-white mt-1">{row.question}</div><div className="text-xs text-fuchsia-200 mt-1">Blaze Byte: {row.answer}</div></div>)}</div></GlassPanel>}{round.mode === 'chaos' && round.bannedWords.length > 0 && <GlassPanel className="rounded-[1.75rem] p-5 border-red-400/20 bg-black/20"><div className="text-sm text-white/55 mb-3">Banned Words</div><div className="flex flex-wrap gap-2">{round.bannedWords.map((word) => <span key={word} className="px-3 py-1 rounded-full bg-red-500/20 border border-red-400/30 text-red-200 text-xs">{word}</span>)}</div></GlassPanel>}<GlassPanel className="rounded-[1.75rem] p-5 border-white/10 bg-black/20"><div className="text-sm text-white/55 mb-3">Vote tally</div><div className="grid gap-3 sm:grid-cols-2">{players.map((player) => <div key={player.id} className="rounded-2xl bg-white/5 border border-white/10 p-3 flex items-center justify-between gap-3"><span>{player.name}</span><Badge className="rounded-full bg-white/10 border border-white/10 text-white">{tally[player.id] || 0} votes</Badge></div>)}</div></GlassPanel></div><div className="space-y-5"><GlassPanel className="rounded-[1.75rem] p-5 border-yellow-300/20 bg-black/20"><div className="flex items-center gap-2 text-yellow-200"><Trophy className="h-5 w-5" /> Scoreboard</div><div className="space-y-3 mt-4">{ranked.map((player, index) => <div key={player.id} className="rounded-2xl bg-white/5 border border-white/10 p-4 flex items-center justify-between gap-3"><div><div className="text-sm text-white/55">Place {index + 1}</div><div className="font-semibold">{player.name}</div></div><div className="text-right"><div className="text-2xl font-black">{player.score}</div><div className="text-xs text-cyan-200">+{roundGains?.[player.id] || 0} this round</div></div></div>)}</div></GlassPanel>{!lastRound ? <Button className="rounded-[1.5rem] h-14 bg-yellow-300 text-zinc-950 w-full border-2 border-white" onClick={onNextRound}><TimerReset className="mr-2 h-5 w-5 inline" />Start next round</Button> : <Button className="rounded-[1.5rem] h-14 bg-yellow-300 text-zinc-950 w-full border-2 border-white" onClick={onEndGame}><Trophy className="mr-2 h-5 w-5 inline" />View final winner</Button>}</div></div></div></GlassPanel></div></TopFrame>;
 }
 function FinalScreen({ players, onRestart, line, theme }) {
   const ranked = [...players].sort((a, b) => b.score - a.score);
@@ -1262,6 +1213,8 @@ export default function App() {
   const [onlineJoinedPlayerId, setOnlineJoinedPlayerId] = useState('');
   const [onlinePrivatePrompt, setOnlinePrivatePrompt] = useState(null);
   const [onlinePrivatePromptError, setOnlinePrivatePromptError] = useState('');
+  const [onlinePhasePending, setOnlinePhasePending] = useState(false);
+  const [onlineVoteSubmissionPending, setOnlineVoteSubmissionPending] = useState(false);
   const onlineTransportRef = useRef(null);
   const onlineStartedRevisionHandledRef = useRef('');
   const onlineClientIdRef = useRef(getOrCreatePersistentClientId());
@@ -1287,7 +1240,6 @@ export default function App() {
   const [imposterCaught, setImposterCaught] = useState(false);
   const [adminOpen, setAdminOpen] = useState(false);
   const [recentPromptKeys, setRecentPromptKeys] = useState([]);
-  const [pendingResults, setPendingResults] = useState(null);
   const getLine = useMemo(() => createCopyPicker(COPY_BANK), []);
   const [copyState, setCopyState] = useState({ home: COPY_BANK.home[0], setup: COPY_BANK.setup[0], chooser: COPY_BANK.chooser[0], passPhone: COPY_BANK.passPhone[0], revealNormal: COPY_BANK.revealNormal[0], revealLiar: COPY_BANK.revealLiar[0], discussion: COPY_BANK.discussion[0], voting: COPY_BANK.voting[0], result: COPY_BANK.caught[0], winner: COPY_BANK.winner[0], onlineLobby: COPY_BANK.onlineLobby[0], hostStinger: COPY_BANK.hostStingerPrompt[0] });
   const themeMeta = THEME_META[nameTheme] || THEME_META.Default;
@@ -1425,7 +1377,7 @@ export default function App() {
         if (snapshot.status === 'started' && snapshot.startedRevision) {
           if (onlineStartedRevisionHandledRef.current !== snapshot.startedRevision) {
             onlineStartedRevisionHandledRef.current = snapshot.startedRevision;
-            void syncAuthoritativeRound(
+            void syncOnlineRoundFromSnapshot(
               {
                 ...snapshot,
                 players: snapshotPlayers,
@@ -1529,7 +1481,153 @@ export default function App() {
     }
   }
 
-  async function createNextOnlineRound() {
+  async function syncOnlineRoundFromSnapshot(snapshot, { openHostIntro = false } = {}) {
+    if (!snapshot?.activeRound) return null;
+    const snapshotPlayers = Array.isArray(snapshot.players) ? snapshot.players : [];
+    if (snapshotPlayers.length) {
+      setPlayers(toGamePlayers(snapshotPlayers));
+    }
+    const serverRound = snapshot.activeRound;
+    const normalizedPhase = String(serverRound.phase || '').trim() || 'host-intro';
+    const stingerCopyKey = HOST_STINGER_COPY_KEYS[serverRound.roundTypeId] || HOST_STINGER_COPY_KEYS.prompt;
+    setRound(serverRound);
+    setRoundNumber(serverRound.roundNumber || 1);
+    setRevealIndex(0);
+    setVotesByPlayerId(serverRound.votesByPlayerId || {});
+    const resolution = serverRound.resolution || null;
+    setTally(resolution?.tally || {});
+    setRoundGains(resolution?.roundGains || {});
+    setRoundBreakdown(resolution?.roundBreakdown || {});
+    setImposterCaught(Boolean(resolution?.imposterCaught));
+    setOnlinePrivatePrompt(null);
+    setOnlinePrivatePromptError('');
+    const sessionSnapshot = onlineSessionRef.current;
+    if (sessionSnapshot?.playerId && sessionSnapshot?.sessionToken) {
+      await fetchOnlinePrivatePrompt({
+        lobbyCodeValue: snapshot.code || lobbyCode,
+        playerId: sessionSnapshot.playerId,
+        sessionToken: sessionSnapshot.sessionToken,
+      });
+    }
+    if (openHostIntro || normalizedPhase === 'host-intro') {
+      refreshCopy(['passPhone', 'revealNormal', 'revealLiar']);
+      setCopyState((cur) => ({ ...cur, hostStinger: getLine(themedKey(stingerCopyKey)) }));
+      setScreen('host-intro');
+      return serverRound;
+    }
+    if (normalizedPhase === 'reveal') {
+      refreshCopy(['passPhone', 'revealNormal', 'revealLiar']);
+      setScreen('reveal');
+      return serverRound;
+    }
+    if (normalizedPhase === 'discussion' || normalizedPhase === 'grill') {
+      refreshCopy([normalizedPhase === 'grill' ? 'voting' : 'discussion']);
+      setScreen(normalizedPhase === 'grill' ? 'grill' : 'discussion');
+      return serverRound;
+    }
+    if (normalizedPhase === 'voting') {
+      refreshCopy(['voting']);
+      setScreen('voting');
+      return serverRound;
+    }
+    if (normalizedPhase === 'liar-reveal') {
+      refreshCopy([Boolean(resolution?.imposterCaught) ? 'caught' : 'escaped']);
+      setScreen('liar-reveal');
+      return serverRound;
+    }
+    if (normalizedPhase === 'results') {
+      refreshCopy([Boolean(resolution?.imposterCaught) ? 'caught' : 'escaped']);
+      setScreen('results');
+      return serverRound;
+    }
+    if (normalizedPhase === 'final') {
+      refreshCopy(['winner']);
+      setScreen('final');
+      return serverRound;
+    }
+    setScreen('host-intro');
+    return serverRound;
+  }
+
+  async function runOnlinePhaseAdvance() {
+    if (!onlineMode || !lobbyCode) return null;
+    const sessionSnapshot = onlineSessionRef.current;
+    const playerId = sessionSnapshot?.playerId || onlineJoinedPlayerId;
+    const sessionToken = sessionSnapshot?.sessionToken || '';
+    if (!playerId || !sessionToken) {
+      setOnlineLobbyError('Session expired. Rejoin lobby to continue.');
+      return null;
+    }
+    setOnlinePhasePending(true);
+    try {
+      const result = await advanceRoundPhaseOnServer(lobbyCode, { playerId, sessionToken });
+      if (result?.rotatedSessionToken && result.rotatedSessionToken !== sessionToken) {
+        const nextSession = {
+          ...(sessionSnapshot || {}),
+          sessionToken: result.rotatedSessionToken,
+        };
+        onlineSessionRef.current = nextSession;
+        setStoredOnlineSession(nextSession);
+      }
+      setOnlineLobbyError('');
+      if (result?.lobby?.activeRound) {
+        return await syncOnlineRoundFromSnapshot(result.lobby, { openHostIntro: false });
+      }
+      const synced = await onlineTransportRef.current?.syncSnapshot();
+      if (synced?.activeRound) {
+        return await syncOnlineRoundFromSnapshot(synced, { openHostIntro: false });
+      }
+      return null;
+    } catch (error) {
+      setOnlineLobbyError(mapLobbyErrorToMessage(error, 'Unable to advance phase right now.'));
+      return null;
+    } finally {
+      setOnlinePhasePending(false);
+    }
+  }
+
+  async function submitOnlineVotes() {
+    if (!onlineMode || !lobbyCode) return null;
+    const sessionSnapshot = onlineSessionRef.current;
+    const playerId = sessionSnapshot?.playerId || onlineJoinedPlayerId;
+    const sessionToken = sessionSnapshot?.sessionToken || '';
+    if (!playerId || !sessionToken) {
+      setOnlineLobbyError('Session expired. Rejoin lobby to continue.');
+      return null;
+    }
+    setOnlineVoteSubmissionPending(true);
+    try {
+      const result = await submitRoundVotesOnServer(lobbyCode, {
+        playerId,
+        sessionToken,
+        votesByPlayerId,
+      });
+      if (result?.rotatedSessionToken && result.rotatedSessionToken !== sessionToken) {
+        const nextSession = {
+          ...(sessionSnapshot || {}),
+          sessionToken: result.rotatedSessionToken,
+        };
+        onlineSessionRef.current = nextSession;
+        setStoredOnlineSession(nextSession);
+      }
+      setOnlineLobbyError('');
+      if (result?.lobby?.activeRound) {
+        return await syncOnlineRoundFromSnapshot(result.lobby, { openHostIntro: false });
+      }
+      const synced = await onlineTransportRef.current?.syncSnapshot();
+      if (synced?.activeRound) {
+        return await syncOnlineRoundFromSnapshot(synced, { openHostIntro: false });
+      }
+      return null;
+    } catch (error) {
+      setOnlineLobbyError(mapLobbyErrorToMessage(error, 'Unable to submit votes right now.'));
+      return null;
+    } finally {
+      setOnlineVoteSubmissionPending(false);
+    }
+  }
+
+  async function createNextOnlineRound({ openHostIntro = true } = {}) {
     if (!onlineMode || onlineRole !== 'host' || !lobbyCode) return null;
     const currentSession = onlineSessionRef.current;
     const hostSessionToken = currentSession?.sessionToken || '';
@@ -1551,58 +1649,15 @@ export default function App() {
         onlineSessionRef.current = nextSession;
         setStoredOnlineSession(nextSession);
       }
-      const nextRound = result?.round || null;
-      if (nextRound) {
-        setRound(nextRound);
-        setRoundNumber(nextRound.roundNumber || (roundNumber + 1));
-        setRevealIndex(0);
-        refreshCopy(['passPhone', 'revealNormal', 'revealLiar']);
-        const stingerCopyKey = HOST_STINGER_COPY_KEYS[nextRound.roundTypeId] || HOST_STINGER_COPY_KEYS.prompt;
-        setCopyState((cur) => ({ ...cur, hostStinger: getLine(themedKey(stingerCopyKey)) }));
+      if (result?.lobby?.activeRound) {
+        await syncOnlineRoundFromSnapshot(result.lobby, { openHostIntro });
       }
-      setOnlinePrivatePrompt(null);
-      setOnlinePrivatePromptError('');
       setOnlineLobbyError('');
-      return nextRound;
+      return result?.lobby?.activeRound || result?.round || null;
     } catch (error) {
       setOnlineLobbyError(mapLobbyErrorToMessage(error, 'Unable to generate the next round.'));
       return null;
     }
-  }
-
-  async function syncAuthoritativeRound(snapshot, { openHostIntro = false } = {}) {
-    if (!snapshot?.activeRound) return null;
-    const snapshotPlayers = Array.isArray(snapshot.players) ? snapshot.players : [];
-    if (snapshotPlayers.length) {
-      setPlayers(toGamePlayers(snapshotPlayers));
-    }
-    const serverRound = snapshot.activeRound;
-    const stingerCopyKey = HOST_STINGER_COPY_KEYS[serverRound.roundTypeId] || HOST_STINGER_COPY_KEYS.prompt;
-    setRound(serverRound);
-    setRoundNumber(serverRound.roundNumber || 1);
-    setRevealIndex(0);
-    setVotesByPlayerId({});
-    setTally({});
-    setRoundGains({});
-    setRoundBreakdown({});
-    setImposterCaught(false);
-    setPendingResults(null);
-    setOnlinePrivatePrompt(null);
-    setOnlinePrivatePromptError('');
-    refreshCopy(['passPhone', 'revealNormal', 'revealLiar']);
-    setCopyState((cur) => ({ ...cur, hostStinger: getLine(themedKey(stingerCopyKey)) }));
-    const sessionSnapshot = onlineSessionRef.current;
-    if (sessionSnapshot?.playerId && sessionSnapshot?.sessionToken) {
-      await fetchOnlinePrivatePrompt({
-        lobbyCodeValue: snapshot.code || lobbyCode,
-        playerId: sessionSnapshot.playerId,
-        sessionToken: sessionSnapshot.sessionToken,
-      });
-    }
-    if (openHostIntro) {
-      setScreen('host-intro');
-    }
-    return serverRound;
   }
 
   async function handleAdvanceReveal() {
@@ -1611,12 +1666,7 @@ export default function App() {
         setRevealIndex((currentIndex) => currentIndex + 1);
         return;
       }
-      if (round?.roundTypeId === 'grill') {
-        setScreen('grill');
-      } else {
-        refreshCopy(['discussion']);
-        setScreen('discussion');
-      }
+      await runOnlinePhaseAdvance();
       return;
     }
     if (revealIndex < players.length - 1) {
@@ -1689,13 +1739,25 @@ export default function App() {
     setCopyState((cur) => ({ ...cur, hostStinger: getLine(themedKey(stingerCopyKey)) }));
     setScreen('host-intro');
   }
-  function revealResults() {
-    const { nextPlayers, tally: nextTally, imposterCaught: nextCaught, roundGains: nextRoundGains, roundBreakdown: nextRoundBreakdown } = scoreRound(players, round, votesByPlayerId);
-    setPlayers(nextPlayers); setTally(nextTally); setRoundGains(nextRoundGains); setRoundBreakdown(nextRoundBreakdown); setImposterCaught(nextCaught); refreshCopy([nextCaught ? 'caught' : 'escaped']);
-    setPendingResults({ shouldEndGame: hasScoreWinner(nextPlayers) });
+  async function revealResults() {
+    if (onlineMode) {
+      await submitOnlineVotes();
+      return;
+    }
     setScreen('liar-reveal');
   }
-  function finishLiarReveal() { if (pendingResults?.shouldEndGame) { refreshCopy(['winner']); setScreen('final'); } else setScreen('results'); setPendingResults(null); }
+  async function finishLiarReveal() {
+    if (onlineMode) {
+      await runOnlinePhaseAdvance();
+      return;
+    }
+    if (hasScoreWinner(players)) {
+      refreshCopy(['winner']);
+      setScreen('final');
+    } else {
+      setScreen('results');
+    }
+  }
   async function nextRound() {
     if (onlineMode) {
       const nextRoundData = await createNextOnlineRound();
@@ -1747,6 +1809,8 @@ export default function App() {
     setOnlineJoinedPlayerId('');
     setOnlinePrivatePrompt(null);
     setOnlinePrivatePromptError('');
+    setOnlinePhasePending(false);
+    setOnlineVoteSubmissionPending(false);
     setOnlineVoiceEnabled(false);
     setOnlineVoiceMuted(false);
     if (nextScreen === 'home') {
@@ -1893,11 +1957,15 @@ export default function App() {
     setOnlinePrivatePromptError('');
     const synced = await onlineTransportRef.current?.syncSnapshot();
     if (synced?.activeRound) {
-      await syncAuthoritativeRound(synced, { openHostIntro: true });
+      await syncOnlineRoundFromSnapshot(synced, { openHostIntro: true });
     }
   }
   function restartToHome() {
-    setPlayers(createPlayers(3)); setLiarCount(1); setNameTheme('Default'); setMode('classic'); setWinCondition('rounds'); setPointsToWin(15); setRoundsPerPlayer(1); setGrillSettings({ micEnabled: true, ttsEnabled: true }); setRound(null); setRoundNumber(1); setCurrentRoundOwnerIndex(0); setPreviousRoundType(null); setRoundTypeOptions([]); setSelectedRoundType(null); setRevealIndex(0); setVotesByPlayerId({}); setTally({}); setRoundGains({}); setRoundBreakdown({}); setImposterCaught(false); setRecentPromptKeys([]); setPendingResults(null); refreshCopy(['home','onlineLobby']);
+    setPlayers(createPlayers(3)); setLiarCount(1); setNameTheme('Default'); setMode('classic'); setWinCondition('rounds'); setPointsToWin(15); setRoundsPerPlayer(1); setGrillSettings({ micEnabled: true, ttsEnabled: true }); setRound(null); setRoundNumber(1); setCurrentRoundOwnerIndex(0); setPreviousRoundType(null); setRoundTypeOptions([]); setSelectedRoundType(null); setRevealIndex(0); setVotesByPlayerId({}); setTally({}); setRoundGains({}); setRoundBreakdown({}); setImposterCaught(false); setRecentPromptKeys([]); refreshCopy(['home','onlineLobby']);
+    setOnlinePhasePending(false);
+    setOnlineVoteSubmissionPending(false);
+    setOnlinePrivatePrompt(null);
+    setOnlinePrivatePromptError('');
     if (onlineMode || lobbyCode) {
       void leaveOnlineLobby({ nextScreen: 'home' });
       return;
@@ -1996,7 +2064,13 @@ export default function App() {
       <HostIntroScreen
         round={round}
         stingerLine={copyState.hostStinger}
-        onContinue={() => setScreen('reveal')}
+        onContinue={() => {
+          if (onlineMode) {
+            void runOnlinePhaseAdvance();
+            return;
+          }
+          setScreen('reveal');
+        }}
         theme={nameTheme}
       />
     )}
@@ -2018,7 +2092,24 @@ export default function App() {
         onlinePrivatePromptError={onlinePrivatePromptError}
       />
     )}
-    {screen === 'grill' && round && <GrillEmScreen players={players} round={round} totalRounds={totalRounds} onContinue={(grillData) => { setRound((cur) => ({ ...cur, grillData })); setVotesByPlayerId(Object.fromEntries(players.map((p) => [p.id, '']))); refreshCopy(['voting']); setScreen('voting'); }} theme={nameTheme} />}
+    {screen === 'grill' && round && (
+      <GrillEmScreen
+        players={players}
+        round={round}
+        totalRounds={totalRounds}
+        onContinue={(grillData) => {
+          setRound((cur) => ({ ...cur, grillData }));
+          setVotesByPlayerId(Object.fromEntries(players.map((p) => [p.id, ''])));
+          if (onlineMode) {
+            void runOnlinePhaseAdvance();
+            return;
+          }
+          refreshCopy(['voting']);
+          setScreen('voting');
+        }}
+        theme={nameTheme}
+      />
+    )}
     {screen === 'discussion' && round && (
       <DiscussionScreen
         players={players}
@@ -2026,6 +2117,10 @@ export default function App() {
         totalRounds={totalRounds}
         onContinue={() => {
           setVotesByPlayerId(Object.fromEntries(players.map((p) => [p.id, ''])));
+          if (onlineMode) {
+            void runOnlinePhaseAdvance();
+            return;
+          }
           refreshCopy(['voting']);
           setScreen('voting');
         }}
@@ -2035,6 +2130,7 @@ export default function App() {
         onlineVoiceMuted={onlineVoiceMuted}
         setOnlineVoiceMuted={setOnlineVoiceMuted}
         canTalk={onlineVoiceEnabled}
+        submitPending={onlinePhasePending}
       />
     )}
     {screen === 'voting' && round && (
@@ -2052,6 +2148,7 @@ export default function App() {
         onlineVoiceMuted={onlineVoiceMuted}
         setOnlineVoiceMuted={setOnlineVoiceMuted}
         canTalk={onlineVoiceEnabled}
+        submitPending={onlineVoteSubmissionPending}
       />
     )}
     {screen === 'liar-reveal' && round && <LiarRevealScreen players={players} round={round} onComplete={finishLiarReveal} theme={nameTheme} />}
