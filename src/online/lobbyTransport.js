@@ -56,6 +56,7 @@ export async function createLobbyOnServer({ hostName, hostPlayer }) {
   return {
     lobby: payload?.lobby || null,
     player: payload?.player || null,
+    sessionToken: payload?.sessionToken || '',
   };
 }
 
@@ -80,6 +81,7 @@ export async function joinLobbyOnServer(lobbyCode, player) {
   return {
     lobby: payload?.lobby || null,
     player: payload?.player || null,
+    sessionToken: payload?.sessionToken || '',
   };
 }
 
@@ -92,13 +94,30 @@ export async function leaveLobbyOnServer(lobbyCode, { role, playerId } = {}) {
   return payload?.lobby || null;
 }
 
-export async function startLobbyOnServer(lobbyCode, hostClientId) {
+export async function resumeLobbySessionOnServer(lobbyCode, { playerId, sessionToken, clientId } = {}) {
+  const normalizedCode = normalizeCode(lobbyCode);
+  const payload = await requestJson(`/lobbies/${encodeURIComponent(normalizedCode)}/resume`, {
+    method: 'POST',
+    body: { playerId, sessionToken, clientId },
+  });
+  return {
+    lobby: payload?.lobby || null,
+    player: payload?.player || null,
+    sessionToken: payload?.sessionToken || '',
+    role: payload?.role || null,
+  };
+}
+
+export async function startLobbyOnServer(lobbyCode, { hostClientId, sessionToken } = {}) {
   const normalizedCode = normalizeCode(lobbyCode);
   const payload = await requestJson(`/lobbies/${encodeURIComponent(normalizedCode)}/start`, {
     method: 'POST',
-    body: { hostClientId },
+    body: { hostClientId, sessionToken },
   });
-  return payload?.lobby || null;
+  return {
+    lobby: payload?.lobby || null,
+    rotatedSessionToken: payload?.rotatedSessionToken || '',
+  };
 }
 
 export function toGamePlayers(onlinePlayers = []) {
