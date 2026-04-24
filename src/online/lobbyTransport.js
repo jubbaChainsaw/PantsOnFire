@@ -108,13 +108,16 @@ export async function resumeLobbySessionOnServer(lobbyCode, { playerId, sessionT
   };
 }
 
-export async function startLobbyOnServer(lobbyCode, hostClientId) {
+export async function startLobbyOnServer(lobbyCode, { hostClientId, sessionToken } = {}) {
   const normalizedCode = normalizeCode(lobbyCode);
   const payload = await requestJson(`/lobbies/${encodeURIComponent(normalizedCode)}/start`, {
     method: 'POST',
-    body: { hostClientId },
+    body: { hostClientId, sessionToken },
   });
-  return payload?.lobby || null;
+  return {
+    lobby: payload?.lobby || null,
+    rotatedSessionToken: payload?.rotatedSessionToken || '',
+  };
 }
 
 export function toGamePlayers(onlinePlayers = []) {

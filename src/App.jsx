@@ -105,6 +105,8 @@ function mapLobbyErrorToMessage(error, fallback = 'Unable to complete online lob
   if (code === 'lobby-already-started') return 'This lobby already started. Ask the host for a new code.';
   if (code === 'session-token-required') return 'Session token missing. Rejoin the lobby from a fresh code.';
   if (code === 'invalid-session-token') return 'Session expired or invalid. Rejoin the lobby from a fresh code.';
+  if (code === 'session-token-expired') return 'Session expired due to inactivity. Rejoin the lobby from a fresh code.';
+  if (code === 'resume-token-missing') return 'Session restore token missing. Rejoin the lobby from a fresh code.';
   if (code === 'lobby-session-expired' || code === 'session-player-missing') return 'Session expired because this player left the lobby.';
   if (code === 'host-only') return 'Only the host can start this lobby.';
   if (code === 'not-enough-players') return `Need at least ${MIN_PLAYERS} players before starting.`;
@@ -1464,13 +1466,13 @@ export default function App() {
     const hostPlayer = createOnlinePlayer({ name: host, clientId: onlineClientId, isHost: true });
     let snapshot = null;
     let resolvedHostPlayer = hostPlayer;
-    let resumeToken = '';
+    let sessionToken = '';
     try {
       const result = await createLobbyOnServer({ hostName: host, hostPlayer });
       snapshot = result?.lobby || null;
       resolvedHostPlayer = result?.player || hostPlayer;
-      resumeToken = result?.resumeToken || '';
-    } catch {
+      sessionToken = result?.sessionToken || '';
+    } catch (error) {
       setOnlineLobbyError(mapLobbyErrorToMessage(error, 'Unable to create lobby. Check server connection and try again.'));
       return;
     }
@@ -1494,7 +1496,7 @@ export default function App() {
       playerId: resolvedHostPlayer?.id || hostPlayer.id,
       playerName: resolvedHostPlayer?.name || host,
       hostName: host,
-      sessionToken: resumeToken,
+      sessionToken,
     };
     onlineSessionRef.current = session;
     setStoredOnlineSession(session);
@@ -1507,12 +1509,12 @@ export default function App() {
     const joiner = createOnlinePlayer({ name: onlinePlayerName.trim(), clientId: onlineClientId });
     let nextSnapshot = null;
     let resolvedPlayer = joiner;
-    let resumeToken = '';
+    let sessionToken = '';
     try {
       const result = await joinLobbyOnServer(normalizedCode, joiner);
       nextSnapshot = result?.lobby || null;
       resolvedPlayer = result?.player || joiner;
-      resumeToken = result?.resumeToken || '';
+      sessionToken = result?.sessionToken || '';
     } catch (error) {
       if (error?.code === 'lobby-not-found') {
         setOnlineLobbyError('Lobby not found. Ask the host to regenerate and share a fresh code.');
@@ -1545,7 +1547,7 @@ export default function App() {
       playerId: resolvedPlayer.id,
       playerName: resolvedPlayer.name,
       hostName: nextSnapshot.hostName || 'Host',
-      sessionToken: resumeToken,
+      sessionToken,
     };
     onlineSessionRef.current = session;
     setStoredOnlineSession(session);
@@ -1554,8 +1556,18 @@ export default function App() {
   }
   async function startOnlineMatch() {
     if (onlineRole !== 'host' || !lobbyCode) return;
+    const currentSession = onlineSessionRef.current;
+    const hostSessionToken = currentSession?.sessionToken || '';
+    if (!hostSessionToken) {
+      setOnlineLobbyError('Host session token missing. Please leave and recreate the lobby.');
+      return;
+    }
+    let result = null;
     try {
-      await startLobbyOnServer(lobbyCode, onlineClientId);
+      result = await startLobbyOnServer(lobbyCode, {
+        hostClientId: onlineClientId,
+        sessionToken: hostSessionToken,
+      });
     } catch (error) {
       if (error?.code === 'not-enough-players') {
         setOnlineLobbyError(`Need at least ${MIN_PLAYERS} players before starting.`);
@@ -1569,8 +1581,17 @@ export default function App() {
         setOnlineLobbyError('Lobby no longer exists. Create a new one.');
         return;
       }
-      setOnlineLobbyError('Unable to start match. Please try again.');
+      setOnlineLobbyError(mapLobbyErrorToMessage(error, 'Unable to start match. Please try again.'));
       return;
+    }
+    const rotatedHostToken = result?.rotatedSessionToken || hostSessionToken;
+    if (rotatedHostToken !== hostSessionToken) {
+      const nextSession = {
+        ...(currentSession || {}),
+        sessionToken: rotatedHostToken,
+      };
+      onlineSessionRef.current = nextSession;
+      setStoredOnlineSession(nextSession);
     }
     onlineTransportRef.current?.syncSnapshot();
   }

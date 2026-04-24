@@ -8,6 +8,7 @@ const CLIENT_ORIGIN = process.env.LOBBY_CLIENT_ORIGIN || '*';
 const LOBBY_CODE_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 const LOBBY_CODE_LENGTH = 6;
 const MIN_PLAYERS = 3;
+const SESSION_TOKEN_TTL_MS = Number(process.env.LOBBY_SESSION_TOKEN_TTL_MS || 1000 * 60 * 60 * 12);
 
 function nowIso() {
   return new Date().toISOString();
@@ -86,14 +87,18 @@ function createInMemoryStore() {
       startedAt: null,
       startedRevision: null,
       players: [host],
-      playerSessionTokens: {},
+      playerSessions: {},
     };
-    lobby.playerSessionTokens[host.id] = randomSessionToken();
+    lobby.playerSessions[host.id] = {
+      token: randomSessionToken(),
+      issuedAt: Date.now(),
+      expiresAt: Date.now() + SESSION_TOKEN_TTL_MS,
+    };
     lobbies.set(code, lobby);
     return {
       lobby,
       player: host,
-      sessionToken: lobby.playerSessionTokens[host.id],
+      sessionToken: lobby.playerSessions[host.id].token,
     };
   }
 
@@ -113,16 +118,32 @@ function createInMemoryStore() {
   }
 
   function issueOrReuseSessionToken(lobby, playerId) {
-    if (!lobby.playerSessionTokens) lobby.playerSessionTokens = {};
-    if (lobby.playerSessionTokens[playerId]) return lobby.playerSessionTokens[playerId];
+    if (!lobby.playerSessions) lobby.playerSessions = {};
+    const existing = lobby.playerSessions[playerId];
+    if (existing?.token && Number(existing.expiresAt) > Date.now()) return existing.token;
     const token = randomSessionToken();
-    lobby.playerSessionTokens[playerId] = token;
+    lobby.playerSessions[playerId] = {
+      token,
+      issuedAt: Date.now(),
+      expiresAt: Date.now() + SESSION_TOKEN_TTL_MS,
+    };
     return token;
   }
 
   function findPlayerIdBySessionToken(lobby, sessionToken) {
-    if (!lobby?.playerSessionTokens || !sessionToken) return null;
-    return Object.keys(lobby.playerSessionTokens).find((playerId) => lobby.playerSessionTokens[playerId] === sessionToken) || null;
+    if (!lobby?.playerSessions || !sessionToken) return null;
+    return Object.keys(lobby.playerSessions).find((playerId) => lobby.playerSessions[playerId]?.token === sessionToken) || null;
+  }
+
+  function rotateSessionTokenForPlayer(lobby, playerId) {
+    if (!lobby?.playerSessions || !playerId) return '';
+    const token = randomSessionToken();
+    lobby.playerSessions[playerId] = {
+      token,
+      issuedAt: Date.now(),
+      expiresAt: Date.now() + SESSION_TOKEN_TTL_MS,
+    };
+    return token;
   }
 
   function upsertPlayer(code, playerInput) {
@@ -148,8 +169,8 @@ function createInMemoryStore() {
   function removePlayer(code, playerId) {
     const lobby = getLobby(code);
     if (!lobby) return { error: 'not-found' };
-    if (lobby.playerSessionTokens) {
-      delete lobby.playerSessionTokens[playerId];
+    if (lobby.playerSessions) {
+      delete lobby.playerSessions[playerId];
     }
     lobby.players = lobby.players.filter((player) => player.id !== playerId);
     if (!lobby.players.length) {
@@ -178,9 +199,15 @@ function createInMemoryStore() {
     if (!token) return { error: 'session-token-required' };
     const playerId = findPlayerIdBySessionToken(lobby, token);
     if (!playerId) return { error: 'invalid-session-token' };
+    const sessionEntry = lobby.playerSessions?.[playerId] || null;
+    if (!sessionEntry || Number(sessionEntry.expiresAt) <= Date.now()) {
+      if (lobby.playerSessions) delete lobby.playerSessions[playerId];
+      replaceLobby(lobby);
+      return { error: 'lobby-session-expired' };
+    }
     const player = lobby.players.find((entry) => entry.id === playerId);
     if (!player) {
-      if (lobby.playerSessionTokens) delete lobby.playerSessionTokens[playerId];
+      if (lobby.playerSessions) delete lobby.playerSessions[playerId];
       replaceLobby(lobby);
       return { error: 'session-player-missing' };
     }
@@ -189,7 +216,9 @@ function createInMemoryStore() {
       if (player.isHost) lobby.hostClientId = clientId;
       replaceLobby(lobby);
     }
-    return { lobby, player, sessionToken: token };
+    const nextToken = rotateSessionTokenForPlayer(lobby, playerId);
+    replaceLobby(lobby);
+    return { lobby, player, sessionToken: nextToken };
   }
 
   function startLobby(code, hostClientId) {
@@ -197,12 +226,18 @@ function createInMemoryStore() {
     if (!lobby) return { error: 'not-found' };
     if (lobby.hostClientId !== hostClientId) return { error: 'host-only' };
     if (lobby.players.length < MIN_PLAYERS) return { error: 'not-enough-players' };
-    if (lobby.status === 'started') return { lobby };
+    if (lobby.status === 'started') {
+      const hostPlayer = lobby.players.find((player) => player.isHost);
+      const token = hostPlayer ? issueOrReuseSessionToken(lobby, hostPlayer.id) : '';
+      return { lobby, sessionToken: token };
+    }
     lobby.status = 'started';
     lobby.startedAt = nowIso();
     lobby.startedRevision = randomId('start');
+    const hostPlayer = lobby.players.find((player) => player.isHost);
+    const rotatedHostToken = hostPlayer ? rotateSessionTokenForPlayer(lobby, hostPlayer.id) : '';
     replaceLobby(lobby);
-    return { lobby };
+    return { lobby, sessionToken: rotatedHostToken };
   }
 
   return {
@@ -302,6 +337,10 @@ app.post('/api/lobbies/:code/resume', (req, res) => {
     res.status(410).json({ error: 'session-player-missing' });
     return;
   }
+  if (result.error === 'lobby-session-expired') {
+    res.status(410).json({ error: 'lobby-session-expired' });
+    return;
+  }
   broadcastSnapshot(code, result.lobby);
   res.json({
     lobby: toClientSnapshot(result.lobby),
@@ -337,7 +376,8 @@ app.post('/api/lobbies/:code/leave', (req, res) => {
 app.post('/api/lobbies/:code/start', (req, res) => {
   const code = normalizeCode(req.params.code);
   const hostClientId = String(req.body?.hostClientId || '');
-  const result = store.startLobby(code, hostClientId);
+  const sessionToken = String(req.body?.sessionToken || '');
+  const result = store.startLobby(code, hostClientId, sessionToken);
   if (result.error === 'not-found') {
     res.status(404).json({ error: 'lobby-not-found' });
     return;
@@ -350,8 +390,19 @@ app.post('/api/lobbies/:code/start', (req, res) => {
     res.status(409).json({ error: 'not-enough-players', minPlayers: MIN_PLAYERS });
     return;
   }
+  if (result.error === 'host-session-token-required') {
+    res.status(400).json({ error: 'host-session-token-required' });
+    return;
+  }
+  if (result.error === 'token-rotation-required') {
+    res.status(401).json({ error: 'token-rotation-required' });
+    return;
+  }
   broadcastSnapshot(code, result.lobby);
-  res.json({ lobby: toClientSnapshot(result.lobby) });
+  res.json({
+    lobby: toClientSnapshot(result.lobby),
+    rotatedSessionToken: result.sessionToken || '',
+  });
 });
 
 io.on('connection', (socket) => {
