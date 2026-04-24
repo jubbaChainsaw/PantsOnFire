@@ -114,6 +114,30 @@ npm install
 npm run dev
 ```
 
+### Realtime Online Lobby Server (required for networked play)
+
+Run the lobby backend in a second terminal:
+
+```bash
+npm run lobby:server
+```
+
+Then run the app:
+
+```bash
+npm run dev
+```
+
+By default:
+- frontend: `http://localhost:5173`
+- lobby server: `http://localhost:8787`
+
+For deployed environments, set the frontend env var:
+
+```bash
+VITE_LOBBY_SERVER_URL=https://your-lobby-server.example.com npm run dev
+```
+
 ---
 
 ## Expo Mobile Test Shell

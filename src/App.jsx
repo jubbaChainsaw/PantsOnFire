@@ -29,16 +29,13 @@ import {
 } from './data/categories';
 import { PICTURE_DLC_MANIFESTS } from './data/pictureDlcManifests';
 import {
-  clearLobbySnapshot,
-  createLobbySnapshot,
   createLobbyTransport,
+  createLobbyOnServer,
   createOnlinePlayer,
-  markLobbyStarted,
-  readLobbySnapshot,
-  removeLobbyPlayer,
+  joinLobbyOnServer,
+  leaveLobbyOnServer,
+  startLobbyOnServer,
   toGamePlayers,
-  upsertLobbyPlayer,
-  writeLobbySnapshot,
 } from './online/lobbyTransport';
 
 const LOGO_SRC = '/assets/images/logo.png';
@@ -65,6 +62,15 @@ function getStored(key, fallback) {
   try { return JSON.parse(window.localStorage.getItem(key) || JSON.stringify(fallback)); } catch { return fallback; }
 }
 function setStored(key, value) { if (typeof window !== 'undefined') window.localStorage.setItem(key, JSON.stringify(value)); }
+function mapLobbyErrorToMessage(error, fallback = 'Unable to complete online lobby request.') {
+  const code = error?.code || error?.payload?.error || '';
+  if (code === 'lobby-not-found') return 'Lobby not found. Ask the host to regenerate and share a fresh code.';
+  if (code === 'lobby-already-started') return 'This lobby already started. Ask the host for a new code.';
+  if (code === 'host-only') return 'Only the host can start this lobby.';
+  if (code === 'not-enough-players') return `Need at least ${MIN_PLAYERS} players before starting.`;
+  if (code === 'player-id-required') return 'Unable to leave lobby: missing player identity.';
+  return fallback;
+}
 function getCombinedCategories(customCategories) { return [...DEFAULT_CATEGORIES, ...customCategories]; }
 function getGrillQuestionsPerPlayer(playerCount) {
   if (!playerCount || playerCount < 1) return 1;
@@ -1314,18 +1320,15 @@ export default function App() {
     setScreen('round-type-choice');
   }
   function endGame() { refreshCopy(['winner']); setScreen('final'); }
-  function leaveOnlineLobby({ nextScreen = 'home' } = {}) {
+  async function leaveOnlineLobby({ nextScreen = 'home' } = {}) {
     const normalizedCode = lobbyCode?.trim().toUpperCase();
-    const snapshot = normalizedCode
-      ? (onlineTransportRef.current?.getSnapshot?.() || readLobbySnapshot(normalizedCode))
-      : null;
-    if (snapshot && normalizedCode) {
-      if (onlineRole === 'host') {
-        clearLobbySnapshot(normalizedCode);
-      } else if (onlineJoinedPlayerId) {
-        const withoutMe = removeLobbyPlayer(snapshot, onlineJoinedPlayerId);
-        writeLobbySnapshot(withoutMe);
-      }
+    if (normalizedCode) {
+      try {
+        await leaveLobbyOnServer(normalizedCode, {
+          role: onlineRole === 'host' ? 'host' : 'player',
+          playerId: onlineJoinedPlayerId || undefined,
+        });
+      } catch {}
     }
     onlineTransportRef.current?.close();
     onlineTransportRef.current = null;
@@ -1346,42 +1349,63 @@ export default function App() {
     }
     setScreen(nextScreen);
   }
-  function createOnlineLobby() {
+  async function createOnlineLobby() {
     const host = (onlineHostName || players[0]?.name || 'Host').trim();
     if (!host) return;
-    const code = generateLobbyCode();
     const hostPlayer = createOnlinePlayer({ name: host, clientId: onlineClientId, isHost: true });
-    const snapshot = createLobbySnapshot({ lobbyCode: code, hostPlayer, hostName: host });
-    writeLobbySnapshot(snapshot);
+    let snapshot = null;
+    let resolvedHostPlayer = hostPlayer;
+    try {
+      const result = await createLobbyOnServer({ hostName: host, hostPlayer });
+      snapshot = result?.lobby || null;
+      resolvedHostPlayer = result?.player || hostPlayer;
+    } catch {
+      setOnlineLobbyError('Unable to create lobby. Check server connection and try again.');
+      return;
+    }
+    if (!snapshot?.code) {
+      setOnlineLobbyError('Unable to create lobby. Check server connection and try again.');
+      return;
+    }
     onlineStartedRevisionHandledRef.current = '';
     setOnlineMode(true);
     setOnlineRole('host');
     setOnlineHostName(host);
-    setOnlinePlayerName(host);
-    setLobbyCode(code);
-    setOnlineLobbyPlayers(snapshot.players);
-    setOnlineLobbyStatus(snapshot.status);
+    setOnlinePlayerName(resolvedHostPlayer?.name || host);
+    setLobbyCode(snapshot.code);
+    setOnlineLobbyPlayers(snapshot.players || []);
+    setOnlineLobbyStatus(snapshot.status || 'waiting');
     setOnlineLobbyError('');
-    setOnlineJoinedPlayerId(hostPlayer.id);
-    setPlayers(toGamePlayers(snapshot.players));
+    setOnlineJoinedPlayerId(resolvedHostPlayer?.id || hostPlayer.id);
+    setPlayers(toGamePlayers(snapshot.players || []));
     setScreen('online-lobby-created');
   }
-  function joinOnlineLobby() {
+  async function joinOnlineLobby() {
     if (!joinLobbyCodeInput.trim() || !onlinePlayerName.trim()) return;
     const normalizedCode = joinLobbyCodeInput.trim().toUpperCase();
-    const snapshot = readLobbySnapshot(normalizedCode);
-    if (!snapshot) {
-      setOnlineLobbyError('Lobby not found. Ask the host to regenerate and share a fresh code.');
-      return;
-    }
-    if (snapshot.status === 'started') {
-      setOnlineLobbyError('This lobby already started. Ask the host for a new code.');
-      return;
-    }
     const joiner = createOnlinePlayer({ name: onlinePlayerName.trim(), clientId: onlineClientId });
-    const nextSnapshot = upsertLobbyPlayer(snapshot, joiner);
-    writeLobbySnapshot(nextSnapshot);
-    const resolvedPlayer = (nextSnapshot.players || []).find((player) => player.clientId === onlineClientId) || joiner;
+    let nextSnapshot = null;
+    let resolvedPlayer = joiner;
+    try {
+      const result = await joinLobbyOnServer(normalizedCode, joiner);
+      nextSnapshot = result?.lobby || null;
+      resolvedPlayer = result?.player || joiner;
+    } catch (error) {
+      if (error?.code === 'lobby-not-found') {
+        setOnlineLobbyError('Lobby not found. Ask the host to regenerate and share a fresh code.');
+        return;
+      }
+      if (error?.code === 'lobby-already-started') {
+        setOnlineLobbyError('This lobby already started. Ask the host for a new code.');
+        return;
+      }
+      setOnlineLobbyError('Unable to join lobby right now. Try again in a moment.');
+      return;
+    }
+    if (!nextSnapshot) {
+      setOnlineLobbyError('Unable to join lobby right now. Try again in a moment.');
+      return;
+    }
     onlineStartedRevisionHandledRef.current = '';
     setOnlineMode(true);
     setOnlineRole('player');
@@ -1395,26 +1419,29 @@ export default function App() {
     setPlayers(toGamePlayers(nextSnapshot.players || []));
     setScreen('online-lobby-waiting');
   }
-  function startOnlineMatch() {
+  async function startOnlineMatch() {
     if (onlineRole !== 'host' || !lobbyCode) return;
-    const snapshot = readLobbySnapshot(lobbyCode);
-    if (!snapshot) {
-      setOnlineLobbyError('Lobby no longer exists. Create a new one.');
+    try {
+      await startLobbyOnServer(lobbyCode, onlineClientId);
+    } catch (error) {
+      if (error?.code === 'not-enough-players') {
+        setOnlineLobbyError(`Need at least ${MIN_PLAYERS} players before starting.`);
+        return;
+      }
+      if (error?.code === 'host-only') {
+        setOnlineLobbyError('Only the host can start this lobby.');
+        return;
+      }
+      if (error?.code === 'lobby-not-found') {
+        setOnlineLobbyError('Lobby no longer exists. Create a new one.');
+        return;
+      }
+      setOnlineLobbyError('Unable to start match. Please try again.');
       return;
     }
-    if ((snapshot.players || []).length < MIN_PLAYERS) {
-      setOnlineLobbyError(`Need at least ${MIN_PLAYERS} players before starting.`);
-      return;
-    }
-    const startedSnapshot = markLobbyStarted(snapshot, onlineClientId);
-    if (!startedSnapshot || startedSnapshot.status !== 'started') {
-      setOnlineLobbyError('Only the host can start this lobby.');
-      return;
-    }
-    writeLobbySnapshot(startedSnapshot);
     onlineTransportRef.current?.syncSnapshot();
   }
-  function restartToHome() { setPlayers(createPlayers(3)); setLiarCount(1); setNameTheme('Default'); setMode('classic'); setWinCondition('rounds'); setPointsToWin(15); setRoundsPerPlayer(1); setGrillSettings({ micEnabled: true, ttsEnabled: true }); setRound(null); setRoundNumber(1); setCurrentRoundOwnerIndex(0); setPreviousRoundType(null); setRoundTypeOptions([]); setSelectedRoundType(null); setRevealIndex(0); setVotesByPlayerId({}); setTally({}); setRoundGains({}); setRoundBreakdown({}); setImposterCaught(false); setRecentPromptKeys([]); setPendingResults(null); refreshCopy(['home','onlineLobby']); leaveOnlineLobby({ nextScreen: 'home' }); }
+  function restartToHome() { setPlayers(createPlayers(3)); setLiarCount(1); setNameTheme('Default'); setMode('classic'); setWinCondition('rounds'); setPointsToWin(15); setRoundsPerPlayer(1); setGrillSettings({ micEnabled: true, ttsEnabled: true }); setRound(null); setRoundNumber(1); setCurrentRoundOwnerIndex(0); setPreviousRoundType(null); setRoundTypeOptions([]); setSelectedRoundType(null); setRevealIndex(0); setVotesByPlayerId({}); setTally({}); setRoundGains({}); setRoundBreakdown({}); setImposterCaught(false); setRecentPromptKeys([]); setPendingResults(null); refreshCopy(['home','onlineLobby']); void leaveOnlineLobby({ nextScreen: 'home' }); }
 
   return <>
     {screen === 'home' && <HomeScreen onNavigate={(to) => to === 'setup' ? (refreshCopy(['setup']), setScreen('setup')) : setScreen(to)} homeLine={copyState.home} onlineLobbyLine={copyState.onlineLobby} adultMode={adultMode} />}
@@ -1423,7 +1450,13 @@ export default function App() {
       <OnlineLobbySetupScreen
         hostName={onlineHostName}
         setHostName={setOnlineHostName}
-        onBack={() => setScreen('home')}
+        onBack={() => {
+          if (onlineMode || lobbyCode) {
+            void leaveOnlineLobby({ nextScreen: 'home' });
+            return;
+          }
+          setScreen('home');
+        }}
         onContinue={createOnlineLobby}
         nameTheme={nameTheme}
       />
@@ -1435,7 +1468,13 @@ export default function App() {
         joinCode={joinLobbyCodeInput}
         setJoinCode={setJoinLobbyCodeInput}
         nameTheme={nameTheme}
-        onBack={() => setScreen('home')}
+        onBack={() => {
+          if (onlineMode || lobbyCode) {
+            void leaveOnlineLobby({ nextScreen: 'home' });
+            return;
+          }
+          setScreen('home');
+        }}
         onJoin={joinOnlineLobby}
         joinError={onlineLobbyError}
       />
@@ -1451,7 +1490,7 @@ export default function App() {
             navigator.clipboard.writeText(lobbyCode).catch(() => {});
           }
         }}
-        onBack={() => leaveOnlineLobby({ nextScreen: 'online-setup' })}
+        onBack={() => { void leaveOnlineLobby({ nextScreen: 'online-setup' }); }}
         onStartMatch={startOnlineMatch}
         nameTheme={nameTheme}
       />
@@ -1476,7 +1515,7 @@ export default function App() {
               </div>
             )}
             <div className="mt-6 flex justify-center gap-3">
-              <Button className="rounded-[1.4rem] bg-white/5 border border-white/10 text-white" onClick={() => leaveOnlineLobby({ nextScreen: 'online-join' })}>Leave Lobby</Button>
+              <Button className="rounded-[1.4rem] bg-white/5 border border-white/10 text-white" onClick={() => { void leaveOnlineLobby({ nextScreen: 'online-join' }); }}>Leave Lobby</Button>
             </div>
           </GlassPanel>
         </div>
