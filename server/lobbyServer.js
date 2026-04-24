@@ -297,6 +297,127 @@ app.post('/api/lobbies/:code/rounds/next', async (req, res) => {
   });
 });
 
+app.post('/api/lobbies/:code/round/phase/advance', async (req, res) => {
+  const code = normalizeCode(req.params.code);
+  const playerId = String(req.body?.playerId || '');
+  const sessionToken = String(req.body?.sessionToken || '');
+  const result = await store.advanceRoundPhase(code, playerId, sessionToken);
+  if (result.error === 'not-found') {
+    res.status(404).json({ error: 'lobby-not-found' });
+    return;
+  }
+  if (result.error === 'lobby-not-started') {
+    res.status(409).json({ error: 'lobby-not-started' });
+    return;
+  }
+  if (result.error === 'round-not-found') {
+    res.status(404).json({ error: 'round-not-found' });
+    return;
+  }
+  if (result.error === 'player-id-required') {
+    res.status(400).json({ error: 'player-id-required' });
+    return;
+  }
+  if (result.error === 'session-token-required') {
+    res.status(400).json({ error: 'session-token-required' });
+    return;
+  }
+  if (result.error === 'invalid-session-token') {
+    res.status(401).json({ error: 'invalid-session-token' });
+    return;
+  }
+  if (result.error === 'session-token-expired') {
+    res.status(401).json({ error: 'session-token-expired' });
+    return;
+  }
+  if (result.error === 'session-player-missing') {
+    res.status(410).json({ error: 'session-player-missing' });
+    return;
+  }
+  if (result.error === 'phase-advance-not-allowed' || result.error === 'voting-incomplete' || result.error === 'invalid-round-phase') {
+    res.status(409).json({ error: 'round-phase-not-advanceable', phase: result.phase || null });
+    return;
+  }
+  if (result.error === 'lock-timeout') {
+    res.status(503).json({ error: 'lobby-busy' });
+    return;
+  }
+  if (result.lobby) {
+    broadcastSnapshot(code, result.lobby);
+  }
+  res.json({
+    lobby: toClientSnapshot(result.lobby),
+    round: result.round || null,
+    phase: result.phase || result.round?.phase || null,
+  });
+});
+
+app.post('/api/lobbies/:code/round/votes', async (req, res) => {
+  const code = normalizeCode(req.params.code);
+  const playerId = String(req.body?.playerId || '');
+  const targetId = String(req.body?.targetId || '');
+  const sessionToken = String(req.body?.sessionToken || '');
+  const result = await store.submitRoundVote(code, playerId, targetId, sessionToken);
+  if (result.error === 'not-found') {
+    res.status(404).json({ error: 'lobby-not-found' });
+    return;
+  }
+  if (result.error === 'lobby-not-started') {
+    res.status(409).json({ error: 'lobby-not-started' });
+    return;
+  }
+  if (result.error === 'round-not-found') {
+    res.status(404).json({ error: 'round-not-found' });
+    return;
+  }
+  if (result.error === 'player-id-required') {
+    res.status(400).json({ error: 'player-id-required' });
+    return;
+  }
+  if (result.error === 'vote-target-required') {
+    res.status(400).json({ error: 'vote-target-required' });
+    return;
+  }
+  if (result.error === 'vote-target-invalid') {
+    res.status(409).json({ error: 'invalid-vote-target' });
+    return;
+  }
+  if (result.error === 'voting-not-active') {
+    res.status(409).json({ error: 'round-phase-not-voting', phase: result.phase || null });
+    return;
+  }
+  if (result.error === 'session-token-required') {
+    res.status(400).json({ error: 'session-token-required' });
+    return;
+  }
+  if (result.error === 'invalid-session-token') {
+    res.status(401).json({ error: 'invalid-session-token' });
+    return;
+  }
+  if (result.error === 'session-token-expired') {
+    res.status(401).json({ error: 'session-token-expired' });
+    return;
+  }
+  if (result.error === 'session-player-missing') {
+    res.status(410).json({ error: 'session-player-missing' });
+    return;
+  }
+  if (result.error === 'lock-timeout') {
+    res.status(503).json({ error: 'lobby-busy' });
+    return;
+  }
+  if (result.lobby) {
+    broadcastSnapshot(code, result.lobby);
+  }
+  res.json({
+    lobby: toClientSnapshot(result.lobby),
+    round: result.round || null,
+    phase: result.phase || result.round?.phase || null,
+    votingComplete: Boolean(result.votingComplete),
+    results: result.results || null,
+  });
+});
+
 io.on('connection', (socket) => {
   socket.on('lobby:subscribe', async ({ code }) => {
     const normalized = normalizeCode(code);

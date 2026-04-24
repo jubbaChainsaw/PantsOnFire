@@ -86,12 +86,14 @@ function generateLobbyCode() {
 }
 
 function sanitizePlayer(raw = {}, { fallbackName = 'Player', forceHost = false } = {}) {
+  const normalizedScore = Number(raw.score);
   return {
     id: String(raw.id || randomId('opl')),
     name: String(raw.name || fallbackName).trim() || fallbackName,
     clientId: String(raw.clientId || ''),
     isHost: forceHost ? true : Boolean(raw.isHost),
     joinedAt: raw.joinedAt || nowIso(),
+    score: Number.isFinite(normalizedScore) ? Math.max(0, normalizedScore) : 0,
   };
 }
 
@@ -107,6 +109,106 @@ function shuffle(items = []) {
 function pickRandom(items = []) {
   if (!Array.isArray(items) || items.length === 0) return null;
   return items[Math.floor(Math.random() * items.length)];
+}
+
+function scoreRoundServer(players, round, votesByPlayerId = {}) {
+  const tally = {};
+  for (const voterId of Object.keys(votesByPlayerId || {})) {
+    const votedFor = votesByPlayerId[voterId];
+    if (!votedFor) continue;
+    tally[votedFor] = (tally[votedFor] || 0) + 1;
+  }
+  const liarIds = round.imposterIds || [];
+  const topVotes = Math.max(0, ...Object.values(tally));
+  const caughtLiars = liarIds.filter((id) => (tally[id] || 0) > 0 && (tally[id] || 0) === topVotes);
+  const imposterCaught = caughtLiars.length === liarIds.length;
+  const isGrillRound = round.roundTypeId === 'grill';
+  const roundGains = {};
+  const roundBreakdown = {};
+  const nextPlayers = players.map((player) => {
+    let gain = 0;
+    let voteHit = 0;
+    let liarSurvived = 0;
+    let grillTeamBonus = 0;
+    let grillLiarSwing = 0;
+    if (liarIds.includes(votesByPlayerId[player.id])) {
+      gain += 1;
+      voteHit = 1;
+    }
+    if (liarIds.includes(player.id) && !imposterCaught) {
+      gain += 2;
+      liarSurvived = 2;
+    }
+    if (isGrillRound) {
+      if (imposterCaught) {
+        gain += 2;
+        grillTeamBonus = 2;
+      } else if (liarIds.includes(player.id)) {
+        gain += 2;
+        grillLiarSwing = 2;
+      } else {
+        gain -= 1;
+        grillLiarSwing = -1;
+      }
+    }
+    roundGains[player.id] = gain;
+    roundBreakdown[player.id] = { voteHit, liarSurvived, grillTeamBonus, grillLiarSwing };
+    return { ...player, score: Math.max(0, Number(player.score || 0) + gain) };
+  });
+  return { nextPlayers, tally, imposterCaught, roundGains, roundBreakdown };
+}
+
+function normalizeRoundPhase(rawPhase, roundTypeId = 'prompt') {
+  const phase = String(rawPhase || '').trim();
+  if (phase === 'host-intro') return 'host-intro';
+  if (phase === 'reveal') return 'reveal';
+  if (phase === 'discussion') return 'discussion';
+  if (phase === 'grill') return roundTypeId === 'grill' ? 'grill' : 'discussion';
+  if (phase === 'voting') return 'voting';
+  if (phase === 'liar-reveal') return 'liar-reveal';
+  if (phase === 'results') return 'results';
+  if (phase === 'final') return 'final';
+  return 'host-intro';
+}
+
+function getNextRoundPhase(currentPhase, roundTypeId = 'prompt') {
+  if (currentPhase === 'host-intro') return 'reveal';
+  if (currentPhase === 'reveal') return roundTypeId === 'grill' ? 'grill' : 'discussion';
+  if (currentPhase === 'discussion' || currentPhase === 'grill') return 'voting';
+  if (currentPhase === 'liar-reveal') return 'results';
+  return null;
+}
+
+function normalizeVotes(votesByPlayerId, players = []) {
+  if (!votesByPlayerId || typeof votesByPlayerId !== 'object') return {};
+  const validVoterIds = new Set(players.map((player) => player.id));
+  return Object.fromEntries(
+    Object.entries(votesByPlayerId).filter(([voterId, targetId]) => {
+      if (!validVoterIds.has(voterId)) return false;
+      if (!targetId) return false;
+      return validVoterIds.has(targetId);
+    })
+  );
+}
+
+function hydrateRound(rawRound, playerCount = 0) {
+  if (!rawRound || typeof rawRound !== 'object') return null;
+  const roundTypeId = String(rawRound.roundTypeId || 'prompt');
+  const votesByPlayerId = rawRound.votesByPlayerId && typeof rawRound.votesByPlayerId === 'object'
+    ? rawRound.votesByPlayerId
+    : {};
+  const submittedVotes = Object.values(votesByPlayerId).filter(Boolean).length;
+  return {
+    ...rawRound,
+    phase: normalizeRoundPhase(rawRound.phase, roundTypeId),
+    phaseUpdatedAt: rawRound.phaseUpdatedAt || rawRound.createdAt || nowIso(),
+    votesByPlayerId,
+    voteCompletionCount: Math.max(0, Number(rawRound.voteCompletionCount ?? submittedVotes)),
+    voteTargetCount: Math.max(1, Number(rawRound.voteTargetCount ?? playerCount || 1)),
+    resolution: rawRound.resolution && typeof rawRound.resolution === 'object'
+      ? rawRound.resolution
+      : null,
+  };
 }
 
 function buildAuthoritativeRound(players = [], roundNumber = 1, recentPromptKeys = []) {
@@ -153,6 +255,12 @@ function buildAuthoritativeRound(players = [], roundNumber = 1, recentPromptKeys
       transcript: [],
       askedCounts: {},
     },
+    phase: 'host-intro',
+    phaseUpdatedAt: nowIso(),
+    votesByPlayerId: {},
+    voteCompletionCount: 0,
+    voteTargetCount: players.length,
+    resolution: null,
     mediaByPlayerId: {},
     promptsByPlayerId: Object.fromEntries(
       players.map((player) => [
@@ -165,7 +273,12 @@ function buildAuthoritativeRound(players = [], roundNumber = 1, recentPromptKeys
 
 function toPublicRound(round) {
   if (!round || typeof round !== 'object') return null;
-  const { promptsByPlayerId, mediaByPlayerId, ...publicRound } = round;
+  const {
+    promptsByPlayerId,
+    mediaByPlayerId,
+    votesByPlayerId,
+    ...publicRound
+  } = round;
   return publicRound;
 }
 
@@ -184,6 +297,10 @@ function toPrivateRoundForPlayer(round, playerId) {
     roundTypeName: round.roundTypeName,
     categoryLabel: round.categoryLabel,
     categoryEmoji: round.categoryEmoji,
+    phase: normalizeRoundPhase(round.phase, round.roundTypeId),
+    voteCompletionCount: Number(round.voteCompletionCount || 0),
+    voteTargetCount: Number(round.voteTargetCount || 0),
+    currentVoteTargetId: String(round.votesByPlayerId?.[playerId] || ''),
   };
 }
 
@@ -208,7 +325,7 @@ function hydrateLobby(rawLobby) {
     startedRevision: rawLobby.startedRevision || null,
     players,
     playerSessions,
-    activeRound: rawLobby.activeRound && typeof rawLobby.activeRound === 'object' ? rawLobby.activeRound : null,
+    activeRound: hydrateRound(rawLobby.activeRound, players.length),
     roundCounter: Number.isFinite(roundCounterRaw)
       ? Math.max(0, Math.floor(roundCounterRaw))
       : (Number(rawLobby.activeRound?.roundNumber) || 0),
@@ -340,6 +457,9 @@ function buildStoreCore({
       id: playerId,
       isHost: existingById?.isHost || Boolean(incoming.isHost),
       joinedAt: existingById?.joinedAt || incoming.joinedAt || nowIso(),
+      score: Number.isFinite(Number(existingById?.score))
+        ? Math.max(0, Number(existingById.score))
+        : Math.max(0, Number(incoming.score || 0)),
     };
     lobby.players = lobby.players.filter((player) => player.id !== playerId && player.clientId !== incoming.clientId);
     lobby.players.push(merged);
@@ -353,6 +473,15 @@ function buildStoreCore({
     if (!lobby) return { error: 'not-found' };
     if (lobby.playerSessions) delete lobby.playerSessions[playerId];
     lobby.players = lobby.players.filter((player) => player.id !== playerId);
+    if (lobby.activeRound?.votesByPlayerId) {
+      delete lobby.activeRound.votesByPlayerId[playerId];
+      const activePlayerIds = new Set(lobby.players.map((player) => player.id));
+      lobby.activeRound.votesByPlayerId = Object.fromEntries(
+        Object.entries(lobby.activeRound.votesByPlayerId).filter(([, targetId]) => activePlayerIds.has(targetId))
+      );
+      lobby.activeRound.voteTargetCount = lobby.players.length;
+      lobby.activeRound.voteCompletionCount = Object.values(lobby.activeRound.votesByPlayerId).filter(Boolean).length;
+    }
     if (!lobby.players.length) {
       await deleteLobby(code);
       return { lobby: null };
@@ -459,6 +588,9 @@ function buildStoreCore({
       return { error: 'session-token-expired' };
     }
     if (hostValidation.error) return { error: hostValidation.error };
+    if (lobby.activeRound && !['results', 'final'].includes(normalizeRoundPhase(lobby.activeRound.phase, lobby.activeRound.roundTypeId))) {
+      return { error: 'round-not-finished' };
+    }
 
     const nextRoundNumber = Math.max(1, Number(lobby.roundCounter || 0) + 1);
     const nextRound = buildAuthoritativeRound(lobby.players, nextRoundNumber, lobby.recentPromptKeys || []);
@@ -475,6 +607,110 @@ function buildStoreCore({
       lobby,
       round: toPublicRound(nextRound),
       sessionToken: rotatedHostToken,
+    };
+  }
+
+  async function advanceRoundPhase(code, playerId, sessionToken = '') {
+    const lobby = await getLobby(code);
+    if (!lobby) return { error: 'not-found' };
+    if (lobby.status !== 'started') return { error: 'lobby-not-started' };
+    if (!lobby.activeRound) return { error: 'round-not-found' };
+    const normalizedPlayerId = String(playerId || '').trim();
+    if (!normalizedPlayerId) return { error: 'player-id-required' };
+    const validation = validatePlayerSession(lobby, sessionToken, normalizedPlayerId);
+    if (validation.error === 'session-token-expired') {
+      await saveLobby(lobby);
+      return { error: 'session-token-expired' };
+    }
+    if (validation.error) return { error: validation.error };
+
+    const round = lobby.activeRound;
+    round.phase = normalizeRoundPhase(round.phase, round.roundTypeId);
+    if (round.phase === 'voting') {
+      const normalizedVotes = normalizeVotes(round.votesByPlayerId, lobby.players);
+      round.votesByPlayerId = normalizedVotes;
+      round.voteTargetCount = lobby.players.length;
+      round.voteCompletionCount = Object.values(normalizedVotes).filter(Boolean).length;
+      if (round.voteCompletionCount < round.voteTargetCount) {
+        return { error: 'voting-incomplete' };
+      }
+      if (!round.resolution) {
+        const resolution = scoreRoundServer(lobby.players, round, normalizedVotes);
+        lobby.players = resolution.nextPlayers;
+        round.resolution = {
+          tally: resolution.tally,
+          imposterCaught: resolution.imposterCaught,
+          roundGains: resolution.roundGains,
+          roundBreakdown: resolution.roundBreakdown,
+          resolvedAt: nowIso(),
+        };
+      }
+      round.phase = 'liar-reveal';
+      round.phaseUpdatedAt = nowIso();
+      await saveLobby(lobby);
+      return { lobby, round: toPublicRound(round) };
+    }
+
+    const nextPhase = getNextRoundPhase(round.phase, round.roundTypeId);
+    if (!nextPhase) return { error: 'invalid-round-phase' };
+    round.phase = nextPhase;
+    round.phaseUpdatedAt = nowIso();
+    if (nextPhase === 'voting') {
+      round.votesByPlayerId = {};
+      round.voteCompletionCount = 0;
+      round.voteTargetCount = lobby.players.length;
+      round.resolution = null;
+    }
+    await saveLobby(lobby);
+    return { lobby, round: toPublicRound(round) };
+  }
+
+  async function submitRoundVote(code, playerId, targetPlayerId, sessionToken = '') {
+    const lobby = await getLobby(code);
+    if (!lobby) return { error: 'not-found' };
+    if (lobby.status !== 'started') return { error: 'lobby-not-started' };
+    if (!lobby.activeRound) return { error: 'round-not-found' };
+    const normalizedPlayerId = String(playerId || '').trim();
+    const normalizedTargetId = String(targetPlayerId || '').trim();
+    if (!normalizedPlayerId) return { error: 'player-id-required' };
+    if (!normalizedTargetId) return { error: 'vote-target-required' };
+    const validation = validatePlayerSession(lobby, sessionToken, normalizedPlayerId);
+    if (validation.error === 'session-token-expired') {
+      await saveLobby(lobby);
+      return { error: 'session-token-expired' };
+    }
+    if (validation.error) return { error: validation.error };
+    const round = lobby.activeRound;
+    round.phase = normalizeRoundPhase(round.phase, round.roundTypeId);
+    if (round.phase !== 'voting') return { error: 'voting-not-active' };
+    const playerIds = new Set(lobby.players.map((player) => player.id));
+    if (!playerIds.has(normalizedTargetId) || normalizedTargetId === normalizedPlayerId) {
+      return { error: 'vote-target-invalid' };
+    }
+    const normalizedVotes = normalizeVotes(round.votesByPlayerId, lobby.players);
+    normalizedVotes[normalizedPlayerId] = normalizedTargetId;
+    round.votesByPlayerId = normalizedVotes;
+    round.voteTargetCount = lobby.players.length;
+    round.voteCompletionCount = Object.values(normalizedVotes).filter(Boolean).length;
+    if (round.voteCompletionCount >= round.voteTargetCount) {
+      const resolution = scoreRoundServer(lobby.players, round, normalizedVotes);
+      lobby.players = resolution.nextPlayers;
+      round.resolution = {
+        tally: resolution.tally,
+        imposterCaught: resolution.imposterCaught,
+        roundGains: resolution.roundGains,
+        roundBreakdown: resolution.roundBreakdown,
+        resolvedAt: nowIso(),
+      };
+      round.phase = 'liar-reveal';
+      round.phaseUpdatedAt = nowIso();
+    }
+    await saveLobby(lobby);
+    return {
+      lobby,
+      round: toPublicRound(round),
+      voteAccepted: true,
+      votingComplete: Boolean(round.resolution),
     };
   }
 
@@ -517,6 +753,8 @@ function buildStoreCore({
     removePlayer,
     resumePlayer,
     startLobby,
+    advanceRoundPhase,
+    submitRoundVote,
     createNextRound,
     getCurrentRound,
     getPlayerRoundView,
