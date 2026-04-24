@@ -34,6 +34,7 @@ import {
   createOnlinePlayer,
   joinLobbyOnServer,
   leaveLobbyOnServer,
+  resumeLobbySessionOnServer,
   startLobbyOnServer,
   toGamePlayers,
 } from './online/lobbyTransport';
@@ -82,10 +83,29 @@ function setStoredOnlineSession(session) {
   }
   setStored('imposter-online-session-v1', session);
 }
+function normalizeStoredOnlineSession(raw) {
+  if (!raw || typeof raw !== 'object') return null;
+  const lobbyCode = String(raw.lobbyCode || '').trim().toUpperCase();
+  const playerId = String(raw.playerId || '').trim();
+  const role = raw.role === 'host' ? 'host' : (raw.role === 'player' ? 'player' : '');
+  if (!lobbyCode || !playerId || !role) return null;
+  const sessionToken = String(raw.sessionToken || '').trim();
+  return {
+    lobbyCode,
+    role,
+    playerId,
+    playerName: String(raw.playerName || '').trim(),
+    hostName: String(raw.hostName || '').trim(),
+    sessionToken: sessionToken || '',
+  };
+}
 function mapLobbyErrorToMessage(error, fallback = 'Unable to complete online lobby request.') {
   const code = error?.code || error?.payload?.error || '';
   if (code === 'lobby-not-found') return 'Lobby not found. Ask the host to regenerate and share a fresh code.';
   if (code === 'lobby-already-started') return 'This lobby already started. Ask the host for a new code.';
+  if (code === 'session-token-required') return 'Session token missing. Rejoin the lobby from a fresh code.';
+  if (code === 'invalid-session-token') return 'Session expired or invalid. Rejoin the lobby from a fresh code.';
+  if (code === 'lobby-session-expired' || code === 'session-player-missing') return 'Session expired because this player left the lobby.';
   if (code === 'host-only') return 'Only the host can start this lobby.';
   if (code === 'not-enough-players') return `Need at least ${MIN_PLAYERS} players before starting.`;
   if (code === 'player-id-required') return 'Unable to leave lobby: missing player identity.';
@@ -1191,32 +1211,58 @@ export default function App() {
   }, [screen]);
   useEffect(() => {
     const session = onlineSessionRef.current;
-    if (!session?.lobbyCode || !session?.playerId || !session?.role) return;
+    if (!session?.lobbyCode || !session?.playerId || !session?.role || !session?.sessionToken) return;
     if (onlineMode || lobbyCode) return;
-    setOnlineMode(true);
-    setOnlineRole(session.role === 'host' ? 'host' : 'player');
-    setLobbyCode(String(session.lobbyCode).toUpperCase());
-    setOnlineJoinedPlayerId(session.playerId);
-    if (session.role === 'host') {
-      setScreen('online-lobby-created');
-    } else {
-      setScreen('online-lobby-waiting');
-    }
-  }, [onlineMode, lobbyCode]);
-  useEffect(() => {
-    const session = onlineSessionRef.current;
-    if (!session || onlineMode) return;
-    const normalizedCode = String(session.lobbyCode || '').trim().toUpperCase();
-    if (!normalizedCode) return;
-    const normalizedRole = session.role === 'host' ? 'host' : 'player';
-    setOnlineMode(true);
-    setOnlineRole(normalizedRole);
-    setLobbyCode(normalizedCode);
-    setOnlineHostName(session.hostName || '');
-    setOnlinePlayerName(session.playerName || '');
-    setOnlineJoinedPlayerId(session.playerId || '');
-    setScreen(normalizedRole === 'host' ? 'online-lobby-created' : 'online-lobby-waiting');
-  }, [onlineMode]);
+    let cancelled = false;
+    (async () => {
+      try {
+        const resumed = await resumeLobbySessionOnServer(session.lobbyCode, {
+          playerId: session.playerId,
+          sessionToken: session.sessionToken,
+          clientId: onlineClientId,
+        });
+        if (cancelled || !resumed?.lobby) return;
+        const normalizedRole = session.role === 'host' ? 'host' : 'player';
+        const playersFromSnapshot = Array.isArray(resumed.lobby.players) ? resumed.lobby.players : [];
+        const resolvedPlayer = resumed.player || playersFromSnapshot.find((player) => player.id === session.playerId) || null;
+        const nextSession = {
+          lobbyCode: String(resumed.lobby.code || session.lobbyCode).toUpperCase(),
+          role: normalizedRole,
+          playerId: resolvedPlayer?.id || session.playerId,
+          playerName: resolvedPlayer?.name || session.playerName || '',
+          hostName: resumed.lobby.hostName || session.hostName || '',
+          sessionToken: resumed.resumeToken || session.sessionToken,
+        };
+        onlineSessionRef.current = nextSession;
+        setStoredOnlineSession(nextSession);
+        setOnlineMode(true);
+        setOnlineRole(normalizedRole);
+        setLobbyCode(nextSession.lobbyCode);
+        setOnlineHostName(nextSession.hostName);
+        setOnlinePlayerName(nextSession.playerName);
+        setOnlineJoinedPlayerId(nextSession.playerId);
+        setOnlineLobbyPlayers(playersFromSnapshot);
+        setOnlineLobbyStatus(resumed.lobby.status || 'waiting');
+        if (playersFromSnapshot.length) {
+          setPlayers(toGamePlayers(playersFromSnapshot));
+        }
+        setScreen(normalizedRole === 'host' ? 'online-lobby-created' : 'online-lobby-waiting');
+      } catch (error) {
+        if (cancelled) return;
+        onlineSessionRef.current = null;
+        setStoredOnlineSession(null);
+        setOnlineLobbyError(mapLobbyErrorToMessage(error, 'Saved lobby session expired. Rejoin with a fresh lobby code.'));
+        setOnlineMode(false);
+        setOnlineRole('offline');
+        setLobbyCode('');
+        setOnlineJoinedPlayerId('');
+        setScreen('online-join');
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [onlineMode, lobbyCode, onlineClientId]);
   useEffect(() => {
     const session = onlineSessionRef.current;
     const shouldKeepTransportAlive = onlineMode || (session && ONLINE_CONNECTION_ACTIVE_SCREENS.has(screen));
@@ -1418,12 +1464,14 @@ export default function App() {
     const hostPlayer = createOnlinePlayer({ name: host, clientId: onlineClientId, isHost: true });
     let snapshot = null;
     let resolvedHostPlayer = hostPlayer;
+    let resumeToken = '';
     try {
       const result = await createLobbyOnServer({ hostName: host, hostPlayer });
       snapshot = result?.lobby || null;
       resolvedHostPlayer = result?.player || hostPlayer;
+      resumeToken = result?.resumeToken || '';
     } catch {
-      setOnlineLobbyError('Unable to create lobby. Check server connection and try again.');
+      setOnlineLobbyError(mapLobbyErrorToMessage(error, 'Unable to create lobby. Check server connection and try again.'));
       return;
     }
     if (!snapshot?.code) {
@@ -1446,6 +1494,7 @@ export default function App() {
       playerId: resolvedHostPlayer?.id || hostPlayer.id,
       playerName: resolvedHostPlayer?.name || host,
       hostName: host,
+      sessionToken: resumeToken,
     };
     onlineSessionRef.current = session;
     setStoredOnlineSession(session);
@@ -1458,10 +1507,12 @@ export default function App() {
     const joiner = createOnlinePlayer({ name: onlinePlayerName.trim(), clientId: onlineClientId });
     let nextSnapshot = null;
     let resolvedPlayer = joiner;
+    let resumeToken = '';
     try {
       const result = await joinLobbyOnServer(normalizedCode, joiner);
       nextSnapshot = result?.lobby || null;
       resolvedPlayer = result?.player || joiner;
+      resumeToken = result?.resumeToken || '';
     } catch (error) {
       if (error?.code === 'lobby-not-found') {
         setOnlineLobbyError('Lobby not found. Ask the host to regenerate and share a fresh code.');
@@ -1471,7 +1522,7 @@ export default function App() {
         setOnlineLobbyError('This lobby already started. Ask the host for a new code.');
         return;
       }
-      setOnlineLobbyError('Unable to join lobby right now. Try again in a moment.');
+      setOnlineLobbyError(mapLobbyErrorToMessage(error, 'Unable to join lobby right now. Try again in a moment.'));
       return;
     }
     if (!nextSnapshot) {
@@ -1494,6 +1545,7 @@ export default function App() {
       playerId: resolvedPlayer.id,
       playerName: resolvedPlayer.name,
       hostName: nextSnapshot.hostName || 'Host',
+      sessionToken: resumeToken,
     };
     onlineSessionRef.current = session;
     setStoredOnlineSession(session);

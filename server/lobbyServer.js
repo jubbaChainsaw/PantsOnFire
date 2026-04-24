@@ -17,6 +17,10 @@ function randomId(prefix = 'id') {
   return `${prefix}-${Math.random().toString(36).slice(2, 10)}-${Date.now().toString(36)}`;
 }
 
+function randomSessionToken() {
+  return randomId('sess');
+}
+
 function normalizeCode(raw = '') {
   return String(raw).trim().toUpperCase();
 }
@@ -82,9 +86,15 @@ function createInMemoryStore() {
       startedAt: null,
       startedRevision: null,
       players: [host],
+      playerSessionTokens: {},
     };
+    lobby.playerSessionTokens[host.id] = randomSessionToken();
     lobbies.set(code, lobby);
-    return lobby;
+    return {
+      lobby,
+      player: host,
+      sessionToken: lobby.playerSessionTokens[host.id],
+    };
   }
 
   function getLobby(code) {
@@ -100,6 +110,19 @@ function createInMemoryStore() {
 
   function deleteLobby(code) {
     return lobbies.delete(normalizeCode(code));
+  }
+
+  function issueOrReuseSessionToken(lobby, playerId) {
+    if (!lobby.playerSessionTokens) lobby.playerSessionTokens = {};
+    if (lobby.playerSessionTokens[playerId]) return lobby.playerSessionTokens[playerId];
+    const token = randomSessionToken();
+    lobby.playerSessionTokens[playerId] = token;
+    return token;
+  }
+
+  function findPlayerIdBySessionToken(lobby, sessionToken) {
+    if (!lobby?.playerSessionTokens || !sessionToken) return null;
+    return Object.keys(lobby.playerSessionTokens).find((playerId) => lobby.playerSessionTokens[playerId] === sessionToken) || null;
   }
 
   function upsertPlayer(code, playerInput) {
@@ -119,12 +142,15 @@ function createInMemoryStore() {
     lobby.players = lobby.players.filter((player) => player.id !== playerId && player.clientId !== incoming.clientId);
     lobby.players.push(merged);
     replaceLobby(lobby);
-    return { lobby, player: merged };
+    return { lobby, player: merged, sessionToken: issueOrReuseSessionToken(lobby, merged.id) };
   }
 
   function removePlayer(code, playerId) {
     const lobby = getLobby(code);
     if (!lobby) return { error: 'not-found' };
+    if (lobby.playerSessionTokens) {
+      delete lobby.playerSessionTokens[playerId];
+    }
     lobby.players = lobby.players.filter((player) => player.id !== playerId);
     if (!lobby.players.length) {
       deleteLobby(code);
@@ -137,6 +163,33 @@ function createInMemoryStore() {
     }
     replaceLobby(lobby);
     return { lobby };
+  }
+
+  function getRoleForPlayer(lobby, playerId) {
+    if (!lobby || !playerId) return 'player';
+    const player = lobby.players.find((entry) => entry.id === playerId);
+    return player?.isHost ? 'host' : 'player';
+  }
+
+  function resumePlayer(code, sessionToken, clientId = '') {
+    const lobby = getLobby(code);
+    if (!lobby) return { error: 'not-found' };
+    const token = String(sessionToken || '').trim();
+    if (!token) return { error: 'session-token-required' };
+    const playerId = findPlayerIdBySessionToken(lobby, token);
+    if (!playerId) return { error: 'invalid-session-token' };
+    const player = lobby.players.find((entry) => entry.id === playerId);
+    if (!player) {
+      if (lobby.playerSessionTokens) delete lobby.playerSessionTokens[playerId];
+      replaceLobby(lobby);
+      return { error: 'session-player-missing' };
+    }
+    if (clientId && player.clientId !== clientId) {
+      player.clientId = clientId;
+      if (player.isHost) lobby.hostClientId = clientId;
+      replaceLobby(lobby);
+    }
+    return { lobby, player, sessionToken: token };
   }
 
   function startLobby(code, hostClientId) {
@@ -158,6 +211,8 @@ function createInMemoryStore() {
     deleteLobby,
     upsertPlayer,
     removePlayer,
+    getRoleForPlayer,
+    resumePlayer,
     startLobby,
   };
 }
@@ -187,9 +242,13 @@ app.get('/health', (_req, res) => {
 app.post('/api/lobbies', (req, res) => {
   const hostName = String(req.body?.hostName || '').trim() || 'Host';
   const hostPlayer = sanitizePlayer(req.body?.hostPlayer || {}, { fallbackName: hostName, forceHost: true });
-  const lobby = store.createLobby({ hostPlayer, hostName });
-  broadcastSnapshot(lobby.code, lobby);
-  res.status(201).json({ lobby: toClientSnapshot(lobby), player: hostPlayer });
+  const created = store.createLobby({ hostPlayer, hostName });
+  broadcastSnapshot(created.lobby.code, created.lobby);
+  res.status(201).json({
+    lobby: toClientSnapshot(created.lobby),
+    player: created.player,
+    sessionToken: created.sessionToken,
+  });
 });
 
 app.get('/api/lobbies/:code', (req, res) => {
@@ -215,7 +274,41 @@ app.post('/api/lobbies/:code/join', (req, res) => {
     return;
   }
   broadcastSnapshot(code, joined.lobby);
-  res.json({ lobby: toClientSnapshot(joined.lobby), player: joined.player });
+  res.json({
+    lobby: toClientSnapshot(joined.lobby),
+    player: joined.player,
+    sessionToken: joined.sessionToken,
+  });
+});
+
+app.post('/api/lobbies/:code/resume', (req, res) => {
+  const code = normalizeCode(req.params.code);
+  const sessionToken = String(req.body?.sessionToken || '');
+  const clientId = String(req.body?.clientId || '');
+  const result = store.resumePlayer(code, sessionToken, clientId);
+  if (result.error === 'not-found') {
+    res.status(404).json({ error: 'lobby-not-found' });
+    return;
+  }
+  if (result.error === 'session-token-required') {
+    res.status(400).json({ error: 'session-token-required' });
+    return;
+  }
+  if (result.error === 'invalid-session-token') {
+    res.status(401).json({ error: 'invalid-session-token' });
+    return;
+  }
+  if (result.error === 'session-player-missing') {
+    res.status(410).json({ error: 'session-player-missing' });
+    return;
+  }
+  broadcastSnapshot(code, result.lobby);
+  res.json({
+    lobby: toClientSnapshot(result.lobby),
+    player: result.player,
+    role: result.player?.isHost ? 'host' : 'player',
+    sessionToken: result.sessionToken,
+  });
 });
 
 app.post('/api/lobbies/:code/leave', (req, res) => {
