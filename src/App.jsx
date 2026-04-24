@@ -28,6 +28,18 @@ import {
   sanitizeBannedWords,
 } from './data/categories';
 import { PICTURE_DLC_MANIFESTS } from './data/pictureDlcManifests';
+import {
+  clearLobbySnapshot,
+  createLobbySnapshot,
+  createLobbyTransport,
+  createOnlinePlayer,
+  markLobbyStarted,
+  readLobbySnapshot,
+  removeLobbyPlayer,
+  toGamePlayers,
+  upsertLobbyPlayer,
+  writeLobbySnapshot,
+} from './online/lobbyTransport';
 
 const LOGO_SRC = '/assets/images/logo.png';
 const FLAME_SRC = '/assets/images/flame-placeholder.svg';
@@ -481,7 +493,7 @@ function OnlineLobbySetupScreen({ hostName, setHostName, onBack, onContinue, nam
     </TopFrame>
   );
 }
-function OnlineJoinLobbyScreen({ joinCode, setJoinCode, playerName, setPlayerName, onBack, onJoin, nameTheme }) {
+function OnlineJoinLobbyScreen({ joinCode, setJoinCode, playerName, setPlayerName, onBack, onJoin, joinError = '', nameTheme }) {
   const canJoin = joinCode.trim().length >= 4 && playerName.trim().length > 0;
   return (
     <TopFrame theme={nameTheme}>
@@ -511,12 +523,18 @@ function OnlineJoinLobbyScreen({ joinCode, setJoinCode, playerName, setPlayerNam
               Join lobby
             </Button>
           </div>
+          {joinError && (
+            <div className="mt-4 rounded-2xl border border-red-400/30 bg-red-500/10 p-3 text-sm text-red-100">
+              {joinError}
+            </div>
+          )}
         </GlassPanel>
       </div>
     </TopFrame>
   );
 }
-function OnlineLobbyCodeScreen({ lobbyCode, hostName, players, onCopyCode, onBack, onStartMatch, nameTheme }) {
+function OnlineLobbyCodeScreen({ lobbyCode, hostName, players, lobbyStatus, onCopyCode, onBack, onStartMatch, nameTheme }) {
+  const canStart = players.length >= MIN_PLAYERS && lobbyStatus !== 'started';
   return (
     <TopFrame theme={nameTheme}>
       <div className="mx-auto max-w-4xl space-y-6">
@@ -532,7 +550,9 @@ function OnlineLobbyCodeScreen({ lobbyCode, hostName, players, onCopyCode, onBac
             Voice party chat is active during clue/discussion phases, and auto-pauses during instructions + private prompt phases.
           </div>
           <div className="mt-6">
-            <div className="text-xs uppercase tracking-[0.25em] text-white/60">Local player list (prototype)</div>
+            <div className="text-xs uppercase tracking-[0.25em] text-white/60">
+              Connected players ({players.length})
+            </div>
             <div className="mt-3 flex flex-wrap gap-2">
               {players.map((player) => (
                 <Badge key={player.id} className="rounded-full bg-white/10 border border-white/10 text-white">{player.name}</Badge>
@@ -541,8 +561,15 @@ function OnlineLobbyCodeScreen({ lobbyCode, hostName, players, onCopyCode, onBac
           </div>
           <div className="mt-8 flex flex-wrap gap-3">
             <Button className="rounded-[1.4rem] bg-white/5 border border-white/10 px-4 py-2 text-white" onClick={onBack}>Back to home</Button>
-            <Button className="rounded-[1.4rem] bg-yellow-300 text-zinc-950 border-2 border-white px-6 py-2" onClick={onStartMatch}>Start online match (prototype)</Button>
+            <Button className="rounded-[1.4rem] bg-yellow-300 text-zinc-950 border-2 border-white px-6 py-2" disabled={!canStart} onClick={onStartMatch}>
+              {lobbyStatus === 'started' ? 'Match already started' : 'Start online match'}
+            </Button>
           </div>
+          {!canStart && lobbyStatus !== 'started' && (
+            <div className="mt-3 text-xs text-white/60">
+              Need at least {MIN_PLAYERS} players to start.
+            </div>
+          )}
         </GlassPanel>
       </div>
     </TopFrame>
@@ -1059,6 +1086,14 @@ export default function App() {
   const [joinLobbyCodeInput, setJoinLobbyCodeInput] = useState('');
   const [onlineVoiceEnabled, setOnlineVoiceEnabled] = useState(false);
   const [onlineVoiceMuted, setOnlineVoiceMuted] = useState(false);
+  const [onlineLobbyPlayers, setOnlineLobbyPlayers] = useState([]);
+  const [onlineLobbyStatus, setOnlineLobbyStatus] = useState('idle');
+  const [onlineLobbyError, setOnlineLobbyError] = useState('');
+  const [onlineJoinedPlayerId, setOnlineJoinedPlayerId] = useState('');
+  const onlineTransportRef = useRef(null);
+  const onlineStartedRevisionHandledRef = useRef('');
+  const onlineClientIdRef = useRef(`ocl-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`);
+  const onlineClientId = onlineClientIdRef.current;
   const [mode, setMode] = useState('classic');
   const [winCondition, setWinCondition] = useState('rounds');
   const [pointsToWin, setPointsToWin] = useState(15);
@@ -1117,6 +1152,64 @@ export default function App() {
     setOnlineVoiceEnabled(phaseAllowsVoice);
     if (!phaseAllowsVoice) setOnlineVoiceMuted(false);
   }, [onlineMode, screen]);
+  useEffect(() => {
+    if (screen === 'online-join') {
+      setOnlineLobbyError('');
+    }
+  }, [screen]);
+  useEffect(() => {
+    if (!onlineMode || !lobbyCode) return undefined;
+    const transport = createLobbyTransport({
+      lobbyCode,
+      onSnapshot: (snapshot) => {
+        if (!snapshot) {
+          setOnlineLobbyPlayers([]);
+          setOnlineLobbyStatus('closed');
+          if (onlineRole === 'player') {
+            setOnlineLobbyError('Lobby closed by host. Enter a new code to rejoin.');
+            setOnlineMode(false);
+            setOnlineRole('offline');
+            setLobbyCode('');
+            setOnlineJoinedPlayerId('');
+            setScreen('online-join');
+          }
+          return;
+        }
+        const snapshotPlayers = Array.isArray(snapshot.players) ? snapshot.players : [];
+        setOnlineLobbyPlayers(snapshotPlayers);
+        setOnlineLobbyStatus(snapshot.status || 'waiting');
+        setOnlineHostName(snapshot.hostName || 'Host');
+        setOnlineLobbyError('');
+        setOnlineJoinedPlayerId((current) => {
+          if (current && snapshotPlayers.some((player) => player.id === current)) return current;
+          const byClient = snapshotPlayers.find((player) => player.clientId === onlineClientId);
+          return byClient?.id || current;
+        });
+        if (snapshotPlayers.length && (screen === 'online-lobby-created' || screen === 'online-lobby-waiting')) {
+          setPlayers(toGamePlayers(snapshotPlayers));
+        }
+        if (snapshot.status === 'started' && snapshot.startedRevision) {
+          if (onlineStartedRevisionHandledRef.current !== snapshot.startedRevision) {
+            onlineStartedRevisionHandledRef.current = snapshot.startedRevision;
+            const seededPlayers = toGamePlayers(snapshotPlayers);
+            if (seededPlayers.length) {
+              refreshCopy(['chooser']);
+              startGame(seededPlayers);
+            }
+          }
+        }
+      },
+      onEvent: () => {},
+    });
+    onlineTransportRef.current = transport;
+    transport.syncSnapshot();
+    return () => {
+      transport.close();
+      if (onlineTransportRef.current === transport) {
+        onlineTransportRef.current = null;
+      }
+    };
+  }, [onlineMode, lobbyCode, onlineClientId, screen, onlineRole]);
   useEffect(() => setLiarCount((cur) => Math.max(1, Math.min(Math.max(1, Math.floor(players.length / 2)), cur))), [players.length]);
   const themedKey = (key) => {
     if (nameTheme === 'Gangsters') {
@@ -1163,12 +1256,14 @@ export default function App() {
   const totalRounds = winCondition === 'rounds' ? (players.length * roundsPerPlayer) : 99;
   const hasScoreWinner = (list) => winCondition === 'points' && list.some((player) => player.score >= pointsToWin);
 
-  function startGame() {
+  function startGame(seedPlayers = null) {
+    const basePlayers = seedPlayers && seedPlayers.length ? seedPlayers : players;
     const options = shuffle(activeCategories).slice(0, Math.min(4, activeCategories.length));
     if (!options.length) return;
-    setPlayers((cur) => cur.map((p) => ({ ...p, score: 0 })));
+    const resetPlayers = basePlayers.map((player) => ({ ...player, score: 0 }));
+    setPlayers(resetPlayers);
     setRoundNumber(1); setCurrentRoundOwnerIndex(0); setPreviousRoundType(null); setSelectedRoundType(null); setRoundTypeOptions([]);
-    setCategoryOptions(options); setRound({ chooserId: players[0]?.id, roundNumber: 1 });
+    setCategoryOptions(options); setRound({ chooserId: resetPlayers[0]?.id, roundNumber: 1 });
     setRecentPromptKeys([]); setVotesByPlayerId({}); setTally({}); setRoundGains({}); setRoundBreakdown({}); setImposterCaught(false); refreshCopy(['chooser']); setScreen('rules');
   }
   function chooseCategory(categoryId) {
@@ -1219,27 +1314,107 @@ export default function App() {
     setScreen('round-type-choice');
   }
   function endGame() { refreshCopy(['winner']); setScreen('final'); }
+  function leaveOnlineLobby({ nextScreen = 'home' } = {}) {
+    const normalizedCode = lobbyCode?.trim().toUpperCase();
+    const snapshot = normalizedCode
+      ? (onlineTransportRef.current?.getSnapshot?.() || readLobbySnapshot(normalizedCode))
+      : null;
+    if (snapshot && normalizedCode) {
+      if (onlineRole === 'host') {
+        clearLobbySnapshot(normalizedCode);
+      } else if (onlineJoinedPlayerId) {
+        const withoutMe = removeLobbyPlayer(snapshot, onlineJoinedPlayerId);
+        writeLobbySnapshot(withoutMe);
+      }
+    }
+    onlineTransportRef.current?.close();
+    onlineTransportRef.current = null;
+    onlineStartedRevisionHandledRef.current = '';
+    setOnlineMode(false);
+    setOnlineRole('offline');
+    setLobbyCode('');
+    setOnlineLobbyPlayers([]);
+    setOnlineLobbyStatus('idle');
+    setOnlineLobbyError('');
+    setOnlineJoinedPlayerId('');
+    setOnlineVoiceEnabled(false);
+    setOnlineVoiceMuted(false);
+    if (nextScreen === 'home') {
+      setOnlineHostName('');
+      setOnlinePlayerName('');
+      setJoinLobbyCodeInput('');
+    }
+    setScreen(nextScreen);
+  }
   function createOnlineLobby() {
     const host = (onlineHostName || players[0]?.name || 'Host').trim();
     if (!host) return;
     const code = generateLobbyCode();
+    const hostPlayer = createOnlinePlayer({ name: host, clientId: onlineClientId, isHost: true });
+    const snapshot = createLobbySnapshot({ lobbyCode: code, hostPlayer, hostName: host });
+    writeLobbySnapshot(snapshot);
+    onlineStartedRevisionHandledRef.current = '';
     setOnlineMode(true);
     setOnlineRole('host');
     setOnlineHostName(host);
     setOnlinePlayerName(host);
     setLobbyCode(code);
-    setPlayers((cur) => [{ ...(cur[0] || { id: `p-${Date.now()}-host`, score: 0 }), name: host, score: 0 }, ...cur.slice(1)]);
+    setOnlineLobbyPlayers(snapshot.players);
+    setOnlineLobbyStatus(snapshot.status);
+    setOnlineLobbyError('');
+    setOnlineJoinedPlayerId(hostPlayer.id);
+    setPlayers(toGamePlayers(snapshot.players));
     setScreen('online-lobby-created');
   }
   function joinOnlineLobby() {
     if (!joinLobbyCodeInput.trim() || !onlinePlayerName.trim()) return;
     const normalizedCode = joinLobbyCodeInput.trim().toUpperCase();
+    const snapshot = readLobbySnapshot(normalizedCode);
+    if (!snapshot) {
+      setOnlineLobbyError('Lobby not found. Ask the host to regenerate and share a fresh code.');
+      return;
+    }
+    if (snapshot.status === 'started') {
+      setOnlineLobbyError('This lobby already started. Ask the host for a new code.');
+      return;
+    }
+    const joiner = createOnlinePlayer({ name: onlinePlayerName.trim(), clientId: onlineClientId });
+    const nextSnapshot = upsertLobbyPlayer(snapshot, joiner);
+    writeLobbySnapshot(nextSnapshot);
+    const resolvedPlayer = (nextSnapshot.players || []).find((player) => player.clientId === onlineClientId) || joiner;
+    onlineStartedRevisionHandledRef.current = '';
     setOnlineMode(true);
     setOnlineRole('player');
     setLobbyCode(normalizedCode);
+    setOnlineHostName(nextSnapshot.hostName || 'Host');
+    setOnlinePlayerName(resolvedPlayer.name);
+    setOnlineLobbyPlayers(nextSnapshot.players || []);
+    setOnlineLobbyStatus(nextSnapshot.status || 'waiting');
+    setOnlineLobbyError('');
+    setOnlineJoinedPlayerId(resolvedPlayer.id);
+    setPlayers(toGamePlayers(nextSnapshot.players || []));
     setScreen('online-lobby-waiting');
   }
-  function restartToHome() { setPlayers(createPlayers(3)); setLiarCount(1); setNameTheme('Default'); setMode('classic'); setWinCondition('rounds'); setPointsToWin(15); setRoundsPerPlayer(1); setGrillSettings({ micEnabled: true, ttsEnabled: true }); setRound(null); setRoundNumber(1); setCurrentRoundOwnerIndex(0); setPreviousRoundType(null); setRoundTypeOptions([]); setSelectedRoundType(null); setRevealIndex(0); setVotesByPlayerId({}); setTally({}); setRoundGains({}); setRoundBreakdown({}); setImposterCaught(false); setRecentPromptKeys([]); setPendingResults(null); setOnlineMode(false); setOnlineRole('offline'); setLobbyCode(''); setOnlineHostName(''); setOnlinePlayerName(''); setJoinLobbyCodeInput(''); setOnlineVoiceEnabled(false); setOnlineVoiceMuted(false); refreshCopy(['home','onlineLobby']); setScreen('home'); }
+  function startOnlineMatch() {
+    if (onlineRole !== 'host' || !lobbyCode) return;
+    const snapshot = readLobbySnapshot(lobbyCode);
+    if (!snapshot) {
+      setOnlineLobbyError('Lobby no longer exists. Create a new one.');
+      return;
+    }
+    if ((snapshot.players || []).length < MIN_PLAYERS) {
+      setOnlineLobbyError(`Need at least ${MIN_PLAYERS} players before starting.`);
+      return;
+    }
+    const startedSnapshot = markLobbyStarted(snapshot, onlineClientId);
+    if (!startedSnapshot || startedSnapshot.status !== 'started') {
+      setOnlineLobbyError('Only the host can start this lobby.');
+      return;
+    }
+    writeLobbySnapshot(startedSnapshot);
+    onlineTransportRef.current?.syncSnapshot();
+  }
+  function restartToHome() { setPlayers(createPlayers(3)); setLiarCount(1); setNameTheme('Default'); setMode('classic'); setWinCondition('rounds'); setPointsToWin(15); setRoundsPerPlayer(1); setGrillSettings({ micEnabled: true, ttsEnabled: true }); setRound(null); setRoundNumber(1); setCurrentRoundOwnerIndex(0); setPreviousRoundType(null); setRoundTypeOptions([]); setSelectedRoundType(null); setRevealIndex(0); setVotesByPlayerId({}); setTally({}); setRoundGains({}); setRoundBreakdown({}); setImposterCaught(false); setRecentPromptKeys([]); setPendingResults(null); refreshCopy(['home','onlineLobby']); leaveOnlineLobby({ nextScreen: 'home' }); }
 
   return <>
     {screen === 'home' && <HomeScreen onNavigate={(to) => to === 'setup' ? (refreshCopy(['setup']), setScreen('setup')) : setScreen(to)} homeLine={copyState.home} onlineLobbyLine={copyState.onlineLobby} adultMode={adultMode} />}
@@ -1249,7 +1424,7 @@ export default function App() {
         hostName={onlineHostName}
         setHostName={setOnlineHostName}
         onBack={() => setScreen('home')}
-        onGenerateLobby={createOnlineLobby}
+        onContinue={createOnlineLobby}
         nameTheme={nameTheme}
       />
     )}
@@ -1257,28 +1432,27 @@ export default function App() {
       <OnlineJoinLobbyScreen
         playerName={onlinePlayerName}
         setPlayerName={setOnlinePlayerName}
-        lobbyCode={joinLobbyCodeInput}
-        setLobbyCode={setJoinLobbyCodeInput}
+        joinCode={joinLobbyCodeInput}
+        setJoinCode={setJoinLobbyCodeInput}
         nameTheme={nameTheme}
         onBack={() => setScreen('home')}
         onJoin={joinOnlineLobby}
+        joinError={onlineLobbyError}
       />
     )}
     {screen === 'online-lobby-created' && (
       <OnlineLobbyCodeScreen
         lobbyCode={lobbyCode}
         hostName={onlineHostName}
-        players={players}
+        players={onlineLobbyPlayers}
+        lobbyStatus={onlineLobbyStatus}
         onCopyCode={() => {
           if (typeof navigator !== 'undefined' && navigator.clipboard?.writeText) {
             navigator.clipboard.writeText(lobbyCode).catch(() => {});
           }
         }}
-        onBack={() => setScreen('online-setup')}
-        onStartMatch={() => {
-          refreshCopy(['setup']);
-          setScreen('setup');
-        }}
+        onBack={() => leaveOnlineLobby({ nextScreen: 'online-setup' })}
+        onStartMatch={startOnlineMatch}
         nameTheme={nameTheme}
       />
     )}
@@ -1290,9 +1464,19 @@ export default function App() {
             <h2 className="text-4xl font-black mt-3 text-cyan-200">Code: {lobbyCode || '------'}</h2>
             <p className="text-white/75 mt-3">You are connected as <span className="font-black text-yellow-300">{onlinePlayerName}</span>.</p>
             <p className="text-white/65 mt-2">Host will start the match once everyone is in.</p>
+            <div className="mt-5 text-xs uppercase tracking-[0.22em] text-white/55">Connected players ({onlineLobbyPlayers.length})</div>
+            <div className="mt-3 flex flex-wrap justify-center gap-2">
+              {onlineLobbyPlayers.map((player) => (
+                <Badge key={player.id} className="rounded-full bg-white/10 border border-white/10 text-white">{player.name}</Badge>
+              ))}
+            </div>
+            {onlineLobbyStatus === 'started' && (
+              <div className="mt-4 rounded-2xl border border-cyan-400/30 bg-cyan-500/10 p-3 text-sm text-cyan-100">
+                Match is starting...
+              </div>
+            )}
             <div className="mt-6 flex justify-center gap-3">
-              <Button className="rounded-[1.4rem] bg-white/5 border border-white/10 text-white" onClick={() => setScreen('online-join')}>Back</Button>
-              <Button className="rounded-[1.4rem] bg-yellow-300 text-zinc-950 border-2 border-white" onClick={() => setScreen('rules')}>Preview Local Flow</Button>
+              <Button className="rounded-[1.4rem] bg-white/5 border border-white/10 text-white" onClick={() => leaveOnlineLobby({ nextScreen: 'online-join' })}>Leave Lobby</Button>
             </div>
           </GlassPanel>
         </div>
