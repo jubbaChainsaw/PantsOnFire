@@ -31,171 +31,17 @@ export function sanitizeBannedWords(categoryName, hint, main, imposter, words) {
   }).slice(0, 5);
 }
 
-export const DEFAULT_CATEGORIES = [
-  { id: 'sports', name: 'Sports', emoji: '🏀', prompts: [
-    { hint: 'Ball Sport', main: 'Basketball', imposter: 'Baseball' },
-    { hint: 'Contact Team Sport', main: 'Football', imposter: 'Rugby' },
-    { hint: 'Racket Sport', main: 'Tennis', imposter: 'Badminton' },
-    { hint: 'Combat Sport', main: 'Boxing', imposter: 'MMA' },
-    { hint: 'Winter Sport', main: 'Ice Hockey', imposter: 'Lacrosse' },
-    { hint: 'Precision Sport', main: 'Archery', imposter: 'Darts' },
-    { hint: 'Motorsport', main: 'Formula 1', imposter: 'NASCAR' },
-    { hint: 'Board Sport', main: 'Skateboarding', imposter: 'Snowboarding' },
-    { hint: 'Post-match Vibe (18+)', main: 'Kissing your date in the car park', imposter: 'Arguing in the taxi queue', adultOnly: true },
-  ]},
-  { id: 'food', name: 'Food', emoji: '🍕', prompts: [
-    { hint: 'Italian-ish Comfort Food', main: 'Pizza', imposter: 'Calzone' },
-    { hint: 'Fast Food', main: 'Burger', imposter: 'Hot Dog' },
-    { hint: 'Hot Drink', main: 'Tea', imposter: 'Coffee' },
-    { hint: 'Dessert', main: 'Cake', imposter: 'Brownie' },
-    { hint: 'Noodle Dish', main: 'Ramen', imposter: 'Udon' },
-    { hint: 'Street Food', main: 'Tacos', imposter: 'Burrito' },
-    { hint: 'Breakfast', main: 'Pancakes', imposter: 'Waffles' },
-    { hint: 'Sweet Snack', main: 'Donut', imposter: 'Bagel' },
-    { hint: 'After-party Snack (18+)', main: 'Cold pizza at 3AM', imposter: 'Regret kebab at 3AM', adultOnly: true },
-  ]},
-  { id: 'movies', name: 'Movies', emoji: '🎬', prompts: [
-    { hint: 'Animated Film', main: 'Shrek', imposter: 'Toy Story' },
-    { hint: 'Blockbuster Thriller', main: 'Jaws', imposter: 'Jurassic Park' },
-    { hint: 'Romantic Drama', main: 'Titanic', imposter: 'The Notebook' },
-    { hint: 'Mind-bending Sci-Fi', main: 'Inception', imposter: 'Interstellar' },
-    { hint: 'Superhero Film', main: 'Iron Man', imposter: 'Batman Begins' },
-    { hint: 'Fantasy Epic', main: 'The Lord of the Rings', imposter: 'Harry Potter' },
-    { hint: 'Action Franchise', main: 'Mission Impossible', imposter: 'Jason Bourne' },
-    { hint: 'Comedy Classic', main: 'Mean Girls', imposter: 'Clueless' },
-  ]},
-  { id: 'music', name: 'Music', emoji: '🎧', prompts: [
-    { hint: 'Rock Band', main: 'Nirvana', imposter: 'Foo Fighters' },
-    { hint: 'Pop Punk Band', main: 'Green Day', imposter: 'Blink-182' },
-    { hint: 'Nu Metal Band', main: 'Slipknot', imposter: 'Korn' },
-    { hint: 'Metal Band', main: 'Metallica', imposter: 'Megadeth' },
-    { hint: 'Pop Star', main: 'Dua Lipa', imposter: 'Rita Ora' },
-    { hint: 'Rap Artist', main: 'Drake', imposter: 'Kendrick Lamar' },
-    { hint: 'EDM Artist', main: 'Calvin Harris', imposter: 'David Guetta' },
-    { hint: 'Indie Band', main: 'Arctic Monkeys', imposter: 'The 1975' },
-  ]},
-  { id: 'places', name: 'Places', emoji: '🗺️', prompts: [
-    { hint: 'UK City', main: 'London', imposter: 'Manchester' },
-    { hint: 'Entertainment Venue', main: 'Cinema', imposter: 'Theatre' },
-    { hint: 'Water Day Out', main: 'Beach', imposter: 'Swimming Pool' },
-    { hint: 'Animal Attraction', main: 'Zoo', imposter: 'Aquarium' },
-    { hint: 'European Capital', main: 'Paris', imposter: 'Rome' },
-    { hint: 'Holiday Type', main: 'Camping', imposter: 'Glamping' },
-    { hint: 'Transport Hub', main: 'Airport', imposter: 'Train Station' },
-    { hint: 'Nature Spot', main: 'Forest', imposter: 'Jungle' },
-  ]},
-  { id: 'games', name: 'Video Games', emoji: '🕹️', prompts: [
-    { hint: 'Sandbox Game', main: 'Minecraft', imposter: 'Roblox' },
-    { hint: 'Mascot Platformer', main: 'Mario', imposter: 'Sonic' },
-    { hint: 'Battle Royale', main: 'Fortnite', imposter: 'Apex Legends' },
-    { hint: 'Shooter Series', main: 'Call of Duty', imposter: 'Battlefield' },
-    { hint: 'Soulslike', main: 'Elden Ring', imposter: 'Dark Souls' },
-    { hint: 'Party Game', main: 'Mario Party', imposter: 'Fall Guys' },
-    { hint: 'Racing Game', main: 'Mario Kart', imposter: 'Crash Team Racing' },
-    { hint: 'Horror Game', main: 'Resident Evil', imposter: 'Silent Hill' },
-  ]},
-  { id: 'animals', name: 'Animals', emoji: '🦁', prompts: [
-    { hint: 'Big Cat', main: 'Cheetah', imposter: 'Leopard' },
-    { hint: 'Marine Mammal', main: 'Narwhal', imposter: 'Beluga Whale' },
-    { hint: 'Odd Little Creature', main: 'Capybara', imposter: 'Patagonian Mara' },
-    { hint: 'Large Lizard', main: 'Komodo Dragon', imposter: 'Monitor Lizard' },
-    { hint: 'Bird of Prey', main: 'Eagle', imposter: 'Hawk' },
-    { hint: 'Farm Animal', main: 'Goat', imposter: 'Sheep' },
-    { hint: 'Ocean Predator', main: 'Great White Shark', imposter: 'Tiger Shark' },
-    { hint: 'Pet Rodent', main: 'Hamster', imposter: 'Guinea Pig' },
-  ]},
-  { id: 'weird', name: 'Weird & Wacky', emoji: '🤪', prompts: [
-    { hint: 'Cryptid', main: 'Mothman', imposter: 'Thunderbird' },
-    { hint: 'Weird Weather', main: 'Ball Lightning', imposter: "St. Elmo's Fire" },
-    { hint: 'Phobia', main: 'Trypophobia', imposter: 'Misophonia' },
-    { hint: 'Urban Legend Creature', main: 'Jersey Devil', imposter: 'Chupacabra' },
-    { hint: 'Conspiracy Vibe', main: 'Area 51', imposter: 'Bermuda Triangle' },
-    { hint: 'Creepy Doll', main: 'Annabelle', imposter: 'Chucky' },
-    { hint: 'Odd Record', main: 'Most Spoons Balanced', imposter: 'Most Marshmallows Caught' },
-    { hint: 'Mythical Object', main: 'Philosopher’s Stone', imposter: 'Holy Grail' },
-  ]},
-  { id: 'jobs', name: 'Jobs', emoji: '💼', prompts: [
-    { hint: 'Emergency Role', main: 'Firefighter', imposter: 'Paramedic' },
-    { hint: 'Creative Role', main: 'Graphic Designer', imposter: 'Illustrator' },
-    { hint: 'Tech Role', main: 'Programmer', imposter: 'Data Analyst' },
-    { hint: 'Public Role', main: 'Teacher', imposter: 'Lecturer' },
-    { hint: 'Law Role', main: 'Solicitor', imposter: 'Barrister' },
-    { hint: 'Hospitality', main: 'Chef', imposter: 'Line Cook' },
-    { hint: 'Media Role', main: 'Journalist', imposter: 'Copywriter' },
-    { hint: 'Construction Role', main: 'Architect', imposter: 'Civil Engineer' },
-  ]},
-  { id: 'celebrities', name: 'Celebrities', emoji: '🌟', prompts: [
-    { hint: 'Pop Icon', main: 'Taylor Swift', imposter: 'Lady Gaga' },
-    { hint: 'Action Star', main: 'Arnold Schwarzenegger', imposter: 'Sylvester Stallone' },
-    { hint: 'TV Chef', main: 'Gordon Ramsay', imposter: 'Jamie Oliver' },
-    { hint: 'Wrestling Legend', main: 'The Rock', imposter: 'John Cena' },
-    { hint: 'Comedian', main: 'Kevin Hart', imposter: 'Chris Rock' },
-    { hint: 'Footballer', main: 'Lionel Messi', imposter: 'Cristiano Ronaldo' },
-    { hint: 'Actor', main: 'Ryan Reynolds', imposter: 'Chris Pratt' },
-    { hint: 'YouTube Star', main: 'MrBeast', imposter: 'KSI' },
-    { hint: 'Messy Reality TV (18+)', main: 'Love triangle scandal', imposter: 'Cheating scandal', adultOnly: true },
-  ]},
-  { id: 'tech', name: 'Tech & Internet', emoji: '💻', prompts: [
-    { hint: 'Operating System', main: 'Windows', imposter: 'Linux' },
-    { hint: 'Messaging App', main: 'WhatsApp', imposter: 'Telegram' },
-    { hint: 'Streaming Platform', main: 'Netflix', imposter: 'Disney+' },
-    { hint: 'Browser', main: 'Chrome', imposter: 'Firefox' },
-    { hint: 'AI Tool', main: 'ChatGPT', imposter: 'Claude' },
-    { hint: 'Console Brand', main: 'PlayStation', imposter: 'Xbox' },
-    { hint: 'Cloud Storage', main: 'Google Drive', imposter: 'Dropbox' },
-    { hint: 'Short Video App', main: 'TikTok', imposter: 'Instagram Reels' },
-  ]},
-  { id: 'tv', name: 'TV & Series', emoji: '📺', prompts: [
-    { hint: 'Fantasy Show', main: 'Game of Thrones', imposter: 'The Witcher' },
-    { hint: 'Sitcom', main: 'Friends', imposter: 'How I Met Your Mother' },
-    { hint: 'Crime Drama', main: 'Breaking Bad', imposter: 'Better Call Saul' },
-    { hint: 'Sci-Fi Show', main: 'Stranger Things', imposter: 'Dark' },
-    { hint: 'Reality Show', main: 'Love Island', imposter: 'Too Hot to Handle' },
-    { hint: 'Mystery Series', main: 'Sherlock', imposter: 'Lupin' },
-    { hint: 'Animated Series', main: 'The Simpsons', imposter: 'Family Guy' },
-    { hint: 'Workplace Comedy', main: 'The Office', imposter: 'Parks and Recreation' },
-  ]},
-  { id: 'hobbies', name: 'Hobbies', emoji: '🎨', prompts: [
-    { hint: 'Creative Hobby', main: 'Painting', imposter: 'Sketching' },
-    { hint: 'Active Hobby', main: 'Cycling', imposter: 'Running' },
-    { hint: 'Music Hobby', main: 'Playing Guitar', imposter: 'Playing Bass' },
-    { hint: 'Collecting Hobby', main: 'Collecting Sneakers', imposter: 'Collecting Vinyl' },
-    { hint: 'Mind Hobby', main: 'Chess', imposter: 'Sudoku' },
-    { hint: 'DIY Hobby', main: 'Woodworking', imposter: '3D Printing' },
-    { hint: 'Outdoor Hobby', main: 'Fishing', imposter: 'Kayaking' },
-    { hint: 'Food Hobby', main: 'Baking', imposter: 'Cooking' },
-  ]},
-  { id: 'brands', name: 'Brands', emoji: '🛍️', prompts: [
-    { hint: 'Sportswear Brand', main: 'Nike', imposter: 'Adidas' },
-    { hint: 'Fast Food Brand', main: 'McDonald’s', imposter: 'Burger King' },
-    { hint: 'Coffee Chain', main: 'Starbucks', imposter: 'Costa Coffee' },
-    { hint: 'Phone Brand', main: 'Apple', imposter: 'Samsung' },
-    { hint: 'Luxury Brand', main: 'Gucci', imposter: 'Prada' },
-    { hint: 'Car Brand', main: 'BMW', imposter: 'Mercedes' },
-    { hint: 'E-commerce Brand', main: 'Amazon', imposter: 'eBay' },
-    { hint: 'Soda Brand', main: 'Coca-Cola', imposter: 'Pepsi' },
-  ]},
-  { id: 'science', name: 'Science', emoji: '🧪', prompts: [
-    { hint: 'Space Object', main: 'Planet', imposter: 'Moon' },
-    { hint: 'Tiny Particle', main: 'Atom', imposter: 'Molecule' },
-    { hint: 'Energy Type', main: 'Solar Power', imposter: 'Wind Power' },
-    { hint: 'Natural Science', main: 'Biology', imposter: 'Chemistry' },
-    { hint: 'Body System', main: 'Nervous System', imposter: 'Circulatory System' },
-    { hint: 'Weather Event', main: 'Tornado', imposter: 'Hurricane' },
-    { hint: 'Lab Tool', main: 'Microscope', imposter: 'Telescope' },
-    { hint: 'Dinosaur', main: 'T-Rex', imposter: 'Spinosaurus' },
-  ]},
-  { id: 'party', name: 'Party Stuff', emoji: '🎉', prompts: [
-    { hint: 'Party Game', main: 'Charades', imposter: 'Pictionary' },
-    { hint: 'Board Game', main: 'Monopoly', imposter: 'The Game of Life' },
-    { hint: 'Card Game', main: 'UNO', imposter: 'Exploding Kittens' },
-    { hint: 'Celebration Item', main: 'Confetti', imposter: 'Streamers' },
-    { hint: 'Birthday Food', main: 'Cupcakes', imposter: 'Cookies' },
-    { hint: 'Music Moment', main: 'Karaoke', imposter: 'Lip Sync Battle' },
-    { hint: 'Drinking Game', main: 'Beer Pong', imposter: 'Flip Cup' },
-    { hint: 'Celebration Type', main: 'House Party', imposter: 'Garden Party' },
-  ]},
-];
+import {
+  PICTURE_DLC_MANIFESTS,
+  buildPictureRoundsFromManifest,
+  validatePictureDlcManifest,
+} from './pictureDlcManifests';
+import { CATEGORY_PROMPT_PACKS } from './packs/categoryPromptPacks';
+
+export const DEFAULT_CATEGORIES = CATEGORY_PROMPT_PACKS.map((categoryPack) => ({
+  ...categoryPack,
+  prompts: (categoryPack.prompts || []).map((prompt) => ({ ...prompt })),
+}));
 
 const BULK_PROMPTS_PER_CATEGORY = 50;
 
@@ -498,15 +344,14 @@ OPINION_ROUNDS.push(
   ...buildOpinionBatch(true, 50)
 );
 
+function buildPicturePromptRounds() {
+  return PICTURE_DLC_MANIFESTS
+    .filter((manifest) => validatePictureDlcManifest(manifest))
+    .flatMap((manifest) => buildPictureRoundsFromManifest(manifest));
+}
+
 export const MEDIA_ROUNDS = {
-  picture: [
-    { hint: 'Picture Clue', main: 'retro-arcade-cabinet', imposter: 'pinball-machine', previewLabel: 'Picture round placeholder' },
-    { hint: 'Picture Clue', main: 'hedgehog-in-sunglasses', imposter: 'guinea-pig-in-sunglasses', previewLabel: 'Picture round placeholder' },
-    { hint: 'Picture Clue', main: 'neon-skatepark', imposter: 'roller-disco-rink', previewLabel: 'Picture round placeholder' },
-    { hint: 'Picture Clue', main: 'pirate-ship-deck', imposter: 'viking-longboat', previewLabel: 'Picture round placeholder' },
-    { hint: 'Picture Clue', main: 'zombie-prom-night', imposter: 'vampire-ballroom', previewLabel: 'Picture round placeholder' },
-    { hint: 'Picture Clue', main: 'robot-chef-kitchen', imposter: 'android-barista-cafe', previewLabel: 'Picture round placeholder' },
-  ],
+  picture: buildPicturePromptRounds(),
   sound: [
     { hint: 'Sound Clue', main: 'arcade-coin-drop', imposter: 'slot-machine-jingle', previewLabel: 'Audio round placeholder' },
     { hint: 'Sound Clue', main: 'lion-roar', imposter: 'tiger-growl', previewLabel: 'Audio round placeholder' },
@@ -522,13 +367,6 @@ export const MEDIA_ROUNDS = {
 };
 
 const MEDIA_EXPANSION = {
-  picture: {
-    hint: 'Picture Clue',
-    regularMain: ['street-food-market', 'retro-neon-diner', 'volcano-lava-flow', 'skater-halfpipe-trick', 'rainy-city-crosswalk'],
-    regularImposter: ['night-market-lanterns', 'classic-50s-diner', 'geysir-eruption', 'bmx-dirt-jump', 'foggy-city-crosswalk'],
-    adultMain: ['afterparty-rooftop-neon', 'hotel-room-service-tray', 'romantic-city-sunset', 'champagne-bucket-vip', 'slow-dance-club-corner'],
-    adultImposter: ['awkward-afterparty-lobby', 'messy-takeaway-bedside', 'stormy-city-night', 'spilled-drinks-vip', 'jealous-club-dancefloor'],
-  },
   sound: {
     hint: 'Sound Clue',
     regularMain: ['crowd-goal-cheer', 'engine-rev-quick', 'rain-on-window', 'crow-caw-echo', 'train-brake-screech'],
@@ -558,7 +396,6 @@ function buildMediaBatch(type, adultOnly = false, count = 50) {
   }));
 }
 
-MEDIA_ROUNDS.picture.push(...buildMediaBatch('picture', false, 50), ...buildMediaBatch('picture', true, 50));
 MEDIA_ROUNDS.sound.push(...buildMediaBatch('sound', false, 50), ...buildMediaBatch('sound', true, 50));
 MEDIA_ROUNDS.video.push(...buildMediaBatch('video', false, 50), ...buildMediaBatch('video', true, 50));
 
