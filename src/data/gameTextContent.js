@@ -81,6 +81,27 @@ export const COPY_BANK = {
     'Describe just enough to survive, not enough to expose yourself.',
     'One image, ten theories, zero peace.',
   ],
+  hostStingerMeme: [
+    'Decode the meme vibe, not the exact wording.',
+    'Format plus energy matters more than quoting a caption.',
+    'Liars got a different meme setup, so watch their framing.',
+    'Sell the joke style without reading it like a script.',
+    'If someone explains too hard, they might be forcing the wrong meme.',
+  ],
+  hostStingerNoise: [
+    'No words. Only noises. Commit to the bit.',
+    'Sound like your prompt belongs without saying what it is.',
+    'Liars have the wrong sound source, so listen for mismatched audio clues.',
+    'One clean noise beat is better than overacting.',
+    'If someone starts narrating, they are cooked.',
+  ],
+  hostStingerOfftopic: [
+    'Most players got one scenario. Liars got something irrelevant.',
+    'Argue your case like it belongs in the same conversation.',
+    'Watch for confidence hiding complete topic drift.',
+    'Sell your logic fast; rambling sounds guilty.',
+    'This round rewards bold nonsense and punishes hesitation.',
+  ],
   hostStingerChain: [
     'Everyone gets a different link card, so listen for the one that does not belong.',
     'Sell your clue card without sounding like you memorised the wrong chain.',

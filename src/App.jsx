@@ -22,6 +22,9 @@ import { COPY_BANK, createCopyPicker } from './data/gameTextContent';
 import {
   DEFAULT_CATEGORIES,
   CHAIN_REACTION_ROUNDS,
+  MEME_DECODER_ROUNDS,
+  SOUND_OFF_ROUNDS,
+  OFFTOPIC_DEFENSE_ROUNDS,
   OPINION_ROUNDS,
   MEDIA_ROUNDS,
   GRILL_EM_ROUNDS,
@@ -230,6 +233,12 @@ function buildRound(
     promptOptions = (category.prompts || []).map((prompt, index) => ({ prompt, key: `prompt::${category.id}::${index}` }));
   } else if (selectedRoundType.id === 'chain') {
     promptOptions = (CHAIN_REACTION_ROUNDS[category.id] || []).map((prompt, index) => ({ prompt, key: `chain::${category.id}::${index}` }));
+  } else if (selectedRoundType.id === 'meme') {
+    promptOptions = (MEME_DECODER_ROUNDS[category.id] || []).map((prompt, index) => ({ prompt, key: `meme::${category.id}::${index}` }));
+  } else if (selectedRoundType.id === 'noise') {
+    promptOptions = (SOUND_OFF_ROUNDS[category.id] || []).map((prompt, index) => ({ prompt, key: `noise::${category.id}::${index}` }));
+  } else if (selectedRoundType.id === 'offtopic') {
+    promptOptions = (OFFTOPIC_DEFENSE_ROUNDS[category.id] || []).map((prompt, index) => ({ prompt, key: `offtopic::${category.id}::${index}` }));
   } else if (selectedRoundType.id === 'opinion') {
     promptOptions = OPINION_ROUNDS.map((prompt, index) => ({ prompt, key: `opinion::global::${index}` }));
   } else if (selectedRoundType.id === 'grill') {
@@ -408,6 +417,9 @@ const MASCOT_BY_ROUND_TYPE = {
   prompt: { name: 'Captain Spark', face: '🎤', blurb: 'Classic chaos host.' },
   opinion: { name: 'Captain Spark', face: '🎭', blurb: 'Debate instigator.' },
   picture: { name: 'Captain Spark', face: '🖼️', blurb: 'Flash-frame ringmaster.' },
+  meme: { name: 'Captain Spark', face: '🧠', blurb: 'Decode the meme vibe, sniff the fake.' },
+  noise: { name: 'Captain Spark', face: '🔊', blurb: 'No words. Pure noise. Maximum suspicion.' },
+  offtopic: { name: 'Captain Spark', face: '🛡️', blurb: 'Defend the topic like your life depends on it.' },
   chain: { name: 'Captain Spark', face: '🧩', blurb: 'Connect the clues, expose the break.' },
   grill: { name: 'Blaze Byte', face: '🤖', blurb: "AI host for Grill 'Em." },
 };
@@ -974,11 +986,17 @@ function VoicePartyStatusStrip({ onlineVoiceEnabled, onlineVoiceMuted, setOnline
 function DiscussionScreen({ players, round, totalRounds, onContinue, line, theme, onlineVoiceEnabled = false, onlineVoiceMuted = false, setOnlineVoiceMuted = () => {}, canTalk = true }) {
   const roundRule = round.roundTypeId === 'opinion'
     ? "Truth or Twisted: everyone got the same scenario. Liars must ragebait and argue opposite to their natural take."
-    : (round.roundTypeId === 'chain'
-      ? 'Chain Reaction: everyone gets one clue card. Liars were fed decoy links, so listen for players describing the wrong chain.'
-      : (round.roundTypeId === 'grill'
-        ? "Grill 'Em: players ask by microphone and Blaze Byte talks back with AI answers. Liars already saw the hidden prompt and will try to steer the room."
-        : 'Give one clue, blend in, and avoid revealing your exact prompt.'));
+    : (round.roundTypeId === 'meme'
+      ? 'Meme Decoder: explain your meme format and vibe naturally. Liars got a different template and must fake the culture.'
+      : (round.roundTypeId === 'noise'
+        ? 'Sound Off: perform your clue as a sound only. No words, no letters, no humming lyrics.'
+        : (round.roundTypeId === 'offtopic'
+          ? 'Off Topic Defense: truth players share one scenario. Liars got an irrelevant prompt and must argue like it still fits.'
+          : (round.roundTypeId === 'chain'
+            ? 'Chain Reaction: everyone gets one clue card. Liars were fed decoy links, so listen for players describing the wrong chain.'
+            : (round.roundTypeId === 'grill'
+              ? "Grill 'Em: players ask by microphone and Blaze Byte talks back with AI answers. Liars already saw the hidden prompt and will try to steer the room."
+              : 'Give one clue, blend in, and avoid revealing your exact prompt.')))));
   return <TopFrame theme={theme}><div className="mx-auto max-w-3xl space-y-6"><ScoreStrip players={players} roundNumber={round.roundNumber} totalRounds={totalRounds} /><VoicePartyStatusStrip onlineVoiceEnabled={onlineVoiceEnabled} onlineVoiceMuted={onlineVoiceMuted} setOnlineVoiceMuted={setOnlineVoiceMuted} canTalk={canTalk} /><GlassPanel className="rounded-[2.5rem] p-8 text-center border-emerald-400/20 bg-black/25"><Badge className="rounded-full bg-emerald-500/20 border border-emerald-400/20 text-emerald-100 px-4 py-1.5">All prompts delivered</Badge><div className="text-xs uppercase tracking-[0.3em] text-white/50 mt-4">{round.roundTypeName}</div><h2 className="text-4xl font-black mt-3 text-yellow-300">{round.roundTypeTagline}</h2><p className="text-white/75 mt-3 max-w-2xl mx-auto">{line}</p><p className="text-cyan-200 mt-3 max-w-2xl mx-auto font-semibold">{roundRule}</p><Button className="rounded-[1.5rem] h-16 px-8 mt-8 bg-yellow-300 text-zinc-950 border-2 border-white" onClick={onContinue}><SkipForward className="mr-2 h-5 w-5 inline" />Finish discussion and vote</Button></GlassPanel></div></TopFrame>;
 }
 function VotingScreen({ players, round, totalRounds, votesByPlayerId, setVotesByPlayerId, onSubmitVotes, line, theme, onlineMode = false, onlineVoiceEnabled = false, onlineVoiceMuted = false, setOnlineVoiceMuted = () => {}, canTalk = true }) {
@@ -989,7 +1007,13 @@ function VotingScreen({ players, round, totalRounds, votesByPlayerId, setVotesBy
     ? "Vote for who sounded like they already knew the AI's hidden prompt."
     : (round.roundTypeId === 'chain'
       ? 'Vote for who sounded like they described the broken link.'
-      : 'Vote for who sounded most suspicious.');
+      : (round.roundTypeId === 'meme'
+        ? 'Vote for who looked like they were faking meme culture.'
+        : (round.roundTypeId === 'noise'
+          ? 'Vote for whose sound felt most off-topic.'
+          : (round.roundTypeId === 'offtopic'
+            ? 'Vote for who defended the wrong scenario.'
+            : 'Vote for who sounded most suspicious.'))));
   return <TopFrame theme={theme}><div className="mx-auto max-w-5xl space-y-6"><ScoreStrip players={players} roundNumber={round.roundNumber} totalRounds={totalRounds} />{onlineMode && <VoicePartyStatusStrip onlineVoiceEnabled={onlineVoiceEnabled} onlineVoiceMuted={onlineVoiceMuted} setOnlineVoiceMuted={setOnlineVoiceMuted} canTalk={canTalk} />}<GlassPanel className="rounded-[2.5rem] p-8 border-fuchsia-400/20 bg-black/25"><div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4"><div><div className="text-xs uppercase tracking-[0.3em] text-white/50">{round.roundTypeName}</div><h2 className="text-4xl font-black mt-3 text-yellow-300">{round.roundTypeTagline}</h2><p className="text-white/70 mt-2">{onlineMode ? 'Vote from your own device.' : <>Pass the phone to <span className="font-semibold text-cyan-300">{leader?.name}</span>. </>}{line}</p><p className="text-cyan-200 mt-2 font-semibold">{voteInstruction}</p></div><GlassPanel className="rounded-[1.75rem] p-4 min-w-[220px] border-cyan-400/20 bg-black/20"><div className="text-sm text-white/70">Votes completed</div><div className="text-3xl font-black mt-1 text-yellow-300">{completeCount}/{players.length}</div><Progress value={(completeCount / players.length) * 100} className="mt-3" /></GlassPanel></div><div className="grid gap-4 mt-8 md:grid-cols-2 xl:grid-cols-3">{players.map((voter) => <GlassPanel key={voter.id} className="rounded-[1.75rem] p-4 border-white/10 bg-black/20"><div className="font-black text-lg">{voter.name}</div><div className="text-sm text-white/55 mt-1">Who do they vote for?</div><div className="grid grid-cols-2 gap-2 mt-4">{players.filter((p) => p.id !== voter.id).map((target) => <Button key={target.id} className={`rounded-2xl h-11 ${votesByPlayerId[voter.id] === target.id ? 'bg-yellow-300 text-zinc-950' : 'bg-white/5 border border-white/10 text-white'}`} onClick={() => setVotesByPlayerId((cur) => ({ ...cur, [voter.id]: target.id }))}>{target.name}</Button>)}</div></GlassPanel>)}</div><div className="mt-8 flex justify-end"><Button className="rounded-[1.5rem] h-14 px-8 bg-yellow-300 text-zinc-950 border-2 border-white" disabled={!allComplete} onClick={onSubmitVotes}><Vote className="mr-2 h-5 w-5 inline" />Reveal results</Button></div></GlassPanel></div></TopFrame>;
 }
 function LiarRevealScreen({ players, round, onComplete, theme }) {
@@ -1010,7 +1034,17 @@ function LiarRevealScreen({ players, round, onComplete, theme }) {
 function ResultsScreen({ players, round, totalRounds, tally, roundGains, roundBreakdown, imposterCaught, onNextRound, onEndGame, resultLine, theme }) {
   const ranked = [...players].sort((a, b) => b.score - a.score);
   const lastRound = round.roundNumber >= totalRounds;
-  const roundInfoTitle = round.roundTypeId === 'grill' ? 'AI Hidden Prompt' : (round.roundTypeId === 'chain' ? 'Broken Link Topic' : 'Liar Prompt');
+  const roundInfoTitle = round.roundTypeId === 'grill'
+    ? 'AI Hidden Prompt'
+    : ((round.roundTypeId === 'chain')
+      ? 'Broken Link Topic'
+      : ((round.roundTypeId === 'meme')
+        ? 'Wrong Meme Scenario'
+        : ((round.roundTypeId === 'noise')
+          ? 'Off-Note Sound Prompt'
+          : ((round.roundTypeId === 'offtopic')
+            ? 'Irrelevant Scenario'
+            : 'Liar Prompt'))));
   const roundInfoValue = round.roundTypeId === 'opinion'
     ? 'Truth or Twisted uses one shared scenario for everyone.'
     : (round.roundTypeId === 'chain'
@@ -1146,6 +1180,9 @@ export default function App() {
     prompt: 'hostStingerPrompt',
     opinion: 'hostStingerOpinion',
     picture: 'hostStingerPicture',
+    meme: 'hostStingerMeme',
+    noise: 'hostStingerNoise',
+    offtopic: 'hostStingerOfftopic',
     chain: 'hostStingerChain',
     grill: 'hostStingerGrill',
   };
@@ -1367,6 +1404,9 @@ export default function App() {
         hostStingerPrompt: 'gangsterHostStingerPrompt',
         hostStingerOpinion: 'gangsterHostStingerOpinion',
         hostStingerPicture: 'gangsterHostStingerPicture',
+        hostStingerMeme: 'gangsterHostStingerPicture',
+        hostStingerNoise: 'gangsterHostStingerPrompt',
+        hostStingerOfftopic: 'gangsterHostStingerOpinion',
         hostStingerGrill: 'gangsterHostStingerGrill',
       }[key] || key);
     }
@@ -1375,6 +1415,9 @@ export default function App() {
         hostStingerPrompt: 'monsterHostStingerPrompt',
         hostStingerOpinion: 'monsterHostStingerOpinion',
         hostStingerPicture: 'monsterHostStingerPicture',
+        hostStingerMeme: 'monsterHostStingerPicture',
+        hostStingerNoise: 'monsterHostStingerPrompt',
+        hostStingerOfftopic: 'monsterHostStingerOpinion',
         hostStingerGrill: 'monsterHostStingerGrill',
       }[key] || key);
     }
@@ -1383,6 +1426,9 @@ export default function App() {
         hostStingerPrompt: 'rockHostStingerPrompt',
         hostStingerOpinion: 'rockHostStingerOpinion',
         hostStingerPicture: 'rockHostStingerPicture',
+        hostStingerMeme: 'rockHostStingerPicture',
+        hostStingerNoise: 'rockHostStingerPrompt',
+        hostStingerOfftopic: 'rockHostStingerOpinion',
         hostStingerGrill: 'rockHostStingerGrill',
       }[key] || key);
     }
@@ -1391,6 +1437,9 @@ export default function App() {
         hostStingerPrompt: 'alienHostStingerPrompt',
         hostStingerOpinion: 'alienHostStingerOpinion',
         hostStingerPicture: 'alienHostStingerPicture',
+        hostStingerMeme: 'alienHostStingerPicture',
+        hostStingerNoise: 'alienHostStingerPrompt',
+        hostStingerOfftopic: 'alienHostStingerOpinion',
         hostStingerGrill: 'alienHostStingerGrill',
       }[key] || key);
     }
