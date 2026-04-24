@@ -1,6 +1,7 @@
-const LOBBY_STORAGE_PREFIX = 'imposter-online-lobby-v1::';
-const LOBBY_EVENT_PREFIX = 'imposter-online-lobby-event-v1::';
-const LOBBY_CHANNEL_PREFIX = 'imposter-online-lobby-channel-v1::';
+import { io } from 'socket.io-client';
+
+const LOBBY_SERVER_URL = String(import.meta?.env?.VITE_LOBBY_SERVER_URL || '').trim();
+const LOBBY_API_BASE = `${LOBBY_SERVER_URL ? LOBBY_SERVER_URL.replace(/\/$/, '') : ''}/api`;
 
 function randomId(prefix = 'id') {
   return `${prefix}-${Math.random().toString(36).slice(2, 10)}-${Date.now().toString(36)}`;
@@ -10,21 +11,31 @@ function nowIso() {
   return new Date().toISOString();
 }
 
-function getLobbyStorageKey(lobbyCode) {
-  return `${LOBBY_STORAGE_PREFIX}${String(lobbyCode || '').toUpperCase()}`;
+function normalizeCode(lobbyCode) {
+  return String(lobbyCode || '').trim().toUpperCase();
 }
 
-function getLobbyEventKey(lobbyCode) {
-  return `${LOBBY_EVENT_PREFIX}${String(lobbyCode || '').toUpperCase()}`;
-}
-
-function parseJson(raw) {
-  if (!raw) return null;
+async function requestJson(path, { method = 'GET', body } = {}) {
+  const response = await fetch(`${LOBBY_API_BASE}${path}`, {
+    method,
+    headers: { 'Content-Type': 'application/json' },
+    body: body === undefined ? undefined : JSON.stringify(body),
+  });
+  let payload = null;
   try {
-    return JSON.parse(raw);
+    payload = await response.json();
   } catch {
-    return null;
+    payload = null;
   }
+  if (!response.ok) {
+    const code = payload?.error || 'request-failed';
+    const error = new Error(code);
+    error.code = code;
+    error.status = response.status;
+    error.payload = payload;
+    throw error;
+  }
+  return payload;
 }
 
 export function createOnlinePlayer({ name, clientId, isHost = false }) {
@@ -37,83 +48,57 @@ export function createOnlinePlayer({ name, clientId, isHost = false }) {
   };
 }
 
-export function readLobbySnapshot(lobbyCode) {
-  if (typeof window === 'undefined') return null;
-  const storageKey = getLobbyStorageKey(lobbyCode);
-  return parseJson(window.localStorage.getItem(storageKey));
-}
-
-export function writeLobbySnapshot(snapshot) {
-  if (typeof window === 'undefined' || !snapshot?.code) return;
-  const normalized = {
-    ...snapshot,
-    code: String(snapshot.code).toUpperCase(),
-    updatedAt: snapshot.updatedAt || nowIso(),
-  };
-  const storageKey = getLobbyStorageKey(normalized.code);
-  window.localStorage.setItem(storageKey, JSON.stringify(normalized));
-}
-
-export function clearLobbySnapshot(lobbyCode) {
-  if (typeof window === 'undefined') return;
-  const storageKey = getLobbyStorageKey(lobbyCode);
-  window.localStorage.removeItem(storageKey);
-}
-
-export function createLobbySnapshot({ lobbyCode, hostPlayer, hostName }) {
-  const code = String(lobbyCode || '').toUpperCase();
-  const createdAt = nowIso();
+export async function createLobbyOnServer({ hostName, hostPlayer }) {
+  const payload = await requestJson('/lobbies', {
+    method: 'POST',
+    body: { hostName, hostPlayer },
+  });
   return {
-    code,
-    status: 'waiting',
-    hostName: hostName || hostPlayer?.name || 'Host',
-    hostClientId: hostPlayer?.clientId || '',
-    createdAt,
-    updatedAt: createdAt,
-    startedAt: null,
-    startedRevision: null,
-    players: hostPlayer ? [{ ...hostPlayer, isHost: true }] : [],
+    lobby: payload?.lobby || null,
+    player: payload?.player || null,
   };
 }
 
-export function upsertLobbyPlayer(snapshot, nextPlayer) {
-  if (!snapshot || !nextPlayer) return snapshot;
-  const existingByClient = (snapshot.players || []).find((player) => player.clientId === nextPlayer.clientId);
-  const existingById = existingByClient || (snapshot.players || []).find((player) => player.id === nextPlayer.id);
-  const playerId = existingById?.id || nextPlayer.id || randomId('opl');
-  const updatedPlayer = {
-    ...nextPlayer,
-    id: playerId,
-    isHost: existingById?.isHost || Boolean(nextPlayer.isHost),
-    joinedAt: existingById?.joinedAt || nextPlayer.joinedAt || nowIso(),
-  };
-  const withoutOld = (snapshot.players || []).filter((player) => player.id !== playerId && player.clientId !== nextPlayer.clientId);
+export async function readLobbySnapshot(lobbyCode) {
+  const normalizedCode = normalizeCode(lobbyCode);
+  if (!normalizedCode) return null;
+  try {
+    const payload = await requestJson(`/lobbies/${encodeURIComponent(normalizedCode)}`);
+    return payload?.lobby || null;
+  } catch (error) {
+    if (error?.status === 404 || error?.code === 'lobby-not-found') return null;
+    throw error;
+  }
+}
+
+export async function joinLobbyOnServer(lobbyCode, player) {
+  const normalizedCode = normalizeCode(lobbyCode);
+  const payload = await requestJson(`/lobbies/${encodeURIComponent(normalizedCode)}/join`, {
+    method: 'POST',
+    body: { player },
+  });
   return {
-    ...snapshot,
-    players: [...withoutOld, updatedPlayer],
-    updatedAt: nowIso(),
+    lobby: payload?.lobby || null,
+    player: payload?.player || null,
   };
 }
 
-export function removeLobbyPlayer(snapshot, playerId) {
-  if (!snapshot || !playerId) return snapshot;
-  return {
-    ...snapshot,
-    players: (snapshot.players || []).filter((player) => player.id !== playerId),
-    updatedAt: nowIso(),
-  };
+export async function leaveLobbyOnServer(lobbyCode, { role, playerId } = {}) {
+  const normalizedCode = normalizeCode(lobbyCode);
+  const payload = await requestJson(`/lobbies/${encodeURIComponent(normalizedCode)}/leave`, {
+    method: 'POST',
+    body: { role, playerId },
+  });
+  return payload?.lobby || null;
 }
 
-export function markLobbyStarted(snapshot, hostClientId) {
-  if (!snapshot || snapshot.hostClientId !== hostClientId) return snapshot;
-  const startedAt = nowIso();
-  return {
-    ...snapshot,
-    status: 'started',
-    startedAt,
-    startedRevision: randomId('start'),
-    updatedAt: startedAt,
-  };
+export async function startLobbyOnServer(lobbyCode, hostClientId) {
+  const normalizedCode = normalizeCode(lobbyCode);
+  const payload = await requestJson(`/lobbies/${encodeURIComponent(normalizedCode)}/start`, {
+    method: 'POST',
+    body: { hostClientId },
+  });
+  return payload?.lobby || null;
 }
 
 export function toGamePlayers(onlinePlayers = []) {
@@ -125,98 +110,76 @@ export function toGamePlayers(onlinePlayers = []) {
 }
 
 export function createLobbyTransport({ lobbyCode, onSnapshot = () => {}, onEvent = () => {} }) {
-  if (typeof window === 'undefined') {
+  if (typeof window === 'undefined' || !lobbyCode) {
     return {
       getSnapshot: () => null,
-      publishSnapshot: () => {},
-      emitEvent: () => {},
-      syncSnapshot: () => {},
+      syncSnapshot: async () => null,
       close: () => {},
     };
   }
 
-  const normalizedCode = String(lobbyCode || '').toUpperCase();
-  const lobbyStorageKey = getLobbyStorageKey(normalizedCode);
-  const lobbyEventKey = getLobbyEventKey(normalizedCode);
-  const channelName = `${LOBBY_CHANNEL_PREFIX}${normalizedCode}`;
-
-  let channel = null;
+  const normalizedCode = normalizeCode(lobbyCode);
   let closed = false;
+  let lastSnapshot = null;
+  const socket = io(LOBBY_SERVER_URL || undefined, {
+    transports: ['websocket', 'polling'],
+  });
 
-  const pushSnapshot = (snapshot, source = 'unknown') => {
+  const pushSnapshot = (snapshot, source = 'socket') => {
     if (!snapshot || closed) return;
+    lastSnapshot = snapshot;
     onSnapshot(snapshot, source);
   };
 
-  const syncSnapshot = () => {
+  const syncSnapshot = async () => {
     if (closed) return;
-    const snapshot = readLobbySnapshot(normalizedCode);
-    pushSnapshot(snapshot, 'sync');
+    try {
+      const snapshot = await readLobbySnapshot(normalizedCode);
+      if (!snapshot) {
+        lastSnapshot = null;
+        onSnapshot(null, 'sync');
+        return null;
+      }
+      pushSnapshot(snapshot, 'sync');
+      return snapshot;
+    } catch (error) {
+      onEvent({ type: 'sync-error', error }, 'sync');
+      throw error;
+    }
   };
 
-  const emitEvent = (type, payload = {}) => {
+  socket.on('connect', () => {
     if (closed) return;
-    const event = {
-      id: randomId('evt'),
-      code: normalizedCode,
-      type,
-      payload,
-      sentAt: nowIso(),
-    };
-    if (channel) channel.postMessage(event);
-    window.localStorage.setItem(lobbyEventKey, JSON.stringify(event));
-    onEvent(event, 'local');
-  };
-
-  const publishSnapshot = (snapshot) => {
-    if (closed || !snapshot) return;
-    writeLobbySnapshot(snapshot);
-    pushSnapshot(snapshot, 'local');
-    emitEvent('snapshot-updated', { updatedAt: snapshot.updatedAt || nowIso() });
-  };
-
-  const onStorage = (event) => {
+    socket.emit('lobby:subscribe', { code: normalizedCode });
+    onEvent({ type: 'socket-connected', code: normalizedCode }, 'socket');
+  });
+  socket.on('connect_error', (error) => {
     if (closed) return;
-    if (event.key === lobbyStorageKey) {
-      const next = parseJson(event.newValue);
-      pushSnapshot(next, 'storage');
+    onEvent({ type: 'connect-error', error }, 'socket');
+  });
+  socket.on('lobby:snapshot', (snapshot) => {
+    if (closed) return;
+    if (!snapshot) {
+      lastSnapshot = null;
+      onSnapshot(null, 'socket');
       return;
     }
-    if (event.key === lobbyEventKey) {
-      const nextEvent = parseJson(event.newValue);
-      if (!nextEvent) return;
-      onEvent(nextEvent, 'storage');
-      if (nextEvent.type !== 'heartbeat') syncSnapshot();
-    }
-  };
-
-  window.addEventListener('storage', onStorage);
-  if (typeof window.BroadcastChannel !== 'undefined') {
-    channel = new window.BroadcastChannel(channelName);
-    channel.onmessage = (message) => {
-      if (closed) return;
-      const incoming = message?.data;
-      if (!incoming) return;
-      onEvent(incoming, 'broadcast');
-      if (incoming.type !== 'heartbeat') syncSnapshot();
-    };
-  }
-
-  pushSnapshot(readLobbySnapshot(normalizedCode), 'initial');
+    pushSnapshot(snapshot, 'socket');
+  });
+  socket.emit('lobby:subscribe', { code: normalizedCode });
+  syncSnapshot().catch(() => {});
 
   return {
-    getSnapshot: () => readLobbySnapshot(normalizedCode),
-    publishSnapshot,
-    emitEvent,
+    getSnapshot: () => lastSnapshot,
     syncSnapshot,
     close: () => {
       if (closed) return;
       closed = true;
-      window.removeEventListener('storage', onStorage);
-      if (channel) {
-        channel.close();
-        channel = null;
-      }
+      socket.emit('lobby:unsubscribe', { code: normalizedCode });
+      socket.off('connect');
+      socket.off('connect_error');
+      socket.off('lobby:snapshot');
+      socket.disconnect();
     },
   };
 }
