@@ -5,9 +5,38 @@ import { Server } from 'socket.io';
 import { createLobbyStore, toClientSnapshot } from './storage/index.js';
 
 const PORT = Number(process.env.LOBBY_SERVER_PORT || process.env.PORT || 8787);
-const CLIENT_ORIGIN = process.env.LOBBY_CLIENT_ORIGIN || '*';
+const CLIENT_ORIGINS_RAW = String(
+  process.env.LOBBY_CLIENT_ORIGINS || process.env.LOBBY_CLIENT_ORIGIN || '*'
+).trim();
 const MIN_PLAYERS = 3;
 const SESSION_TOKEN_TTL_MS = Number(process.env.LOBBY_SESSION_TOKEN_TTL_MS || 1000 * 60 * 60 * 12);
+
+function parseClientOrigins(rawValue) {
+  const normalized = String(rawValue || '').trim();
+  if (!normalized) return ['*'];
+  const parts = normalized
+    .split(',')
+    .map((part) => part.trim())
+    .filter(Boolean);
+  return parts.length ? parts : ['*'];
+}
+
+const CLIENT_ORIGINS = parseClientOrigins(CLIENT_ORIGINS_RAW);
+const ALLOW_ALL_ORIGINS = CLIENT_ORIGINS.includes('*');
+
+function isAllowedOrigin(origin) {
+  if (ALLOW_ALL_ORIGINS) return true;
+  if (!origin) return true;
+  return CLIENT_ORIGINS.includes(origin);
+}
+
+function corsOriginHandler(origin, callback) {
+  if (isAllowedOrigin(origin)) {
+    callback(null, true);
+    return;
+  }
+  callback(new Error('origin-not-allowed'));
+}
 
 function nowIso() {
   return new Date().toISOString();
@@ -22,12 +51,12 @@ const { store, kind: storeKind, close: closeStore } = await createLobbyStore({
 });
 
 const app = express();
-app.use(cors({ origin: CLIENT_ORIGIN }));
+app.use(cors({ origin: corsOriginHandler }));
 app.use(express.json({ limit: '1mb' }));
 
 const httpServer = createServer(app);
 const io = new Server(httpServer, {
-  cors: { origin: CLIENT_ORIGIN, methods: ['GET', 'POST'] },
+  cors: { origin: corsOriginHandler, methods: ['GET', 'POST'] },
 });
 
 function roomName(code) {
@@ -436,7 +465,9 @@ io.on('connection', (socket) => {
 
 httpServer.listen(PORT, () => {
   // eslint-disable-next-line no-console
-  console.log(`[lobby-server] listening on :${PORT} (store=${storeKind})`);
+  console.log(
+    `[lobby-server] listening on :${PORT} (store=${storeKind}) origins=${ALLOW_ALL_ORIGINS ? '*' : CLIENT_ORIGINS.join(',')}`
+  );
 });
 
 const shutdownSignals = ['SIGINT', 'SIGTERM'];
