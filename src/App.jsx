@@ -917,7 +917,7 @@ function SetupScreen(props) {
                   <Button className={`rounded-2xl px-4 py-3 ${grillSettings.micEnabled ? 'bg-emerald-400 text-zinc-950' : 'border border-white/10 bg-white/5 text-white'}`} onClick={() => setGrillSettings((current) => ({ ...current, micEnabled: !current.micEnabled }))}>Mic {grillSettings.micEnabled ? 'On' : 'Off'}</Button>
                   <Button className={`rounded-2xl px-4 py-3 ${grillSettings.ttsEnabled ? 'bg-emerald-400 text-zinc-950' : 'border border-white/10 bg-white/5 text-white'}`} onClick={() => setGrillSettings((current) => ({ ...current, ttsEnabled: !current.ttsEnabled }))}>Voice {grillSettings.ttsEnabled ? 'On' : 'Off'}</Button>
                 </div>
-                <div className="mt-3 text-xs text-cyan-200">Example: 7 players -> 3 each, 4 players -> 5 each.</div>
+                <div className="mt-3 text-xs text-cyan-200">Example: 7 players gives 3 each, 4 players gives 5 each.</div>
               </GlassPanel>
               <GlassPanel className="rounded-[1.5rem] bg-white/5 p-4">
                 <div className="flex items-center justify-between">
