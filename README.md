@@ -114,6 +114,70 @@ npm install
 npm run dev
 ```
 
+## Global Online Lobbies (App Store / Play Store ready)
+
+To support players in different homes/countries, you must run the lobby server on a
+public internet host (HTTPS + WSS), not localhost.
+
+### 1) Deploy the lobby server
+
+Run this server process in production:
+
+```bash
+npm run lobby:server
+```
+
+Server entrypoint: `server/lobbyServer.js`
+
+### 2) Configure client -> server URL
+
+When building the frontend, set:
+
+```bash
+VITE_LOBBY_SERVER_URL=https://your-lobby-server.example.com
+```
+
+This URL is what all devices connect to for lobby creation/join/sync.
+
+### 3) Use Redis in production (strongly recommended)
+
+```bash
+LOBBY_REDIS_URL=redis://your-redis-host:6379
+```
+
+Without Redis, lobby state is in-memory and will reset on server restart.
+
+### 4) Configure allowed client origins (CORS)
+
+For security, lock allowed origins instead of wildcard:
+
+```bash
+LOBBY_CLIENT_ORIGIN=https://your-web-app.example.com
+```
+
+Or multiple origins:
+
+```bash
+LOBBY_CLIENT_ORIGINS=https://your-web-app.example.com,https://staging.your-web-app.example.com
+```
+
+### 5) Production env example
+
+```bash
+PORT=8787
+LOBBY_SESSION_TOKEN_TTL_MS=43200000
+LOBBY_REDIS_URL=redis://your-redis-host:6379
+LOBBY_CLIENT_ORIGIN=https://your-web-app.example.com
+```
+
+### 6) Verify deployment health
+
+```bash
+curl https://your-lobby-server.example.com/health
+```
+
+Expected JSON includes `ok: true` and storage kind (`memory` or `redis`).
+
 ### Realtime Online Lobby Server (required for networked play)
 
 Run the lobby backend in a second terminal:
