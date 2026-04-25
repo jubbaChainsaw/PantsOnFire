@@ -33,3 +33,10 @@ body {
 button, input, select {
   font: inherit;
 }
+
+h1, h2, h3, h4, h5, h6,
+button,
+[role="button"],
+.font-black {
+  font-family: 'Awaken Design Extrude', 'Awaken Design', Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
