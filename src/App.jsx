@@ -357,6 +357,69 @@ function buildLocalRound(
   };
 }
 
+function calculateRoundResolutionLocal(players, round, votesByPlayerId = {}) {
+  const validPlayerIds = new Set(players.map((player) => player.id));
+  const normalizedVotes = Object.fromEntries(
+    Object.entries(votesByPlayerId || {}).filter(([voterId, targetId]) => {
+      if (!validPlayerIds.has(voterId)) return false;
+      if (!targetId || !validPlayerIds.has(targetId)) return false;
+      return voterId !== targetId;
+    })
+  );
+  const tally = {};
+  Object.values(normalizedVotes).forEach((targetId) => {
+    tally[targetId] = (tally[targetId] || 0) + 1;
+  });
+  const liarIds = round?.imposterIds || [];
+  const topVotes = Math.max(0, ...Object.values(tally));
+  const caughtLiars = liarIds.filter((id) => (tally[id] || 0) > 0 && (tally[id] || 0) === topVotes);
+  const imposterCaught = liarIds.length > 0 ? caughtLiars.length === liarIds.length : false;
+  const isGrillRound = round?.roundTypeId === 'grill';
+  const roundGains = {};
+  const roundBreakdown = {};
+  const nextPlayers = players.map((player) => {
+    let gain = 0;
+    let voteHit = 0;
+    let liarSurvived = 0;
+    let grillTeamBonus = 0;
+    let grillLiarSwing = 0;
+    if (liarIds.includes(normalizedVotes[player.id])) {
+      gain += 1;
+      voteHit = 1;
+    }
+    if (liarIds.includes(player.id) && !imposterCaught) {
+      gain += 2;
+      liarSurvived = 2;
+    }
+    if (isGrillRound) {
+      if (imposterCaught) {
+        gain += 2;
+        grillTeamBonus = 2;
+      } else if (liarIds.includes(player.id)) {
+        gain += 2;
+        grillLiarSwing = 2;
+      } else {
+        gain -= 1;
+        grillLiarSwing = -1;
+      }
+    }
+    roundGains[player.id] = gain;
+    roundBreakdown[player.id] = { voteHit, liarSurvived, grillTeamBonus, grillLiarSwing };
+    return {
+      ...player,
+      score: Math.max(0, Number(player.score || 0) + gain),
+    };
+  });
+  return {
+    normalizedVotes,
+    tally,
+    imposterCaught,
+    roundGains,
+    roundBreakdown,
+    nextPlayers,
+  };
+}
+
 function GlassPanel({ children, className = '' }) {
   return <div className={`backdrop-blur-xl bg-white/8 border border-white/10 shadow-2xl ${className}`}>{children}</div>;
 }
@@ -369,7 +432,7 @@ function LightningBolt({ className = '' }) {
 function TopFrame({ children, theme = 'Default' }) {
   const gradient = THEME_META[theme]?.gradient || THEME_META.Default.gradient;
   return (
-    <div className="min-h-screen overflow-hidden text-white relative bg-[linear-gradient(135deg,#14043a_8%,#2d126f_45%,#1d0a51_100%)]">
+    <div className="min-h-screen min-h-[100dvh] overflow-x-hidden overflow-y-auto text-white relative bg-[linear-gradient(135deg,#14043a_8%,#2d126f_45%,#1d0a51_100%)]">
       <div
         className="absolute inset-0 opacity-[0.75] bg-repeat"
         style={{
@@ -382,7 +445,17 @@ function TopFrame({ children, theme = 'Default' }) {
       <ZanyAccentBurst className="right-5 bottom-20 scale-125" />
       <LightningBolt className="left-8 bottom-28" />
       <LightningBolt className="right-8 top-24 -rotate-12" />
-      <div className="relative z-10 p-4 md:p-8">{children}</div>
+      <div
+        className="relative z-10 md:p-8"
+        style={{
+          paddingLeft: '1rem',
+          paddingRight: '1rem',
+          paddingTop: 'max(1rem, env(safe-area-inset-top))',
+          paddingBottom: 'max(1rem, env(safe-area-inset-bottom))',
+        }}
+      >
+        {children}
+      </div>
     </div>
   );
 }
@@ -767,14 +840,14 @@ function RevealScreen({ players, currentRevealIndex, round, totalRounds, onNext,
             </div>
           )}
 
-          <div className="mt-8 mx-auto w-full max-w-sm [perspective:1200px]">
+          <div className="mt-6 mx-auto w-full max-w-[22rem] sm:max-w-sm [perspective:1200px]">
             <motion.div
               animate={{ rotateY: cardFace === 'front' ? 180 : 0 }}
               transition={{ duration: 0.75, ease: 'easeInOut' }}
-              className="relative h-[560px] w-full [transform-style:preserve-3d]"
+              className="relative w-full aspect-[2/3] [transform-style:preserve-3d]"
             >
-              <div className="absolute inset-0 overflow-hidden rounded-[2rem] border-2 border-white/25 [backface-visibility:hidden]">
-                {cardBackSrc && <img src={cardBackSrc} alt="Prompt card back" className="absolute inset-0 h-full w-full object-cover" />}
+              <div className="absolute inset-0 overflow-hidden rounded-[1.7rem] border-2 border-white/25 [backface-visibility:hidden]">
+                {cardBackSrc && <img src={cardBackSrc} alt="Prompt card back" className="absolute inset-0 h-full w-full object-contain bg-black/30" />}
                 <div className="absolute inset-0 bg-black/55" />
                 <div className="relative z-10 flex h-full flex-col p-6 text-white">
                   <RoundTypeLogo
@@ -806,8 +879,8 @@ function RevealScreen({ players, currentRevealIndex, round, totalRounds, onNext,
                 )}
               </div>
 
-              <div className={`absolute inset-0 overflow-hidden rounded-[2rem] border-2 [backface-visibility:hidden] [transform:rotateY(180deg)] ${isImposter ? 'border-red-400/60' : 'border-cyan-300/60'}`}>
-                {cardFrontSrc && <img src={cardFrontSrc} alt="Prompt card front" className="absolute inset-0 h-full w-full object-cover" />}
+              <div className={`absolute inset-0 overflow-hidden rounded-[1.7rem] border-2 [backface-visibility:hidden] [transform:rotateY(180deg)] ${isImposter ? 'border-red-400/60' : 'border-cyan-300/60'}`}>
+                {cardFrontSrc && <img src={cardFrontSrc} alt="Prompt card front" className="absolute inset-0 h-full w-full object-contain bg-black/30" />}
                 <div className={`absolute inset-0 ${isImposter ? 'bg-red-950/65' : 'bg-slate-950/65'}`} />
                 <div className="relative z-10 flex h-full flex-col p-6 text-left text-white">
                   <div className="text-xs uppercase tracking-[0.3em] text-white/75">
@@ -1007,10 +1080,24 @@ function DiscussionScreen({ players, round, totalRounds, onContinue, line, theme
               : 'Give one clue, blend in, and avoid revealing your exact prompt.')))));
   return <TopFrame theme={theme}><div className="mx-auto max-w-3xl space-y-6"><ScoreStrip players={players} roundNumber={round.roundNumber} totalRounds={totalRounds} /><VoicePartyStatusStrip onlineVoiceEnabled={onlineVoiceEnabled} onlineVoiceMuted={onlineVoiceMuted} setOnlineVoiceMuted={setOnlineVoiceMuted} canTalk={canTalk} /><GlassPanel className="rounded-[2.5rem] p-8 text-center border-emerald-400/20 bg-black/25"><Badge className="rounded-full bg-emerald-500/20 border border-emerald-400/20 text-emerald-100 px-4 py-1.5">All prompts delivered</Badge><div className="text-xs uppercase tracking-[0.3em] text-white/50 mt-4">{round.roundTypeName}</div><h2 className="text-4xl font-black mt-3 text-yellow-300">{round.roundTypeTagline}</h2><p className="text-white/75 mt-3 max-w-2xl mx-auto">{line}</p><p className="text-cyan-200 mt-3 max-w-2xl mx-auto font-semibold">{roundRule}</p><Button className="rounded-[1.5rem] h-16 px-8 mt-8 bg-yellow-300 text-zinc-950 border-2 border-white" onClick={onContinue} disabled={submitPending}><SkipForward className="mr-2 h-5 w-5 inline" />{submitPending ? 'Syncing...' : 'Finish discussion and vote'}</Button></GlassPanel></div></TopFrame>;
 }
-function VotingScreen({ players, round, totalRounds, votesByPlayerId, setVotesByPlayerId, onSubmitVotes, line, theme, onlineMode = false, onlineVoiceEnabled = false, onlineVoiceMuted = false, setOnlineVoiceMuted = () => {}, canTalk = true, submitPending = false }) {
+function VotingScreen({ players, round, totalRounds, votesByPlayerId, setVotesByPlayerId, onSubmitVotes, line, theme, onlineMode = false, onlinePlayerId = '', onlineVoiceEnabled = false, onlineVoiceMuted = false, setOnlineVoiceMuted = () => {}, canTalk = true, submitPending = false }) {
   const leader = players.find((p) => p.id === round.leaderId);
-  const completeCount = Object.values(votesByPlayerId).filter(Boolean).length;
-  const allComplete = players.every((player) => votesByPlayerId[player.id]);
+  const votersToRender = onlineMode && onlinePlayerId
+    ? players.filter((player) => player.id === onlinePlayerId)
+    : players;
+  const localVoteCount = Object.values(votesByPlayerId).filter(Boolean).length;
+  const completeCount = onlineMode
+    ? Number(round.voteCompletionCount || 0)
+    : localVoteCount;
+  const voteTargetCount = onlineMode
+    ? Math.max(1, Number(round.voteTargetCount || players.length || 1))
+    : Math.max(1, players.length || 1);
+  const onlineVoteReady = onlineMode
+    ? Boolean(onlinePlayerId && votesByPlayerId[onlinePlayerId])
+    : false;
+  const allComplete = onlineMode
+    ? onlineVoteReady
+    : players.every((player) => votesByPlayerId[player.id]);
   const voteInstruction = round.roundTypeId === 'grill'
     ? "Vote for who sounded like they already knew the AI's hidden prompt."
     : (round.roundTypeId === 'chain'
@@ -1022,7 +1109,78 @@ function VotingScreen({ players, round, totalRounds, votesByPlayerId, setVotesBy
           : (round.roundTypeId === 'offtopic'
             ? 'Vote for who defended the wrong scenario.'
             : 'Vote for who sounded most suspicious.'))));
-  return <TopFrame theme={theme}><div className="mx-auto max-w-5xl space-y-6"><ScoreStrip players={players} roundNumber={round.roundNumber} totalRounds={totalRounds} />{onlineMode && <VoicePartyStatusStrip onlineVoiceEnabled={onlineVoiceEnabled} onlineVoiceMuted={onlineVoiceMuted} setOnlineVoiceMuted={setOnlineVoiceMuted} canTalk={canTalk} />}<GlassPanel className="rounded-[2.5rem] p-8 border-fuchsia-400/20 bg-black/25"><div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4"><div><div className="text-xs uppercase tracking-[0.3em] text-white/50">{round.roundTypeName}</div><h2 className="text-4xl font-black mt-3 text-yellow-300">{round.roundTypeTagline}</h2><p className="text-white/70 mt-2">{onlineMode ? 'Vote from your own device.' : <>Pass the phone to <span className="font-semibold text-cyan-300">{leader?.name}</span>. </>}{line}</p><p className="text-cyan-200 mt-2 font-semibold">{voteInstruction}</p></div><GlassPanel className="rounded-[1.75rem] p-4 min-w-[220px] border-cyan-400/20 bg-black/20"><div className="text-sm text-white/70">Votes completed</div><div className="text-3xl font-black mt-1 text-yellow-300">{completeCount}/{players.length}</div><Progress value={(completeCount / players.length) * 100} className="mt-3" /></GlassPanel></div><div className="grid gap-4 mt-8 md:grid-cols-2 xl:grid-cols-3">{players.map((voter) => <GlassPanel key={voter.id} className="rounded-[1.75rem] p-4 border-white/10 bg-black/20"><div className="font-black text-lg">{voter.name}</div><div className="text-sm text-white/55 mt-1">Who do they vote for?</div><div className="grid grid-cols-2 gap-2 mt-4">{players.filter((p) => p.id !== voter.id).map((target) => <Button key={target.id} className={`rounded-2xl h-11 ${votesByPlayerId[voter.id] === target.id ? 'bg-yellow-300 text-zinc-950' : 'bg-white/5 border border-white/10 text-white'}`} onClick={() => setVotesByPlayerId((cur) => ({ ...cur, [voter.id]: target.id }))} disabled={submitPending}>{target.name}</Button>)}</div></GlassPanel>)}</div><div className="mt-8 flex justify-end"><Button className="rounded-[1.5rem] h-14 px-8 bg-yellow-300 text-zinc-950 border-2 border-white" disabled={!allComplete || submitPending} onClick={onSubmitVotes}><Vote className="mr-2 h-5 w-5 inline" />{submitPending ? 'Submitting votes...' : 'Reveal results'}</Button></div></GlassPanel></div></TopFrame>;
+  const progressValue = Math.max(0, Math.min(100, (completeCount / voteTargetCount) * 100));
+  return (
+    <TopFrame theme={theme}>
+      <div className="mx-auto max-w-5xl space-y-6">
+        <ScoreStrip players={players} roundNumber={round.roundNumber} totalRounds={totalRounds} />
+        {onlineMode && (
+          <VoicePartyStatusStrip
+            onlineVoiceEnabled={onlineVoiceEnabled}
+            onlineVoiceMuted={onlineVoiceMuted}
+            setOnlineVoiceMuted={setOnlineVoiceMuted}
+            canTalk={canTalk}
+          />
+        )}
+        <GlassPanel className="rounded-[2.5rem] p-8 border-fuchsia-400/20 bg-black/25">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div>
+              <div className="text-xs uppercase tracking-[0.3em] text-white/50">{round.roundTypeName}</div>
+              <h2 className="text-4xl font-black mt-3 text-yellow-300">{round.roundTypeTagline}</h2>
+              <p className="text-white/70 mt-2">
+                {onlineMode
+                  ? 'Vote from your own device. Pick one suspect and submit.'
+                  : <>Pass the phone to <span className="font-semibold text-cyan-300">{leader?.name}</span>. </>}
+                {line}
+              </p>
+              <p className="text-cyan-200 mt-2 font-semibold">{voteInstruction}</p>
+            </div>
+            <GlassPanel className="rounded-[1.75rem] p-4 min-w-[220px] border-cyan-400/20 bg-black/20">
+              <div className="text-sm text-white/70">Votes completed</div>
+              <div className="text-3xl font-black mt-1 text-yellow-300">
+                {completeCount}/{voteTargetCount}
+              </div>
+              <Progress value={progressValue} className="mt-3" />
+            </GlassPanel>
+          </div>
+
+          <div className="grid gap-4 mt-8 md:grid-cols-2 xl:grid-cols-3">
+            {votersToRender.map((voter) => (
+              <GlassPanel key={voter.id} className="rounded-[1.75rem] p-4 border-white/10 bg-black/20">
+                <div className="font-black text-lg">{voter.name}</div>
+                <div className="text-sm text-white/55 mt-1">Who do they vote for?</div>
+                <div className="grid grid-cols-2 gap-2 mt-4">
+                  {players.filter((player) => player.id !== voter.id).map((target) => (
+                    <Button
+                      key={target.id}
+                      className={`rounded-2xl h-11 ${votesByPlayerId[voter.id] === target.id ? 'bg-yellow-300 text-zinc-950' : 'bg-white/5 border border-white/10 text-white'}`}
+                      onClick={() => setVotesByPlayerId((cur) => ({ ...cur, [voter.id]: target.id }))}
+                      disabled={submitPending}
+                    >
+                      {target.name}
+                    </Button>
+                  ))}
+                </div>
+              </GlassPanel>
+            ))}
+          </div>
+
+          <div className="mt-8 flex justify-end">
+            <Button
+              className="rounded-[1.5rem] h-14 px-8 bg-yellow-300 text-zinc-950 border-2 border-white"
+              disabled={!allComplete || submitPending}
+              onClick={onSubmitVotes}
+            >
+              <Vote className="mr-2 h-5 w-5 inline" />
+              {submitPending
+                ? (onlineMode ? 'Submitting vote...' : 'Submitting votes...')
+                : (onlineMode ? 'Submit my vote' : 'Reveal results')}
+            </Button>
+          </div>
+        </GlassPanel>
+      </div>
+    </TopFrame>
+  );
 }
 function LiarRevealScreen({ players, round, onComplete, theme }) {
   const liars = players.filter((p) => (round.imposterIds || []).includes(p.id));
@@ -1604,10 +1762,13 @@ export default function App() {
     }
     setOnlineVoteSubmissionPending(true);
     try {
+      const votesByPlayerIdToSubmit = onlineMode
+        ? { [playerId]: votesByPlayerId[playerId] || '' }
+        : votesByPlayerId;
       const result = await submitRoundVotesOnServer(lobbyCode, {
         playerId,
         sessionToken,
-        votesByPlayerId,
+        votesByPlayerId: votesByPlayerIdToSubmit,
       });
       if (result?.rotatedSessionToken && result.rotatedSessionToken !== sessionToken) {
         const nextSession = {
@@ -1751,6 +1912,12 @@ export default function App() {
       await submitOnlineVotes();
       return;
     }
+    const resolution = calculateRoundResolutionLocal(players, round, votesByPlayerId);
+    setPlayers(resolution.nextPlayers);
+    setTally(resolution.tally);
+    setRoundGains(resolution.roundGains);
+    setRoundBreakdown(resolution.roundBreakdown);
+    setImposterCaught(Boolean(resolution.imposterCaught));
     setScreen('liar-reveal');
   }
   async function finishLiarReveal() {
@@ -2151,6 +2318,7 @@ export default function App() {
         line={copyState.voting}
         theme={nameTheme}
         onlineMode={onlineMode}
+        onlinePlayerId={onlineJoinedPlayerId}
         onlineVoiceEnabled={onlineMode}
         onlineVoiceMuted={onlineVoiceMuted}
         setOnlineVoiceMuted={setOnlineVoiceMuted}

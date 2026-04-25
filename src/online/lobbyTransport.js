@@ -195,7 +195,7 @@ export function toGamePlayers(onlinePlayers = []) {
   return onlinePlayers.map((player) => ({
     id: player.id,
     name: player.name,
-    score: 0,
+    score: Math.max(0, Number(player?.score || 0)),
   }));
 }
 
