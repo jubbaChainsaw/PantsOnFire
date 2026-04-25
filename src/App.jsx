@@ -701,6 +701,54 @@ function getInstructionHostLines(roundTypeId = 'prompt') {
     'After discussion, vote for the player who sounds most suspicious.',
   ];
 }
+function getHostExamplePrompts(roundTypeId = 'prompt') {
+  if (roundTypeId === 'picture') {
+    return {
+      normal: 'Eiffel Tower at sunset',
+      liar: 'Great Wall at sunrise',
+    };
+  }
+  if (roundTypeId === 'opinion') {
+    return {
+      normal: 'Pineapple belongs on pizza',
+      liar: 'Pineapple ruins every pizza',
+    };
+  }
+  if (roundTypeId === 'meme') {
+    return {
+      normal: 'Distracted boyfriend format',
+      liar: 'Drake hotline bling format',
+    };
+  }
+  if (roundTypeId === 'noise') {
+    return {
+      normal: 'A buzzing bee',
+      liar: 'A squeaky shopping trolley',
+    };
+  }
+  if (roundTypeId === 'offtopic') {
+    return {
+      normal: 'Beach holiday plans',
+      liar: 'Fixing a broken printer',
+    };
+  }
+  if (roundTypeId === 'chain') {
+    return {
+      normal: 'Road trip playlist',
+      liar: 'Hospital waiting room',
+    };
+  }
+  if (roundTypeId === 'grill') {
+    return {
+      normal: 'Stonehenge',
+      liar: 'Eiffel Tower',
+    };
+  }
+  return {
+    normal: 'Street market in Bangkok',
+    liar: 'Souk in Marrakech',
+  };
+}
 function resolveCategoryChoiceCardArt(category, themeName = 'Default') {
   const themeAssets = getThemeAssets(themeName);
   const defaultThemeAssets = getThemeAssets('Default');
@@ -730,8 +778,9 @@ function HostIntroScreen({ round, stingerLine, onContinue, theme }) {
   const exampleCardSrc = useAdultCardArt
     ? (themeAssets.adultPromptCardFront || defaultThemeAssets.adultPromptCardFront)
     : (defaultTypeCardFront || themeAssets.promptCardFront || defaultThemeAssets.promptCardFront);
-  const normalExamplePrompt = round.commonPrompt || 'Example normal prompt';
-  const liarExamplePrompt = round.imposterPrompt || 'Example liar prompt';
+  const examplePrompts = getHostExamplePrompts(round.roundTypeId);
+  const normalExamplePrompt = examplePrompts.normal;
+  const liarExamplePrompt = examplePrompts.liar;
   const speechSentences = [
     `${round.roundTypeName} round selected.`,
     getRoundRuleText(round.roundTypeId),
@@ -801,10 +850,10 @@ function HostIntroScreen({ round, stingerLine, onContinue, theme }) {
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.28, ease: 'easeOut' }}
-              className="ml-[5rem] sm:ml-[8.5rem] p-1 text-white"
+              className="ml-[5.25rem] sm:ml-[8.75rem] p-1 text-white"
             >
               <div className="relative mx-auto max-w-xl rounded-[2rem] border-2 border-cyan-200/80 bg-[#1d2376] px-4 py-4 shadow-[0_12px_24px_rgba(0,0,0,0.35)]">
-                <div className="absolute -bottom-3 left-8 h-6 w-6 rotate-45 border-b-2 border-r-2 border-cyan-200/80 bg-[#1d2376]" />
+                <div className="absolute -left-3 top-[58%] h-6 w-6 -translate-y-1/2 rotate-45 border-b-2 border-l-2 border-cyan-200/80 bg-[#1d2376]" />
                 <div className="text-[0.65rem] uppercase tracking-[0.2em] text-cyan-100">{mascot.name} says</div>
                 <p className="mt-2 text-base sm:text-lg text-white/95">{speechSentences[speechIndex]}</p>
               </div>
@@ -1261,6 +1310,7 @@ function RevealScreen({ players, currentRevealIndex, round, totalRounds, onNext,
   const [cardFace, setCardFace] = useState('back');
   const [countdownValue, setCountdownValue] = useState(null);
   const [isCountingDown, setIsCountingDown] = useState(false);
+  const [readyToReveal, setReadyToReveal] = useState(false);
   const [promptFontSize, setPromptFontSize] = useState(54);
   const fireAudioRef = useRef(null);
   const promptTextRef = useRef(null);
@@ -1294,15 +1344,6 @@ function RevealScreen({ players, currentRevealIndex, round, totalRounds, onNext,
     }, 700);
     return () => clearTimeout(timer);
   }, [isCountingDown, countdownValue]);
-  useEffect(() => {
-    if (cardFace !== 'back' || isCountingDown || countdownValue !== null) return undefined;
-    const timer = setTimeout(() => {
-      setCountdownValue(3);
-      setIsCountingDown(true);
-    }, 900);
-    return () => clearTimeout(timer);
-  }, [cardFace, isCountingDown, countdownValue]);
-
   useEffect(() => {
     if (cardFace !== 'front') {
       try {
@@ -1368,6 +1409,13 @@ function RevealScreen({ players, currentRevealIndex, round, totalRounds, onNext,
     })
   ), []);
 
+  function startRevealCountdown() {
+    if (readyToReveal || isCountingDown || cardFace !== 'back') return;
+    setReadyToReveal(true);
+    setCountdownValue(3);
+    setIsCountingDown(true);
+  }
+
   return (
     <TopFrame theme={theme}>
       <div className="mx-auto max-w-3xl space-y-6">
@@ -1412,7 +1460,7 @@ function RevealScreen({ players, currentRevealIndex, round, totalRounds, onNext,
                     <div className="mt-2 text-xs uppercase tracking-[0.2em] text-cyan-100/95">
                       {isCountingDown && typeof countdownValue === 'number' && countdownValue > 0
                         ? `Flipping in ${countdownValue}`
-                        : 'Card flip incoming'}
+                        : (readyToReveal ? 'Card flip incoming' : 'Tap I\'m Ready first')}
                     </div>
                   </div>
                 </div>
@@ -1499,6 +1547,15 @@ function RevealScreen({ players, currentRevealIndex, round, totalRounds, onNext,
               </div>
             </motion.div>
           </div>
+
+          {cardFace === 'back' && !readyToReveal && !isCountingDown && (
+            <Button
+              className="rounded-[1.5rem] h-14 px-8 mt-6 bg-yellow-300 text-zinc-950 border-2 border-white"
+              onClick={startRevealCountdown}
+            >
+              I&apos;m Ready
+            </Button>
+          )}
 
           {cardFace === 'front' && (
             <Button className="rounded-[1.5rem] h-16 px-8 mt-7 bg-white/10 border border-white/10 text-white" onClick={onNext}>
