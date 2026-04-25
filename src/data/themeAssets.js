@@ -1,6 +1,10 @@
 export const THEME_ASSETS = {
   Default: {
     characterCard: '/assets/themes/default/characters/presenter.png',
+    hostIdle: '/assets/themes/default/characters/presenter.png',
+    hostTalk1: '/assets/themes/default/characters/presenter.png',
+    hostTalk2: '/assets/themes/default/characters/presenter.png',
+    hostTalk3: '/assets/themes/default/characters/presenter.png',
     iconSheet: '/assets/themes/default/icons/icons-sheet.png',
     uiBanner: '/assets/themes/default/ui/banner.png',
     promptCardFront: '/assets/themes/default/cards/prompt-front.png',
@@ -10,6 +14,10 @@ export const THEME_ASSETS = {
   },
   Pirates: {
     characterCard: '/assets/themes/pirates/characters/presenter.png',
+    hostIdle: '/assets/themes/pirates/characters/presenter.png',
+    hostTalk1: '/assets/themes/pirates/characters/presenter.png',
+    hostTalk2: '/assets/themes/pirates/characters/presenter.png',
+    hostTalk3: '/assets/themes/pirates/characters/presenter.png',
     iconSheet: '/assets/themes/pirates/icons/icons-sheet.png',
     uiBanner: '/assets/themes/pirates/ui/banner.png',
     promptCardFront: '/assets/themes/pirates/cards/prompt-front.png',
@@ -156,5 +164,29 @@ export function getThemeAssets(themeName = 'Default') {
   return {
     ...THEME_ASSETS.Default,
     ...selected,
+  };
+}
+
+export function getThemeHostAssets(themeName = 'Default') {
+  const selected = THEME_ASSETS[themeName] || THEME_ASSETS.Default;
+  const fallback = THEME_ASSETS.Default || {};
+  const collectTalkFrames = (assetEntry = {}) => {
+    const framesFromList = Array.isArray(assetEntry.hostTalkingFrames)
+      ? assetEntry.hostTalkingFrames
+      : [];
+    const framesFromNamedSlots = [assetEntry.hostTalk1, assetEntry.hostTalk2, assetEntry.hostTalk3];
+    return [...framesFromList, ...framesFromNamedSlots].filter(Boolean);
+  };
+
+  const selectedFrames = collectTalkFrames(selected);
+  const fallbackFrames = collectTalkFrames(fallback);
+  const selectedIdle = selected.hostIdle || selected.characterCard || null;
+  const fallbackIdle = fallback.hostIdle || fallback.characterCard || null;
+
+  return {
+    idle: selectedIdle || fallbackIdle || null,
+    talkingFrames: selectedFrames.length
+      ? selectedFrames
+      : (fallbackFrames.length ? fallbackFrames : [selected.characterCard || fallback.characterCard].filter(Boolean)),
   };
 }
