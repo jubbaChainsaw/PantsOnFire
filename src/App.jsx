@@ -911,24 +911,25 @@ function RulesSplashScreen({ mode, onContinue, theme, isOnlineMode = false }) {
   );
 }
 function HomeScreen({ onNavigate, homeLine, onlineLobbyLine, adultMode }) {
-  const themeAssets = getThemeAssets('Default');
   return (
     <TopFrame theme="Default">
-      <div className="min-h-[calc(100vh-2rem)] px-2 flex items-center justify-center">
-        <div className="w-full max-w-xl text-center space-y-4">
+      <div className="relative min-h-[calc(100vh-2rem)] px-2 flex items-center justify-center overflow-hidden">
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-52">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_100%,rgba(255,94,0,0.45)_0%,rgba(255,94,0,0.2)_35%,rgba(0,0,0,0)_70%)] animate-pulse" />
+          <img src={FLAME_SRC} alt="" aria-hidden="true" className="absolute -bottom-6 left-[6%] h-24 w-24 opacity-80 [animation:home-flame-float_2.4s_ease-in-out_infinite] drop-shadow-[0_0_16px_rgba(255,98,0,0.98)]" />
+          <img src={FLAME_SRC} alt="" aria-hidden="true" className="absolute -bottom-8 left-[24%] h-28 w-28 opacity-85 [animation:home-flame-float_2.8s_ease-in-out_0.2s_infinite] drop-shadow-[0_0_16px_rgba(255,98,0,0.98)]" />
+          <img src={FLAME_SRC} alt="" aria-hidden="true" className="absolute -bottom-5 left-[44%] h-24 w-24 opacity-80 [animation:home-flame-float_2.2s_ease-in-out_0.35s_infinite] drop-shadow-[0_0_16px_rgba(255,98,0,0.98)]" />
+          <img src={FLAME_SRC} alt="" aria-hidden="true" className="absolute -bottom-9 left-[66%] h-28 w-28 opacity-85 [animation:home-flame-float_2.95s_ease-in-out_0.1s_infinite] drop-shadow-[0_0_16px_rgba(255,98,0,0.98)]" />
+          <img src={FLAME_SRC} alt="" aria-hidden="true" className="absolute -bottom-6 right-[8%] h-24 w-24 opacity-80 [animation:home-flame-float_2.5s_ease-in-out_0.25s_infinite] drop-shadow-[0_0_16px_rgba(255,98,0,0.98)]" />
+        </div>
+        <div className="relative z-10 w-full max-w-xl text-center space-y-4">
           {adultMode && <GlassPanel className="rounded-[1.4rem] p-3 border-red-400/30 bg-red-500/15"><div className="text-xs uppercase tracking-[0.25em] text-red-200 font-black">18+ Active</div><div className="text-sm text-red-100/90 mt-1">Adult prompt pack is enabled for this session.</div></GlassPanel>}
-          <GlassPanel className="rounded-[2.5rem] p-5 md:p-6 border-fuchsia-400/30 bg-black/30 overflow-hidden relative">
-            <img src={FLAME_SRC} alt="" aria-hidden="true" className="pointer-events-none absolute -top-3 left-5 h-10 w-10 opacity-85 animate-pulse drop-shadow-[0_0_12px_rgba(255,98,0,0.95)]" />
-            <img src={FLAME_SRC} alt="" aria-hidden="true" className="pointer-events-none absolute top-8 right-6 h-11 w-11 opacity-80 animate-pulse drop-shadow-[0_0_12px_rgba(255,98,0,0.95)]" />
-            <img src={FLAME_SRC} alt="" aria-hidden="true" className="pointer-events-none absolute bottom-4 left-7 h-9 w-9 opacity-75 animate-pulse drop-shadow-[0_0_10px_rgba(255,98,0,0.9)]" />
-            <img src={FLAME_SRC} alt="" aria-hidden="true" className="pointer-events-none absolute bottom-6 right-8 h-10 w-10 opacity-80 animate-pulse drop-shadow-[0_0_12px_rgba(255,98,0,0.95)]" />
-            <img src={LOGO_SRC} alt="Logo placeholder" className="mx-auto w-full max-w-md object-contain" />
-            <p className="mt-3 text-white/80 text-sm md:text-base">{homeLine}</p>
-            <ThemeArt src={themeAssets.uiBanner} alt="Default theme banner" className="mx-auto mt-3 w-full max-w-md rounded-2xl border border-white/15 bg-black/20" />
-            <div className="mt-2">
-              <ThemeIconStrip src={themeAssets.iconSheet} alt="Default icon sheet" />
-            </div>
-          </GlassPanel>
+          <div className="relative px-2 pt-1">
+            <img src={FLAME_SRC} alt="" aria-hidden="true" className="pointer-events-none absolute top-3 left-5 h-12 w-12 opacity-85 [animation:home-flame-float_2.1s_ease-in-out_infinite] drop-shadow-[0_0_12px_rgba(255,98,0,0.95)]" />
+            <img src={FLAME_SRC} alt="" aria-hidden="true" className="pointer-events-none absolute top-8 right-6 h-12 w-12 opacity-85 [animation:home-flame-float_2.45s_ease-in-out_0.2s_infinite] drop-shadow-[0_0_12px_rgba(255,98,0,0.95)]" />
+            <img src={LOGO_SRC} alt="Pants On Fire logo" className="mx-auto w-full max-w-lg object-contain drop-shadow-[0_10px_30px_rgba(0,0,0,0.7)]" />
+            <p className="mt-2 text-white/80 text-sm md:text-base">{homeLine}</p>
+          </div>
           <div className="grid gap-3">
             <Button className="h-16 rounded-[1.8rem] text-xl sm:text-2xl bg-yellow-300 text-zinc-950 hover:bg-yellow-200 border-2 border-white" onClick={() => onNavigate('setup')}><Play className="mr-2 h-5 w-5" />Setup Game</Button>
             <Button className="h-16 rounded-[1.8rem] text-xl sm:text-2xl bg-cyan-500/20 text-white hover:bg-cyan-500/30 border border-cyan-300/40" onClick={() => onNavigate('online-setup')}><Wifi className="mr-2 h-5 w-5" />Create Online Lobby</Button>
@@ -1381,7 +1382,7 @@ function RevealScreen({ players, currentRevealIndex, round, totalRounds, onNext,
     if (!promptElement || !fitContainer) return;
 
     const maxSize = 54;
-    const minSize = 18;
+    const minSize = 12;
     let nextSize = maxSize;
     promptElement.style.fontSize = `${nextSize}px`;
     promptElement.style.lineHeight = '1.05';
@@ -1527,8 +1528,11 @@ function RevealScreen({ players, currentRevealIndex, round, totalRounds, onNext,
                       className={`font-black ${isImposter ? 'text-yellow-300' : 'text-white'}`}
                       style={{
                         fontSize: `${promptFontSize}px`,
-                        wordBreak: 'break-word',
-                        overflowWrap: 'anywhere',
+                        wordBreak: 'normal',
+                        overflowWrap: 'normal',
+                        whiteSpace: 'nowrap',
+                        hyphens: 'none',
+                        WebkitHyphens: 'none',
                         lineHeight: 1.05,
                       }}
                     >
