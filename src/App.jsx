@@ -794,17 +794,20 @@ function HostIntroScreen({ round, stingerLine, onContinue, theme }) {
             <ThemeArt
               src={animatedHostSrc}
               alt={`${theme} presenter`}
-              className="pointer-events-none absolute bottom-0 left-0 w-28 sm:w-36 rounded-2xl border border-white/15 bg-black/20"
+              className="pointer-events-none absolute bottom-0 left-0 w-28 sm:w-36"
             />
             <motion.div
               key={`${round.id || round.roundNumber}-${speechIndex}`}
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.28, ease: 'easeOut' }}
-              className="ml-[5rem] sm:ml-[8.5rem] rounded-[1.4rem] border border-cyan-300/25 bg-black/45 p-4 text-white"
+              className="ml-[5rem] sm:ml-[8.5rem] p-1 text-white"
             >
-              <div className="text-[0.65rem] uppercase tracking-[0.2em] text-cyan-100">{mascot.name} says</div>
-              <p className="mt-2 text-sm sm:text-base text-white/95">{speechSentences[speechIndex]}</p>
+              <div className="relative mx-auto max-w-xl rounded-[2rem] border-2 border-cyan-200/80 bg-[#1d2376] px-4 py-4 shadow-[0_12px_24px_rgba(0,0,0,0.35)]">
+                <div className="absolute -bottom-3 left-8 h-6 w-6 rotate-45 border-b-2 border-r-2 border-cyan-200/80 bg-[#1d2376]" />
+                <div className="text-[0.65rem] uppercase tracking-[0.2em] text-cyan-100">{mascot.name} says</div>
+                <p className="mt-2 text-base sm:text-lg text-white/95">{speechSentences[speechIndex]}</p>
+              </div>
             </motion.div>
             {round.roundTypeId === 'grill' && (
               <p className="mt-3 text-xs font-semibold text-yellow-200">
