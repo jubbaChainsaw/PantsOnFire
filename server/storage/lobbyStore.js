@@ -647,8 +647,13 @@ function buildStoreCore({
       }
       round.phase = 'liar-reveal';
       round.phaseUpdatedAt = nowIso();
+      const rotatedSessionToken = helpers.rotateSessionTokenForPlayer(lobby, normalizedPlayerId);
       await saveLobby(lobby);
-      return { lobby, round: toPublicRound(round) };
+      return {
+        lobby,
+        round: toPublicRound(round),
+        sessionToken: rotatedSessionToken,
+      };
     }
 
     const nextPhase = getNextRoundPhase(round.phase, round.roundTypeId);
@@ -661,8 +666,13 @@ function buildStoreCore({
       round.voteTargetCount = lobby.players.length;
       round.resolution = null;
     }
+    const rotatedSessionToken = helpers.rotateSessionTokenForPlayer(lobby, normalizedPlayerId);
     await saveLobby(lobby);
-    return { lobby, round: toPublicRound(round) };
+    return {
+      lobby,
+      round: toPublicRound(round),
+      sessionToken: rotatedSessionToken,
+    };
   }
 
   async function submitRoundVote(code, playerId, targetPlayerId, sessionToken = '') {
@@ -705,12 +715,14 @@ function buildStoreCore({
       round.phase = 'liar-reveal';
       round.phaseUpdatedAt = nowIso();
     }
+    const rotatedSessionToken = helpers.rotateSessionTokenForPlayer(lobby, normalizedPlayerId);
     await saveLobby(lobby);
     return {
       lobby,
       round: toPublicRound(round),
       voteAccepted: true,
       votingComplete: Boolean(round.resolution),
+      sessionToken: rotatedSessionToken,
     };
   }
 

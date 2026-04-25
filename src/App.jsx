@@ -2536,7 +2536,7 @@ export default function App() {
             <div className="text-xs uppercase tracking-[0.3em] text-white/50">Round owner: {players[currentRoundOwnerIndex]?.name}</div>
             <h2 className="mt-3 text-4xl font-black text-yellow-300">Choose the next category</h2>
             <p className="mt-3 text-white/70">{copyState.chooser}</p>
-            <div className="mt-8 grid gap-4 sm:grid-cols-2">
+            <div className="mt-8 grid grid-cols-2 gap-3 sm:gap-4">
               {categoryOptions.map((category) => {
                 const categoryCardArtSrc = resolveCategoryChoiceCardArt(category, nameTheme);
                 return (

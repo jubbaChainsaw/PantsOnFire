@@ -166,6 +166,7 @@ export async function advanceRoundPhaseOnServer(lobbyCode, { playerId, sessionTo
     lobby: payload?.lobby || null,
     round: payload?.round || null,
     phase: payload?.phase || '',
+    rotatedSessionToken: payload?.rotatedSessionToken || '',
   };
 }
 
@@ -186,6 +187,7 @@ export async function submitRoundVotesOnServer(
     lobby: payload?.lobby || null,
     round: payload?.round || null,
     phase: payload?.phase || '',
+    rotatedSessionToken: payload?.rotatedSessionToken || '',
     votingComplete: Boolean(payload?.votingComplete),
     results: payload?.results || null,
   };

@@ -378,6 +378,7 @@ app.post('/api/lobbies/:code/round/phase/advance', async (req, res) => {
     lobby: toClientSnapshot(result.lobby),
     round: result.round || null,
     phase: result.phase || result.round?.phase || null,
+    rotatedSessionToken: result.sessionToken || '',
   });
 });
 
@@ -444,6 +445,7 @@ app.post('/api/lobbies/:code/round/votes', async (req, res) => {
     phase: result.phase || result.round?.phase || null,
     votingComplete: Boolean(result.votingComplete),
     results: result.results || null,
+    rotatedSessionToken: result.sessionToken || '',
   });
 });
 
