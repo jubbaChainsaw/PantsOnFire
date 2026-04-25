@@ -11,7 +11,7 @@ export const ROUND_TYPES = {
     id: 'opinion',
     name: 'Truth or Twisted',
     tagline: "Same scenario for everyone. Liars must argue against their own instincts.",
-    logoSrc: '/assets/images/round-types/opinion-logo.svg',
+    logoSrc: '/assets/images/round-types/opinion-logo.png',
     passThePhoneReady: true,
     onlineOnly: false,
   },

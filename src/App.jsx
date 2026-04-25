@@ -915,20 +915,26 @@ function HomeScreen({ onNavigate, homeLine, onlineLobbyLine, adultMode }) {
   return (
     <TopFrame theme="Default">
       <div className="min-h-[calc(100vh-2rem)] px-2 flex items-center justify-center">
-        <div className="w-full max-w-xl text-center space-y-6">
+        <div className="w-full max-w-xl text-center space-y-4">
           {adultMode && <GlassPanel className="rounded-[1.4rem] p-3 border-red-400/30 bg-red-500/15"><div className="text-xs uppercase tracking-[0.25em] text-red-200 font-black">18+ Active</div><div className="text-sm text-red-100/90 mt-1">Adult prompt pack is enabled for this session.</div></GlassPanel>}
-          <GlassPanel className="rounded-[2.5rem] p-6 md:p-8 border-fuchsia-400/30 bg-black/30 overflow-hidden relative">
+          <GlassPanel className="rounded-[2.5rem] p-5 md:p-6 border-fuchsia-400/30 bg-black/30 overflow-hidden relative">
+            <img src={FLAME_SRC} alt="" aria-hidden="true" className="pointer-events-none absolute -top-3 left-5 h-10 w-10 opacity-85 animate-pulse drop-shadow-[0_0_12px_rgba(255,98,0,0.95)]" />
+            <img src={FLAME_SRC} alt="" aria-hidden="true" className="pointer-events-none absolute top-8 right-6 h-11 w-11 opacity-80 animate-pulse drop-shadow-[0_0_12px_rgba(255,98,0,0.95)]" />
+            <img src={FLAME_SRC} alt="" aria-hidden="true" className="pointer-events-none absolute bottom-4 left-7 h-9 w-9 opacity-75 animate-pulse drop-shadow-[0_0_10px_rgba(255,98,0,0.9)]" />
+            <img src={FLAME_SRC} alt="" aria-hidden="true" className="pointer-events-none absolute bottom-6 right-8 h-10 w-10 opacity-80 animate-pulse drop-shadow-[0_0_12px_rgba(255,98,0,0.95)]" />
             <img src={LOGO_SRC} alt="Logo placeholder" className="mx-auto w-full max-w-md object-contain" />
-            <p className="mt-4 text-white/80 text-sm md:text-base">{homeLine}</p>
-            <ThemeArt src={themeAssets.uiBanner} alt="Default theme banner" className="mx-auto mt-4 w-full max-w-md rounded-2xl border border-white/15 bg-black/20" />
-            <ThemeIconStrip src={themeAssets.iconSheet} alt="Default icon sheet" />
+            <p className="mt-3 text-white/80 text-sm md:text-base">{homeLine}</p>
+            <ThemeArt src={themeAssets.uiBanner} alt="Default theme banner" className="mx-auto mt-3 w-full max-w-md rounded-2xl border border-white/15 bg-black/20" />
+            <div className="mt-2">
+              <ThemeIconStrip src={themeAssets.iconSheet} alt="Default icon sheet" />
+            </div>
           </GlassPanel>
-          <div className="grid gap-4">
-            <Button className="h-16 rounded-[1.8rem] text-lg bg-yellow-300 text-zinc-950 hover:bg-yellow-200 border-2 border-white" onClick={() => onNavigate('setup')}><Play className="mr-2 h-5 w-5" />Setup Game</Button>
-            <Button className="h-16 rounded-[1.8rem] text-lg bg-cyan-500/20 text-white hover:bg-cyan-500/30 border border-cyan-300/40" onClick={() => onNavigate('online-setup')}><Wifi className="mr-2 h-5 w-5" />Create Online Lobby</Button>
-            <Button className="h-16 rounded-[1.8rem] text-lg bg-indigo-500/15 text-white hover:bg-indigo-500/30 border border-indigo-300/30" onClick={() => onNavigate('online-join')}><KeyRound className="mr-2 h-5 w-5" />Join Online Lobby</Button>
-            <Button className="h-16 rounded-[1.8rem] text-lg bg-fuchsia-500/15 text-white hover:bg-fuchsia-500/25 border border-fuchsia-400/30" onClick={() => onNavigate('store')}><ShoppingBag className="mr-2 h-5 w-5" />Store</Button>
-            <Button className="h-16 rounded-[1.8rem] text-lg bg-cyan-500/15 text-white hover:bg-cyan-500/25 border border-cyan-400/30" onClick={() => onNavigate('settings')}><Settings className="mr-2 h-5 w-5" />Settings</Button>
+          <div className="grid gap-3">
+            <Button className="h-16 rounded-[1.8rem] text-xl sm:text-2xl bg-yellow-300 text-zinc-950 hover:bg-yellow-200 border-2 border-white" onClick={() => onNavigate('setup')}><Play className="mr-2 h-5 w-5" />Setup Game</Button>
+            <Button className="h-16 rounded-[1.8rem] text-xl sm:text-2xl bg-cyan-500/20 text-white hover:bg-cyan-500/30 border border-cyan-300/40" onClick={() => onNavigate('online-setup')}><Wifi className="mr-2 h-5 w-5" />Create Online Lobby</Button>
+            <Button className="h-16 rounded-[1.8rem] text-xl sm:text-2xl bg-indigo-500/15 text-white hover:bg-indigo-500/30 border border-indigo-300/30" onClick={() => onNavigate('online-join')}><KeyRound className="mr-2 h-5 w-5" />Join Online Lobby</Button>
+            <Button className="h-16 rounded-[1.8rem] text-xl sm:text-2xl bg-fuchsia-500/15 text-white hover:bg-fuchsia-500/25 border border-fuchsia-400/30" onClick={() => onNavigate('store')}><ShoppingBag className="mr-2 h-5 w-5" />Store</Button>
+            <Button className="h-16 rounded-[1.8rem] text-xl sm:text-2xl bg-cyan-500/15 text-white hover:bg-cyan-500/25 border border-cyan-400/30" onClick={() => onNavigate('settings')}><Settings className="mr-2 h-5 w-5" />Settings</Button>
           </div>
           <GlassPanel className="rounded-[2rem] p-5 border-white/10 bg-black/25 text-center"><div className="text-xs uppercase tracking-[0.3em] text-white/45">Online lobbies beta</div><div className="mt-2 text-lg font-black text-cyan-300">Per-device prompts + party voice phases</div><div className="mt-2 text-sm text-white/70">{onlineLobbyLine}</div></GlassPanel>
         </div>
