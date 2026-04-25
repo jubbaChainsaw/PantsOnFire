@@ -608,7 +608,6 @@ function GameIntroScreen({ theme, onContinue, isOnlineMode = false }) {
             >
               <div className="text-[0.68rem] uppercase tracking-[0.2em] text-cyan-100">Host says</div>
               <p className="mt-2 text-base text-white/95">{introLines[lineIndex]}</p>
-              <div className="mt-3 text-xs text-white/65">{getHostAssetGuidelines()}</div>
             </motion.div>
           </div>
           <div className="mt-7 flex justify-center">
