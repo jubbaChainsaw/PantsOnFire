@@ -5,8 +5,8 @@
 @font-face {
   font-family: 'Chunky Texture';
   src:
-    url('/assets/fonts/chunky-texture/Chunky Texture.ttf') format('truetype'),
-    url('/assets/fonts/chunky-texture/Chunky Texture.otf') format('opentype');
+    url('/assets/fonts/chunky-texture/Chunky%20Texture.ttf') format('truetype'),
+    url('/assets/fonts/chunky-texture/Chunky%20Texture.otf') format('opentype');
   font-weight: 400;
   font-style: normal;
   font-display: swap;
@@ -15,8 +15,8 @@
 @font-face {
   font-family: 'Chunky Texture Display';
   src:
-    url('/assets/fonts/chunky-texture/Chunky Texture.ttf') format('truetype'),
-    url('/assets/fonts/chunky-texture/Chunky Texture.otf') format('opentype');
+    url('/assets/fonts/chunky-texture/Chunky%20Texture.ttf') format('truetype'),
+    url('/assets/fonts/chunky-texture/Chunky%20Texture.otf') format('opentype');
   font-weight: 400;
   font-style: normal;
   font-display: swap;
