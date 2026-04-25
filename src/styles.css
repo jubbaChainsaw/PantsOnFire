@@ -2,12 +2,32 @@
 @tailwind components;
 @tailwind utilities;
 
+@font-face {
+  font-family: 'Awaken Design';
+  src:
+    url('/assets/fonts/awaken-design/Awaken Design.ttf') format('truetype'),
+    url('/assets/fonts/awaken-design/Awaken Design.otf') format('opentype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Awaken Design Extrude';
+  src:
+    url('/assets/fonts/awaken-design/Awaken Design Extrude.ttf') format('truetype'),
+    url('/assets/fonts/awaken-design/Awaken Design Extrude.otf') format('opentype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
 html, body, #root {
   min-height: 100%;
 }
 body {
   margin: 0;
-  font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-family: 'Awaken Design', Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   background: #0f172a;
 }
 button, input, select {
