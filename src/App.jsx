@@ -1816,6 +1816,26 @@ export default function App() {
           return;
         }
         const snapshotPlayers = Array.isArray(snapshot.players) ? snapshot.players : [];
+        const hostForClient = snapshotPlayers.find((player) => player.clientId === onlineClientId && player.isHost);
+        const nextRole = hostForClient ? 'host' : 'player';
+        const nextJoinedPlayer = snapshotPlayers.find((player) => player.clientId === onlineClientId) || null;
+        if (onlineMode) {
+          setOnlineRole(nextRole);
+          const sessionSnapshot = onlineSessionRef.current;
+          if (sessionSnapshot) {
+            const nextSession = {
+              ...sessionSnapshot,
+              role: nextRole,
+              playerId: nextJoinedPlayer?.id || sessionSnapshot.playerId,
+              playerName: nextJoinedPlayer?.name || sessionSnapshot.playerName,
+            };
+            onlineSessionRef.current = nextSession;
+            setStoredOnlineSession(nextSession);
+          }
+          if (screen === 'online-lobby-waiting' && nextRole === 'host') {
+            setScreen('online-lobby-created');
+          }
+        }
         setOnlineLobbyPlayers(snapshotPlayers);
         setOnlineLobbyStatus(snapshot.status || 'waiting');
         setOnlineHostName(snapshot.hostName || 'Host');

@@ -159,14 +159,8 @@ app.post('/api/lobbies/:code/leave', async (req, res) => {
   const code = normalizeCode(req.params.code);
   const playerId = String(req.body?.playerId || '');
   const role = String(req.body?.role || '');
-  if (!playerId && role !== 'host') {
+  if (!playerId) {
     res.status(400).json({ error: 'player-id-required' });
-    return;
-  }
-  if (role === 'host') {
-    const removed = await store.deleteLobby(code);
-    broadcastSnapshot(code, null);
-    res.json({ removed });
     return;
   }
   const result = await store.removePlayer(code, playerId);
@@ -176,6 +170,11 @@ app.post('/api/lobbies/:code/leave', async (req, res) => {
   }
   if (result.error === 'lock-timeout') {
     res.status(503).json({ error: 'lobby-busy' });
+    return;
+  }
+  if (!result.lobby) {
+    broadcastSnapshot(code, null);
+    res.json({ lobby: null, removed: true });
     return;
   }
   broadcastSnapshot(code, result.lobby);

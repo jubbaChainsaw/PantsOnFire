@@ -472,6 +472,8 @@ function buildStoreCore({
     const lobby = await getLobby(code);
     if (!lobby) return { error: 'not-found' };
     if (lobby.playerSessions) delete lobby.playerSessions[playerId];
+    const leavingPlayer = lobby.players.find((player) => player.id === playerId) || null;
+    const wasHost = Boolean(leavingPlayer?.isHost);
     lobby.players = lobby.players.filter((player) => player.id !== playerId);
     if (lobby.activeRound?.votesByPlayerId) {
       delete lobby.activeRound.votesByPlayerId[playerId];
@@ -486,10 +488,34 @@ function buildStoreCore({
       await deleteLobby(code);
       return { lobby: null };
     }
-    const hostStillPresent = lobby.players.some((player) => player.clientId === lobby.hostClientId && player.isHost);
-    if (!hostStillPresent) {
-      await deleteLobby(code);
-      return { lobby: null };
+
+    if (wasHost) {
+      const nextHost = lobby.players[0] || null;
+      if (!nextHost) {
+        await deleteLobby(code);
+        return { lobby: null };
+      }
+      lobby.players = lobby.players.map((player, index) => ({
+        ...player,
+        isHost: index === 0 ? true : false,
+      }));
+      lobby.hostClientId = nextHost.clientId || '';
+      lobby.hostName = nextHost.name || lobby.hostName || 'Host';
+    } else {
+      const hostStillPresent = lobby.players.some((player) => player.clientId === lobby.hostClientId && player.isHost);
+      if (!hostStillPresent) {
+        const fallbackHost = lobby.players[0] || null;
+        if (!fallbackHost) {
+          await deleteLobby(code);
+          return { lobby: null };
+        }
+        lobby.players = lobby.players.map((player, index) => ({
+          ...player,
+          isHost: index === 0 ? true : false,
+        }));
+        lobby.hostClientId = fallbackHost.clientId || '';
+        lobby.hostName = fallbackHost.name || lobby.hostName || 'Host';
+      }
     }
     await saveLobby(lobby);
     return { lobby };
