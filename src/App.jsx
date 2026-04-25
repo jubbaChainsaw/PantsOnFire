@@ -513,6 +513,26 @@ function ThemeIconStrip({ src, alt }) {
     />
   );
 }
+function resolveCategoryChoiceCardArt(category, themeName = 'Default') {
+  const themeAssets = getThemeAssets(themeName);
+  const defaultThemeAssets = getThemeAssets('Default');
+  const categoryBackCardSrc =
+    category?.categoryBackCardSrc
+    || category?.categoryCardBackSrc
+    || category?.cardBackSrc
+    || category?.assets?.categoryBackCardSrc
+    || category?.assets?.cardBackSrc
+    || null;
+
+  return (
+    categoryBackCardSrc
+    || defaultThemeAssets.promptCardFront
+    || themeAssets.promptCardFront
+    || defaultThemeAssets.promptCardBack
+    || themeAssets.promptCardBack
+    || null
+  );
+}
 function HostIntroScreen({ round, stingerLine, onContinue, theme }) {
   const mascot = MASCOT_BY_ROUND_TYPE[round.roundTypeId] || MASCOT_BY_ROUND_TYPE.prompt;
   const themeAssets = getThemeAssets(round.roundTypeId === 'grill' ? 'GrillEm' : theme);
@@ -2506,7 +2526,56 @@ export default function App() {
     )}
     {screen === 'rules' && <RulesSplashScreen mode={mode} onContinue={() => setScreen('category-choice')} theme={nameTheme} isOnlineMode={onlineMode} />}
     {screen === 'round-type-choice' && round && <TopFrame theme={nameTheme}><div className="mx-auto max-w-3xl space-y-6"><ScoreStrip players={players} roundNumber={round.roundNumber} totalRounds={totalRounds} /><GlassPanel className="rounded-[2.5rem] p-8 text-center border-fuchsia-400/25 bg-black/25 relative overflow-hidden"><div className="text-xs uppercase tracking-[0.3em] text-white/50">Round owner: {players[currentRoundOwnerIndex]?.name}</div><h2 className="text-4xl font-black mt-3 text-yellow-300">Choose round type</h2><p className="text-white/70 mt-3">Pick one of two options. Previous round type is excluded.</p><div className="grid gap-3 sm:grid-cols-2 mt-8">{roundTypeOptions.map((type) => <div key={type.id} className="space-y-2"><RoundMascot roundTypeId={type.id} /><div className="rounded-[1.5rem] border border-white/20 bg-black/20 p-3"><RoundTypeLogo src={type.logoSrc} alt={`${type.name} logo`} className="mx-auto h-16 w-auto rounded-md border border-white/20 bg-black/25 px-2 py-1" /><ThemeArt src={`/assets/themes/default/cards/prompt-front-${type.id}.svg`} alt={`${type.name} default card front`} className="mx-auto mt-3 h-28 w-auto rounded-xl border border-white/20 bg-black/25 p-1" /><div className="mt-3 text-xs uppercase tracking-[0.2em] text-white/60">Round Type Logo + Default Front Card</div></div><Button className={`rounded-[1.75rem] h-20 text-lg bg-gradient-to-r ${themeMeta.gradient} text-white border-2 border-white/20 shadow-lg w-full`} onClick={() => { setSelectedRoundType(type.id); setScreen('category-choice'); }}>{type.name}</Button></div>)}</div></GlassPanel></div></TopFrame>}
-    {screen === 'category-choice' && round && <TopFrame theme={nameTheme}><div className="mx-auto max-w-3xl space-y-6"><ScoreStrip players={players} roundNumber={round.roundNumber} totalRounds={totalRounds} /><GlassPanel className="rounded-[2.5rem] p-8 text-center border-fuchsia-400/25 bg-black/25 relative overflow-hidden"><LightningBolt className="right-8 top-6" /><LightningBolt className="left-10 bottom-6" /><div className="text-xs uppercase tracking-[0.3em] text-white/50">Round owner: {players[currentRoundOwnerIndex]?.name}</div><h2 className="text-4xl font-black mt-3 text-yellow-300">Choose the next category</h2><p className="text-white/70 mt-3">{copyState.chooser}</p><div className="grid gap-3 sm:grid-cols-2 mt-8">{categoryOptions.map((category) => <Button key={category.id} className={`rounded-[1.75rem] h-24 text-lg bg-gradient-to-r ${themeMeta.gradient} text-white border-2 border-white/20 shadow-lg`} onClick={() => chooseCategory(category.id)}>{category.emoji} {category.name}</Button>)}</div></GlassPanel></div></TopFrame>}
+    {screen === 'category-choice' && round && (
+      <TopFrame theme={nameTheme}>
+        <div className="mx-auto max-w-3xl space-y-6">
+          <ScoreStrip players={players} roundNumber={round.roundNumber} totalRounds={totalRounds} />
+          <GlassPanel className="relative overflow-hidden rounded-[2.5rem] border-fuchsia-400/25 bg-black/25 p-8 text-center">
+            <LightningBolt className="right-8 top-6" />
+            <LightningBolt className="left-10 bottom-6" />
+            <div className="text-xs uppercase tracking-[0.3em] text-white/50">Round owner: {players[currentRoundOwnerIndex]?.name}</div>
+            <h2 className="mt-3 text-4xl font-black text-yellow-300">Choose the next category</h2>
+            <p className="mt-3 text-white/70">{copyState.chooser}</p>
+            <div className="mt-8 grid gap-4 sm:grid-cols-2">
+              {categoryOptions.map((category) => {
+                const categoryCardArtSrc = resolveCategoryChoiceCardArt(category, nameTheme);
+                return (
+                  <button
+                    key={category.id}
+                    type="button"
+                    className="w-full"
+                    onClick={() => chooseCategory(category.id)}
+                  >
+                    <div className="relative mx-auto aspect-[2/3] w-full max-w-[11.5rem] overflow-hidden rounded-[1.35rem] border-2 border-white/25 bg-black/30 shadow-lg">
+                      {categoryCardArtSrc && (
+                        <img
+                          src={categoryCardArtSrc}
+                          alt=""
+                          aria-hidden="true"
+                          className="absolute inset-0 h-full w-full object-contain bg-black/25"
+                          onError={(event) => {
+                            event.currentTarget.style.display = 'none';
+                          }}
+                        />
+                      )}
+                      <div className={`absolute inset-0 bg-gradient-to-b ${themeMeta.gradient} opacity-45`} />
+                      <div className="absolute inset-0 bg-black/35" />
+                      <div className="relative z-10 flex h-full flex-col items-center justify-center p-3">
+                        <div className="text-3xl">{category.emoji}</div>
+                        <div className="mt-2 text-lg font-black text-white">{category.name}</div>
+                        <div className="mt-2 rounded-full border border-white/40 bg-black/35 px-3 py-1 text-[0.65rem] uppercase tracking-[0.2em] text-cyan-100">
+                          Pick category
+                        </div>
+                      </div>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          </GlassPanel>
+        </div>
+      </TopFrame>
+    )}
     {screen === 'host-intro' && round && (
       <HostIntroScreen
         round={round}
