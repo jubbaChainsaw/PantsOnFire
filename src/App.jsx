@@ -1,9 +1,9 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   ShieldAlert, Users, EyeOff, Trophy, TimerReset, PlusCircle, Vote,
   SkipForward, Star, Flame, Dice6, Minus, Settings, ShoppingBag, Play,
-  ChevronUp, ChevronDown, SlidersHorizontal, CheckCircle2, XCircle,
+  ChevronUp, ChevronDown, CheckCircle2, XCircle,
   Wifi, KeyRound, Copy, Mic, MicOff, Radio,
 } from 'lucide-react';
 import { Button } from './components/ui/button';
@@ -50,6 +50,7 @@ import {
 const LOGO_SRC = '/assets/images/logo.png';
 const FLAME_SRC = '/assets/images/flame-placeholder.svg';
 const HEARTBEAT_SFX_SRC = '/assets/sfx/heartbeat.mp3';
+const FIRE_CRACKLE_SFX_SRC = '/assets/sfx/fire-crackle.wav';
 const MIN_PLAYERS = 3;
 const MAX_PLAYERS = 12;
 const ONLINE_VOICE_ACTIVE_SCREENS = new Set(['discussion', 'grill', 'round-type-choice', 'category-choice', 'results']);
@@ -559,7 +560,7 @@ function RulesSplashScreen({ mode, onContinue, theme, isOnlineMode = false }) {
         <GlassPanel className="rounded-[2.5rem] p-8 border-cyan-400/20 bg-black/25 text-center">
           <div className="text-xs uppercase tracking-[0.3em] text-white/50">How to Play</div>
           <h2 className="text-4xl font-black mt-3 text-yellow-300">Quick Rules</h2>
-          <div className="mt-6 grid gap-3 text-left">
+          <div className="mt-6 grid gap-3 text-center">
             <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
               {isOnlineMode
                 ? 'Online mode: each player checks prompts on their own device. No phone passing.'
@@ -605,7 +606,7 @@ function HomeScreen({ onNavigate, homeLine, onlineLobbyLine, adultMode }) {
             <Button className="h-16 rounded-[1.8rem] text-lg bg-fuchsia-500/15 text-white hover:bg-fuchsia-500/25 border border-fuchsia-400/30" onClick={() => onNavigate('store')}><ShoppingBag className="mr-2 h-5 w-5" />Store</Button>
             <Button className="h-16 rounded-[1.8rem] text-lg bg-cyan-500/15 text-white hover:bg-cyan-500/25 border border-cyan-400/30" onClick={() => onNavigate('settings')}><Settings className="mr-2 h-5 w-5" />Settings</Button>
           </div>
-          <GlassPanel className="rounded-[2rem] p-5 border-white/10 bg-black/25 text-left"><div className="text-xs uppercase tracking-[0.3em] text-white/45">Online lobbies beta</div><div className="mt-2 text-lg font-black text-cyan-300">Per-device prompts + party voice phases</div><div className="mt-2 text-sm text-white/70">{onlineLobbyLine}</div></GlassPanel>
+          <GlassPanel className="rounded-[2rem] p-5 border-white/10 bg-black/25 text-center"><div className="text-xs uppercase tracking-[0.3em] text-white/45">Online lobbies beta</div><div className="mt-2 text-lg font-black text-cyan-300">Per-device prompts + party voice phases</div><div className="mt-2 text-sm text-white/70">{onlineLobbyLine}</div></GlassPanel>
         </div>
       </div>
     </TopFrame>
@@ -736,38 +737,237 @@ function SetupScreen(props) {
   const canStart = players.length >= requiredMinPlayers && players.every((p) => p.name.trim().length > 0);
   const maxLiars = Math.max(1, Math.floor(players.length / 2));
   const themeAssets = getThemeAssets(nameTheme);
-  const [randomDialogOpen, setRandomDialogOpen] = useState(false);
   const [categoryDialogOpen, setCategoryDialogOpen] = useState(false);
   const themeNames = Object.keys(NAME_POOLS);
   return (
     <TopFrame theme={nameTheme}>
       <div className="mx-auto max-w-7xl space-y-5">
-        {adultMode && <GlassPanel className="rounded-[1.4rem] p-3 border-red-400/30 bg-red-500/15"><div className="text-xs uppercase tracking-[0.25em] text-red-200 font-black">18+ Active</div><div className="text-sm text-red-100/90 mt-1">Adult-only prompts and scenarios are enabled.</div></GlassPanel>}
+        {adultMode && (
+          <GlassPanel className="rounded-[1.4rem] border-red-400/30 bg-red-500/15 p-3">
+            <div className="text-xs font-black uppercase tracking-[0.25em] text-red-200">18+ Active</div>
+            <div className="mt-1 text-sm text-red-100/90">Adult-only prompts and scenarios are enabled.</div>
+          </GlassPanel>
+        )}
         <ThemeArt src={themeAssets.uiBanner} alt={`${nameTheme} theme banner`} className="w-full rounded-[1.4rem] border border-white/15 bg-black/20" />
         <ThemeIconStrip src={themeAssets.iconSheet} alt={`${nameTheme} icon strip`} />
-        <div className="flex items-center justify-between gap-4"><Button className="rounded-[1.4rem] bg-white/5 border border-white/10 px-4 py-2 text-white" onClick={onBack}>Back</Button><div className="text-center"><div className="text-xs uppercase tracking-[0.35em] text-cyan-200/80">Create Lobby</div><div className="text-white/80 text-sm mt-1">{setupLine}</div></div><div className="w-[72px]" /></div>
-        <div className="grid gap-4 md:grid-cols-2"><GlassPanel className="rounded-[2rem] p-5 border-cyan-400/20 bg-black/25"><div className="text-xs uppercase tracking-[0.3em] text-white/50">Players</div><div className="text-5xl font-black text-yellow-300 mt-2">{players.length}</div></GlassPanel><GlassPanel className="rounded-[2rem] p-5 border-orange-400/20 bg-black/25"><div className="text-xs uppercase tracking-[0.3em] text-white/50">Liars</div><div className="text-5xl font-black text-yellow-300 mt-2">{liarCount}</div></GlassPanel></div>
-        <div className="grid gap-5 lg:grid-cols-[1.1fr_0.9fr]">
-          <GlassPanel className="rounded-[2.5rem] p-5 border-fuchsia-400/25 bg-black/25">
-            <div className="flex items-center justify-between gap-3 mb-4"><div className="flex items-center gap-2"><Users className="h-5 w-5 text-cyan-300" /><h2 className="text-xl font-black">Player Setup</h2></div><Button className="rounded-xl bg-white/5 border border-white/10 px-3 py-2 text-white" onClick={() => setRandomDialogOpen(true)}><SlidersHorizontal className="mr-2 h-4 w-4 inline" />Random Settings</Button></div>
-            <div className="grid gap-3">{players.map((player, index) => <div key={player.id} className="rounded-[1.5rem] border border-white/10 bg-white/5 p-3"><div className="flex items-center justify-between gap-2 mb-2"><Label className="text-white/75 font-semibold">Player {index + 1}</Label><div className="flex gap-2"><Button className="rounded-xl bg-cyan-500/10 border border-cyan-400/20 p-2 text-cyan-100" onClick={() => setPlayers((cur) => cur.map((p) => p.id === player.id ? { ...p, name: randomNameFromTheme(nameTheme, cur.filter((x) => x.id !== player.id).map((x) => x.name)) } : p))}><Dice6 className="h-4 w-4" /></Button><Button className="rounded-xl bg-fuchsia-500/10 border border-fuchsia-400/20 p-2 text-fuchsia-100 disabled:opacity-40" disabled={players.length <= MIN_PLAYERS} onClick={() => setPlayers((cur) => cur.filter((p) => p.id !== player.id))}><Minus className="h-4 w-4" /></Button></div></div><Input value={player.name} onChange={(e) => setPlayers((cur) => cur.map((p) => p.id === player.id ? { ...p, name: e.target.value } : p))} className="rounded-2xl bg-white/5 border border-white/10 text-white" /></div>)}</div>
-            <div className="mt-4"><Button className="rounded-[1.5rem] bg-cyan-500/10 border border-cyan-400/20 px-4 py-3 text-cyan-100" disabled={players.length >= MAX_PLAYERS} onClick={() => setPlayers((cur) => [...cur, { id: `p-${Date.now()}-${cur.length + 1}`, name: `Player ${cur.length + 1}`, score: 0 }])}><PlusCircle className="mr-2 h-4 w-4 inline" />Add Player</Button></div>
+        <div className="flex items-center justify-between gap-4">
+          <Button className="rounded-[1.4rem] border border-white/10 bg-white/5 px-4 py-2 text-white" onClick={onBack}>Back</Button>
+          <div className="text-center">
+            <div className="text-xs uppercase tracking-[0.35em] text-cyan-200/80">Create Lobby</div>
+            <div className="mt-1 text-sm text-white/80">{setupLine}</div>
+          </div>
+          <div className="w-[72px]" />
+        </div>
+        <div className="grid gap-4 md:grid-cols-2">
+          <GlassPanel className="rounded-[2rem] border-cyan-400/20 bg-black/25 p-5">
+            <div className="text-xs uppercase tracking-[0.3em] text-white/50">Players</div>
+            <div className="mt-2 text-5xl font-black text-yellow-300">{players.length}</div>
           </GlassPanel>
-          <GlassPanel className="rounded-[2.5rem] p-5 border-yellow-300/20 bg-black/25">
-            <div className="flex items-center gap-2 mb-4"><ShieldAlert className="h-5 w-5 text-yellow-300" /><h2 className="text-xl font-black">Rules</h2></div>
+          <GlassPanel className="rounded-[2rem] border-orange-400/20 bg-black/25 p-5">
+            <div className="text-xs uppercase tracking-[0.3em] text-white/50">Liars</div>
+            <div className="mt-2 text-5xl font-black text-yellow-300">{liarCount}</div>
+          </GlassPanel>
+        </div>
+        <div className="grid gap-5 lg:grid-cols-[1.1fr_0.9fr]">
+          <GlassPanel className="rounded-[2.5rem] border-fuchsia-400/25 bg-black/25 p-5">
+            <div className="mb-4 rounded-[1.7rem] border border-white/15 bg-black/25 p-4">
+              <div className="text-xs uppercase tracking-[0.3em] text-cyan-200">Game Theme</div>
+              <p className="mt-2 text-sm text-white/75">
+                This impacts randomised names, card styling and in game dialog.
+              </p>
+              <select
+                value={nameTheme}
+                onChange={(event) => setNameTheme(event.target.value)}
+                className="mt-3 w-full rounded-2xl border border-white/15 bg-white/5 px-3 py-3 text-white"
+              >
+                {themeNames.map((themeName) => (
+                  <option key={themeName} value={themeName} className="text-black">
+                    {themeName}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="mb-4 flex items-center justify-center gap-2">
+              <Users className="h-5 w-5 text-cyan-300" />
+              <h2 className="text-xl font-black">Player Setup</h2>
+            </div>
+            <div className="grid gap-3">
+              {players.map((player, index) => (
+                <div key={player.id} className="rounded-[1.5rem] border border-white/10 bg-white/5 p-3">
+                  <div className="mb-2 flex items-center justify-between gap-2">
+                    <Label className="font-semibold text-white/75">Player {index + 1}</Label>
+                    <div className="flex gap-2">
+                      <Button
+                        className="rounded-xl border border-cyan-400/20 bg-cyan-500/10 p-2 text-cyan-100"
+                        onClick={() => setPlayers((currentPlayers) => currentPlayers.map((item) => (
+                          item.id === player.id
+                            ? { ...item, name: randomNameFromTheme(nameTheme, currentPlayers.filter((x) => x.id !== player.id).map((x) => x.name)) }
+                            : item
+                        )))}
+                      >
+                        <Dice6 className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        className="rounded-xl border border-fuchsia-400/20 bg-fuchsia-500/10 p-2 text-fuchsia-100 disabled:opacity-40"
+                        disabled={players.length <= MIN_PLAYERS}
+                        onClick={() => setPlayers((currentPlayers) => currentPlayers.filter((item) => item.id !== player.id))}
+                      >
+                        <Minus className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                  <Input
+                    value={player.name}
+                    onChange={(event) => setPlayers((currentPlayers) => currentPlayers.map((item) => (
+                      item.id === player.id ? { ...item, name: event.target.value } : item
+                    )))}
+                    className="rounded-2xl border border-white/10 bg-white/5 text-white"
+                  />
+                </div>
+              ))}
+            </div>
+            <div className="mt-4">
+              <Button
+                className="rounded-[1.5rem] border border-cyan-400/20 bg-cyan-500/10 px-4 py-3 text-cyan-100"
+                disabled={players.length >= MAX_PLAYERS}
+                onClick={() => setPlayers((currentPlayers) => [
+                  ...currentPlayers,
+                  { id: `p-${Date.now()}-${currentPlayers.length + 1}`, name: `Player ${currentPlayers.length + 1}`, score: 0 },
+                ])}
+              >
+                <PlusCircle className="mr-2 inline h-4 w-4" />
+                Add Player
+              </Button>
+            </div>
+          </GlassPanel>
+          <GlassPanel className="rounded-[2.5rem] border-yellow-300/20 bg-black/25 p-5">
+            <div className="mb-4 flex items-center justify-center gap-2">
+              <ShieldAlert className="h-5 w-5 text-yellow-300" />
+              <h2 className="text-xl font-black">Rules</h2>
+            </div>
             <div className="space-y-4">
-              <GlassPanel className="rounded-[1.5rem] p-4 bg-white/5"><div className="flex items-center justify-between"><div><div className="font-semibold">Liar Count</div><div className="text-xs text-white/55 mt-1">Recommended: 1 liar per 4 people.</div></div><div className="flex items-center gap-2"><Button className="rounded-xl bg-white/5 border border-white/10 p-2 text-white" onClick={() => setLiarCount((c) => Math.max(1, c - 1))}><ChevronDown className="h-4 w-4" /></Button><div className="w-14 text-center text-2xl font-black text-yellow-300">{liarCount}</div><Button className="rounded-xl bg-white/5 border border-white/10 p-2 text-white" onClick={() => setLiarCount((c) => Math.min(maxLiars, c + 1))}><ChevronUp className="h-4 w-4" /></Button></div></div></GlassPanel>
-              <GlassPanel className="rounded-[1.5rem] p-4 bg-white/5"><div className="font-semibold mb-3">Mode</div><div className="grid grid-cols-2 gap-2"><Button className={`rounded-2xl px-4 py-3 ${mode === 'classic' ? 'bg-yellow-300 text-zinc-950' : 'bg-white/5 border border-white/10 text-white'}`} onClick={() => setMode('classic')}>Classic</Button><Button className={`rounded-2xl px-4 py-3 ${mode === 'chaos' ? 'bg-fuchsia-500 text-white' : 'bg-white/5 border border-white/10 text-white'}`} onClick={() => setMode('chaos')}>Chaos 🔥</Button></div></GlassPanel>
-              <GlassPanel className="rounded-[1.5rem] p-4 bg-white/5"><div className="font-semibold mb-3">Game Rules</div><div className="text-xs text-white/55 mb-2">Win condition (choose one)</div><div className="grid grid-cols-2 gap-2"><Button className={`rounded-2xl px-4 py-3 ${winCondition === 'points' ? 'bg-yellow-300 text-zinc-950' : 'bg-white/5 border border-white/10 text-white'}`} onClick={() => setWinCondition('points')}>Points</Button><Button className={`rounded-2xl px-4 py-3 ${winCondition === 'rounds' ? 'bg-fuchsia-500 text-white' : 'bg-white/5 border border-white/10 text-white'}`} onClick={() => setWinCondition('rounds')}>Rounds</Button></div>{winCondition === 'points' ? <><div className="text-xs text-white/55 mt-4 mb-2">Points to win</div><div className="grid grid-cols-3 gap-2">{[10,15,20].map((v) => <Button key={v} className={`rounded-2xl px-4 py-3 ${pointsToWin === v ? 'bg-yellow-300 text-zinc-950' : 'bg-white/5 border border-white/10 text-white'}`} onClick={() => setPointsToWin(v)}>{v}</Button>)}</div></> : <><div className="text-xs text-white/55 mt-4 mb-2">Rounds per player</div><div className="grid grid-cols-3 gap-2">{[1,2,3].map((v) => <Button key={v} className={`rounded-2xl px-4 py-3 ${roundsPerPlayer === v ? 'bg-fuchsia-500 text-white' : 'bg-white/5 border border-white/10 text-white'}`} onClick={() => setRoundsPerPlayer(v)}>{v}</Button>)}</div><div className="text-xs text-cyan-200 mt-3">Total rounds: {players.length * roundsPerPlayer}</div></>}</GlassPanel>
-              <GlassPanel className="rounded-[1.5rem] p-4 bg-white/5"><div className="font-semibold mb-3">Grill 'Em Defaults</div><div className="text-xs text-white/55 mb-2">Questions are auto-set each round to target ~20 total questions (based on player count).</div><div className="mt-2 grid grid-cols-2 gap-2"><Button className={`rounded-2xl px-4 py-3 ${grillSettings.micEnabled ? 'bg-emerald-400 text-zinc-950' : 'bg-white/5 border border-white/10 text-white'}`} onClick={() => setGrillSettings((cur) => ({ ...cur, micEnabled: !cur.micEnabled }))}>Mic {grillSettings.micEnabled ? 'On' : 'Off'}</Button><Button className={`rounded-2xl px-4 py-3 ${grillSettings.ttsEnabled ? 'bg-emerald-400 text-zinc-950' : 'bg-white/5 border border-white/10 text-white'}`} onClick={() => setGrillSettings((cur) => ({ ...cur, ttsEnabled: !cur.ttsEnabled }))}>Voice {grillSettings.ttsEnabled ? 'On' : 'Off'}</Button></div><div className="text-xs text-cyan-200 mt-3">Example: 7 players → 3 each, 4 players → 5 each.</div></GlassPanel>
-              <GlassPanel className="rounded-[1.5rem] p-4 bg-white/5"><div className="flex items-center justify-between"><div><div className="font-semibold">Category Edit</div><div className="text-xs text-white/55 mt-1">{categoryCount} categories enabled.</div></div><Button className="rounded-2xl bg-white/5 border border-white/10 px-4 py-2 text-white" onClick={() => setCategoryDialogOpen(true)}>Edit</Button></div></GlassPanel>
-              <div className="grid gap-3 sm:grid-cols-2"><Button className="rounded-[1.5rem] h-14 bg-yellow-300 text-zinc-950 border-2 border-white" onClick={onStart} disabled={!canStart}>{startLabel}</Button><Button className="rounded-[1.5rem] h-14 bg-fuchsia-500/10 border border-fuchsia-400/30 text-white" onClick={onOpenAdmin}>Open Admin</Button></div>
+              <GlassPanel className="rounded-[1.5rem] bg-white/5 p-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <div className="font-semibold">Liar Count</div>
+                    <div className="mt-1 text-xs text-white/55">Recommended: 1 liar per 4 people.</div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Button className="rounded-xl border border-white/10 bg-white/5 p-2 text-white" onClick={() => setLiarCount((count) => Math.max(1, count - 1))}>
+                      <ChevronDown className="h-4 w-4" />
+                    </Button>
+                    <div className="w-14 text-center text-2xl font-black text-yellow-300">{liarCount}</div>
+                    <Button className="rounded-xl border border-white/10 bg-white/5 p-2 text-white" onClick={() => setLiarCount((count) => Math.min(maxLiars, count + 1))}>
+                      <ChevronUp className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              </GlassPanel>
+              <GlassPanel className="rounded-[1.5rem] bg-white/5 p-4">
+                <div className="mb-3 font-semibold">Mode</div>
+                <div className="grid grid-cols-2 gap-2">
+                  <Button className={`rounded-2xl px-4 py-3 ${mode === 'classic' ? 'bg-yellow-300 text-zinc-950' : 'border border-white/10 bg-white/5 text-white'}`} onClick={() => setMode('classic')}>Classic</Button>
+                  <Button className={`rounded-2xl px-4 py-3 ${mode === 'chaos' ? 'bg-fuchsia-500 text-white' : 'border border-white/10 bg-white/5 text-white'}`} onClick={() => setMode('chaos')}>Chaos 🔥</Button>
+                </div>
+              </GlassPanel>
+              <GlassPanel className="rounded-[1.5rem] bg-white/5 p-4">
+                <div className="mb-3 font-semibold">Game Rules</div>
+                <div className="mb-2 text-xs text-white/55">Win condition (choose one)</div>
+                <div className="grid grid-cols-2 gap-2">
+                  <Button className={`rounded-2xl px-4 py-3 ${winCondition === 'points' ? 'bg-yellow-300 text-zinc-950' : 'border border-white/10 bg-white/5 text-white'}`} onClick={() => setWinCondition('points')}>Points</Button>
+                  <Button className={`rounded-2xl px-4 py-3 ${winCondition === 'rounds' ? 'bg-fuchsia-500 text-white' : 'border border-white/10 bg-white/5 text-white'}`} onClick={() => setWinCondition('rounds')}>Rounds</Button>
+                </div>
+                {winCondition === 'points' ? (
+                  <>
+                    <div className="mb-2 mt-4 text-xs text-white/55">Points to win</div>
+                    <div className="grid grid-cols-3 gap-2">
+                      {[10, 15, 20].map((value) => (
+                        <Button
+                          key={value}
+                          className={`rounded-2xl px-4 py-3 ${pointsToWin === value ? 'bg-yellow-300 text-zinc-950' : 'border border-white/10 bg-white/5 text-white'}`}
+                          onClick={() => setPointsToWin(value)}
+                        >
+                          {value}
+                        </Button>
+                      ))}
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="mb-2 mt-4 text-xs text-white/55">Rounds per player</div>
+                    <div className="grid grid-cols-3 gap-2">
+                      {[1, 2, 3].map((value) => (
+                        <Button
+                          key={value}
+                          className={`rounded-2xl px-4 py-3 ${roundsPerPlayer === value ? 'bg-fuchsia-500 text-white' : 'border border-white/10 bg-white/5 text-white'}`}
+                          onClick={() => setRoundsPerPlayer(value)}
+                        >
+                          {value}
+                        </Button>
+                      ))}
+                    </div>
+                    <div className="mt-3 text-xs text-cyan-200">Total rounds: {players.length * roundsPerPlayer}</div>
+                  </>
+                )}
+              </GlassPanel>
+              <GlassPanel className="rounded-[1.5rem] bg-white/5 p-4">
+                <div className="mb-3 font-semibold">Grill 'Em Defaults</div>
+                <div className="mb-2 text-xs text-white/55">Questions are auto-set each round to target ~20 total questions (based on player count).</div>
+                <div className="mt-2 grid grid-cols-2 gap-2">
+                  <Button className={`rounded-2xl px-4 py-3 ${grillSettings.micEnabled ? 'bg-emerald-400 text-zinc-950' : 'border border-white/10 bg-white/5 text-white'}`} onClick={() => setGrillSettings((current) => ({ ...current, micEnabled: !current.micEnabled }))}>Mic {grillSettings.micEnabled ? 'On' : 'Off'}</Button>
+                  <Button className={`rounded-2xl px-4 py-3 ${grillSettings.ttsEnabled ? 'bg-emerald-400 text-zinc-950' : 'border border-white/10 bg-white/5 text-white'}`} onClick={() => setGrillSettings((current) => ({ ...current, ttsEnabled: !current.ttsEnabled }))}>Voice {grillSettings.ttsEnabled ? 'On' : 'Off'}</Button>
+                </div>
+                <div className="mt-3 text-xs text-cyan-200">Example: 7 players -> 3 each, 4 players -> 5 each.</div>
+              </GlassPanel>
+              <GlassPanel className="rounded-[1.5rem] bg-white/5 p-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <div className="font-semibold">Category Edit</div>
+                    <div className="mt-1 text-xs text-white/55">{categoryCount} categories enabled.</div>
+                  </div>
+                  <Button className="rounded-2xl border border-white/10 bg-white/5 px-4 py-2 text-white" onClick={() => setCategoryDialogOpen(true)}>Edit</Button>
+                </div>
+              </GlassPanel>
+              <div className="grid gap-3 sm:grid-cols-2">
+                <Button className="h-14 rounded-[1.5rem] border-2 border-white bg-yellow-300 text-zinc-950" onClick={onStart} disabled={!canStart}>{startLabel}</Button>
+                <Button className="h-14 rounded-[1.5rem] border border-fuchsia-400/30 bg-fuchsia-500/10 text-white" onClick={onOpenAdmin}>Open Admin</Button>
+              </div>
             </div>
           </GlassPanel>
         </div>
       </div>
-      <Dialog open={randomDialogOpen}><DialogContent className="max-w-lg rounded-[2rem] bg-[#13002d] p-6 text-white border border-fuchsia-400/20"><DialogHeader><DialogTitle className="text-2xl text-yellow-300">Random Settings</DialogTitle><DialogDescription className="text-white/60">Theme changes names now, with hooks ready for visuals, music and SFX.</DialogDescription></DialogHeader><select value={nameTheme} onChange={(e) => setNameTheme(e.target.value)} className="mt-4 w-full rounded-2xl bg-white/5 border border-white/10 px-3 py-3 text-white">{themeNames.map((theme) => <option key={theme} value={theme} className="text-black">{theme}</option>)}</select><DialogFooter><Button className="rounded-2xl bg-yellow-300 px-4 py-2 text-zinc-950" onClick={() => setRandomDialogOpen(false)}>Done</Button></DialogFooter></DialogContent></Dialog>
-      <Dialog open={categoryDialogOpen}><DialogContent className="max-w-2xl rounded-[2rem] bg-[#13002d] p-6 text-white border border-fuchsia-400/20"><DialogHeader><DialogTitle className="text-2xl text-yellow-300">Category Edit</DialogTitle><DialogDescription className="text-white/60">Tap categories to enable or disable them for this lobby.</DialogDescription></DialogHeader><div className="grid gap-3 sm:grid-cols-2 mt-4">{Object.keys(enabledCategories).map((id) => { const enabled = enabledCategories[id]; const category = DEFAULT_CATEGORIES.find((c) => c.id === id) || { name: id, emoji: '🎲' }; return <button key={id} onClick={() => onToggleCategory(id)} className={enabled ? 'rounded-[1.5rem] p-4 text-left border border-white/20 bg-gradient-to-r from-fuchsia-500/20 to-cyan-500/20' : 'rounded-[1.5rem] p-4 text-left border border-white/10 bg-white/5 opacity-45'}><div className="flex items-center justify-between gap-3"><div><div className="text-lg font-black">{category.emoji} {category.name}</div><div className="text-xs text-white/60 mt-1">{enabled ? 'Enabled' : 'Disabled'}</div></div>{enabled ? <CheckCircle2 className="h-5 w-5 text-cyan-300" /> : <XCircle className="h-5 w-5 text-white/45" />}</div></button>; })}</div><DialogFooter><Button className="rounded-2xl bg-yellow-300 px-4 py-2 text-zinc-950" onClick={() => setCategoryDialogOpen(false)}>Done</Button></DialogFooter></DialogContent></Dialog>
+      <Dialog open={categoryDialogOpen}>
+        <DialogContent className="max-w-2xl rounded-[2rem] border border-fuchsia-400/20 bg-[#13002d] p-6 text-white">
+          <DialogHeader>
+            <DialogTitle className="text-2xl text-yellow-300">Category Edit</DialogTitle>
+            <DialogDescription className="text-white/60">Tap categories to enable or disable them for this lobby.</DialogDescription>
+          </DialogHeader>
+          <div className="mt-4 grid gap-3 sm:grid-cols-2">
+            {Object.keys(enabledCategories).map((id) => {
+              const enabled = enabledCategories[id];
+              const category = DEFAULT_CATEGORIES.find((item) => item.id === id) || { name: id, emoji: '🎲' };
+              return (
+                <button
+                  key={id}
+                  onClick={() => onToggleCategory(id)}
+                  className={enabled
+                    ? 'rounded-[1.5rem] border border-white/20 bg-gradient-to-r from-fuchsia-500/20 to-cyan-500/20 p-4 text-center'
+                    : 'rounded-[1.5rem] border border-white/10 bg-white/5 p-4 text-center opacity-45'}
+                >
+                  <div className="flex flex-col items-center gap-2">
+                    <div className="text-lg font-black">{category.emoji} {category.name}</div>
+                    <div className="text-xs text-white/60">{enabled ? 'Enabled' : 'Disabled'}</div>
+                    {enabled ? <CheckCircle2 className="h-5 w-5 text-cyan-300" /> : <XCircle className="h-5 w-5 text-white/45" />}
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+          <DialogFooter>
+            <Button className="rounded-2xl bg-yellow-300 px-4 py-2 text-zinc-950" onClick={() => setCategoryDialogOpen(false)}>Done</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </TopFrame>
   );
 }
@@ -786,6 +986,10 @@ function RevealScreen({ players, currentRevealIndex, round, totalRounds, onNext,
   const [cardFace, setCardFace] = useState('back');
   const [countdownValue, setCountdownValue] = useState(null);
   const [isCountingDown, setIsCountingDown] = useState(false);
+  const [promptFontSize, setPromptFontSize] = useState(54);
+  const fireAudioRef = useRef(null);
+  const promptTextRef = useRef(null);
+  const promptFitContainerRef = useRef(null);
   const themeAssets = getThemeAssets(theme);
   const defaultPromptCards = getThemeAssets('Default');
   const useAdultCardArt = Boolean(round.isAdultPrompt);
@@ -815,6 +1019,55 @@ function RevealScreen({ players, currentRevealIndex, round, totalRounds, onNext,
     }, 700);
     return () => clearTimeout(timer);
   }, [isCountingDown, countdownValue]);
+
+  useEffect(() => {
+    if (cardFace !== 'front') {
+      try {
+        fireAudioRef.current?.pause();
+      } catch {}
+      return undefined;
+    }
+    try {
+      const audio = new Audio(FIRE_CRACKLE_SFX_SRC);
+      audio.volume = isImposter ? 0.4 : 0.22;
+      fireAudioRef.current = audio;
+      audio.play().catch(() => {});
+    } catch {}
+    return () => {
+      try {
+        fireAudioRef.current?.pause();
+      } catch {}
+      fireAudioRef.current = null;
+    };
+  }, [cardFace, isImposter]);
+
+  useLayoutEffect(() => {
+    if (cardFace !== 'front') {
+      setPromptFontSize((current) => (current === 54 ? current : 54));
+      return;
+    }
+    const promptElement = promptTextRef.current;
+    const fitContainer = promptFitContainerRef.current;
+    if (!promptElement || !fitContainer) return;
+
+    const maxSize = 54;
+    const minSize = 18;
+    let nextSize = maxSize;
+    promptElement.style.fontSize = `${nextSize}px`;
+    promptElement.style.lineHeight = '1.05';
+
+    const fits = () => (
+      promptElement.scrollHeight <= fitContainer.clientHeight
+      && promptElement.scrollWidth <= fitContainer.clientWidth
+    );
+
+    while (nextSize > minSize && !fits()) {
+      nextSize -= 1;
+      promptElement.style.fontSize = `${nextSize}px`;
+    }
+
+    setPromptFontSize((current) => (current === nextSize ? current : nextSize));
+  }, [prompt, mediaSrc, cardFace, isImposter]);
 
   function startRevealCountdown() {
     if (isCountingDown || cardFace === 'front') return;
@@ -882,7 +1135,14 @@ function RevealScreen({ players, currentRevealIndex, round, totalRounds, onNext,
               <div className={`absolute inset-0 overflow-hidden rounded-[1.7rem] border-2 [backface-visibility:hidden] [transform:rotateY(180deg)] ${isImposter ? 'border-red-400/60' : 'border-cyan-300/60'}`}>
                 {cardFrontSrc && <img src={cardFrontSrc} alt="Prompt card front" className="absolute inset-0 h-full w-full object-contain bg-black/30" />}
                 <div className={`absolute inset-0 ${isImposter ? 'bg-red-950/65' : 'bg-slate-950/65'}`} />
-                <div className="relative z-10 flex h-full flex-col p-6 text-left text-white">
+                {isImposter && (
+                  <>
+                    <img src={FLAME_SRC} alt="" aria-hidden="true" className="pointer-events-none absolute -top-4 -left-2 h-12 w-12 opacity-90 animate-pulse" />
+                    <img src={FLAME_SRC} alt="" aria-hidden="true" className="pointer-events-none absolute -top-5 right-2 h-14 w-14 opacity-90 animate-pulse" />
+                    <img src={FLAME_SRC} alt="" aria-hidden="true" className="pointer-events-none absolute bottom-2 -right-3 h-12 w-12 opacity-80 animate-pulse" />
+                  </>
+                )}
+                <div className="relative z-10 flex h-full flex-col p-6 text-white">
                   <div className="text-xs uppercase tracking-[0.3em] text-white/75">
                     {round.roundTypeName} • {round.categoryEmoji} {round.categoryLabel}
                   </div>
@@ -891,8 +1151,8 @@ function RevealScreen({ players, currentRevealIndex, round, totalRounds, onNext,
                     alt={`${round.roundTypeName} logo`}
                     className="mt-3 h-14 w-auto rounded-md border border-white/20 bg-black/25 px-2 py-1"
                   />
-                  <div className={`mt-3 inline-flex rounded-full border px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] ${isImposter ? 'border-orange-300/30 bg-orange-500/10 text-orange-200' : 'border-cyan-300/30 bg-cyan-500/10 text-cyan-200'}`}>
-                    {round.hint}
+                  <div className={`mt-3 inline-flex rounded-full border px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] ${isImposter ? 'border-red-200/40 bg-red-600/20 text-red-100' : 'border-cyan-300/30 bg-cyan-500/10 text-cyan-200'}`}>
+                    {isImposter ? 'IMPOSTER CARD' : round.hint}
                   </div>
                   {round.mediaPreviewLabel && (
                     <div className="mt-3 rounded-2xl border border-white/20 bg-black/30 p-3 text-sm text-white/80">{round.mediaPreviewLabel}</div>
@@ -900,7 +1160,20 @@ function RevealScreen({ players, currentRevealIndex, round, totalRounds, onNext,
                   {mediaSrc && (
                     <img src={mediaSrc} alt={`${round.hint} visual clue`} className="mt-3 w-full rounded-2xl border border-white/15 bg-black/20" />
                   )}
-                  <div className={`mt-4 text-4xl font-black leading-tight ${isImposter ? 'text-yellow-300' : 'text-white'}`}>{prompt}</div>
+                  <div ref={promptFitContainerRef} className="mt-4 max-h-[11.5rem] overflow-hidden">
+                    <div
+                      ref={promptTextRef}
+                      className={`font-black ${isImposter ? 'text-yellow-300' : 'text-white'}`}
+                      style={{
+                        fontSize: `${promptFontSize}px`,
+                        wordBreak: 'break-word',
+                        overflowWrap: 'anywhere',
+                        lineHeight: 1.05,
+                      }}
+                    >
+                      {prompt}
+                    </div>
+                  </div>
                   {onlineMode && privatePromptLoading && (
                     <div className="mt-3 text-sm text-cyan-100/90">
                       Loading your private prompt...
