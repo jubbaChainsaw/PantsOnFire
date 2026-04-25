@@ -513,6 +513,118 @@ function ThemeIconStrip({ src, alt }) {
     />
   );
 }
+function getThemeHostFrameSources(themeName = 'Default', state = 'idle') {
+  const assets = getThemeAssets(themeName);
+  const defaultAssets = getThemeAssets('Default');
+  const idleFrame =
+    assets.hostIdle
+    || assets.characterCard
+    || defaultAssets.hostIdle
+    || defaultAssets.characterCard
+    || '';
+  const talkingFrames = [
+    assets.hostTalk1 || defaultAssets.hostTalk1,
+    assets.hostTalk2 || defaultAssets.hostTalk2,
+    assets.hostTalk3 || defaultAssets.hostTalk3,
+  ].filter(Boolean);
+  if (state !== 'talking') return [idleFrame].filter(Boolean);
+  if (!talkingFrames.length) return [idleFrame].filter(Boolean);
+  return talkingFrames;
+}
+function useTalkingAnimation({ enabled = false, themeName = 'Default' } = {}) {
+  const [talkIndex, setTalkIndex] = useState(0);
+  const idleFrames = useMemo(
+    () => getThemeHostFrameSources(themeName, 'idle'),
+    [themeName]
+  );
+  const talkingFrames = useMemo(
+    () => getThemeHostFrameSources(themeName, 'talking'),
+    [themeName]
+  );
+  useEffect(() => {
+    setTalkIndex(0);
+  }, [themeName, enabled]);
+  useEffect(() => {
+    if (!enabled) return undefined;
+    if (talkingFrames.length <= 1) return undefined;
+    const timer = setInterval(() => {
+      setTalkIndex((current) => (current + 1) % talkingFrames.length);
+    }, 220);
+    return () => clearInterval(timer);
+  }, [enabled, talkingFrames.length]);
+  if (enabled && talkingFrames.length > 0) {
+    return talkingFrames[talkIndex] || talkingFrames[0];
+  }
+  return idleFrames[0] || '';
+}
+function getHostAssetGuidelines() {
+  return 'Host PNG size: 900×1400 px (2:3 ratio), transparent background, keep key face/torso inside ~70% width and ~80% height safe zone. Provide 4 files per theme: host-idle.png + host-talk-1.png + host-talk-2.png + host-talk-3.png.';
+}
+function GameIntroScreen({ theme, onContinue, isOnlineMode = false }) {
+  const introLines = [
+    'Welcome to Pants on Fire. One or more players are secretly lying.',
+    'Each round, players get private prompts and give clues without exposing the exact card.',
+    'Spot the fake, vote the liar, then climb the leaderboard.',
+    isOnlineMode
+      ? 'Online lobbies keep prompts private on each device, then sync discussion and voting for everyone.'
+      : 'Pass the phone during reveals so each prompt stays private.',
+  ];
+  const [lineIndex, setLineIndex] = useState(0);
+  const isTalking = lineIndex < introLines.length - 1;
+  const animatedHostSrc = useTalkingAnimation({ enabled: isTalking, themeName: theme });
+  useEffect(() => {
+    setLineIndex(0);
+  }, [theme, isOnlineMode]);
+  useEffect(() => {
+    if (lineIndex >= introLines.length - 1) return undefined;
+    const timer = setTimeout(() => {
+      setLineIndex((current) => Math.min(current + 1, introLines.length - 1));
+    }, 2400);
+    return () => clearTimeout(timer);
+  }, [lineIndex, introLines.length]);
+  const canContinue = lineIndex >= introLines.length - 1;
+  return (
+    <TopFrame theme={theme}>
+      <div className="mx-auto max-w-5xl space-y-6">
+        <GlassPanel className="rounded-[2.5rem] border-cyan-400/20 bg-black/25 p-8">
+          <div className="text-center">
+            <div className="text-xs uppercase tracking-[0.35em] text-cyan-200/80">Game intro</div>
+            <h2 className="mt-3 text-4xl font-black text-yellow-300">Host briefing</h2>
+          </div>
+          <div className="mt-6 grid items-end gap-4 md:grid-cols-[0.9fr_1.1fr]">
+            <div className="relative">
+              <ThemeArt
+                src={animatedHostSrc}
+                alt={`${theme} host presenter`}
+                className="mx-auto w-full max-w-[420px] rounded-2xl border border-white/15 bg-black/20"
+              />
+            </div>
+            <motion.div
+              key={`intro-line-${lineIndex}`}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.25, ease: 'easeOut' }}
+              className="rounded-[1.6rem] border border-cyan-300/25 bg-black/45 p-5 text-center text-white"
+            >
+              <div className="text-[0.68rem] uppercase tracking-[0.2em] text-cyan-100">Host says</div>
+              <p className="mt-2 text-base text-white/95">{introLines[lineIndex]}</p>
+              <div className="mt-3 text-xs text-white/65">{getHostAssetGuidelines()}</div>
+            </motion.div>
+          </div>
+          <div className="mt-7 flex justify-center">
+            <Button
+              className="h-14 rounded-[1.5rem] border-2 border-white bg-yellow-300 px-8 text-zinc-950"
+              onClick={onContinue}
+              disabled={!canContinue}
+            >
+              {canContinue ? 'Continue to category selection' : 'Host is introducing...'}
+            </Button>
+          </div>
+        </GlassPanel>
+      </div>
+    </TopFrame>
+  );
+}
 function getRoundRuleText(roundTypeId = 'prompt') {
   if (roundTypeId === 'opinion') {
     return 'Truth or Twisted: everyone got the same scenario. Liars must ragebait and argue opposite to their natural take.';
@@ -629,6 +741,8 @@ function HostIntroScreen({ round, stingerLine, onContinue, theme }) {
   ].filter(Boolean);
   const [speechIndex, setSpeechIndex] = useState(0);
   const canContinue = speechIndex >= speechSentences.length - 1;
+  const isTalking = speechIndex < speechSentences.length - 1;
+  const animatedHostSrc = useTalkingAnimation({ enabled: isTalking, themeName: theme });
   const introLine = round.roundTypeId === 'grill'
     ? `${mascot.name} is live. Mic up and question the AI.`
     : `${mascot.name} is in the building. Let the chaos begin.`;
@@ -679,7 +793,7 @@ function HostIntroScreen({ round, stingerLine, onContinue, theme }) {
           </div>
           <div className="relative mx-auto mt-2 w-full max-w-2xl min-h-[180px]">
             <ThemeArt
-              src={themeAssets.characterCard}
+              src={animatedHostSrc}
               alt={`${theme} presenter`}
               className="pointer-events-none absolute bottom-0 left-0 w-28 sm:w-36 rounded-2xl border border-white/15 bg-black/20"
             />
@@ -1601,17 +1715,42 @@ function VotingScreen({ players, round, totalRounds, votesByPlayerId, setVotesBy
 function LiarRevealScreen({ players, round, onComplete, theme }) {
   const liars = players.filter((p) => (round.imposterIds || []).includes(p.id));
   const audioRef = useRef(null);
+  const [announcementIndex, setAnnouncementIndex] = useState(0);
+  const announcementLines = [
+    liars.length > 1 ? 'The Liars are......' : 'The Liar was......',
+    liars.length > 0
+      ? `${liars.map((player) => player.name).join(', ')}`
+      : 'No liar data available.',
+    'Hearts pounding. Friendships wobbling. Truth incoming.',
+  ];
+  const isTalking = announcementIndex < announcementLines.length - 1;
+  const animatedHostSrc = useTalkingAnimation({ enabled: isTalking, themeName: theme });
   useEffect(() => {
-    let timer;
     try {
       audioRef.current = new Audio(HEARTBEAT_SFX_SRC);
       audioRef.current.volume = 0.5;
       audioRef.current.play().catch(() => {});
     } catch {}
-    timer = setTimeout(() => { try { audioRef.current?.pause(); } catch {} onComplete(); }, 3000);
-    return () => { clearTimeout(timer); try { audioRef.current?.pause(); } catch {} };
-  }, [onComplete]);
-  return <TopFrame theme={theme}><div className="mx-auto max-w-3xl space-y-6"><GlassPanel className="rounded-[2.5rem] p-8 md:p-10 border-red-400/25 bg-black/35 text-center overflow-hidden relative"><div className="absolute inset-0 animate-pulse bg-[radial-gradient(circle,_rgba(255,0,80,0.16)_0%,_rgba(255,0,80,0.08)_35%,_transparent_70%)]" /><div className="relative z-10 space-y-6"><div className="text-xs uppercase tracking-[0.35em] text-white/50">Final accusation</div><motion.div initial={{ scale: 0.98, opacity: 0.8 }} animate={{ scale: [1, 1.03, 1], opacity: [0.85, 1, 0.85] }} transition={{ duration: 1.05, repeat: 2, ease: 'easeInOut' }} className="space-y-4"><div className="text-4xl md:text-6xl font-black text-red-300">{liars.length > 1 ? 'The Liars are......' : 'The Liar was......'}</div><div className="inline-flex flex-wrap justify-center gap-3">{liars.map((player) => <span key={player.id} className="rounded-full border border-red-300/30 bg-red-500/15 px-5 py-2 text-lg md:text-2xl font-black text-yellow-200">🔥 {player.name}</span>)}</div></motion.div><div className="text-sm text-white/65">Hearts pounding. Friendships wobbling. Truth incoming.</div></div></GlassPanel></div></TopFrame>;
+    return () => {
+      try { audioRef.current?.pause(); } catch {}
+    };
+  }, []);
+  useEffect(() => {
+    if (announcementIndex >= announcementLines.length - 1) return undefined;
+    const timer = setTimeout(() => {
+      setAnnouncementIndex((current) => Math.min(current + 1, announcementLines.length - 1));
+    }, 1400);
+    return () => clearTimeout(timer);
+  }, [announcementIndex, announcementLines.length]);
+  useEffect(() => {
+    if (announcementIndex < announcementLines.length - 1) return undefined;
+    const timer = setTimeout(() => {
+      try { audioRef.current?.pause(); } catch {}
+      onComplete();
+    }, 1600);
+    return () => clearTimeout(timer);
+  }, [announcementIndex, announcementLines.length, onComplete]);
+  return <TopFrame theme={theme}><div className="mx-auto max-w-4xl space-y-6"><GlassPanel className="rounded-[2.5rem] p-8 md:p-10 border-red-400/25 bg-black/35 text-center overflow-hidden relative"><div className="absolute inset-0 animate-pulse bg-[radial-gradient(circle,_rgba(255,0,80,0.16)_0%,_rgba(255,0,80,0.08)_35%,_transparent_70%)]" /><div className="relative z-10 space-y-6"><div className="text-xs uppercase tracking-[0.35em] text-white/50">Final accusation</div><div className="grid gap-4 md:grid-cols-[0.9fr_1.1fr] items-end"><ThemeArt src={animatedHostSrc} alt={`${theme} presenter`} className="mx-auto w-full max-w-[330px] rounded-2xl border border-white/15 bg-black/20" /><motion.div initial={{ scale: 0.98, opacity: 0.8 }} animate={{ scale: [1, 1.03, 1], opacity: [0.85, 1, 0.85] }} transition={{ duration: 1.05, repeat: 1, ease: 'easeInOut' }} className="space-y-4 rounded-[1.5rem] border border-red-300/25 bg-black/45 p-5"><div className="text-4xl md:text-6xl font-black text-red-300">{announcementLines[0]}</div><div className="inline-flex flex-wrap justify-center gap-3">{liars.map((player) => <span key={player.id} className="rounded-full border border-red-300/30 bg-red-500/15 px-5 py-2 text-lg md:text-2xl font-black text-yellow-200">🔥 {player.name}</span>)}</div><div className="text-sm text-white/75">{announcementLines[Math.min(announcementIndex, announcementLines.length - 1)]}</div></motion.div></div></div></GlassPanel></div></TopFrame>;
 }
 function ResultsScreen({ players, round, totalRounds, tally, roundGains, roundBreakdown, imposterCaught, onNextRound, onEndGame, resultLine, theme }) {
   const ranked = [...players].sort((a, b) => b.score - a.score);
@@ -2307,7 +2446,7 @@ export default function App() {
     setOnlinePrivatePrompt(null);
     setOnlinePrivatePromptError('');
     refreshCopy(['chooser']);
-    setScreen('rules');
+    setScreen('game-intro');
   }
   function chooseCategory(categoryId) {
     const category = activeCategories.find((c) => c.id === categoryId);
@@ -2567,7 +2706,8 @@ export default function App() {
     setOnlinePrivatePromptError('');
     const synced = await onlineTransportRef.current?.syncSnapshot();
     if (synced?.activeRound) {
-      await syncOnlineRoundFromSnapshot(synced, { openHostIntro: true });
+      await syncOnlineRoundFromSnapshot(synced, { openHostIntro: false });
+      setScreen('game-intro');
     }
   }
   function restartToHome() {
@@ -2666,6 +2806,13 @@ export default function App() {
           </GlassPanel>
         </div>
       </TopFrame>
+    )}
+    {screen === 'game-intro' && (
+      <GameIntroScreen
+        theme={nameTheme}
+        isOnlineMode={onlineMode}
+        onContinue={() => setScreen('rules')}
+      />
     )}
     {screen === 'rules' && <RulesSplashScreen mode={mode} onContinue={() => setScreen('category-choice')} theme={nameTheme} isOnlineMode={onlineMode} />}
     {screen === 'round-type-choice' && round && <TopFrame theme={nameTheme}><div className="mx-auto max-w-3xl space-y-6"><ScoreStrip players={players} roundNumber={round.roundNumber} totalRounds={totalRounds} /><GlassPanel className="rounded-[2.5rem] p-8 text-center border-fuchsia-400/25 bg-black/25 relative overflow-hidden"><div className="text-xs uppercase tracking-[0.3em] text-white/50">Round owner: {players[currentRoundOwnerIndex]?.name}</div><h2 className="text-4xl font-black mt-3 text-yellow-300">Choose round type</h2><p className="text-white/70 mt-3">Pick one of two options. Previous round type is excluded.</p><div className="grid gap-3 sm:grid-cols-2 mt-8">{roundTypeOptions.map((type) => <div key={type.id} className="space-y-2"><RoundMascot roundTypeId={type.id} /><div className="rounded-[1.5rem] border border-white/20 bg-black/20 p-3"><RoundTypeLogo src={type.logoSrc} alt={`${type.name} logo`} className="mx-auto h-16 w-auto rounded-md border border-white/20 bg-black/25 px-2 py-1" /><ThemeArt src={`/assets/themes/default/cards/prompt-front-${type.id}.svg`} alt={`${type.name} default card front`} className="mx-auto mt-3 h-28 w-auto rounded-xl border border-white/20 bg-black/25 p-1" /><div className="mt-3 text-xs uppercase tracking-[0.2em] text-white/60">Round Type Logo + Default Front Card</div></div><Button className={`rounded-[1.75rem] h-20 text-lg bg-gradient-to-r ${themeMeta.gradient} text-white border-2 border-white/20 shadow-lg w-full`} onClick={() => { setSelectedRoundType(type.id); setScreen('category-choice'); }}>{type.name}</Button></div>)}</div></GlassPanel></div></TopFrame>}

@@ -91,6 +91,18 @@ Asset structure is organized under:
 - `public/assets/themes/<theme>/icons`
 - `public/assets/themes/<theme>/ui`
 
+### Host PNG sizing + talking frames
+
+For each theme host, use a portrait transparent PNG at **900 x 1400 px (2:3)**.
+
+- Safe zone recommendation for face/speech acting: centered, keep key details within ~70% width and ~80% height.
+- Keep transparent padding around the character so bottom-left placement works cleanly across screens.
+- Provide these files per theme in `src/data/themeAssets.js`:
+  - `hostIdle` (required)
+  - `hostTalk1`, `hostTalk2`, `hostTalk3` (optional but recommended)
+
+If talk frames are not provided, the app automatically falls back to the idle frame.
+
 ---
 
 ## Tech Highlights
