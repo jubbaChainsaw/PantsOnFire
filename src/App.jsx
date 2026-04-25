@@ -369,7 +369,14 @@ function LightningBolt({ className = '' }) {
 function TopFrame({ children, theme = 'Default' }) {
   const gradient = THEME_META[theme]?.gradient || THEME_META.Default.gradient;
   return (
-    <div className="min-h-screen overflow-hidden text-white bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.14),_transparent_26%),radial-gradient(circle_at_bottom_right,_rgba(255,255,255,0.10),_transparent_30%),linear-gradient(135deg,#120038_10%,#0028a8_35%,#16003f_60%,#031325_100%)] relative">
+    <div className="min-h-screen overflow-hidden text-white relative bg-[linear-gradient(135deg,#14043a_8%,#2d126f_45%,#1d0a51_100%)]">
+      <div
+        className="absolute inset-0 opacity-[0.75] bg-repeat"
+        style={{
+          backgroundImage: "url('/assets/images/backgrounds/game-tile-pattern.png')",
+          backgroundSize: '512px 512px',
+        }}
+      />
       <div className={`absolute inset-0 opacity-20 bg-gradient-to-br ${gradient}`} />
       <ZanyAccentBurst className="left-5 top-12" />
       <ZanyAccentBurst className="right-5 bottom-20 scale-125" />
