@@ -1,0 +1,34 @@
+# ALWAYS create/update for a new picture DLC pack
+public/assets/graphic-packs/picture/<pack-id>/manifest.json
+public/assets/graphic-packs/picture/<pack-id>/images/*
+
+# Then run (repo root)
+npm run dlc:lint-picture-manifests
+npm run dlc:sync-picture-manifests
+
+# Auto-generated output (do not hand edit, but your tool may run sync script)
+src/data/generatedPictureDlcManifests.js
+
+# Optional: add a standard prompt category pack
+src/data/packs/<category-id>/promptRoundData.js
+src/data/packs/categoryPromptPacks.js
+
+# Optional: add a new selectable theme
+public/assets/themes/<theme-id>/characters/presenter.(png|svg)
+public/assets/themes/<theme-id>/icons/icons-sheet.(png|svg)
+public/assets/themes/<theme-id>/ui/banner.(png|svg)
+public/assets/themes/<theme-id>/cards/prompt-front.(png|svg)
+public/assets/themes/<theme-id>/cards/prompt-back.(png|svg)
+public/assets/themes/<theme-id>/cards/prompt-front-18.(png|svg)
+public/assets/themes/<theme-id>/cards/prompt-back-18.(png|svg)
+src/data/themeAssets.js
+src/data/themes.js
+src/data/names.js
+
+# Optional: add a new round type (advanced)
+public/assets/images/round-types/<round-type-id>-logo.(png|svg)
+public/assets/themes/default/cards/prompt-front-<round-type-id>.(png|svg)
+src/data/roundTypes.js
+src/data/themeAssets.js
+src/data/categories.js
+src/App.jsx
