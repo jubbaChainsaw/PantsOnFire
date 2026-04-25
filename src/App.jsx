@@ -1349,6 +1349,22 @@ function RevealScreen({ players, currentRevealIndex, round, totalRounds, onNext,
     setPromptFontSize((current) => (current === nextSize ? current : nextSize));
   }, [prompt, mediaSrc, cardFace, isImposter]);
 
+  const imposterEmberParticles = useMemo(() => (
+    Array.from({ length: 16 }, (_, index) => {
+      const left = `${6 + ((index * 17) % 84)}%`;
+      const delay = `${(index % 8) * 0.23}s`;
+      const duration = `${2.4 + ((index * 0.19) % 1.9)}s`;
+      const size = `${4 + ((index * 5) % 10)}px`;
+      return {
+        id: `ember-${index}`,
+        left,
+        delay,
+        duration,
+        size,
+      };
+    })
+  ), []);
+
   return (
     <TopFrame theme={theme}>
       <div className="mx-auto max-w-3xl space-y-6">
@@ -1404,14 +1420,30 @@ function RevealScreen({ players, currentRevealIndex, round, totalRounds, onNext,
                 )}
               </div>
 
-              <div className={`absolute inset-0 overflow-hidden rounded-[1.7rem] border-2 [backface-visibility:hidden] [transform:rotateY(180deg)] ${isImposter ? 'border-red-400/60' : 'border-cyan-300/60'}`}>
+              <div className={`absolute inset-0 overflow-hidden rounded-[1.7rem] border-2 [backface-visibility:hidden] [transform:rotateY(180deg)] ${isImposter ? 'border-orange-300/90 shadow-[0_0_42px_rgba(255,94,0,0.62)]' : 'border-cyan-300/60'}`}>
                 {cardFrontSrc && <img src={cardFrontSrc} alt="Prompt card front" className="absolute inset-0 h-full w-full object-contain bg-black/30" />}
-                <div className={`absolute inset-0 ${isImposter ? 'bg-red-900/22' : 'bg-black/15'}`} />
+                <div className={`absolute inset-0 ${isImposter ? 'bg-gradient-to-b from-orange-400/34 via-red-600/26 to-red-950/42' : 'bg-black/15'}`} />
                 {isImposter && (
                   <>
-                    <img src={FLAME_SRC} alt="" aria-hidden="true" className="pointer-events-none absolute -top-4 -left-2 h-12 w-12 opacity-90 animate-pulse" />
-                    <img src={FLAME_SRC} alt="" aria-hidden="true" className="pointer-events-none absolute -top-5 right-2 h-14 w-14 opacity-90 animate-pulse" />
-                    <img src={FLAME_SRC} alt="" aria-hidden="true" className="pointer-events-none absolute bottom-2 -right-3 h-12 w-12 opacity-80 animate-pulse" />
+                    <div className="pointer-events-none absolute -inset-2 rounded-[2rem] border-2 border-orange-300/45 shadow-[inset_0_0_30px_rgba(255,97,24,0.45)]" />
+                    <div className="pointer-events-none absolute inset-0 rounded-[1.7rem] bg-[radial-gradient(circle_at_50%_90%,rgba(255,150,0,0.38)_0%,rgba(255,70,0,0.24)_35%,rgba(0,0,0,0)_68%)]" />
+                    <img src={FLAME_SRC} alt="" aria-hidden="true" className="pointer-events-none absolute -top-5 -left-3 h-14 w-14 opacity-95 animate-pulse drop-shadow-[0_0_12px_rgba(255,98,0,0.95)]" />
+                    <img src={FLAME_SRC} alt="" aria-hidden="true" className="pointer-events-none absolute -top-6 right-1 h-16 w-16 opacity-95 animate-pulse drop-shadow-[0_0_12px_rgba(255,98,0,0.95)]" />
+                    <img src={FLAME_SRC} alt="" aria-hidden="true" className="pointer-events-none absolute bottom-1 -right-3 h-14 w-14 opacity-90 animate-pulse drop-shadow-[0_0_12px_rgba(255,98,0,0.95)]" />
+                    <img src={FLAME_SRC} alt="" aria-hidden="true" className="pointer-events-none absolute bottom-0 -left-2 h-12 w-12 opacity-85 animate-pulse drop-shadow-[0_0_12px_rgba(255,98,0,0.95)]" />
+                    {imposterEmberParticles.map((particle) => (
+                      <span
+                        key={particle.id}
+                        className="pointer-events-none absolute rounded-full bg-orange-300/90 shadow-[0_0_8px_rgba(255,143,46,0.95)]"
+                        style={{
+                          left: particle.left,
+                          bottom: '-10%',
+                          width: particle.size,
+                          height: particle.size,
+                          animation: `imposter-ember-rise ${particle.duration} ease-out ${particle.delay} infinite`,
+                        }}
+                      />
+                    ))}
                   </>
                 )}
                 <div className="relative z-10 flex h-full flex-col p-6 text-center text-white [text-shadow:0_2px_8px_rgba(0,0,0,0.85)]">
@@ -1423,7 +1455,7 @@ function RevealScreen({ players, currentRevealIndex, round, totalRounds, onNext,
                     alt={`${round.roundTypeName} logo`}
                     className="mt-3 h-14 w-auto mx-auto"
                   />
-                  <div className={`mt-3 text-xs font-semibold uppercase tracking-[0.25em] ${isImposter ? 'text-red-100' : 'text-cyan-200'}`}>
+                  <div className={`mt-3 text-xs font-semibold uppercase tracking-[0.25em] ${isImposter ? 'text-orange-100' : 'text-cyan-200'}`}>
                     {isImposter ? 'IMPOSTER CARD' : round.hint}
                   </div>
                   {round.mediaPreviewLabel && (
