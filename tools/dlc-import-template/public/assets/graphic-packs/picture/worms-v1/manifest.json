@@ -1,0 +1,33 @@
+{
+  "id": "worms-v1",
+  "version": 1,
+  "label": "Worms Picture Prompt Pack",
+  "category": "picture",
+  "releaseChannel": "dlc",
+  "enabled": true,
+  "basePath": "/assets/graphic-packs/picture/worms-v1/images",
+  "entries": [
+    {
+      "entryId": "worms-01",
+      "groupId": "worms",
+      "groupName": "Worms",
+      "hint": "Picture Prompt • Worms 1",
+      "main": "Earthworm in soil",
+      "imposter": "Nightcrawler on grass",
+      "mainMediaFile": "worms-01-main.png",
+      "imposterMediaFile": "worms-01-imposter.png",
+      "previewLabel": "Graphic pack clue from the Worms picture prompts."
+    },
+    {
+      "entryId": "worms-02",
+      "groupId": "worms",
+      "groupName": "Worms",
+      "hint": "Picture Prompt • Worms 2",
+      "main": "Compost red wiggler",
+      "imposter": "Tiger worm cluster",
+      "mainMediaFile": "worms-02-main.png",
+      "imposterMediaFile": "worms-02-imposter.png",
+      "previewLabel": "Graphic pack clue from the Worms picture prompts."
+    }
+  ]
+}
