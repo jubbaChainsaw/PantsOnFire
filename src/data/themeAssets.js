@@ -145,6 +145,9 @@ export const ROUND_TYPE_CARD_FRONT_BY_ID = {
   prompt: '/assets/themes/default/cards/prompt-front-prompt.svg',
   opinion: '/assets/themes/default/cards/prompt-front-opinion.svg',
   picture: '/assets/themes/default/cards/prompt-front-picture.svg',
+  meme: '/assets/themes/default/cards/prompt-front-meme.svg',
+  noise: '/assets/themes/default/cards/prompt-front-noise.svg',
+  offtopic: '/assets/themes/default/cards/prompt-front-offtopic.svg',
   grill: '/assets/themes/default/cards/prompt-front-grill.svg',
 };
 
