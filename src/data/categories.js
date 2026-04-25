@@ -792,6 +792,84 @@ export const GRILL_EM_ROUNDS = [
   },
 ];
 
+const GRILL_GUESSABLE_ENTITY_POOLS = {
+  person: [
+    'Taylor Swift',
+    'Elvis Presley',
+    'Freddie Mercury',
+    'David Attenborough',
+    'Albert Einstein',
+    'Usain Bolt',
+    'Adele',
+    'Beyonce',
+  ],
+  band: [
+    'The Beatles',
+    'Queen',
+    'Coldplay',
+    'Linkin Park',
+    'Nirvana',
+    'Arctic Monkeys',
+    'Metallica',
+    'Imagine Dragons',
+  ],
+  location: [
+    'London',
+    'Paris',
+    'New York',
+    'Tokyo',
+    'Sydney',
+    'Rome',
+    'Barcelona',
+    'Dubai',
+  ],
+  landmark: [
+    'Eiffel Tower',
+    'Big Ben',
+    'Statue of Liberty',
+    'Sydney Opera House',
+    'Great Wall of China',
+    'Taj Mahal',
+    'Golden Gate Bridge',
+    'Colosseum',
+  ],
+  animal: [
+    'Lion',
+    'Elephant',
+    'Dolphin',
+    'Penguin',
+    'Giraffe',
+    'Tiger',
+    'Koala',
+    'Wolf',
+  ],
+};
+
+function buildGuessableGrillRounds() {
+  const nounForType = {
+    person: 'person',
+    band: 'band',
+    location: 'location',
+    landmark: 'landmark',
+    animal: 'animal',
+  };
+  const rounds = [];
+  Object.entries(GRILL_GUESSABLE_ENTITY_POOLS).forEach(([entityType, entities]) => {
+    entities.forEach((entityName, index) => {
+      rounds.push({
+        hint: `AI Mystery Topic • ${entityType.toUpperCase()} ${index + 1}`,
+        main: `${entityType}: ${entityName}`,
+        imposter: `${entityType}: ${entityName}`,
+        aiPrompt: `You are describing the ${nounForType[entityType]} "${entityName}". Answer in short clues that are truthful, concise, and guessable. Avoid saying the exact name.`,
+        previewLabel: `Players interrogate the AI about a hidden ${entityType}.`,
+      });
+    });
+  });
+  return rounds;
+}
+
+GRILL_EM_ROUNDS.unshift(...buildGuessableGrillRounds());
+
 const GRILL_EXPANSION = {
   regularTopics: [
     'Snowy mountain cabin', 'Giant ferris wheel', 'Vintage motorcycle', 'Bowling alley', 'Sushi conveyor belt',

@@ -1510,17 +1510,90 @@ function RevealScreen({ players, currentRevealIndex, round, totalRounds, onNext,
     </TopFrame>
   );
 }
+const GRILL_TAG_KEYWORDS = {
+  person: ['person', 'human', 'celebrity', 'singer', 'rapper', 'actor', 'actress', 'footballer', 'artist'],
+  band: ['band', 'group', 'musician', 'song', 'album'],
+  location: ['location', 'place', 'city', 'country', 'town', 'village', 'capital', 'region'],
+  landmark: ['landmark', 'monument', 'tower', 'bridge', 'museum', 'opera', 'castle', 'statue'],
+  animal: ['animal', 'mammal', 'bird', 'fish', 'pet', 'wild'],
+  food: ['food', 'drink', 'meal', 'snack', 'dessert', 'edible', 'eat', 'taste'],
+  vehicle: ['vehicle', 'car', 'plane', 'aircraft', 'train', 'bike', 'motorcycle', 'boat'],
+  movie: ['movie', 'film', 'series', 'show', 'tv'],
+  object: ['object', 'thing', 'device', 'tech', 'gadget'],
+};
+const BRITISH_MALE_VOICE_NAME_HINTS = [
+  'daniel', 'george', 'thomas', 'oliver', 'arthur', 'gordon', 'malcolm',
+  'male', 'uk english male',
+];
+const BRITISH_FEMALE_VOICE_NAME_HINTS = ['female', 'susan', 'hazel', 'serena', 'siri', 'karen', 'zira'];
+
+function collectTagsFromText(text) {
+  const normalized = String(text || '').toLowerCase();
+  const tags = new Set();
+  Object.entries(GRILL_TAG_KEYWORDS).forEach(([tag, keywords]) => {
+    if (keywords.some((keyword) => normalized.includes(keyword))) tags.add(tag);
+  });
+  return tags;
+}
+function inferTargetTags(targetRaw = '', targetPrompt = '') {
+  const tags = collectTagsFromText(`${targetRaw} ${targetPrompt}`);
+  if (/^[A-Z][a-z]+(?:\s+[A-Z][a-z]+){1,2}$/.test(String(targetRaw || '').trim())) tags.add('person');
+  if (/^The\s+[A-Z]/.test(String(targetRaw || '').trim())) tags.add('band');
+  return tags;
+}
+function inferQuestionTags(question = '') {
+  return collectTagsFromText(question);
+}
+function pickBritishMaleVoice(voices = []) {
+  const britishVoices = voices.filter((voice) => /en-GB/i.test(voice?.lang || ''));
+  if (!britishVoices.length) return null;
+  const lowerName = (voice) => String(voice?.name || '').toLowerCase();
+  const explicitMale = britishVoices.find((voice) => (
+    BRITISH_MALE_VOICE_NAME_HINTS.some((hint) => lowerName(voice).includes(hint))
+  ));
+  if (explicitMale) return explicitMale;
+  const filtered = britishVoices.find((voice) => (
+    !BRITISH_FEMALE_VOICE_NAME_HINTS.some((hint) => lowerName(voice).includes(hint))
+  ));
+  return filtered || britishVoices[0];
+}
+function answerGrillQuestion(question = '', round = {}) {
+  const asked = String(question || '').trim().toLowerCase();
+  if (!asked) return 'Not really applicable';
+
+  const targetRaw = String(round?.main || '').trim();
+  const targetPrompt = String(round?.aiPrompt || '');
+  const targetLower = `${targetRaw} ${targetPrompt}`.toLowerCase();
+  const targetTokens = [...new Set(
+    targetLower
+      .replace(/[^a-z0-9\s-]/g, ' ')
+      .split(/\s+/)
+      .filter((token) => token.length >= 4)
+  )];
+  const directTokenMatch = targetTokens.some((token) => asked.includes(token));
+  if (directTokenMatch) return 'Yes';
+
+  const targetTags = inferTargetTags(targetRaw, targetPrompt);
+  const questionTags = inferQuestionTags(asked);
+  const hasTaggedQuestion = questionTags.size > 0;
+  const hasTagOverlap = [...questionTags].some((tag) => targetTags.has(tag));
+  if (hasTaggedQuestion && hasTagOverlap) return 'Yes';
+  if (hasTaggedQuestion && !hasTagOverlap) return 'No';
+
+  if (/\b(is it|does it|can it|would it)\b/.test(asked)) return 'Possibly';
+  if (/\b(where|when|which|who)\b/.test(asked)) return 'Kind of';
+  return 'Not really applicable';
+}
 function GrillEmScreen({ players, round, totalRounds, onContinue, theme }) {
-  const AI_ANSWERS = ['Yes', 'No', 'Kind of', 'Not really applicable', 'Possibly'];
   const [question, setQuestion] = useState('');
   const [transcript, setTranscript] = useState(round.grillData?.transcript || []);
   const questionsPerPlayer = round.grillData?.questionsPerPlayer || getGrillQuestionsPerPlayer(players.length);
   const [askedCounts, setAskedCounts] = useState(round.grillData?.askedCounts || {});
   const [isListening, setIsListening] = useState(false);
   const [micError, setMicError] = useState('');
+  const [voiceRevision, setVoiceRevision] = useState(0);
   const recognitionRef = useRef(null);
-  const activePlayer = players.find((player) => (askedCounts[player.id] || 0) < questionsPerPlayer) || null;
-  const allAsked = !activePlayer;
+  const [turnIndex, setTurnIndex] = useState(round.grillData?.turnIndex || 0);
   const speechEnabled = round.grillData?.ttsEnabled !== false;
   const micEnabled = round.grillData?.micEnabled !== false;
   const canUseSpeech =
@@ -1531,17 +1604,56 @@ function GrillEmScreen({ players, round, totalRounds, onContinue, theme }) {
     micEnabled &&
     typeof window !== 'undefined' &&
     (window.SpeechRecognition || window.webkitSpeechRecognition);
+  const totalQuestionsTarget = players.length * questionsPerPlayer;
+  const askedSoFar = players.reduce((acc, player) => acc + Math.min(questionsPerPlayer, askedCounts[player.id] || 0), 0);
+
+  function findNextTurnIndex(startIndex, countsSnapshot = askedCounts) {
+    if (!players.length) return -1;
+    for (let step = 0; step < players.length; step += 1) {
+      const candidate = (startIndex + step + players.length) % players.length;
+      const candidatePlayer = players[candidate];
+      if ((countsSnapshot[candidatePlayer.id] || 0) < questionsPerPlayer) return candidate;
+    }
+    return -1;
+  }
+  const activeTurnIndex = findNextTurnIndex(turnIndex);
+  const activePlayer = activeTurnIndex === -1 ? null : players[activeTurnIndex];
+  const allAsked = activeTurnIndex === -1;
 
   useEffect(() => () => {
     try { recognitionRef.current?.stop(); } catch {}
   }, []);
+  useEffect(() => {
+    const validTurnIndex = findNextTurnIndex(turnIndex);
+    if (validTurnIndex !== -1 && validTurnIndex !== turnIndex) {
+      setTurnIndex(validTurnIndex);
+    }
+  }, [turnIndex, askedCounts, players.length, questionsPerPlayer]);
+  useEffect(() => {
+    if (!canUseSpeech) return undefined;
+    const synth = window.speechSynthesis;
+    const handleVoicesChanged = () => setVoiceRevision((current) => current + 1);
+    synth.onvoiceschanged = handleVoicesChanged;
+    synth.getVoices();
+    return () => {
+      if (synth.onvoiceschanged === handleVoicesChanged) synth.onvoiceschanged = null;
+    };
+  }, [canUseSpeech]);
 
   function speak(text) {
     if (!canUseSpeech) return;
     try {
       const utterance = new SpeechSynthesisUtterance(text);
-      utterance.rate = 1;
-      utterance.pitch = 1;
+      const voices = window.speechSynthesis.getVoices();
+      const selectedVoice = pickBritishMaleVoice(voices);
+      if (selectedVoice) {
+        utterance.voice = selectedVoice;
+        utterance.lang = selectedVoice.lang || 'en-GB';
+      } else {
+        utterance.lang = 'en-GB';
+      }
+      utterance.rate = 0.98;
+      utterance.pitch = 0.8;
       window.speechSynthesis.cancel();
       window.speechSynthesis.speak(utterance);
     } catch {}
@@ -1552,7 +1664,7 @@ function GrillEmScreen({ players, round, totalRounds, onContinue, theme }) {
     setMicError('');
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!isListening) {
-      const startRecognition = () => {
+      try {
         const recognition = new SpeechRecognition();
         recognition.lang = 'en-GB';
         recognition.interimResults = false;
@@ -1562,21 +1674,30 @@ function GrillEmScreen({ players, round, totalRounds, onContinue, theme }) {
           const text = event?.results?.[0]?.[0]?.transcript || '';
           if (text) setQuestion(text);
         };
+        recognition.onstart = () => setIsListening(true);
         recognition.onend = () => setIsListening(false);
         recognition.onerror = (event) => {
           setIsListening(false);
-          setMicError(event?.error ? `Mic error: ${event.error}` : 'Mic failed. Try typing your question.');
+          const reason = String(event?.error || '').toLowerCase();
+          if (reason === 'not-allowed') {
+            setMicError('Microphone blocked. Enable mic permission for this site and try again.');
+            return;
+          }
+          if (reason === 'no-speech') {
+            setMicError('No speech detected. Try again and speak closer to the mic.');
+            return;
+          }
+          if (reason === 'audio-capture') {
+            setMicError('No microphone input detected. Check your device mic.');
+            return;
+          }
+          setMicError(reason ? `Mic error: ${reason}` : 'Mic failed. Try typing your question.');
         };
         recognitionRef.current = recognition;
-        setIsListening(true);
         recognition.start();
-      };
-      if (navigator?.mediaDevices?.getUserMedia) {
-        navigator.mediaDevices.getUserMedia({ audio: true })
-          .then(() => startRecognition())
-          .catch(() => setMicError('Microphone permission denied. Enable mic access in browser settings.'));
-      } else {
-        startRecognition();
+      } catch {
+        setIsListening(false);
+        setMicError('Unable to start microphone on this device/browser. You can still type questions.');
       }
     } else {
       try { recognitionRef.current?.stop(); } catch {}
@@ -1587,8 +1708,9 @@ function GrillEmScreen({ players, round, totalRounds, onContinue, theme }) {
   function submitQuestion() {
     const trimmed = question.trim();
     if (!trimmed || allAsked || !activePlayer) return;
-    const answer = pickRandom(AI_ANSWERS);
+    const answer = answerGrillQuestion(trimmed, round);
     const playerAskedCount = (askedCounts[activePlayer.id] || 0) + 1;
+    const nextCounts = { ...askedCounts, [activePlayer.id]: playerAskedCount };
     const nextRow = {
       id: `${Date.now()}-${activePlayer.id}-${playerAskedCount}`,
       player: activePlayer?.name || 'Player',
@@ -1597,12 +1719,98 @@ function GrillEmScreen({ players, round, totalRounds, onContinue, theme }) {
       turn: playerAskedCount,
     };
     setTranscript((cur) => [...cur, nextRow]);
-    setAskedCounts((cur) => ({ ...cur, [activePlayer.id]: playerAskedCount }));
+    setAskedCounts(nextCounts);
+    setTurnIndex(findNextTurnIndex(activeTurnIndex + 1, nextCounts));
+    try { recognitionRef.current?.stop(); } catch {}
+    setIsListening(false);
     speak(answer);
     setQuestion('');
   }
 
-  return <TopFrame theme={theme}><div className="mx-auto max-w-5xl space-y-6"><ScoreStrip players={players} roundNumber={round.roundNumber} totalRounds={totalRounds} /><GlassPanel className="rounded-[2.5rem] p-8 border-cyan-400/20 bg-black/25"><div className="text-center"><div className="text-xs uppercase tracking-[0.3em] text-white/50">{round.roundTypeName}</div><h2 className="text-4xl font-black mt-3 text-yellow-300">Interrogate Blaze Byte 🤖</h2><p className="text-cyan-200 mt-3">Each player has <span className="font-black">{questionsPerPlayer}</span> questions this round. Responses stay in short clue mode.</p></div><div className="mt-4 rounded-[1.5rem] border border-white/10 bg-white/5 p-4"><div className="text-sm text-white/70">Current questioner</div><div className="text-2xl font-black text-yellow-300 mt-1">{allAsked ? 'All questions complete' : activePlayer?.name}</div><div className="text-xs text-white/55 mt-2">Questions left: {(players.length * questionsPerPlayer) - players.reduce((acc, p) => acc + Math.min(questionsPerPlayer, askedCounts[p.id] || 0), 0)}</div></div><div className="grid gap-3 mt-4 md:grid-cols-[1fr_auto_auto]"><Input value={question} onChange={(e) => setQuestion(e.target.value)} placeholder={allAsked ? 'All questions complete' : 'Ask Blaze Byte a question'} className="rounded-2xl bg-white/5 border border-white/10 text-white" disabled={allAsked} />{canUseMic && <Button className={`rounded-2xl px-4 ${isListening ? 'bg-red-500 text-white' : 'bg-cyan-500/15 border border-cyan-400/30 text-cyan-100'}`} onClick={toggleMic} disabled={allAsked}>{isListening ? 'Stop Mic' : 'Use Mic'}</Button>}{!canUseMic && <div className="rounded-2xl px-4 py-3 border border-amber-400/30 bg-amber-500/10 text-amber-200 text-xs">Mic unavailable here. Use typed questions.</div>}<Button className="rounded-2xl px-5 bg-yellow-300 text-zinc-950 border-2 border-white disabled:opacity-40" onClick={submitQuestion} disabled={allAsked || !question.trim()}>Ask AI</Button></div>{micError && <div className="mt-3 rounded-xl border border-red-400/30 bg-red-500/10 p-3 text-red-200 text-sm">{micError}</div>}<div className="mt-6 space-y-3 max-h-[280px] overflow-auto pr-1">{transcript.length === 0 && <div className="rounded-2xl border border-white/10 bg-black/20 p-4 text-white/60">No questions yet.</div>}{transcript.map((row) => <div key={row.id} className="rounded-2xl border border-white/10 bg-black/20 p-4"><div className="text-sm text-cyan-200 font-semibold">{row.player} • Q{row.turn}</div><div className="text-white mt-1">{row.question}</div><div className="mt-3 inline-flex rounded-full border border-fuchsia-400/25 bg-fuchsia-500/10 px-3 py-1 text-sm font-black text-fuchsia-200">Blaze Byte: {row.answer}</div></div>)}</div><div className="mt-6 flex justify-end"><Button className="rounded-[1.5rem] h-14 px-8 bg-yellow-300 text-zinc-950 border-2 border-white" onClick={() => onContinue({ transcript, questionsPerPlayer, askedCounts, micEnabled, ttsEnabled: speechEnabled })} disabled={!allAsked}>Continue to voting</Button></div></GlassPanel></div></TopFrame>;
+  return (
+    <TopFrame theme={theme}>
+      <div className="mx-auto max-w-5xl space-y-6">
+        <ScoreStrip players={players} roundNumber={round.roundNumber} totalRounds={totalRounds} />
+        <GlassPanel className="rounded-[2.5rem] p-8 border-cyan-400/20 bg-black/25">
+          <div className="text-center">
+            <div className="text-xs uppercase tracking-[0.3em] text-white/50">{round.roundTypeName}</div>
+            <h2 className="text-4xl font-black mt-3 text-yellow-300">Interrogate Blaze Byte 🤖</h2>
+            <p className="text-cyan-200 mt-3">
+              One player asks at a time. Turn rotates after each question.
+            </p>
+          </div>
+
+          <div className="mt-4 rounded-[1.5rem] border border-white/10 bg-white/5 p-4">
+            <div className="text-sm text-white/70">Current questioner</div>
+            <div className="text-2xl font-black text-yellow-300 mt-1">{allAsked ? 'All questions complete' : activePlayer?.name}</div>
+            <div className="text-xs text-white/55 mt-2">Questions left: {Math.max(0, totalQuestionsTarget - askedSoFar)}</div>
+            <div className="text-xs text-cyan-200 mt-2">AI voice: male British (when supported by device voices)</div>
+          </div>
+
+          <div className="grid gap-3 mt-4 md:grid-cols-[1fr_auto_auto]">
+            <Input
+              value={question}
+              onChange={(event) => setQuestion(event.target.value)}
+              placeholder={allAsked ? 'All questions complete' : `Ask Blaze Byte a question (${activePlayer?.name}'s turn)`}
+              className="rounded-2xl bg-white/5 border border-white/10 text-white"
+              disabled={allAsked}
+            />
+            {canUseMic ? (
+              <Button
+                className={`rounded-2xl px-4 ${isListening ? 'bg-red-500 text-white' : 'bg-cyan-500/15 border border-cyan-400/30 text-cyan-100'}`}
+                onClick={toggleMic}
+                disabled={allAsked}
+              >
+                {isListening ? 'Stop Mic' : 'Use Mic'}
+              </Button>
+            ) : (
+              <div className="rounded-2xl px-4 py-3 border border-amber-400/30 bg-amber-500/10 text-amber-200 text-xs">
+                Mic unavailable here. Use typed questions.
+              </div>
+            )}
+            <Button
+              className="rounded-2xl px-5 bg-yellow-300 text-zinc-950 border-2 border-white disabled:opacity-40"
+              onClick={submitQuestion}
+              disabled={allAsked || !question.trim()}
+            >
+              Ask AI
+            </Button>
+          </div>
+
+          {micError && (
+            <div className="mt-3 rounded-xl border border-red-400/30 bg-red-500/10 p-3 text-red-200 text-sm">
+              {micError}
+            </div>
+          )}
+
+          <div className="mt-6 space-y-3 max-h-[280px] overflow-auto pr-1">
+            {transcript.length === 0 && (
+              <div className="rounded-2xl border border-white/10 bg-black/20 p-4 text-white/60">No questions yet.</div>
+            )}
+            {transcript.map((row) => (
+              <div key={row.id} className="rounded-2xl border border-white/10 bg-black/20 p-4">
+                <div className="text-sm text-cyan-200 font-semibold">{row.player} • Q{row.turn}</div>
+                <div className="text-white mt-1">{row.question}</div>
+                <div className="mt-3 inline-flex rounded-full border border-fuchsia-400/25 bg-fuchsia-500/10 px-3 py-1 text-sm font-black text-fuchsia-200">
+                  Blaze Byte: {row.answer}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="mt-6 flex justify-end">
+            <Button
+              className="rounded-[1.5rem] h-14 px-8 bg-yellow-300 text-zinc-950 border-2 border-white"
+              onClick={() => onContinue({ transcript, questionsPerPlayer, askedCounts, micEnabled, ttsEnabled: speechEnabled, turnIndex: activeTurnIndex })}
+              disabled={!allAsked}
+            >
+              Continue to voting
+            </Button>
+          </div>
+        </GlassPanel>
+      </div>
+    </TopFrame>
+  );
 }
 function VoicePartyStatusStrip({ onlineVoiceEnabled, onlineVoiceMuted, setOnlineVoiceMuted, canTalk }) {
   if (!onlineVoiceEnabled) return null;
