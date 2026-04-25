@@ -16,7 +16,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Switch } from './components/ui/switch';
 import { PASS_THE_PHONE_ROUND_TYPES, ROUND_TYPES } from './data/roundTypes';
 import { THEME_META } from './data/themes';
-import { getThemeAssets } from './data/themeAssets';
+import { getThemeAssets, ROUND_TYPE_CARD_FRONT_BY_ID } from './data/themeAssets';
 import { NAME_POOLS, randomNameFromTheme } from './data/names';
 import { COPY_BANK, createCopyPicker } from './data/gameTextContent';
 import {
@@ -513,6 +513,83 @@ function ThemeIconStrip({ src, alt }) {
     />
   );
 }
+function getRoundRuleText(roundTypeId = 'prompt') {
+  if (roundTypeId === 'opinion') {
+    return 'Truth or Twisted: everyone got the same scenario. Liars must ragebait and argue opposite to their natural take.';
+  }
+  if (roundTypeId === 'meme') {
+    return 'Meme Decoder: explain your meme format and vibe naturally. Liars got a different template and must fake the culture.';
+  }
+  if (roundTypeId === 'noise') {
+    return 'Sound Off: perform your clue as a sound only. No words, no letters, no humming lyrics.';
+  }
+  if (roundTypeId === 'offtopic') {
+    return 'Off Topic Defense: truth players share one scenario. Liars got an irrelevant prompt and must argue like it still fits.';
+  }
+  if (roundTypeId === 'chain') {
+    return 'Chain Reaction: everyone gets one clue card. Liars were fed decoy links, so listen for players describing the wrong chain.';
+  }
+  if (roundTypeId === 'grill') {
+    return "Grill 'Em: players ask by microphone and Blaze Byte talks back with AI answers. Liars already saw the hidden prompt and will try to steer the room.";
+  }
+  return 'Give one clue, blend in, and avoid revealing your exact prompt.';
+}
+function getInstructionHostLines(roundTypeId = 'prompt') {
+  if (roundTypeId === 'opinion') {
+    return [
+      'Everyone got the same scenario this round.',
+      'If you are the liar, argue the opposite side confidently and do not break character.',
+      'Drop one clue during discussion, then vote out whoever sounds fake.',
+    ];
+  }
+  if (roundTypeId === 'picture') {
+    return [
+      'You will see a private picture-based prompt card.',
+      'Describe just enough detail to sound real without revealing your exact prompt.',
+      'Watch for players forcing random image details that do not fit.',
+    ];
+  }
+  if (roundTypeId === 'meme') {
+    return [
+      'This is Meme Decoder. Sell your meme format and vibe naturally.',
+      'Liars get a different meme framing and must fake internet confidence.',
+      'During voting, target whoever explains too hard or sounds off-style.',
+    ];
+  }
+  if (roundTypeId === 'noise') {
+    return [
+      'Sound Off means clueing with sound only.',
+      'No words, no spelling, no lyric humming. Commit to your sound.',
+      'Find the player whose sound feels most disconnected from the round.',
+    ];
+  }
+  if (roundTypeId === 'offtopic') {
+    return [
+      'Most players share one scenario. Liars receive an off-topic one.',
+      'Defend your prompt like it belongs in the same conversation.',
+      'Vote for whoever feels persuasive but never fully relevant.',
+    ];
+  }
+  if (roundTypeId === 'chain') {
+    return [
+      'Chain Reaction gives everyone one clue card tied to a hidden topic.',
+      'Liars are fed broken links and must blend into the chain.',
+      'Listen for the player whose clue almost fits but never locks in.',
+    ];
+  }
+  if (roundTypeId === 'grill') {
+    return [
+      "Welcome to Grill 'Em. Ask sharp questions and listen to the AI answers.",
+      'Liars already know the hidden prompt and may try to steer the room.',
+      'After questioning, vote out whoever sounded too prepared.',
+    ];
+  }
+  return [
+    'Classic Hot Seat round. Keep your clue short, natural, and indirect.',
+    'Liars have a different prompt and must blend into normal clues.',
+    'After discussion, vote for the player who sounds most suspicious.',
+  ];
+}
 function resolveCategoryChoiceCardArt(category, themeName = 'Default') {
   const themeAssets = getThemeAssets(themeName);
   const defaultThemeAssets = getThemeAssets('Default');
@@ -536,37 +613,99 @@ function resolveCategoryChoiceCardArt(category, themeName = 'Default') {
 function HostIntroScreen({ round, stingerLine, onContinue, theme }) {
   const mascot = MASCOT_BY_ROUND_TYPE[round.roundTypeId] || MASCOT_BY_ROUND_TYPE.prompt;
   const themeAssets = getThemeAssets(round.roundTypeId === 'grill' ? 'GrillEm' : theme);
+  const defaultThemeAssets = getThemeAssets('Default');
+  const useAdultCardArt = Boolean(round.isAdultPrompt);
+  const defaultTypeCardFront = ROUND_TYPE_CARD_FRONT_BY_ID[round.roundTypeId] || null;
+  const exampleCardSrc = useAdultCardArt
+    ? (themeAssets.adultPromptCardFront || defaultThemeAssets.adultPromptCardFront)
+    : (defaultTypeCardFront || themeAssets.promptCardFront || defaultThemeAssets.promptCardFront);
+  const normalExamplePrompt = round.commonPrompt || 'Example normal prompt';
+  const liarExamplePrompt = round.imposterPrompt || 'Example liar prompt';
+  const speechSentences = [
+    `${round.roundTypeName} round selected.`,
+    getRoundRuleText(round.roundTypeId),
+    stingerLine || `${mascot.name} is in the building. Let the chaos begin.`,
+    'Get ready. Cards are about to flip after the countdown.',
+  ].filter(Boolean);
+  const [speechIndex, setSpeechIndex] = useState(0);
+  const canContinue = speechIndex >= speechSentences.length - 1;
   const introLine = round.roundTypeId === 'grill'
     ? `${mascot.name} is live. Mic up and question the AI.`
     : `${mascot.name} is in the building. Let the chaos begin.`;
+  useEffect(() => {
+    setSpeechIndex(0);
+  }, [round.id, round.roundNumber, round.roundTypeId]);
+  useEffect(() => {
+    if (speechIndex >= speechSentences.length - 1) return undefined;
+    const timer = setTimeout(() => {
+      setSpeechIndex((current) => Math.min(current + 1, speechSentences.length - 1));
+    }, 2500);
+    return () => clearTimeout(timer);
+  }, [speechIndex, speechSentences.length]);
   return (
     <TopFrame theme={theme}>
       <div className="mx-auto max-w-3xl space-y-6">
-        <GlassPanel className="rounded-[2.5rem] p-8 border-cyan-400/20 bg-black/25 text-center overflow-hidden relative">
-          <motion.div
-            initial={{ opacity: 0, y: 20, scale: 0.95 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            transition={{ duration: 0.45, ease: 'easeOut' }}
-            className="space-y-5"
-          >
-            <div className="text-xs uppercase tracking-[0.35em] text-white/50">Host enters</div>
+        <GlassPanel className="relative overflow-hidden rounded-[2.5rem] border-cyan-400/20 bg-black/25 p-8 text-center">
+          <div className="text-xs uppercase tracking-[0.35em] text-white/50">Host enters</div>
+          <h2 className="mt-3 text-4xl font-black text-yellow-300">{mascot.name}</h2>
+          <p className="mt-2 font-semibold text-cyan-200">{introLine}</p>
+          <div className="relative mt-5 h-[250px] w-full">
+            <div className="absolute inset-0 flex items-start justify-center gap-3">
+              <div className="relative w-[44%] max-w-[10rem]">
+                <div className="absolute -top-2 left-1/2 z-20 -translate-x-1/2 rounded-full border border-white/35 bg-black/35 px-3 py-1 text-[0.65rem] uppercase tracking-[0.18em] text-cyan-100">
+                  Normal
+                </div>
+                <div className="relative aspect-[2/3] overflow-hidden rounded-[1.2rem] border border-white/25 shadow-lg">
+                  {exampleCardSrc && <img src={exampleCardSrc} alt="" aria-hidden="true" className="absolute inset-0 h-full w-full object-contain" />}
+                  <div className="absolute inset-0 bg-black/25" />
+                  <div className="absolute bottom-3 left-3 right-3 text-xs font-black leading-tight text-white [text-shadow:0_2px_8px_rgba(0,0,0,0.8)]">
+                    {normalExamplePrompt}
+                  </div>
+                </div>
+              </div>
+              <div className="relative w-[44%] max-w-[10rem]">
+                <div className="absolute -top-2 left-1/2 z-20 -translate-x-1/2 rounded-full border border-red-200/60 bg-black/35 px-3 py-1 text-[0.65rem] uppercase tracking-[0.18em] text-red-100">
+                  Liar
+                </div>
+                <div className="relative aspect-[2/3] overflow-hidden rounded-[1.2rem] border border-white/25 shadow-lg">
+                  {exampleCardSrc && <img src={exampleCardSrc} alt="" aria-hidden="true" className="absolute inset-0 h-full w-full object-contain" />}
+                  <div className="absolute inset-0 bg-red-900/30" />
+                  <div className="absolute bottom-3 left-3 right-3 text-xs font-black leading-tight text-yellow-200 [text-shadow:0_2px_8px_rgba(0,0,0,0.8)]">
+                    {liarExamplePrompt}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div className="relative mx-auto mt-2 w-full max-w-2xl min-h-[180px]">
+            <ThemeArt
+              src={themeAssets.characterCard}
+              alt={`${theme} presenter`}
+              className="pointer-events-none absolute bottom-0 left-0 w-28 sm:w-36 rounded-2xl border border-white/15 bg-black/20"
+            />
             <motion.div
-              animate={{ scale: [1, 1.06, 1], rotate: [0, -2, 2, 0] }}
-              transition={{ duration: 1.2, repeat: Infinity, repeatDelay: 0.8 }}
-              className="text-7xl"
+              key={`${round.id || round.roundNumber}-${speechIndex}`}
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.28, ease: 'easeOut' }}
+              className="ml-[5rem] sm:ml-[8.5rem] rounded-[1.4rem] border border-cyan-300/25 bg-black/45 p-4 text-white"
             >
-              {mascot.face}
+              <div className="text-[0.65rem] uppercase tracking-[0.2em] text-cyan-100">{mascot.name} says</div>
+              <p className="mt-2 text-sm sm:text-base text-white/95">{speechSentences[speechIndex]}</p>
             </motion.div>
-            <h2 className="text-5xl font-black text-yellow-300">{mascot.name}</h2>
-            <p className="text-cyan-200 font-semibold">{introLine}</p>
-            <ThemeArt src={themeAssets.characterCard} alt={`${theme} presenter`} className="mx-auto w-full max-w-[260px] rounded-2xl border border-white/15 bg-black/30 p-2" />
-            <ThemeIconStrip src={themeAssets.iconSheet} alt={`${theme} icon strip`} />
-            {round.roundTypeId === 'grill' && <p className="text-yellow-200 font-semibold">Each player gets {round.grillData?.questionsPerPlayer || 1} questions this round.</p>}
-            {stingerLine && <p className="text-white/85 italic">"{stingerLine}"</p>}
-            <div className="text-white/70">{round.roundTypeName} • {round.categoryEmoji} {round.categoryLabel}</div>
-          </motion.div>
-          <Button className="rounded-[1.5rem] h-14 px-8 mt-8 bg-yellow-300 text-zinc-950 border-2 border-white" onClick={onContinue}>
-            Start reveal
+            {round.roundTypeId === 'grill' && (
+              <p className="mt-3 text-xs font-semibold text-yellow-200">
+                Each player gets {round.grillData?.questionsPerPlayer || 1} questions this round.
+              </p>
+            )}
+            <div className="mt-3 text-xs text-white/70">{round.roundTypeName} • {round.categoryEmoji} {round.categoryLabel}</div>
+          </div>
+          <Button
+            className="mt-7 h-14 rounded-[1.5rem] border-2 border-white bg-yellow-300 px-8 text-zinc-950"
+            onClick={onContinue}
+            disabled={!canContinue}
+          >
+            {canContinue ? 'Deal cards' : 'Host is explaining...'}
           </Button>
         </GlassPanel>
       </div>
@@ -1039,6 +1178,14 @@ function RevealScreen({ players, currentRevealIndex, round, totalRounds, onNext,
     }, 700);
     return () => clearTimeout(timer);
   }, [isCountingDown, countdownValue]);
+  useEffect(() => {
+    if (cardFace !== 'back' || isCountingDown || countdownValue !== null) return undefined;
+    const timer = setTimeout(() => {
+      setCountdownValue(3);
+      setIsCountingDown(true);
+    }, 900);
+    return () => clearTimeout(timer);
+  }, [cardFace, isCountingDown, countdownValue]);
 
   useEffect(() => {
     if (cardFace !== 'front') {
@@ -1089,12 +1236,6 @@ function RevealScreen({ players, currentRevealIndex, round, totalRounds, onNext,
     setPromptFontSize((current) => (current === nextSize ? current : nextSize));
   }, [prompt, mediaSrc, cardFace, isImposter]);
 
-  function startRevealCountdown() {
-    if (isCountingDown || cardFace === 'front') return;
-    setCountdownValue(3);
-    setIsCountingDown(true);
-  }
-
   return (
     <TopFrame theme={theme}>
       <div className="mx-auto max-w-3xl space-y-6">
@@ -1121,40 +1262,38 @@ function RevealScreen({ players, currentRevealIndex, round, totalRounds, onNext,
             >
               <div className="absolute inset-0 overflow-hidden rounded-[1.7rem] border-2 border-white/25 [backface-visibility:hidden]">
                 {cardBackSrc && <img src={cardBackSrc} alt="Prompt card back" className="absolute inset-0 h-full w-full object-contain bg-black/30" />}
-                <div className="absolute inset-0 bg-black/55" />
-                <div className="relative z-10 flex h-full flex-col p-6 text-white">
+                <div className="absolute inset-0 bg-black/20" />
+                <div className="relative z-10 flex h-full flex-col items-center p-6 text-center text-white [text-shadow:0_2px_8px_rgba(0,0,0,0.85)]">
                   <RoundTypeLogo
                     src={roundTypeLogoSrc}
                     alt={`${round.roundTypeName} logo`}
-                    className="mx-auto h-16 w-auto rounded-md border border-white/20 bg-black/25 px-2 py-1"
+                    className="mx-auto h-16 w-auto"
                   />
-                  <div className="text-xs uppercase tracking-[0.3em] text-cyan-200">{round.roundTypeName}</div>
+                  <div className="text-xs uppercase tracking-[0.3em] text-cyan-200/95">{round.roundTypeName}</div>
                   <div className="mt-2 text-sm font-semibold text-white/90">Round {round.roundNumber}</div>
-                  <div className="mt-5 rounded-2xl border border-white/25 bg-black/35 p-4 text-sm text-white/90">
+                  <div className="mt-5 text-sm text-white/95">
                     {instructionLine}
-                    <div className="mt-2 text-white/70">{round.roundTypeTagline}</div>
                   </div>
-                  <div className="mt-auto">
-                    <button
-                      type="button"
-                      onClick={startRevealCountdown}
-                      disabled={isCountingDown}
-                      className="w-full rounded-xl border border-yellow-200/60 bg-yellow-300/20 py-3 text-xl font-black tracking-[0.2em] text-yellow-100 disabled:opacity-60"
-                    >
-                      REVEAL
-                    </button>
+                  <div className="mt-2 text-xs text-white/90">{round.roundTypeTagline}</div>
+                  <div className="mt-auto pb-4 text-center">
+                    <div className="text-3xl font-black uppercase tracking-[0.18em] text-yellow-200">Get Ready</div>
+                    <div className="mt-2 text-xs uppercase tracking-[0.2em] text-cyan-100/95">
+                      {isCountingDown && typeof countdownValue === 'number' && countdownValue > 0
+                        ? `Flipping in ${countdownValue}`
+                        : 'Card flip incoming'}
+                    </div>
                   </div>
                 </div>
                 {isCountingDown && typeof countdownValue === 'number' && countdownValue > 0 && (
-                  <div className="absolute inset-0 z-20 grid place-items-center bg-black/75">
-                    <div className="text-8xl font-black text-yellow-300">{countdownValue}</div>
+                  <div className="absolute inset-0 z-20 grid place-items-center">
+                    <div className="text-8xl font-black text-yellow-300 [text-shadow:0_4px_18px_rgba(0,0,0,0.95)]">{countdownValue}</div>
                   </div>
                 )}
               </div>
 
               <div className={`absolute inset-0 overflow-hidden rounded-[1.7rem] border-2 [backface-visibility:hidden] [transform:rotateY(180deg)] ${isImposter ? 'border-red-400/60' : 'border-cyan-300/60'}`}>
                 {cardFrontSrc && <img src={cardFrontSrc} alt="Prompt card front" className="absolute inset-0 h-full w-full object-contain bg-black/30" />}
-                <div className={`absolute inset-0 ${isImposter ? 'bg-red-950/65' : 'bg-slate-950/65'}`} />
+                <div className={`absolute inset-0 ${isImposter ? 'bg-red-900/22' : 'bg-black/15'}`} />
                 {isImposter && (
                   <>
                     <img src={FLAME_SRC} alt="" aria-hidden="true" className="pointer-events-none absolute -top-4 -left-2 h-12 w-12 opacity-90 animate-pulse" />
@@ -1162,23 +1301,23 @@ function RevealScreen({ players, currentRevealIndex, round, totalRounds, onNext,
                     <img src={FLAME_SRC} alt="" aria-hidden="true" className="pointer-events-none absolute bottom-2 -right-3 h-12 w-12 opacity-80 animate-pulse" />
                   </>
                 )}
-                <div className="relative z-10 flex h-full flex-col p-6 text-white">
+                <div className="relative z-10 flex h-full flex-col p-6 text-center text-white [text-shadow:0_2px_8px_rgba(0,0,0,0.85)]">
                   <div className="text-xs uppercase tracking-[0.3em] text-white/75">
                     {round.roundTypeName} • {round.categoryEmoji} {round.categoryLabel}
                   </div>
                   <RoundTypeLogo
                     src={roundTypeLogoSrc}
                     alt={`${round.roundTypeName} logo`}
-                    className="mt-3 h-14 w-auto rounded-md border border-white/20 bg-black/25 px-2 py-1"
+                    className="mt-3 h-14 w-auto mx-auto"
                   />
-                  <div className={`mt-3 inline-flex rounded-full border px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] ${isImposter ? 'border-red-200/40 bg-red-600/20 text-red-100' : 'border-cyan-300/30 bg-cyan-500/10 text-cyan-200'}`}>
+                  <div className={`mt-3 text-xs font-semibold uppercase tracking-[0.25em] ${isImposter ? 'text-red-100' : 'text-cyan-200'}`}>
                     {isImposter ? 'IMPOSTER CARD' : round.hint}
                   </div>
                   {round.mediaPreviewLabel && (
-                    <div className="mt-3 rounded-2xl border border-white/20 bg-black/30 p-3 text-sm text-white/80">{round.mediaPreviewLabel}</div>
+                    <div className="mt-3 text-sm text-white/85">{round.mediaPreviewLabel}</div>
                   )}
                   {mediaSrc && (
-                    <img src={mediaSrc} alt={`${round.hint} visual clue`} className="mt-3 w-full rounded-2xl border border-white/15 bg-black/20" />
+                    <img src={mediaSrc} alt={`${round.hint} visual clue`} className="mt-3 w-full rounded-2xl" />
                   )}
                   <div ref={promptFitContainerRef} className="mt-4 max-h-[11.5rem] overflow-hidden">
                     <div
@@ -1205,11 +1344,7 @@ function RevealScreen({ players, currentRevealIndex, round, totalRounds, onNext,
                   {round.mode === 'chaos' && round.bannedWords.length > 0 && (
                     <div className="mt-4">
                       <div className="text-xs uppercase tracking-[0.2em] text-red-300">Banned Words</div>
-                      <div className="mt-2 flex flex-wrap gap-2">
-                        {round.bannedWords.map((word) => (
-                          <span key={word} className="px-3 py-1 rounded-full bg-red-500/20 border border-red-400/30 text-red-200 text-xs">{word}</span>
-                        ))}
-                      </div>
+                      <div className="mt-1 text-xs text-red-200">{round.bannedWords.join(' • ')}</div>
                     </div>
                   )}
                 </div>
@@ -1358,19 +1493,7 @@ function VoicePartyStatusStrip({ onlineVoiceEnabled, onlineVoiceMuted, setOnline
 }
 
 function DiscussionScreen({ players, round, totalRounds, onContinue, line, theme, onlineVoiceEnabled = false, onlineVoiceMuted = false, setOnlineVoiceMuted = () => {}, canTalk = true, submitPending = false }) {
-  const roundRule = round.roundTypeId === 'opinion'
-    ? "Truth or Twisted: everyone got the same scenario. Liars must ragebait and argue opposite to their natural take."
-    : (round.roundTypeId === 'meme'
-      ? 'Meme Decoder: explain your meme format and vibe naturally. Liars got a different template and must fake the culture.'
-      : (round.roundTypeId === 'noise'
-        ? 'Sound Off: perform your clue as a sound only. No words, no letters, no humming lyrics.'
-        : (round.roundTypeId === 'offtopic'
-          ? 'Off Topic Defense: truth players share one scenario. Liars got an irrelevant prompt and must argue like it still fits.'
-          : (round.roundTypeId === 'chain'
-            ? 'Chain Reaction: everyone gets one clue card. Liars were fed decoy links, so listen for players describing the wrong chain.'
-            : (round.roundTypeId === 'grill'
-              ? "Grill 'Em: players ask by microphone and Blaze Byte talks back with AI answers. Liars already saw the hidden prompt and will try to steer the room."
-              : 'Give one clue, blend in, and avoid revealing your exact prompt.')))));
+  const roundRule = getRoundRuleText(round.roundTypeId);
   return <TopFrame theme={theme}><div className="mx-auto max-w-3xl space-y-6"><ScoreStrip players={players} roundNumber={round.roundNumber} totalRounds={totalRounds} /><VoicePartyStatusStrip onlineVoiceEnabled={onlineVoiceEnabled} onlineVoiceMuted={onlineVoiceMuted} setOnlineVoiceMuted={setOnlineVoiceMuted} canTalk={canTalk} /><GlassPanel className="rounded-[2.5rem] p-8 text-center border-emerald-400/20 bg-black/25"><Badge className="rounded-full bg-emerald-500/20 border border-emerald-400/20 text-emerald-100 px-4 py-1.5">All prompts delivered</Badge><div className="text-xs uppercase tracking-[0.3em] text-white/50 mt-4">{round.roundTypeName}</div><h2 className="text-4xl font-black mt-3 text-yellow-300">{round.roundTypeTagline}</h2><p className="text-white/75 mt-3 max-w-2xl mx-auto">{line}</p><p className="text-cyan-200 mt-3 max-w-2xl mx-auto font-semibold">{roundRule}</p><Button className="rounded-[1.5rem] h-16 px-8 mt-8 bg-yellow-300 text-zinc-950 border-2 border-white" onClick={onContinue} disabled={submitPending}><SkipForward className="mr-2 h-5 w-5 inline" />{submitPending ? 'Syncing...' : 'Finish discussion and vote'}</Button></GlassPanel></div></TopFrame>;
 }
 function VotingScreen({ players, round, totalRounds, votesByPlayerId, setVotesByPlayerId, onSubmitVotes, line, theme, onlineMode = false, onlinePlayerId = '', onlineVoiceEnabled = false, onlineVoiceMuted = false, setOnlineVoiceMuted = () => {}, canTalk = true, submitPending = false }) {
