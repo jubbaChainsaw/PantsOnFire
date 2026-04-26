@@ -19,6 +19,22 @@ function ensureMinSize(pool, min = 50, fallback = []) {
   return merged;
 }
 
+const MURDER_MYSTERY_NAMES = ensureMinSize(buildPool(
+  ['Inspector', 'Detective', 'Lady', 'Lord', 'Colonel', 'Miss', 'Mister', 'Professor', 'Madam', 'Sir', 'Constable', 'Agent'],
+  ['Marple', 'Holmes', 'Mortimer', 'Blackwood', 'Fletcher', 'Ashcroft', 'Hawthorne', 'Wren', 'Sinclair', 'Pembroke', 'Ravenshaw', 'Whitlock'],
+  60
+));
+const COPS_AND_ROBBERS_NAMES = ensureMinSize(buildPool(
+  ['Officer', 'Detective', 'Sheriff', 'Marshal', 'Deputy', 'Sergeant', 'Captain', 'Chief', 'Rookie', 'Inspector', 'Tracker', 'Agent'],
+  ['Mason', 'Brooks', 'Carter', 'Ramirez', 'Lewis', 'Walker', 'Grant', 'Foster', 'Hayes', 'Bennett', 'Parker', 'Cole'],
+  60
+));
+const GHOSTS_AND_GHOULS_NAMES = ensureMinSize(buildPool(
+  ['Ghoul', 'Wraith', 'Phantom', 'Banshee', 'Specter', 'Grave', 'Crypt', 'Night', 'Raven', 'Hex', 'Shade', 'Howler'],
+  ['Whisper', 'Mire', 'Hollow', 'Grim', 'Thorn', 'Morrow', 'Wailer', 'Dusk', 'Nocturne', 'Veil', 'Ash', 'Fang'],
+  60
+));
+
 export const NAME_POOLS = {
   Default: buildPool(
     ['Captain', 'Disco', 'Nacho', 'Professor', 'Laser', 'Captain', 'Bubble', 'Waffle', 'Turbo', 'Banana', 'Goblin', 'Doctor', 'Pixel', 'Funky', 'Mystic', 'Sassy', 'Ninja', 'Chaotic', 'Cosmic', 'Mega'],
@@ -26,7 +42,10 @@ export const NAME_POOLS = {
     100
   ),
   Pirates: ensureMinSize(buildPool(['Captain', 'Salty', 'Barnacle', 'Pegleg', 'Scurvy', 'Mad', 'Cutlass', 'Blacktooth', 'Rumbeard', 'One-Eyed', 'Kraken', 'Buccaneer'], ['Jack', 'Babs', 'Bill', 'Pam', 'Barry', 'Mollie', 'Ron', 'Cathy', 'Gus', 'Ollie', 'Nibs', 'Bones'], 60)),
-  Victorian: ensureMinSize(buildPool(['Lord', 'Lady', 'Sir', 'Miss', 'Baron', 'Duchess', 'Professor', 'Mrs', 'General', 'Archibald', 'Countess', 'Reverend'], ['Butterworth', 'Widdershins', 'Crump', 'Puddleton', 'Thistlewick', 'Marigold', 'Chumley', 'Dithersby', 'Puffleton', 'Snoot', 'Bumbershoot', 'Fitzwhistle'], 60)),
+  Victorian: MURDER_MYSTERY_NAMES,
+  'Murder Mystery': MURDER_MYSTERY_NAMES,
+  'Cops and Robbers': COPS_AND_ROBBERS_NAMES,
+  'Ghosts and Ghouls': GHOSTS_AND_GHOULS_NAMES,
   Spies: ensureMinSize(buildPool(['Agent', 'Cipher', 'Shadow', 'Nova', 'Whisper', 'Ghost', 'Zero', 'Velvet', 'Ivy', 'Echo', 'Phantom', 'Onyx'], ['Black', 'Knox', 'Vane', 'Wire', 'Pike', 'Mercer', 'Code', 'Reed', 'Static', 'Malone', 'Switch', 'Locke'], 60)),
   Cowboys: ensureMinSize(buildPool(['Dusty', 'Calamity', 'Buckshot', 'Cactus', 'Trigger', 'Whiskey', 'Rattlesnake', 'Prairie', 'Lasso', 'Sheriff', 'Bandit', 'Tumbleweed'], ['Dan', 'Jo', 'Benny', 'Kate', 'Tess', 'Wade', 'Ray', 'June', 'Lou', 'Skip', 'Mae', 'Bo'], 60)),
   Gangsters: ensureMinSize(buildPool(['Tony', 'Big', 'Vinny', 'Sal', 'Lucky', 'Frankie', 'Mickey', 'Johnny', 'Donny', 'Rico', 'Joey', 'Benny'], ['Two-Times', 'the Knife', 'the Rat', 'No Nose', 'Brass', 'the Mouth', 'Tight Lips', 'the Ghost', 'Bags', 'the Fixer', 'Long Coat', 'Quick Hands'], 60)),

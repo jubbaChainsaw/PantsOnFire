@@ -42,12 +42,6 @@ export const CelebritiesPromptRoundData = {
       "hint": "YouTube Star",
       "main": "MrBeast",
       "imposter": "KSI"
-    },
-    {
-      "hint": "Messy Reality TV (18+)",
-      "main": "Love triangle scandal",
-      "imposter": "Cheating scandal",
-      "adultOnly": true
     }
   ]
 };

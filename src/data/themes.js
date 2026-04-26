@@ -1,7 +1,9 @@
 export const THEME_META = {
   Default: { gradient: 'from-fuchsia-500 via-cyan-500 to-yellow-300', accent: 'text-cyan-200', musicPack: 'default_arcade', sfxPack: 'default_arcade', tone: 'chaotic-neon', hostStyle: 'gameshow' },
   Pirates: { gradient: 'from-amber-500 via-orange-500 to-red-500', accent: 'text-amber-200', musicPack: 'pirate_shanty', sfxPack: 'pirate_wood', tone: 'swashbuckling-chaos', hostStyle: 'captain' },
-  Victorian: { gradient: 'from-stone-400 via-amber-300 to-rose-400', accent: 'text-amber-100', musicPack: 'victorian_parlour', sfxPack: 'victorian_clock', tone: 'dramatic-polished', hostStyle: 'master-of-ceremonies' },
+  'Murder Mystery': { gradient: 'from-stone-400 via-amber-300 to-rose-400', accent: 'text-amber-100', musicPack: 'victorian_parlour', sfxPack: 'victorian_clock', tone: 'dramatic-polished', hostStyle: 'master-of-ceremonies' },
+  'Cops and Robbers': { gradient: 'from-red-900 via-zinc-800 to-yellow-700', accent: 'text-red-200', musicPack: 'gangster_jazz', sfxPack: 'finger_snap', tone: 'streetwise-dramatic', hostStyle: 'boss' },
+  'Ghosts and Ghouls': { gradient: 'from-lime-700 via-emerald-800 to-slate-900', accent: 'text-lime-200', musicPack: 'monster_creep', sfxPack: 'monster_growl', tone: 'spooky-campy', hostStyle: 'crypt-host' },
   Spies: { gradient: 'from-zinc-700 via-slate-700 to-emerald-500', accent: 'text-emerald-200', musicPack: 'spy_funk', sfxPack: 'spy_click', tone: 'slick-suspicious', hostStyle: 'handler' },
   Cowboys: { gradient: 'from-yellow-700 via-orange-600 to-red-700', accent: 'text-orange-200', musicPack: 'western', sfxPack: 'spurs', tone: 'dusty-rowdy', hostStyle: 'sheriff' },
   Gangsters: { gradient: 'from-red-900 via-zinc-800 to-yellow-700', accent: 'text-red-200', musicPack: 'gangster_jazz', sfxPack: 'finger_snap', tone: 'streetwise-dramatic', hostStyle: 'boss' },
