@@ -485,3 +485,43 @@ export function pickThemeHostRoundStinger(themeName = 'Default', roundTypeId = '
     roundTypeFlavor: ROUND_TYPE_FLAVOR_BY_ID[roundTypeId] || 'suspicious gameplay',
   });
 }
+
+const THEME_GRILL_GUEST_HOST_NAMES = {
+  Default: 'Blaze Byte',
+  Pirates: 'Captain Charbroil',
+  'Murder Mystery': 'Butler Burnham',
+  'Cops and Robbers': 'Chief Scorch',
+  Spies: 'Agent Cinder',
+  Cowboys: 'Tex Tinder',
+  Gangsters: 'Vinny Volcano',
+  'Ghosts and Ghouls': 'Phantom Flame',
+  Monsters: 'Inferno Fang',
+  'Rock Stars': 'Ember Amp',
+  'Flying Squad': 'Afterburn Ace',
+  'Drag Queens': 'Dame Flambe',
+  Superheroes: 'Captain Kindling',
+  Aliens: 'Solar Flarex',
+  Medical: 'Dr. Sizzle',
+  Royalty: 'Duke Flambard',
+  Wrestlers: 'The Pyroplex',
+  Cyberpunk: 'Neon Ember',
+  Vikings: 'Torchbeard',
+  Ninjas: 'Ashinobi',
+  'Detectives Noir': 'Lt. Smoulder',
+  'Mythology (Gods & Legends)': 'Hephaesizzle',
+  'Post-Apocalypse': 'Rustfire Rex',
+  Carnival: 'Ringmaster Raze',
+  'Wizards & Witches': 'Pyromancer Puck',
+  'Time Travelers': 'Chrono Coal',
+  Gladiators: 'Ignis Max',
+};
+
+export function pickThemeGuestHostName(themeName = 'Default', roundTypeId = 'prompt') {
+  if (roundTypeId !== 'grill') return '';
+  const canonical = toCanonicalThemeName(themeName);
+  return (
+    THEME_GRILL_GUEST_HOST_NAMES[themeName]
+    || THEME_GRILL_GUEST_HOST_NAMES[canonical]
+    || THEME_GRILL_GUEST_HOST_NAMES.Default
+  );
+}
