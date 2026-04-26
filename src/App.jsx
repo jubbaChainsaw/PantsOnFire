@@ -430,10 +430,10 @@ function ZanyAccentBurst({ className = '' }) {
 function LightningBolt({ className = '' }) {
   return <div className={`pointer-events-none absolute ${className}`}><div className="text-yellow-300 drop-shadow-[0_0_12px_rgba(255,220,0,0.95)] text-4xl font-black">⚡</div></div>;
 }
-function TopFrame({ children, theme = 'Default' }) {
+function TopFrame({ children, theme = 'Default', allowScroll = true }) {
   const gradient = THEME_META[theme]?.gradient || THEME_META.Default.gradient;
   return (
-    <div className="min-h-screen min-h-[100dvh] overflow-x-hidden overflow-y-auto text-white relative bg-[linear-gradient(135deg,#14043a_8%,#2d126f_45%,#1d0a51_100%)]">
+    <div className={`min-h-screen min-h-[100dvh] overflow-x-hidden ${allowScroll ? 'overflow-y-auto' : 'overflow-y-hidden'} text-white relative bg-[linear-gradient(135deg,#14043a_8%,#2d126f_45%,#1d0a51_100%)]`}>
       <div
         className="absolute inset-0 opacity-[0.75] bg-repeat"
         style={{
@@ -561,10 +561,10 @@ function getHostAssetGuidelines() {
   return 'Host PNG size: 900×1400 px (2:3 ratio), transparent background, keep key face/torso inside ~70% width and ~80% height safe zone. Provide 4 files per theme: host-idle.png + host-talk-1.png + host-talk-2.png + host-talk-3.png.';
 }
 const HOST_DIALOGUE_TIMINGS = {
-  gameIntroAdvanceMs: 3600,
-  roundIntroAdvanceMs: 3600,
-  liarRevealAdvanceMs: 2400,
-  liarRevealCompleteMs: 2600,
+  gameIntroAdvanceMs: 6000,
+  roundIntroAdvanceMs: 6000,
+  liarRevealAdvanceMs: 6000,
+  liarRevealCompleteMs: 6000,
 };
 function GameIntroScreen({ theme, onContinue, isOnlineMode = false, totalRounds = 1, playerCount = 0 }) {
   const greeting = (() => {
@@ -603,14 +603,14 @@ function GameIntroScreen({ theme, onContinue, isOnlineMode = false, totalRounds 
   }, [lineIndex, introLines.length]);
   const canContinue = lineIndex >= introLines.length - 1;
   return (
-    <TopFrame theme={theme}>
-      <div className="mx-auto max-w-5xl space-y-6">
-        <GlassPanel className="rounded-[2.5rem] border-cyan-400/20 bg-black/25 p-8">
+    <TopFrame theme={theme} allowScroll={false}>
+      <div className="mx-auto flex h-[calc(100dvh-2rem)] w-full max-w-5xl flex-col justify-center">
+        <GlassPanel className="rounded-[2.5rem] border-cyan-400/20 bg-black/25 p-6 sm:p-8">
           <div className="text-center">
             <div className="text-xs uppercase tracking-[0.35em] text-cyan-200/80">Game intro</div>
             <h2 className="mt-3 text-4xl font-black text-yellow-300">Host briefing</h2>
           </div>
-          <div className="relative mx-auto mt-6 w-full max-w-3xl min-h-[220px] sm:min-h-[280px]">
+          <div className="relative mx-auto mt-6 w-full max-w-3xl min-h-[240px] sm:min-h-[300px]">
             <ThemeArt
               src={animatedHostSrc}
               alt={`${theme} host Ian Poster`}
@@ -621,11 +621,11 @@ function GameIntroScreen({ theme, onContinue, isOnlineMode = false, totalRounds 
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.25, ease: 'easeOut' }}
-              className="ml-[5.5rem] sm:ml-[9.5rem] md:ml-[12rem] pt-2 text-white"
+              className="ml-[5.5rem] sm:ml-[9.5rem] md:ml-[12rem] h-[10.75rem] sm:h-[11.75rem] pt-2 text-white"
             >
-              <div className="relative mx-auto max-w-2xl rounded-[2rem] border-2 border-cyan-200/80 bg-[#1d2376] px-4 py-4 text-center shadow-[0_12px_24px_rgba(0,0,0,0.35)]">
+              <div className="relative mx-auto flex h-full max-w-2xl items-center justify-center rounded-[2rem] border-2 border-cyan-200/80 bg-[#1d2376] px-4 py-4 text-center shadow-[0_12px_24px_rgba(0,0,0,0.35)]">
                 <div className="absolute -left-3 top-[55%] h-6 w-6 -translate-y-1/2 rotate-45 border-b-2 border-l-2 border-cyan-200/80 bg-[#1d2376]" />
-                <p className="text-base text-white/95 sm:text-lg">{introLines[lineIndex]}</p>
+                <p className="text-base leading-snug text-white/95 sm:text-lg">{introLines[lineIndex]}</p>
               </div>
             </motion.div>
           </div>
@@ -824,13 +824,13 @@ function HostIntroScreen({ round, stingerLine, onContinue, theme }) {
     return () => clearTimeout(timer);
   }, [speechIndex, speechSentences.length]);
   return (
-    <TopFrame theme={theme}>
-      <div className="mx-auto max-w-3xl space-y-6">
-        <GlassPanel className="relative overflow-hidden rounded-[2.5rem] border-cyan-400/20 bg-black/25 p-8 text-center">
+    <TopFrame theme={theme} allowScroll={false}>
+      <div className="mx-auto flex h-[calc(100dvh-2rem)] w-full max-w-3xl flex-col justify-center">
+        <GlassPanel className="relative overflow-hidden rounded-[2.5rem] border-cyan-400/20 bg-black/25 p-6 sm:p-8 text-center">
           <div className="text-xs uppercase tracking-[0.35em] text-white/50">Host enters</div>
-          <h2 className="mt-3 text-4xl font-black text-yellow-300">{mascot.name}</h2>
-          <p className="mt-2 font-semibold text-cyan-200">{introLine}</p>
-          <div className="relative mt-5 h-[250px] w-full">
+          <h2 className="mt-2 text-3xl sm:text-4xl font-black text-yellow-300">{mascot.name}</h2>
+          <p className="mt-1.5 text-sm sm:text-base font-semibold text-cyan-200">{introLine}</p>
+          <div className="relative mt-4 h-[220px] sm:h-[250px] w-full">
             <div className="absolute inset-0 flex items-start justify-center gap-3">
               <div className="relative w-[44%] max-w-[10rem]">
                 <div className="absolute -top-2 left-1/2 z-20 -translate-x-1/2 rounded-full border border-white/35 bg-black/35 px-3 py-1 text-[0.65rem] uppercase tracking-[0.18em] text-cyan-100">
@@ -858,7 +858,7 @@ function HostIntroScreen({ round, stingerLine, onContinue, theme }) {
               </div>
             </div>
           </div>
-          <div className="relative mx-auto mt-2 w-full max-w-2xl min-h-[180px]">
+          <div className="relative mx-auto mt-2 w-full max-w-2xl h-[11.5rem] sm:h-[12.5rem]">
             <ThemeArt
               src={animatedHostSrc}
               alt={`${theme} presenter`}
@@ -869,11 +869,11 @@ function HostIntroScreen({ round, stingerLine, onContinue, theme }) {
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.28, ease: 'easeOut' }}
-              className="ml-[5.25rem] sm:ml-[8.75rem] p-1 text-white"
+              className="ml-[5.25rem] sm:ml-[8.75rem] h-full p-1 text-white"
             >
-              <div className="relative mx-auto max-w-xl rounded-[2rem] border-2 border-cyan-200/80 bg-[#1d2376] px-4 py-4 shadow-[0_12px_24px_rgba(0,0,0,0.35)]">
+              <div className="relative mx-auto flex h-full max-w-xl items-center justify-center rounded-[2rem] border-2 border-cyan-200/80 bg-[#1d2376] px-4 py-4 shadow-[0_12px_24px_rgba(0,0,0,0.35)]">
                 <div className="absolute -left-3 top-[58%] h-6 w-6 -translate-y-1/2 rotate-45 border-b-2 border-l-2 border-cyan-200/80 bg-[#1d2376]" />
-                <p className="text-base sm:text-lg text-white/95">{speechSentences[speechIndex]}</p>
+                <p className="text-base leading-snug sm:text-lg text-white/95">{speechSentences[speechIndex]}</p>
               </div>
             </motion.div>
             {round.roundTypeId === 'grill' && (
@@ -897,7 +897,7 @@ function HostIntroScreen({ round, stingerLine, onContinue, theme }) {
 }
 function RulesSplashScreen({ mode, onContinue, theme, isOnlineMode = false }) {
   return (
-    <TopFrame theme={theme}>
+    <TopFrame theme={theme} allowScroll={false}>
       <div className="mx-auto max-w-3xl space-y-6">
         <GlassPanel className="rounded-[2.5rem] p-8 border-cyan-400/20 bg-black/25 text-center">
           <div className="text-xs uppercase tracking-[0.3em] text-white/50">How to Play</div>
@@ -1446,10 +1446,9 @@ function RevealScreen({ players, currentRevealIndex, round, totalRounds, onNext,
   }
 
   return (
-    <TopFrame theme={theme}>
-      <div className="mx-auto max-w-3xl space-y-6">
-        <ScoreStrip players={players} roundNumber={round.roundNumber} totalRounds={totalRounds} />
-        <GlassPanel className="rounded-[2.5rem] p-8 text-center border-white/15 bg-black/25">
+    <TopFrame theme={theme} allowScroll={false}>
+      <div className="mx-auto flex h-[calc(100dvh-2rem)] w-full max-w-3xl flex-col">
+        <GlassPanel className="flex-1 rounded-[2.5rem] border-white/15 bg-black/25 p-5 sm:p-6 text-center overflow-hidden">
           <Badge className="rounded-full bg-white/10 border border-white/10 px-4 py-1.5 text-white">
             Secret reveal {currentRevealIndex + 1} / {players.length}
           </Badge>
@@ -2081,7 +2080,51 @@ function LiarRevealScreen({ players, round, onComplete, theme }) {
     }, HOST_DIALOGUE_TIMINGS.liarRevealCompleteMs);
     return () => clearTimeout(timer);
   }, [announcementIndex, announcementLines.length, onComplete]);
-  return <TopFrame theme={theme}><div className="mx-auto max-w-4xl space-y-6"><GlassPanel className="rounded-[2.5rem] p-8 md:p-10 border-red-400/25 bg-black/35 text-center overflow-hidden relative"><div className="absolute inset-0 animate-pulse bg-[radial-gradient(circle,_rgba(255,0,80,0.16)_0%,_rgba(255,0,80,0.08)_35%,_transparent_70%)]" /><div className="relative z-10 space-y-6"><div className="text-xs uppercase tracking-[0.35em] text-white/50">Final accusation</div><div className="grid gap-4 md:grid-cols-[0.9fr_1.1fr] items-end"><ThemeArt src={animatedHostSrc} alt={`${theme} presenter`} className="mx-auto w-full max-w-[330px] rounded-2xl border border-white/15 bg-black/20" /><motion.div initial={{ scale: 0.98, opacity: 0.8 }} animate={{ scale: [1, 1.03, 1], opacity: [0.85, 1, 0.85] }} transition={{ duration: 1.05, repeat: 1, ease: 'easeInOut' }} className="space-y-4 rounded-[1.5rem] border border-red-300/25 bg-black/45 p-5"><div className="text-4xl md:text-6xl font-black text-red-300">{announcementLines[0]}</div><div className="inline-flex flex-wrap justify-center gap-3">{liars.map((player) => <span key={player.id} className="rounded-full border border-red-300/30 bg-red-500/15 px-5 py-2 text-lg md:text-2xl font-black text-yellow-200">🔥 {player.name}</span>)}</div><div className="text-sm text-white/75">{announcementLines[Math.min(announcementIndex, announcementLines.length - 1)]}</div></motion.div></div></div></GlassPanel></div></TopFrame>;
+  return (
+    <TopFrame theme={theme}>
+      <div className="mx-auto flex h-[calc(100dvh-2rem)] w-full max-w-4xl flex-col justify-center">
+        <GlassPanel className="relative overflow-hidden rounded-[2.5rem] border-red-400/25 bg-black/35 p-6 sm:p-8 text-center">
+          <div className="absolute inset-0 animate-pulse bg-[radial-gradient(circle,_rgba(255,0,80,0.16)_0%,_rgba(255,0,80,0.08)_35%,_transparent_70%)]" />
+          <div className="relative z-10">
+            <div className="text-xs uppercase tracking-[0.35em] text-white/50">Final accusation</div>
+            <div className="relative mx-auto mt-4 w-full max-w-3xl min-h-[230px] sm:min-h-[280px]">
+              <ThemeArt
+                src={animatedHostSrc}
+                alt={`${theme} presenter`}
+                className="pointer-events-none absolute bottom-0 left-0 w-32 sm:w-44"
+              />
+              <motion.div
+                key={`liar-announce-${announcementIndex}`}
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3, ease: 'easeOut' }}
+                className="ml-[6rem] sm:ml-[10.5rem] h-[11rem] sm:h-[12rem] p-1 text-white"
+              >
+                <div className="relative mx-auto flex h-full max-w-2xl flex-col items-center justify-center rounded-[2rem] border-2 border-red-300/70 bg-[#2a0f2e] px-4 py-4 shadow-[0_12px_24px_rgba(0,0,0,0.42)]">
+                  <div className="absolute -left-3 top-[58%] h-6 w-6 -translate-y-1/2 rotate-45 border-b-2 border-l-2 border-red-300/70 bg-[#2a0f2e]" />
+                  <p className="text-lg sm:text-2xl font-black leading-snug text-red-200">
+                    {announcementLines[Math.min(announcementIndex, announcementLines.length - 1)]}
+                  </p>
+                  {announcementIndex >= 1 && liars.length > 0 && (
+                    <div className="mt-3 inline-flex flex-wrap justify-center gap-2">
+                      {liars.map((player) => (
+                        <span
+                          key={player.id}
+                          className="rounded-full border border-red-300/35 bg-red-500/15 px-4 py-1.5 text-sm sm:text-base font-black text-yellow-200"
+                        >
+                          🔥 {player.name}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </motion.div>
+            </div>
+          </div>
+        </GlassPanel>
+      </div>
+    </TopFrame>
+  );
 }
 function ResultsScreen({ players, round, totalRounds, tally, roundGains, roundBreakdown, imposterCaught, onNextRound, onEndGame, resultLine, theme }) {
   const ranked = [...players].sort((a, b) => b.score - a.score);
