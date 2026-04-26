@@ -19,6 +19,7 @@ import { THEME_META } from './data/themes';
 import { getThemeAssets, ROUND_TYPE_CARD_FRONT_BY_ID } from './data/themeAssets';
 import { NAME_POOLS, randomNameFromTheme } from './data/names';
 import { toCanonicalThemeName } from './data/themeAliases';
+import { getThemePersonas, pickRandomThemePersona } from './data/themePersonas';
 import {
   getThemeHostPersona,
   buildThemeIntroDialogue,
@@ -107,6 +108,39 @@ function normalizePlayerColor(color, fallbackIndex = 0) {
 }
 function getPlayerColor(player, fallbackIndex = 0) {
   return normalizePlayerColor(player?.color, fallbackIndex);
+}
+function clearPlayerPersonaData(player = {}) {
+  const { personaId, personaBio, personaImageSrc, ...rest } = player;
+  return rest;
+}
+function buildRandomizedPlayerIdentity(themeName, excludeNames = []) {
+  const persona = pickRandomThemePersona(themeName, excludeNames);
+  if (persona) {
+    return {
+      name: persona.name,
+      personaId: persona.id,
+      personaBio: persona.bio,
+      personaImageSrc: persona.imageSrc,
+    };
+  }
+  return {
+    name: randomNameFromTheme(themeName, excludeNames),
+    personaId: '',
+    personaBio: '',
+    personaImageSrc: '',
+  };
+}
+function normalizePlayerRecord(player = {}) {
+  const next = {
+    id: player.id,
+    name: String(player?.name || '').trim() || 'Player',
+    score: Math.max(0, Number(player?.score || 0)),
+  };
+  if (typeof player?.color === 'string') next.color = player.color;
+  if (typeof player?.personaId === 'string') next.personaId = player.personaId;
+  if (typeof player?.personaBio === 'string') next.personaBio = player.personaBio;
+  if (typeof player?.personaImageSrc === 'string') next.personaImageSrc = player.personaImageSrc;
+  return next;
 }
 function createPlayers(count = 3) {
   return Array.from({ length: count }, (_, i) => ({
@@ -1326,6 +1360,34 @@ function SetupScreen(props) {
   const canStart = players.length >= requiredMinPlayers && players.every((p) => p.name.trim().length > 0);
   const maxLiars = Math.max(1, Math.floor(players.length / 2));
   const [categoryDialogOpen, setCategoryDialogOpen] = useState(false);
+  const hasThemePersonas = useMemo(() => getThemePersonas(nameTheme).length > 0, [nameTheme]);
+  const assignRandomPlayerIdentity = useCallback((targetPlayerId) => {
+    setPlayers((currentPlayers) => {
+      const excludeNames = currentPlayers
+        .filter((x) => x.id !== targetPlayerId)
+        .map((x) => x.name);
+      return currentPlayers.map((item) => {
+        if (item.id !== targetPlayerId) return item;
+        return {
+          ...item,
+          ...buildRandomizedPlayerIdentity(nameTheme, excludeNames),
+        };
+      });
+    });
+  }, [nameTheme, setPlayers]);
+  const randomizeAllPlayersForTheme = useCallback(() => {
+    setPlayers((currentPlayers) => {
+      const nextPlayers = [];
+      for (const currentPlayer of currentPlayers) {
+        const excludeNames = nextPlayers.map((player) => player.name);
+        nextPlayers.push({
+          ...currentPlayer,
+          ...buildRandomizedPlayerIdentity(nameTheme, excludeNames),
+        });
+      }
+      return nextPlayers;
+    });
+  }, [nameTheme, setPlayers]);
   const visibleThemeOptions = themeOptions.length
     ? themeOptions
     : Object.keys(NAME_POOLS).map((themeName) => ({
@@ -1367,7 +1429,9 @@ function SetupScreen(props) {
                 onChange={(event) => {
                   const nextThemeName = event.target.value;
                   const nextTheme = visibleThemeOptions.find((option) => option.name === nextThemeName);
-                  if (nextTheme && nextTheme.isUnlocked) setNameTheme(nextThemeName);
+                  if (!(nextTheme && nextTheme.isUnlocked)) return;
+                  setNameTheme(nextThemeName);
+                  setPlayers((currentPlayers) => currentPlayers.map((player) => clearPlayerPersonaData(player)));
                 }}
                 className="mt-3 w-full rounded-2xl border border-white/15 bg-white/5 px-3 py-3 text-white"
               >
@@ -1377,6 +1441,16 @@ function SetupScreen(props) {
                   </option>
                 ))}
               </select>
+              {hasThemePersonas && (
+                <Button
+                  type="button"
+                  className="mt-3 rounded-2xl border border-cyan-400/30 bg-cyan-500/15 px-4 text-cyan-100"
+                  onClick={randomizeAllPlayersForTheme}
+                >
+                  <Dice6 className="mr-2 h-4 w-4" />
+                  Randomize all personas for this theme
+                </Button>
+              )}
             </div>
             <div className="mb-4 flex items-center justify-center gap-2">
               <Users className="h-5 w-5 text-cyan-300" />
@@ -1390,11 +1464,7 @@ function SetupScreen(props) {
                     <div className="flex gap-2">
                       <Button
                         className="rounded-xl border border-cyan-400/20 bg-cyan-500/10 p-2 text-cyan-100"
-                        onClick={() => setPlayers((currentPlayers) => currentPlayers.map((item) => (
-                          item.id === player.id
-                            ? { ...item, name: randomNameFromTheme(nameTheme, currentPlayers.filter((x) => x.id !== player.id).map((x) => x.name)) }
-                            : item
-                        )))}
+                        onClick={() => assignRandomPlayerIdentity(player.id)}
                       >
                         <Dice6 className="h-4 w-4" />
                       </Button>
@@ -1410,10 +1480,32 @@ function SetupScreen(props) {
                   <Input
                     value={player.name}
                     onChange={(event) => setPlayers((currentPlayers) => currentPlayers.map((item) => (
-                      item.id === player.id ? { ...item, name: event.target.value } : item
+                      item.id === player.id
+                        ? {
+                          ...clearPlayerPersonaData(item),
+                          name: event.target.value,
+                        }
+                        : item
                     )))}
                     className="rounded-2xl border border-white/10 bg-white/5 text-white"
                   />
+                  {(player.personaImageSrc || player.personaBio) && (
+                    <div className="mt-3 rounded-2xl border border-cyan-300/20 bg-cyan-500/5 p-3">
+                      <div className="flex items-start gap-3">
+                        {player.personaImageSrc && (
+                          <ThemeArt
+                            src={player.personaImageSrc}
+                            alt={`${player.name} persona portrait`}
+                            className="h-16 w-16 shrink-0 rounded-xl border border-white/20 bg-black/30 object-cover"
+                          />
+                        )}
+                        <div>
+                          <div className="text-xs uppercase tracking-[0.18em] text-cyan-200/80">Persona profile</div>
+                          {player.personaBio && <p className="mt-1 text-xs leading-relaxed text-white/75">{player.personaBio}</p>}
+                        </div>
+                      </div>
+                    </div>
+                  )}
                   <div className="mt-3 flex items-center justify-between gap-3">
                     <div className="text-xs uppercase tracking-[0.16em] text-white/55">Player color</div>
                     <div className="flex flex-wrap items-center justify-end gap-2">

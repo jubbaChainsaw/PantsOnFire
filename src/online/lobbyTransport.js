@@ -194,11 +194,18 @@ export async function submitRoundVotesOnServer(
 }
 
 export function toGamePlayers(onlinePlayers = []) {
-  return onlinePlayers.map((player) => ({
-    id: player.id,
-    name: player.name,
-    score: Math.max(0, Number(player?.score || 0)),
-  }));
+  return onlinePlayers.map((player) => {
+    const nextPlayer = {
+      id: player.id,
+      name: player.name,
+      score: Math.max(0, Number(player?.score || 0)),
+    };
+    if (player && typeof player.color === 'string') nextPlayer.color = player.color;
+    if (player && typeof player.personaId === 'string') nextPlayer.personaId = player.personaId;
+    if (player && typeof player.personaBio === 'string') nextPlayer.personaBio = player.personaBio;
+    if (player && typeof player.personaImageSrc === 'string') nextPlayer.personaImageSrc = player.personaImageSrc;
+    return nextPlayer;
+  });
 }
 
 export function createLobbyTransport({ lobbyCode, onSnapshot = () => {}, onEvent = () => {} }) {
