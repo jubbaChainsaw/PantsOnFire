@@ -994,10 +994,10 @@ function RulesSplashScreen({ mode, onContinue, theme, isOnlineMode = false }) {
     </TopFrame>
   );
 }
-function HomeScreen({ onNavigate, homeLine, onlineLobbyLine, adultMode }) {
+function HomeScreen({ onNavigate, homeLine, adultMode }) {
   return (
-    <TopFrame theme="Default">
-      <div className="relative min-h-[calc(100vh-2rem)] px-2 flex items-center justify-center overflow-hidden">
+    <TopFrame theme="Default" allowScroll={false}>
+      <div className="relative h-[calc(100dvh-2rem)] px-2 flex items-center justify-center overflow-hidden">
         <div className="pointer-events-none absolute inset-x-0 bottom-0 h-52">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_100%,rgba(255,94,0,0.45)_0%,rgba(255,94,0,0.2)_35%,rgba(0,0,0,0)_70%)] animate-pulse" />
           <img src={FLAME_SRC} alt="" aria-hidden="true" className="absolute -bottom-6 left-[6%] h-24 w-24 opacity-80 [animation:home-flame-float_2.4s_ease-in-out_infinite] drop-shadow-[0_0_16px_rgba(255,98,0,0.98)]" />
@@ -1006,23 +1006,69 @@ function HomeScreen({ onNavigate, homeLine, onlineLobbyLine, adultMode }) {
           <img src={FLAME_SRC} alt="" aria-hidden="true" className="absolute -bottom-9 left-[66%] h-28 w-28 opacity-85 [animation:home-flame-float_2.95s_ease-in-out_0.1s_infinite] drop-shadow-[0_0_16px_rgba(255,98,0,0.98)]" />
           <img src={FLAME_SRC} alt="" aria-hidden="true" className="absolute -bottom-6 right-[8%] h-24 w-24 opacity-80 [animation:home-flame-float_2.5s_ease-in-out_0.25s_infinite] drop-shadow-[0_0_16px_rgba(255,98,0,0.98)]" />
         </div>
-        <div className="relative z-10 w-full max-w-xl text-center space-y-4">
-          {adultMode && <GlassPanel className="rounded-[1.4rem] p-3 border-red-400/30 bg-red-500/15"><div className="text-xs uppercase tracking-[0.25em] text-red-200 font-black">18+ Active</div><div className="text-sm text-red-100/90 mt-1">Adult prompt pack is enabled for this session.</div></GlassPanel>}
-          <div className="relative px-2 pt-1">
+        <div className="relative z-10 w-full max-w-xl h-full max-h-[calc(100dvh-2.5rem)] text-center flex flex-col justify-between gap-2 py-1">
+          <div className="relative px-2 pt-0.5">
             <img src={FLAME_SRC} alt="" aria-hidden="true" className="pointer-events-none absolute top-3 left-5 h-12 w-12 opacity-85 [animation:home-flame-float_2.1s_ease-in-out_infinite] drop-shadow-[0_0_12px_rgba(255,98,0,0.95)]" />
             <img src={FLAME_SRC} alt="" aria-hidden="true" className="pointer-events-none absolute top-8 right-6 h-12 w-12 opacity-85 [animation:home-flame-float_2.45s_ease-in-out_0.2s_infinite] drop-shadow-[0_0_12px_rgba(255,98,0,0.95)]" />
-            <img src={LOGO_SRC} alt="Pants On Fire logo" className="mx-auto w-full max-w-lg object-contain drop-shadow-[0_10px_30px_rgba(0,0,0,0.7)]" />
-            <p className="mt-2 text-white/80 text-sm md:text-base">{homeLine}</p>
+            <img src={LOGO_SRC} alt="Pants On Fire logo" className="mx-auto w-full max-w-xl object-contain drop-shadow-[0_10px_30px_rgba(0,0,0,0.7)]" />
+            {adultMode && (
+              <div className="mt-1 text-[0.7rem] sm:text-xs uppercase tracking-[0.2em] text-red-100">
+                18+ CONTENT ENABLED
+              </div>
+            )}
+            <p className="mt-1 text-white/80 text-xs sm:text-sm">{homeLine}</p>
           </div>
-          <div className="grid gap-3">
-            <Button className="h-16 rounded-[1.8rem] text-xl sm:text-2xl bg-yellow-300 text-zinc-950 hover:bg-yellow-200 border-2 border-white" onClick={() => onNavigate('setup')}><Play className="mr-2 h-5 w-5" />Setup Game</Button>
-            <Button className="h-16 rounded-[1.8rem] text-xl sm:text-2xl bg-cyan-500/20 text-white hover:bg-cyan-500/30 border border-cyan-300/40" onClick={() => onNavigate('online-setup')}><Wifi className="mr-2 h-5 w-5" />Create Online Lobby</Button>
-            <Button className="h-16 rounded-[1.8rem] text-xl sm:text-2xl bg-indigo-500/15 text-white hover:bg-indigo-500/30 border border-indigo-300/30" onClick={() => onNavigate('online-join')}><KeyRound className="mr-2 h-5 w-5" />Join Online Lobby</Button>
-            <Button className="h-16 rounded-[1.8rem] text-xl sm:text-2xl bg-fuchsia-500/15 text-white hover:bg-fuchsia-500/25 border border-fuchsia-400/30" onClick={() => onNavigate('store')}><ShoppingBag className="mr-2 h-5 w-5" />Store</Button>
-            <Button className="h-16 rounded-[1.8rem] text-xl sm:text-2xl bg-cyan-500/15 text-white hover:bg-cyan-500/25 border border-cyan-400/30" onClick={() => onNavigate('settings')}><Settings className="mr-2 h-5 w-5" />Settings</Button>
+          <div className="grid gap-2">
+            <Button className="h-14 rounded-[1.8rem] text-lg sm:text-xl bg-yellow-300 text-zinc-950 hover:bg-yellow-200 border-2 border-white" onClick={() => onNavigate('setup')}><Play className="mr-2 h-5 w-5" />Setup Game</Button>
+            <Button className="h-14 rounded-[1.8rem] text-lg sm:text-xl bg-cyan-500/20 text-white hover:bg-cyan-500/30 border border-cyan-300/40" onClick={() => onNavigate('online-setup')}><Wifi className="mr-2 h-5 w-5" />Create Online Lobby</Button>
+            <Button className="h-14 rounded-[1.8rem] text-lg sm:text-xl bg-indigo-500/15 text-white hover:bg-indigo-500/30 border border-indigo-300/30" onClick={() => onNavigate('online-join')}><KeyRound className="mr-2 h-5 w-5" />Join Online Lobby</Button>
+            <Button className="h-14 rounded-[1.8rem] text-lg sm:text-xl bg-fuchsia-500/15 text-white hover:bg-fuchsia-500/25 border border-fuchsia-400/30" onClick={() => onNavigate('store')}><ShoppingBag className="mr-2 h-5 w-5" />Store</Button>
+            <Button className="h-14 rounded-[1.8rem] text-lg sm:text-xl bg-cyan-500/15 text-white hover:bg-cyan-500/25 border border-cyan-400/30" onClick={() => onNavigate('settings')}><Settings className="mr-2 h-5 w-5" />Settings</Button>
           </div>
-          <GlassPanel className="rounded-[2rem] p-5 border-white/10 bg-black/25 text-center"><div className="text-xs uppercase tracking-[0.3em] text-white/45">Online lobbies beta</div><div className="mt-2 text-lg font-black text-cyan-300">Per-device prompts + party voice phases</div><div className="mt-2 text-sm text-white/70">{onlineLobbyLine}</div></GlassPanel>
+          <button
+            type="button"
+            className="mx-auto text-xs sm:text-sm text-cyan-200 underline underline-offset-4 hover:text-cyan-100 transition-colors"
+            onClick={() => onNavigate('development-progress')}
+          >
+            See Development Progress
+          </button>
         </div>
+      </div>
+    </TopFrame>
+  );
+}
+function DevelopmentProgressScreen({ onBack, onlineLobbyLine, theme = 'Default' }) {
+  return (
+    <TopFrame theme={theme} allowScroll={false}>
+      <div className="mx-auto flex h-[calc(100dvh-2rem)] w-full max-w-4xl flex-col justify-center">
+        <GlassPanel className="rounded-[2.2rem] border-cyan-400/20 bg-black/30 p-6 sm:p-8 text-center">
+          <div className="text-xs uppercase tracking-[0.32em] text-cyan-200/80">Development Progress</div>
+          <h2 className="mt-3 text-3xl sm:text-4xl font-black text-yellow-300">Current Beta Snapshot</h2>
+          <p className="mt-3 text-sm sm:text-base text-white/80">
+            We are in active beta testing with rapid UI and gameplay iteration.
+          </p>
+          <div className="mt-5 grid gap-3 text-left">
+            <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+              <div className="text-xs uppercase tracking-[0.2em] text-cyan-200">Currently testing</div>
+              <div className="mt-2 text-sm text-white/85">
+                Host-guided round flow, anti-cheat logic in Grill 'Em, and full-screen mobile UI fitting without scroll.
+              </div>
+            </div>
+            <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+              <div className="text-xs uppercase tracking-[0.2em] text-cyan-200">Online beta focus</div>
+              <div className="mt-2 text-sm text-white/85">{onlineLobbyLine}</div>
+            </div>
+            <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+              <div className="text-xs uppercase tracking-[0.2em] text-cyan-200">Coming soon</div>
+              <div className="mt-2 text-sm text-white/85">
+                More polished multiplayer progression, expanded themed assets, deeper round balancing, and improved QA coverage.
+              </div>
+            </div>
+          </div>
+          <Button className="mt-6 rounded-[1.5rem] h-12 px-7 bg-yellow-300 text-zinc-950 border-2 border-white" onClick={onBack}>
+            Back to home
+          </Button>
+        </GlassPanel>
       </div>
     </TopFrame>
   );
@@ -1151,40 +1197,27 @@ function SetupScreen(props) {
   } = props;
   const canStart = players.length >= requiredMinPlayers && players.every((p) => p.name.trim().length > 0);
   const maxLiars = Math.max(1, Math.floor(players.length / 2));
-  const themeAssets = getThemeAssets(nameTheme);
   const [categoryDialogOpen, setCategoryDialogOpen] = useState(false);
   const themeNames = Object.keys(NAME_POOLS);
   return (
     <TopFrame theme={nameTheme}>
       <div className="mx-auto max-w-7xl space-y-5">
-        {adultMode && (
-          <GlassPanel className="rounded-[1.4rem] border-red-400/30 bg-red-500/15 p-3">
-            <div className="text-xs font-black uppercase tracking-[0.25em] text-red-200">18+ Active</div>
-            <div className="mt-1 text-sm text-red-100/90">Adult-only prompts and scenarios are enabled.</div>
-          </GlassPanel>
-        )}
-        <img
-          src={LOGO_SRC}
-          alt="Pants On Fire logo"
-          className="mx-auto w-full max-w-xl object-contain drop-shadow-[0_10px_28px_rgba(0,0,0,0.65)]"
-        />
-        <ThemeIconStrip src={themeAssets.iconSheet} alt={`${nameTheme} icon strip`} />
         <div className="flex items-center justify-between gap-4">
           <Button className="rounded-[1.4rem] border border-white/10 bg-white/5 px-4 py-2 text-white" onClick={onBack}>Back</Button>
           <div className="text-center">
-            <div className="text-xs uppercase tracking-[0.35em] text-cyan-200/80">Create Lobby</div>
+            <div className="text-xs uppercase tracking-[0.35em] text-cyan-200/80">Create Pass the Phone Game</div>
             <div className="mt-1 text-sm text-white/80">{setupLine}</div>
           </div>
           <div className="w-[72px]" />
         </div>
-        <div className="grid gap-4 md:grid-cols-2">
-          <GlassPanel className="rounded-[2rem] border-cyan-400/20 bg-black/25 p-5">
+        <div className="grid grid-cols-2 gap-3">
+          <GlassPanel className="aspect-square rounded-[1.6rem] border-cyan-400/20 bg-black/25 p-4 flex flex-col items-center justify-center">
             <div className="text-xs uppercase tracking-[0.3em] text-white/50">Players</div>
-            <div className="mt-2 text-5xl font-black text-yellow-300">{players.length}</div>
+            <div className="mt-2 text-4xl sm:text-5xl font-black text-yellow-300">{players.length}</div>
           </GlassPanel>
-          <GlassPanel className="rounded-[2rem] border-orange-400/20 bg-black/25 p-5">
+          <GlassPanel className="aspect-square rounded-[1.6rem] border-orange-400/20 bg-black/25 p-4 flex flex-col items-center justify-center">
             <div className="text-xs uppercase tracking-[0.3em] text-white/50">Liars</div>
-            <div className="mt-2 text-5xl font-black text-yellow-300">{liarCount}</div>
+            <div className="mt-2 text-4xl sm:text-5xl font-black text-yellow-300">{liarCount}</div>
           </GlassPanel>
         </div>
         <div className="grid gap-5 lg:grid-cols-[1.1fr_0.9fr]">
@@ -1514,21 +1547,21 @@ function RevealScreen({ players, currentRevealIndex, round, totalRounds, onNext,
   return (
     <TopFrame theme={theme} allowScroll={false}>
       <div className="mx-auto flex h-[calc(100dvh-2rem)] w-full max-w-3xl flex-col">
-        <GlassPanel className="flex-1 rounded-[2.5rem] border-white/15 bg-black/25 p-5 sm:p-6 text-center overflow-hidden">
+        <GlassPanel className="flex-1 rounded-[2.5rem] border-white/15 bg-black/25 px-4 py-4 sm:px-5 sm:py-5 text-center overflow-hidden">
           <Badge className="rounded-full bg-white/10 border border-white/10 px-4 py-1.5 text-white">
             Secret reveal {currentRevealIndex + 1} / {players.length}
           </Badge>
-          <h2 className="text-4xl font-black mt-4 text-yellow-300">
+          <h2 className="text-2xl sm:text-3xl font-black mt-2.5 text-yellow-300 leading-tight">
             {onlineMode ? `Reveal for ${localPlayerName || player.name}` : `Pass the phone to ${player.name}`}
           </h2>
-          <p className="text-cyan-200/90 mt-3 font-medium">{passLine}</p>
+          <p className="text-cyan-200/90 mt-1.5 text-sm sm:text-base font-medium leading-tight">{passLine}</p>
           {onlineMode && onlinePrivatePromptError && (
             <div className="mt-4 rounded-2xl border border-red-300/30 bg-red-500/10 p-3 text-sm text-red-100">
               {onlinePrivatePromptError}
             </div>
           )}
 
-          <div className="mt-6 mx-auto w-full max-w-[22rem] sm:max-w-sm [perspective:1200px]">
+          <div className="mt-3 mx-auto w-full max-w-[16.75rem] sm:max-w-[18.5rem] [perspective:1200px]">
             <motion.div
               animate={{ rotateY: cardFace === 'front' ? 180 : 0 }}
               transition={{ duration: 0.75, ease: 'easeInOut' }}
@@ -1647,7 +1680,7 @@ function RevealScreen({ players, currentRevealIndex, round, totalRounds, onNext,
 
           {cardFace === 'back' && !readyToReveal && !isCountingDown && (
             <Button
-              className="rounded-[1.5rem] h-14 px-8 mt-6 bg-yellow-300 text-zinc-950 border-2 border-white"
+              className="rounded-[1.5rem] h-12 sm:h-13 px-6 mt-3 bg-yellow-300 text-zinc-950 border-2 border-white"
               onClick={startRevealCountdown}
             >
               I&apos;m Ready
@@ -1655,7 +1688,7 @@ function RevealScreen({ players, currentRevealIndex, round, totalRounds, onNext,
           )}
 
           {cardFace === 'front' && (
-            <Button className="rounded-[1.5rem] h-16 px-8 mt-7 bg-white/10 border border-white/10 text-white" onClick={onNext}>
+            <Button className="rounded-[1.5rem] h-12 sm:h-13 px-6 mt-3 bg-white/10 border border-white/10 text-white" onClick={onNext}>
               <EyeOff className="mr-2 h-5 w-5 inline" />
               {onlineMode
                 ? 'Hide my prompt'
@@ -3329,7 +3362,14 @@ export default function App() {
   }
 
   return <>
-    {screen === 'home' && <HomeScreen onNavigate={(to) => to === 'setup' ? (refreshCopy(['setup']), setScreen('setup')) : setScreen(to)} homeLine={copyState.home} onlineLobbyLine={copyState.onlineLobby} adultMode={adultMode} />}
+    {screen === 'home' && <HomeScreen onNavigate={(to) => to === 'setup' ? (refreshCopy(['setup']), setScreen('setup')) : setScreen(to)} homeLine={copyState.home} adultMode={adultMode} />}
+    {screen === 'development-progress' && (
+      <DevelopmentProgressScreen
+        onBack={() => setScreen('home')}
+        onlineLobbyLine={copyState.onlineLobby}
+        theme={nameTheme}
+      />
+    )}
     {screen === 'setup' && <SetupScreen players={players} setPlayers={setPlayers} liarCount={liarCount} setLiarCount={setLiarCount} nameTheme={nameTheme} setNameTheme={setNameTheme} mode={mode} setMode={setMode} winCondition={winCondition} setWinCondition={setWinCondition} pointsToWin={pointsToWin} setPointsToWin={setPointsToWin} roundsPerPlayer={roundsPerPlayer} setRoundsPerPlayer={setRoundsPerPlayer} grillSettings={grillSettings} setGrillSettings={setGrillSettings} adultMode={adultMode} enabledCategories={enabledCategories} onToggleCategory={(id) => setEnabledCategories((cur) => ({ ...cur, [id]: !cur[id] }))} premiumEnabled={premiumEnabled} setPremiumEnabled={setPremiumEnabled} categoryCount={activeCategories.length} onOpenAdmin={() => setAdminOpen(true)} onStart={startGame} onBack={() => setScreen('home')} setupLine={copyState.setup} />}
     {screen === 'online-setup' && (
       <OnlineLobbySetupScreen
