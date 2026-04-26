@@ -84,8 +84,32 @@ function shuffle(arr) {
   return clone;
 }
 function pickRandom(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+const PLAYER_COLOR_OPTIONS = [
+  '#ef4444',
+  '#f97316',
+  '#eab308',
+  '#22c55e',
+  '#14b8a6',
+  '#3b82f6',
+  '#8b5cf6',
+  '#ec4899',
+];
+function normalizePlayerColor(color, fallbackIndex = 0) {
+  const fallback = PLAYER_COLOR_OPTIONS[fallbackIndex % PLAYER_COLOR_OPTIONS.length];
+  if (!color) return fallback;
+  const normalized = String(color).trim().toLowerCase();
+  return PLAYER_COLOR_OPTIONS.find((option) => option.toLowerCase() === normalized) || fallback;
+}
+function getPlayerColor(player, fallbackIndex = 0) {
+  return normalizePlayerColor(player?.color, fallbackIndex);
+}
 function createPlayers(count = 3) {
-  return Array.from({ length: count }, (_, i) => ({ id: `p-${Date.now()}-${i + 1}`, name: `Player ${i + 1}`, score: 0 }));
+  return Array.from({ length: count }, (_, i) => ({
+    id: `p-${Date.now()}-${i + 1}`,
+    name: `Player ${i + 1}`,
+    score: 0,
+    color: normalizePlayerColor('', i),
+  }));
 }
 function getStored(key, fallback) {
   if (typeof window === 'undefined') return fallback;
@@ -533,13 +557,57 @@ function TopFrame({ children, theme = 'Default', allowScroll = true }) {
     </div>
   );
 }
+function BoxerShortScoreIcon({ color, score, name, isLeader = false }) {
+  const initials = String(name || 'P')
+    .trim()
+    .split(/\s+/)
+    .map((chunk) => chunk.slice(0, 1))
+    .join('')
+    .slice(0, 2)
+    .toUpperCase();
+  return (
+    <div className="flex min-w-[2.8rem] items-center justify-center">
+      <div className={`relative h-11 w-11 ${isLeader ? 'drop-shadow-[0_0_10px_rgba(250,204,21,0.55)]' : ''}`}>
+        <svg viewBox="0 0 64 52" className="h-full w-full">
+          <path d="M8 6h48a4 4 0 0 1 4 4v28a6 6 0 0 1-6 6H38a2 2 0 0 0-2 2v2a2 2 0 0 1-2 2h-4a2 2 0 0 1-2-2v-2a2 2 0 0 0-2-2H10a6 6 0 0 1-6-6V10a4 4 0 0 1 4-4Z" fill={color} />
+          <rect x="8" y="11" width="48" height="6" rx="2" fill="rgba(255,255,255,0.55)" />
+          <rect x="12" y="36" width="16" height="11" rx="3" fill="rgba(20,4,58,0.88)" />
+          <rect x="36" y="36" width="16" height="11" rx="3" fill="rgba(20,4,58,0.88)" />
+          <rect x="26" y="34" width="12" height="14" rx="3" fill="rgba(20,4,58,0.88)" />
+        </svg>
+        <div className="absolute inset-0 flex items-center justify-center text-sm font-black text-white [text-shadow:0_2px_6px_rgba(0,0,0,0.55)]">
+          {score}
+        </div>
+        <div className="absolute bottom-[2px] left-1/2 -translate-x-1/2 text-[0.55rem] font-black uppercase tracking-[0.04em] text-white/90">
+          {initials || 'P'}
+        </div>
+        {isLeader && (
+          <div className="absolute -top-2 -right-1 text-xs" aria-hidden="true">👑</div>
+        )}
+      </div>
+    </div>
+  );
+}
 function ScoreStrip({ players, roundNumber, totalRounds }) {
   const sorted = [...players].sort((a, b) => b.score - a.score);
   return (
-    <GlassPanel className="rounded-[2rem] p-4 border-fuchsia-400/20 bg-black/25">
-      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-        <div><div className="text-xs uppercase tracking-[0.35em] text-cyan-200/80">Match progress</div><div className="text-lg font-black text-yellow-300">Round {roundNumber} of {totalRounds}</div></div>
-        <div className="flex flex-wrap gap-2">{sorted.map((player, index) => <Badge key={player.id} className="rounded-full bg-black/40 border border-fuchsia-400/30 px-3 py-1.5 text-white">{index === 0 ? '👑 ' : ''}{player.name}: {player.score}</Badge>)}</div>
+    <GlassPanel className="rounded-[1.6rem] border-fuchsia-400/20 bg-black/25 p-3">
+      <div className="flex items-center justify-between gap-3">
+        <div>
+          <div className="text-[0.62rem] uppercase tracking-[0.26em] text-cyan-200/80">Match progress</div>
+          <div className="text-base font-black text-yellow-300">Round {roundNumber} of {totalRounds}</div>
+        </div>
+        <div className="flex flex-wrap justify-end gap-2">
+          {sorted.map((player, index) => (
+            <BoxerShortScoreIcon
+              key={player.id}
+              color={getPlayerColor(player, index)}
+              score={Math.max(0, Number(player.score || 0))}
+              name={player.name}
+              isLeader={index === 0}
+            />
+          ))}
+        </div>
       </div>
     </GlassPanel>
   );
@@ -675,6 +743,9 @@ function GameIntroScreen({ theme, onContinue, isOnlineMode = false, totalRounds 
     return () => clearTimeout(timer);
   }, [lineIndex, introLines.length]);
   const canContinue = lineIndex >= introLines.length - 1;
+  function advanceIntroLine() {
+    setLineIndex((current) => Math.min(current + 1, introLines.length - 1));
+  }
   return (
     <TopFrame theme={theme} allowScroll={false}>
       <div className="mx-auto flex h-[calc(100dvh-2rem)] w-full max-w-5xl flex-col justify-center">
@@ -706,9 +777,9 @@ function GameIntroScreen({ theme, onContinue, isOnlineMode = false, totalRounds 
             {!canContinue && (
               <Button
                 className="h-14 rounded-[1.5rem] border border-white/25 bg-white/10 px-6 text-white"
-                onClick={onContinue}
+                onClick={advanceIntroLine}
               >
-                Skip intro
+                Next line
               </Button>
             )}
             <Button
@@ -904,6 +975,9 @@ function HostIntroScreen({ round, stingerLine, onContinue, theme }) {
     }, HOST_DIALOGUE_TIMINGS.roundIntroAdvanceMs);
     return () => clearTimeout(timer);
   }, [speechIndex, speechSentences.length]);
+  function advanceSpeechLine() {
+    setSpeechIndex((current) => Math.min(current + 1, speechSentences.length - 1));
+  }
   return (
     <TopFrame theme={theme} allowScroll={false}>
       <div className="mx-auto flex h-[calc(100dvh-2rem)] w-full max-w-3xl flex-col justify-center">
@@ -968,9 +1042,9 @@ function HostIntroScreen({ round, stingerLine, onContinue, theme }) {
             {!canContinue && (
               <Button
                 className="h-14 rounded-[1.5rem] border border-white/25 bg-white/10 px-6 text-white"
-                onClick={onContinue}
+                onClick={advanceSpeechLine}
               >
-                Skip host dialogue
+                Next line
               </Button>
             )}
             <Button
@@ -1312,6 +1386,26 @@ function SetupScreen(props) {
                     )))}
                     className="rounded-2xl border border-white/10 bg-white/5 text-white"
                   />
+                  <div className="mt-3 flex items-center justify-between gap-3">
+                    <div className="text-xs uppercase tracking-[0.16em] text-white/55">Player color</div>
+                    <div className="flex flex-wrap items-center justify-end gap-2">
+                      {PLAYER_COLOR_OPTIONS.map((color) => {
+                        const selected = normalizePlayerColor(player.color, index) === color;
+                        return (
+                          <button
+                            key={`${player.id}-${color}`}
+                            type="button"
+                            className={`h-7 w-7 rounded-full border-2 transition-transform ${selected ? 'scale-110 border-white' : 'border-white/25'}`}
+                            style={{ backgroundColor: color }}
+                            onClick={() => setPlayers((currentPlayers) => currentPlayers.map((item, itemIndex) => (
+                              item.id === player.id ? { ...item, color: normalizePlayerColor(color, itemIndex) } : item
+                            )))}
+                            aria-label={`Set ${player.name || `Player ${index + 1}`} color`}
+                          />
+                        );
+                      })}
+                    </div>
+                  </div>
                 </div>
               ))}
             </div>
@@ -1321,7 +1415,12 @@ function SetupScreen(props) {
                 disabled={players.length >= MAX_PLAYERS}
                 onClick={() => setPlayers((currentPlayers) => [
                   ...currentPlayers,
-                  { id: `p-${Date.now()}-${currentPlayers.length + 1}`, name: `Player ${currentPlayers.length + 1}`, score: 0 },
+                  {
+                    id: `p-${Date.now()}-${currentPlayers.length + 1}`,
+                    name: `Player ${currentPlayers.length + 1}`,
+                    score: 0,
+                    color: normalizePlayerColor('', currentPlayers.length),
+                  },
                 ])}
               >
                 <PlusCircle className="mr-2 inline h-4 w-4" />
@@ -2389,6 +2488,13 @@ function LiarRevealScreen({ players, round, onComplete, theme }) {
     }, HOST_DIALOGUE_TIMINGS.liarRevealCompleteMs);
     return () => clearTimeout(timer);
   }, [announcementIndex, announcementLines.length, finishReveal]);
+  function advanceAnnouncementLine() {
+    if (announcementIndex >= announcementLines.length - 1) {
+      finishReveal();
+      return;
+    }
+    setAnnouncementIndex((current) => Math.min(current + 1, announcementLines.length - 1));
+  }
   return (
     <TopFrame theme={theme}>
       <div className="mx-auto flex h-[calc(100dvh-2rem)] w-full max-w-4xl flex-col justify-center">
@@ -2432,9 +2538,9 @@ function LiarRevealScreen({ players, round, onComplete, theme }) {
             <div className="mt-6 flex justify-center">
               <Button
                 className="h-14 rounded-[1.5rem] border border-white/30 bg-white/10 px-6 text-white"
-                onClick={finishReveal}
+                onClick={advanceAnnouncementLine}
               >
-                Skip reveal
+                {announcementIndex >= announcementLines.length - 1 ? 'Continue' : 'Next line'}
               </Button>
             </div>
           </div>
@@ -2492,56 +2598,57 @@ function ResultsScreen({ players, round, totalRounds, tally, roundGains, roundBr
   }
 
   return (
-    <TopFrame theme={theme}>
-      <div className="mx-auto max-w-5xl space-y-6">
-        <GlassPanel className="rounded-[2.5rem] border-white/15 bg-black/25 p-5 sm:p-8">
+    <TopFrame theme={theme} allowScroll={false}>
+      <div className="mx-auto flex h-[calc(100dvh-2rem)] w-full max-w-5xl flex-col">
+        <GlassPanel className="flex-1 rounded-[2.3rem] border-white/15 bg-black/25 p-4 sm:p-6">
           {resultsStage === 'summary' ? (
-            <>
+            <div className="flex h-full flex-col">
               <div className="text-center">
-                <h2 className="text-5xl leading-[0.9] sm:text-6xl font-black text-[#ff7d87] [text-shadow:0_4px_16px_rgba(0,0,0,0.45)]">
+                <h2 className="text-3xl leading-tight sm:text-4xl font-black text-[#ff7d87] [text-shadow:0_4px_16px_rgba(0,0,0,0.45)]">
                   🔥 WHO WAS THE LIAR? 🔥
                 </h2>
-                <div className={`mt-5 text-4xl sm:text-5xl font-black tracking-tight ${imposterCaught ? 'text-yellow-300' : 'text-fuchsia-400'}`}>
+                <div className={`mt-2 text-2xl sm:text-3xl font-black tracking-tight ${imposterCaught ? 'text-yellow-300' : 'text-fuchsia-400'}`}>
                   {imposterCaught ? 'THE LIAR WAS CAUGHT 😤' : 'THE LIAR ESCAPED 😈'}
                 </div>
-                <p className="mx-auto mt-4 max-w-3xl text-xl sm:text-2xl font-bold text-white/75">
+                <p className="mx-auto mt-2 max-w-3xl text-sm sm:text-base font-semibold text-white/75">
                   {resultLine}
                 </p>
               </div>
-
-              <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                {players.map((player) => {
+              <div className="mt-4 grid flex-1 auto-rows-fr gap-2 sm:grid-cols-2 lg:grid-cols-3">
+                {players.map((player, index) => {
                   const isLiar = (round.imposterIds || []).includes(player.id);
                   const breakdown = roundBreakdown?.[player.id] || { voteHit: 0, liarSurvived: 0, grillTeamBonus: 0, grillLiarSwing: 0 };
                   const roundGain = roundGains?.[player.id] || 0;
+                  const centeredOnSm = players.length % 2 === 1 && index === players.length - 1;
+                  const centeredOnLg = players.length % 3 === 1 && index === players.length - 1;
                   return (
                     <div
                       key={player.id}
-                      className={`relative rounded-[1.7rem] border p-4 text-center transition-all duration-300 ${
+                      className={`relative rounded-[1.2rem] border p-3 text-center transition-all duration-300 ${
                         isLiar
                           ? 'border-red-300/75 bg-gradient-to-b from-red-500/12 to-white/5 shadow-[0_0_22px_rgba(255,62,62,0.55)]'
                           : 'border-white/10 bg-white/5'
-                      }`}
+                      } ${centeredOnSm ? 'sm:col-span-2 sm:mx-auto sm:w-full sm:max-w-[22rem] lg:col-span-1 lg:max-w-none' : ''} ${centeredOnLg ? 'lg:col-start-2' : ''}`}
                     >
                       {isLiar && (
-                        <div className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full border border-red-200/70 bg-red-500 px-3 py-1 text-xs font-black uppercase tracking-[0.12em] text-white">
+                        <div className="absolute -top-2 left-1/2 -translate-x-1/2 rounded-full border border-red-200/70 bg-red-500 px-2.5 py-0.5 text-[0.6rem] font-black uppercase tracking-[0.1em] text-white">
                           🔥 The Liar
                         </div>
                       )}
-                      <div className={`text-4xl sm:text-5xl font-black leading-[1.05] ${isLiar ? 'text-[#ffc0ab]' : 'text-white'}`}>
+                      <div className={`text-xl sm:text-2xl font-black leading-tight ${isLiar ? 'text-[#ffc0ab]' : 'text-white'}`}>
                         {player.name}
                       </div>
-                      <div className="mt-3 text-[1.55rem] font-black uppercase leading-tight text-white/70">
+                      <div className="mt-1 text-sm font-black uppercase leading-tight text-white/70">
                         {promptByPlayerId[player.id] || '—'}
                       </div>
-                      <div className="mt-4 text-[2rem] font-black uppercase leading-none text-cyan-200">
+                      <div className="mt-2 text-lg font-black uppercase leading-none text-cyan-200">
                         {`${roundGain >= 0 ? '+' : ''}${roundGain} THIS ROUND`}
                       </div>
-                      <div className="mt-3 text-lg font-bold uppercase leading-tight text-white/60">
+                      <div className="mt-1 text-[0.65rem] font-bold uppercase leading-tight text-white/65">
                         {`VOTE HIT +${breakdown.voteHit} • LIAR SURVIVED +${breakdown.liarSurvived}`}
                       </div>
                       {round.roundTypeId === 'grill' && (
-                        <div className="mt-2 text-sm font-semibold uppercase leading-tight text-cyan-200/90">
+                        <div className="mt-1 text-[0.6rem] font-semibold uppercase leading-tight text-cyan-200/90">
                           {`TEAM BONUS +${breakdown.grillTeamBonus} • SWING ${breakdown.grillLiarSwing >= 0 ? '+' : ''}${breakdown.grillLiarSwing}`}
                         </div>
                       )}
@@ -2549,39 +2656,39 @@ function ResultsScreen({ players, round, totalRounds, tally, roundGains, roundBr
                   );
                 })}
               </div>
-            </>
+            </div>
           ) : (resultsStage === 'details' ? (
-            <div className="space-y-5">
-              <GlassPanel className="rounded-[1.8rem] border border-white/10 bg-black/25 p-5 text-center">
-                <div className="text-3xl font-black uppercase tracking-[0.06em] text-white/55">Hint / Subcategory</div>
-                <div className="mt-3 text-5xl font-black uppercase leading-tight text-white">{round.hint}</div>
-                <div className="mx-auto mt-4 max-w-3xl text-3xl font-black uppercase leading-tight text-cyan-200/95">{round.roundTypeTagline}</div>
+            <div className="grid h-full grid-cols-1 gap-2 sm:grid-cols-2">
+              <GlassPanel className="rounded-[1.2rem] border border-white/10 bg-black/25 p-3 text-center">
+                <div className="text-xs font-black uppercase tracking-[0.14em] text-white/55">Hint / Subcategory</div>
+                <div className="mt-1 text-xl sm:text-2xl font-black uppercase leading-tight text-white">{round.hint}</div>
+                <div className="mx-auto mt-2 max-w-3xl text-sm font-black uppercase leading-tight text-cyan-200/95">{round.roundTypeTagline}</div>
               </GlassPanel>
 
-              <GlassPanel className="rounded-[1.8rem] border border-white/10 bg-black/25 p-5 text-center">
-                <div className="text-3xl font-black uppercase tracking-[0.06em] text-white/55">{roundInfoTitle}</div>
-                <div className="mx-auto mt-3 max-w-3xl text-6xl font-black uppercase leading-[1.05] text-[#ffb866]">
+              <GlassPanel className="rounded-[1.2rem] border border-white/10 bg-black/25 p-3 text-center">
+                <div className="text-xs font-black uppercase tracking-[0.14em] text-white/55">{roundInfoTitle}</div>
+                <div className="mx-auto mt-1 max-w-3xl text-base sm:text-lg font-black uppercase leading-tight text-[#ffb866]">
                   {roundInfoValue}
                 </div>
               </GlassPanel>
 
-              <GlassPanel className="rounded-[1.8rem] border border-white/10 bg-black/25 p-5 text-center">
-                <div className="text-3xl font-black uppercase tracking-[0.06em] text-white/55">Scoring Rules</div>
-                <div className="mx-auto mt-3 max-w-3xl text-3xl font-black uppercase leading-tight text-cyan-100">
+              <GlassPanel className="rounded-[1.2rem] border border-white/10 bg-black/25 p-3 text-center">
+                <div className="text-xs font-black uppercase tracking-[0.14em] text-white/55">Scoring Rules</div>
+                <div className="mx-auto mt-1 max-w-3xl text-sm font-black uppercase leading-tight text-cyan-100">
                   Correct liar vote: +1 point. Liar survives: +2 points to that liar.
                 </div>
               </GlassPanel>
 
-              <GlassPanel className="rounded-[1.8rem] border border-white/10 bg-black/25 p-5">
-                <div className="text-center text-4xl font-black uppercase tracking-[0.06em] text-white/65">Vote Tally</div>
-                <div className="mt-4 space-y-3">
+              <GlassPanel className="rounded-[1.2rem] border border-white/10 bg-black/25 p-3">
+                <div className="text-center text-sm font-black uppercase tracking-[0.14em] text-white/65">Vote Tally</div>
+                <div className="mt-2 space-y-1.5">
                   {sortedVoteRows.map((player) => {
                     const votes = tally?.[player.id] || 0;
                     const voteLabel = `${votes} ${votes === 1 ? 'VOTE' : 'VOTES'}`;
                     return (
-                      <div key={player.id} className="flex items-center justify-between rounded-[1.3rem] border border-white/10 bg-white/5 px-4 py-3">
-                        <div className="text-3xl font-black uppercase text-white">{player.name}</div>
-                        <div className="rounded-full border border-white/15 bg-white/15 px-5 py-2 text-3xl font-black uppercase text-white/90">
+                      <div key={player.id} className="flex items-center justify-between rounded-[0.9rem] border border-white/10 bg-white/5 px-3 py-2">
+                        <div className="text-sm font-black uppercase text-white">{player.name}</div>
+                        <div className="rounded-full border border-white/15 bg-white/15 px-3 py-1 text-xs font-black uppercase text-white/90">
                           {voteLabel}
                         </div>
                       </div>
@@ -2591,22 +2698,22 @@ function ResultsScreen({ players, round, totalRounds, tally, roundGains, roundBr
               </GlassPanel>
             </div>
           ) : (
-            <GlassPanel className="rounded-[1.8rem] border border-yellow-300/20 bg-black/25 p-5 sm:p-7">
+            <GlassPanel className="h-full rounded-[1.2rem] border border-yellow-300/20 bg-black/25 p-3 sm:p-4">
               <div className="flex items-center gap-3 text-yellow-200">
-                <Trophy className="h-8 w-8" />
-                <div className="text-5xl font-black uppercase tracking-[0.06em]">Scoreboard</div>
+                <Trophy className="h-5 w-5" />
+                <div className="text-xl font-black uppercase tracking-[0.06em]">Scoreboard</div>
               </div>
-              <div className="mt-5 space-y-4">
+              <div className="mt-3 space-y-2">
                 {rankedPlayers.map((player, index) => (
-                  <div key={player.id} className="rounded-[1.8rem] border border-white/12 bg-white/5 px-4 py-4 sm:px-6 sm:py-5">
+                  <div key={player.id} className="rounded-[0.95rem] border border-white/12 bg-white/5 px-3 py-2">
                     <div className="grid grid-cols-[1fr_auto] items-center gap-3">
                       <div>
-                        <div className="text-3xl sm:text-4xl font-black uppercase text-white/55">{`Place ${index + 1}`}</div>
-                        <div className="mt-1 text-5xl sm:text-6xl font-black uppercase leading-tight text-white">{player.name}</div>
+                        <div className="text-[0.7rem] sm:text-xs font-black uppercase tracking-[0.08em] text-white/55">{`Place ${index + 1}`}</div>
+                        <div className="mt-0.5 text-lg sm:text-xl font-black uppercase leading-tight text-white">{player.name}</div>
                       </div>
                       <div className="text-right">
-                        <div className="text-7xl sm:text-8xl font-black leading-none text-white">{player.score}</div>
-                        <div className="mt-1 text-4xl sm:text-5xl font-black uppercase leading-tight text-cyan-200">
+                        <div className="text-2xl sm:text-3xl font-black leading-none text-white">{player.score}</div>
+                        <div className="mt-0.5 text-[0.7rem] sm:text-xs font-black uppercase leading-tight text-cyan-200">
                           {`${(roundGains?.[player.id] || 0) >= 0 ? '+' : ''}${roundGains?.[player.id] || 0} THIS ROUND`}
                         </div>
                       </div>
@@ -2617,7 +2724,7 @@ function ResultsScreen({ players, round, totalRounds, tally, roundGains, roundBr
             </GlassPanel>
           ))}
 
-          <div className="mt-8">
+          <div className="mt-4">
             <Button
               className="h-14 w-full rounded-[1.5rem] border-2 border-white bg-yellow-300 text-zinc-950"
               onClick={handleResultsAction}
@@ -3883,50 +3990,71 @@ export default function App() {
       />
     )}
     {screen === 'rules' && <RulesSplashScreen mode={mode} onContinue={() => setScreen('category-choice')} theme={canonicalThemeName} isOnlineMode={onlineMode} />}
-    {screen === 'round-type-choice' && round && <TopFrame theme={canonicalThemeName}><div className="mx-auto max-w-3xl space-y-6"><ScoreStrip players={players} roundNumber={round.roundNumber} totalRounds={totalRounds} /><GlassPanel className="rounded-[2.5rem] p-8 text-center border-fuchsia-400/25 bg-black/25 relative overflow-hidden"><div className="text-xs uppercase tracking-[0.3em] text-white/50">Round owner: {players[currentRoundOwnerIndex]?.name}</div><h2 className="text-4xl font-black mt-3 text-yellow-300">Choose round type</h2><p className="text-white/70 mt-3">Pick one of two options. Previous round type is excluded.</p><div className="grid gap-3 sm:grid-cols-2 mt-8">{roundTypeOptions.map((type) => <div key={type.id} className="space-y-2"><RoundMascot roundTypeId={type.id} /><div className="rounded-[1.5rem] border border-white/20 bg-black/20 p-3"><RoundTypeLogo src={type.logoSrc} alt={`${type.name} logo`} className="mx-auto h-16 w-auto rounded-md border border-white/20 bg-black/25 px-2 py-1" /><ThemeArt src={`/assets/themes/default/cards/prompt-front-${type.id}.svg`} alt={`${type.name} default card front`} className="mx-auto mt-3 h-28 w-auto rounded-xl border border-white/20 bg-black/25 p-1" /><div className="mt-3 text-xs uppercase tracking-[0.2em] text-white/60">Round Type Logo + Default Front Card</div></div><Button className={`rounded-[1.75rem] h-20 text-lg bg-gradient-to-r ${themeMeta.gradient} text-white border-2 border-white/20 shadow-lg w-full`} onClick={() => { setSelectedRoundType(type.id); setScreen('category-choice'); }}>{type.name}</Button></div>)}</div></GlassPanel></div></TopFrame>}
+    {screen === 'round-type-choice' && round && (
+      <TopFrame theme={canonicalThemeName}>
+        <div className="mx-auto max-w-3xl space-y-6">
+          <GlassPanel className="relative overflow-hidden rounded-[2.5rem] border-fuchsia-400/25 bg-black/25 p-8 text-center">
+            <div className="text-xs uppercase tracking-[0.3em] text-white/50">Round owner: {players[currentRoundOwnerIndex]?.name}</div>
+            <h2 className="mt-3 text-4xl font-black text-yellow-300">Choose round type</h2>
+            <p className="mt-3 text-white/70">Pick one of two options. Previous round type is excluded.</p>
+            <div className="mt-8 grid gap-4 sm:grid-cols-2">
+              {roundTypeOptions.map((type, index) => {
+                const centeredOnSm = roundTypeOptions.length % 2 === 1 && index === roundTypeOptions.length - 1;
+                return (
+                  <div key={type.id} className={centeredOnSm ? 'sm:col-span-2 sm:flex sm:justify-center' : ''}>
+                    <button
+                      type="button"
+                      className={`w-full rounded-[1.8rem] border border-white/20 bg-black/20 p-4 text-center transition-transform duration-200 hover:scale-[1.01] hover:border-cyan-300/40 ${centeredOnSm ? 'sm:max-w-[20rem]' : ''}`}
+                      onClick={() => {
+                        setSelectedRoundType(type.id);
+                        setScreen('category-choice');
+                      }}
+                    >
+                      <ThemeArt
+                        src="/assets/themes/default/cards/prompt-back.png"
+                        alt={`${type.name} round card back`}
+                        className="mx-auto h-40 w-auto rounded-[1.2rem] border border-white/20 bg-black/25 p-1"
+                      />
+                      <div className="mt-4 text-2xl font-black uppercase tracking-[0.06em] text-white">
+                        {type.name}
+                      </div>
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+          </GlassPanel>
+        </div>
+      </TopFrame>
+    )}
     {screen === 'category-choice' && round && (
       <TopFrame theme={canonicalThemeName}>
         <div className="mx-auto max-w-3xl space-y-6">
-          <ScoreStrip players={players} roundNumber={round.roundNumber} totalRounds={totalRounds} />
           <GlassPanel className="relative overflow-hidden rounded-[2.5rem] border-fuchsia-400/25 bg-black/25 p-8 text-center">
-            <LightningBolt className="right-8 top-6" />
-            <LightningBolt className="left-10 bottom-6" />
             <div className="text-xs uppercase tracking-[0.3em] text-white/50">Round owner: {players[currentRoundOwnerIndex]?.name}</div>
             <h2 className="mt-3 text-4xl font-black text-yellow-300">Choose the next category</h2>
             <p className="mt-3 text-white/70">{copyState.chooser}</p>
-            <div className="mt-8 grid grid-cols-2 gap-3 sm:gap-4">
-              {categoryOptions.map((category) => {
+            <div className="mt-8 grid gap-4 sm:grid-cols-2">
+              {categoryOptions.map((category, index) => {
                 const categoryCardArtSrc = resolveCategoryChoiceCardArt(category, canonicalThemeName);
+                const centeredOnSm = categoryOptions.length % 2 === 1 && index === categoryOptions.length - 1;
                 return (
-                  <button
-                    key={category.id}
-                    type="button"
-                    className="w-full"
-                    onClick={() => chooseCategory(category.id)}
-                  >
-                    <div className="relative mx-auto aspect-[2/3] w-full max-w-[11.5rem] overflow-hidden rounded-[1.35rem] border-2 border-white/25 bg-black/30 shadow-lg">
-                      {categoryCardArtSrc && (
-                        <img
-                          src={categoryCardArtSrc}
-                          alt=""
-                          aria-hidden="true"
-                          className="absolute inset-0 h-full w-full object-contain bg-black/25"
-                          onError={(event) => {
-                            event.currentTarget.style.display = 'none';
-                          }}
-                        />
-                      )}
-                      <div className={`absolute inset-0 bg-gradient-to-b ${themeMeta.gradient} opacity-45`} />
-                      <div className="absolute inset-0 bg-black/35" />
-                      <div className="relative z-10 flex h-full flex-col items-center justify-center p-3">
-                        <div className="text-3xl">{category.emoji}</div>
-                        <div className="mt-2 text-lg font-black text-white">{category.name}</div>
-                        <div className="mt-2 rounded-full border border-white/40 bg-black/35 px-3 py-1 text-[0.65rem] uppercase tracking-[0.2em] text-cyan-100">
-                          Pick category
-                        </div>
+                  <div key={category.id} className={centeredOnSm ? 'sm:col-span-2 sm:flex sm:justify-center' : ''}>
+                    <button
+                      type="button"
+                      className={`w-full rounded-[1.8rem] border border-white/20 bg-black/20 p-4 text-center transition-transform duration-200 hover:scale-[1.01] hover:border-cyan-300/40 ${centeredOnSm ? 'sm:max-w-[20rem]' : ''}`}
+                      onClick={() => chooseCategory(category.id)}
+                    >
+                      <ThemeArt
+                        src={categoryCardArtSrc}
+                        alt={`${category.name} category card`}
+                        className="mx-auto h-40 w-auto rounded-[1.2rem] border border-white/20 bg-black/25 p-1"
+                      />
+                      <div className="mt-4 text-2xl font-black uppercase tracking-[0.06em] text-white">
+                        {category.name}
                       </div>
-                    </div>
-                  </button>
+                    </button>
+                  </div>
                 );
               })}
             </div>
