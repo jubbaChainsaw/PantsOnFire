@@ -1,4 +1,4 @@
-import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   ShieldAlert, Users, EyeOff, Trophy, TimerReset, PlusCircle, Vote,
@@ -702,7 +702,15 @@ function GameIntroScreen({ theme, onContinue, isOnlineMode = false, totalRounds 
               </div>
             </motion.div>
           </div>
-          <div className="mt-7 flex justify-center">
+          <div className="mt-7 flex flex-wrap justify-center gap-3">
+            {!canContinue && (
+              <Button
+                className="h-14 rounded-[1.5rem] border border-white/25 bg-white/10 px-6 text-white"
+                onClick={onContinue}
+              >
+                Skip intro
+              </Button>
+            )}
             <Button
               className="h-14 rounded-[1.5rem] border-2 border-white bg-yellow-300 px-8 text-zinc-950"
               onClick={onContinue}
@@ -956,13 +964,23 @@ function HostIntroScreen({ round, stingerLine, onContinue, theme }) {
             )}
             <div className="mt-3 text-xs text-white/70">{round.roundTypeName} • {round.categoryEmoji} {round.categoryLabel}</div>
           </div>
-          <Button
-            className="mt-7 h-14 rounded-[1.5rem] border-2 border-white bg-yellow-300 px-8 text-zinc-950"
-            onClick={onContinue}
-            disabled={!canContinue}
-          >
-            {canContinue ? 'Deal cards' : 'Host is explaining...'}
-          </Button>
+          <div className="mt-7 flex flex-wrap justify-center gap-3">
+            {!canContinue && (
+              <Button
+                className="h-14 rounded-[1.5rem] border border-white/25 bg-white/10 px-6 text-white"
+                onClick={onContinue}
+              >
+                Skip host dialogue
+              </Button>
+            )}
+            <Button
+              className="h-14 rounded-[1.5rem] border-2 border-white bg-yellow-300 px-8 text-zinc-950"
+              onClick={onContinue}
+              disabled={!canContinue}
+            >
+              {canContinue ? 'Deal cards' : 'Host is explaining...'}
+            </Button>
+          </div>
         </GlassPanel>
       </div>
     </TopFrame>
@@ -2330,6 +2348,7 @@ function VotingScreen({ players, round, totalRounds, votesByPlayerId, setVotesBy
 function LiarRevealScreen({ players, round, onComplete, theme }) {
   const liars = players.filter((p) => (round.imposterIds || []).includes(p.id));
   const audioRef = useRef(null);
+  const hasCompletedRef = useRef(false);
   const [announcementIndex, setAnnouncementIndex] = useState(0);
   const announcementLines = [
     liars.length > 1 ? 'The Liars are......' : 'The Liar was......',
@@ -2340,6 +2359,12 @@ function LiarRevealScreen({ players, round, onComplete, theme }) {
   ];
   const isTalking = announcementIndex < announcementLines.length - 1;
   const animatedHostSrc = useTalkingAnimation({ enabled: isTalking, themeName: theme });
+  const finishReveal = useCallback(() => {
+    if (hasCompletedRef.current) return;
+    hasCompletedRef.current = true;
+    try { audioRef.current?.pause(); } catch {}
+    onComplete();
+  }, [onComplete]);
   useEffect(() => {
     try {
       audioRef.current = new Audio(HEARTBEAT_SFX_SRC);
@@ -2360,11 +2385,10 @@ function LiarRevealScreen({ players, round, onComplete, theme }) {
   useEffect(() => {
     if (announcementIndex < announcementLines.length - 1) return undefined;
     const timer = setTimeout(() => {
-      try { audioRef.current?.pause(); } catch {}
-      onComplete();
+      finishReveal();
     }, HOST_DIALOGUE_TIMINGS.liarRevealCompleteMs);
     return () => clearTimeout(timer);
-  }, [announcementIndex, announcementLines.length, onComplete]);
+  }, [announcementIndex, announcementLines.length, finishReveal]);
   return (
     <TopFrame theme={theme}>
       <div className="mx-auto flex h-[calc(100dvh-2rem)] w-full max-w-4xl flex-col justify-center">
@@ -2405,6 +2429,14 @@ function LiarRevealScreen({ players, round, onComplete, theme }) {
                 </div>
               </motion.div>
             </div>
+            <div className="mt-6 flex justify-center">
+              <Button
+                className="h-14 rounded-[1.5rem] border border-white/30 bg-white/10 px-6 text-white"
+                onClick={finishReveal}
+              >
+                Skip reveal
+              </Button>
+            </div>
           </div>
         </GlassPanel>
       </div>
@@ -2415,6 +2447,7 @@ function ResultsScreen({ players, round, totalRounds, tally, roundGains, roundBr
   const [resultsStage, setResultsStage] = useState('summary');
   const lastRound = round.roundNumber >= totalRounds;
   const promptByPlayerId = round.promptsByPlayerId || {};
+  const rankedPlayers = [...players].sort((a, b) => b.score - a.score);
   const roundInfoTitle = round.roundTypeId === 'grill'
     ? 'AI Hidden Prompt'
     : ((round.roundTypeId === 'chain')
@@ -2434,7 +2467,9 @@ function ResultsScreen({ players, round, totalRounds, tally, roundGains, roundBr
   const sortedVoteRows = [...players].sort((a, b) => (tally?.[b.id] || 0) - (tally?.[a.id] || 0));
   const ctaLabel = resultsStage === 'summary'
     ? 'Show round details'
-    : (lastRound ? 'View final winner' : 'Start next round');
+    : (resultsStage === 'details'
+      ? 'Show leaderboard'
+      : (lastRound ? 'View final winner' : 'Start next round'));
 
   useEffect(() => {
     setResultsStage('summary');
@@ -2443,6 +2478,10 @@ function ResultsScreen({ players, round, totalRounds, tally, roundGains, roundBr
   function handleResultsAction() {
     if (resultsStage === 'summary') {
       setResultsStage('details');
+      return;
+    }
+    if (resultsStage === 'details') {
+      setResultsStage('leaderboard');
       return;
     }
     if (lastRound) {
@@ -2511,7 +2550,7 @@ function ResultsScreen({ players, round, totalRounds, tally, roundGains, roundBr
                 })}
               </div>
             </>
-          ) : (
+          ) : (resultsStage === 'details' ? (
             <div className="space-y-5">
               <GlassPanel className="rounded-[1.8rem] border border-white/10 bg-black/25 p-5 text-center">
                 <div className="text-3xl font-black uppercase tracking-[0.06em] text-white/55">Hint / Subcategory</div>
@@ -2551,14 +2590,39 @@ function ResultsScreen({ players, round, totalRounds, tally, roundGains, roundBr
                 </div>
               </GlassPanel>
             </div>
-          )}
+          ) : (
+            <GlassPanel className="rounded-[1.8rem] border border-yellow-300/20 bg-black/25 p-5 sm:p-7">
+              <div className="flex items-center gap-3 text-yellow-200">
+                <Trophy className="h-8 w-8" />
+                <div className="text-5xl font-black uppercase tracking-[0.06em]">Scoreboard</div>
+              </div>
+              <div className="mt-5 space-y-4">
+                {rankedPlayers.map((player, index) => (
+                  <div key={player.id} className="rounded-[1.8rem] border border-white/12 bg-white/5 px-4 py-4 sm:px-6 sm:py-5">
+                    <div className="grid grid-cols-[1fr_auto] items-center gap-3">
+                      <div>
+                        <div className="text-3xl sm:text-4xl font-black uppercase text-white/55">{`Place ${index + 1}`}</div>
+                        <div className="mt-1 text-5xl sm:text-6xl font-black uppercase leading-tight text-white">{player.name}</div>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-7xl sm:text-8xl font-black leading-none text-white">{player.score}</div>
+                        <div className="mt-1 text-4xl sm:text-5xl font-black uppercase leading-tight text-cyan-200">
+                          {`${(roundGains?.[player.id] || 0) >= 0 ? '+' : ''}${roundGains?.[player.id] || 0} THIS ROUND`}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </GlassPanel>
+          ))}
 
           <div className="mt-8">
             <Button
               className="h-14 w-full rounded-[1.5rem] border-2 border-white bg-yellow-300 text-zinc-950"
               onClick={handleResultsAction}
             >
-              {resultsStage === 'summary'
+              {resultsStage !== 'leaderboard'
                 ? <SkipForward className="mr-2 inline h-5 w-5" />
                 : (lastRound ? <Trophy className="mr-2 inline h-5 w-5" /> : <TimerReset className="mr-2 inline h-5 w-5" />)}
               {ctaLabel}
