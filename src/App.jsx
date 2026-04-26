@@ -123,15 +123,21 @@ function clearPlayerPersonaData(player = {}) {
   const { personaId, personaBio, personaImageSrc, ...rest } = player;
   return rest;
 }
-function buildRandomizedPlayerIdentity(themeName, excludeNames = [], { personaOnly = false } = {}) {
-  const persona = pickRandomThemePersona(themeName, excludeNames);
-  if (persona) {
-    return {
-      name: persona.name,
-      personaId: persona.id,
-      personaBio: persona.bio,
-      personaImageSrc: persona.imageSrc,
-    };
+function buildRandomizedPlayerIdentity(
+  themeName,
+  excludeNames = [],
+  { personaOnly = false, preferPersona = true } = {}
+) {
+  if (preferPersona) {
+    const persona = pickRandomThemePersona(themeName, excludeNames);
+    if (persona) {
+      return {
+        name: persona.name,
+        personaId: persona.id,
+        personaBio: persona.bio,
+        personaImageSrc: persona.imageSrc,
+      };
+    }
   }
   if (personaOnly) {
     return {
@@ -147,6 +153,67 @@ function buildRandomizedPlayerIdentity(themeName, excludeNames = [], { personaOn
     personaBio: '',
     personaImageSrc: '',
   };
+}
+function speakHostLine(text = '') {
+  if (typeof window === 'undefined') return;
+  if (!window.speechSynthesis || !window.SpeechSynthesisUtterance) return;
+  const trimmed = String(text || '').trim();
+  if (!trimmed) return;
+  try {
+    const utterance = new window.SpeechSynthesisUtterance(trimmed);
+    utterance.rate = 0.96;
+    utterance.pitch = 1.02;
+    window.speechSynthesis.cancel();
+    window.speechSynthesis.speak(utterance);
+  } catch {
+    // Ignore speech synthesis failures on unsupported browsers.
+  }
+}
+const VOTING_STINGER_BY_ROUND_TYPE = {
+  prompt: [
+    'Time to vote. Pass the phone and call your suspect.',
+    'One tap, one accusation. Keep it spicy.',
+    'Vote quietly, accuse loudly.',
+  ],
+  opinion: [
+    'Truth or Twisted verdict time. Pick your chaos agent.',
+    'Debate is over. Suspicion is in session.',
+    'Cast your vote and protect your alibi.',
+  ],
+  picture: [
+    'Picture perfect? Time to expose the fake frame.',
+    'Pass the phone and spot the wrong snapshot.',
+    'Vote for the player whose details felt staged.',
+  ],
+  meme: [
+    'Meme court is open. Point at the poser.',
+    'Pass the phone and vote the fake format out.',
+    'Who forced meme culture the hardest? Vote now.',
+  ],
+  noise: [
+    'Noisy round, quiet judgement. Pass and vote.',
+    'Vote for the sound that felt least believable.',
+    'Keep it moving: one phone, one vote, one suspect.',
+  ],
+  offtopic: [
+    'Off-topic defence complete. Time to call it.',
+    'Vote for whoever never truly fit the topic.',
+    'Pass the phone and lock your accusation.',
+  ],
+  chain: [
+    'Chain check: who broke the link? Vote now.',
+    'Pass the phone and choose the weakest link.',
+    'One vote each. Find the decoy clue.',
+  ],
+  grill: [
+    "AI grilling done. Vote who sounded too prepared.",
+    'Pass the phone and call out the over-confident answerer.',
+    "Blaze Byte is done talking. Now it's your turn to judge.",
+  ],
+};
+function pickVotingStinger(roundTypeId = 'prompt') {
+  const pool = VOTING_STINGER_BY_ROUND_TYPE[roundTypeId] || VOTING_STINGER_BY_ROUND_TYPE.prompt;
+  return pool[Math.floor(Math.random() * pool.length)] || VOTING_STINGER_BY_ROUND_TYPE.prompt[0];
 }
 function normalizePlayerRecord(player = {}) {
   const next = {
@@ -584,7 +651,7 @@ function ZanyAccentBurst({ className = '' }) {
 function LightningBolt({ className = '' }) {
   return <div className={`pointer-events-none absolute ${className}`}><div className="text-yellow-300 drop-shadow-[0_0_12px_rgba(255,220,0,0.95)] text-4xl font-black">⚡</div></div>;
 }
-function TopFrame({ children, theme = 'Default', allowScroll = true }) {
+function TopFrame({ children, theme = 'Default', allowScroll = false }) {
   const gradient = THEME_META[theme]?.gradient || THEME_META.Default.gradient;
   return (
     <div className={`min-h-screen min-h-[100dvh] overflow-x-hidden ${allowScroll ? 'overflow-y-auto' : 'overflow-y-hidden'} text-white relative bg-[linear-gradient(135deg,#14043a_8%,#2d126f_45%,#1d0a51_100%)]`}>
@@ -614,7 +681,14 @@ function TopFrame({ children, theme = 'Default', allowScroll = true }) {
     </div>
   );
 }
-function PlayerPersonaAvatar({ player, fallbackIndex = 0, className = '', sizeClass = 'h-8 w-8', initialsClass = 'text-xs' }) {
+function PlayerPersonaAvatar({
+  player,
+  fallbackIndex = 0,
+  className = '',
+  sizeClass = 'h-8 w-8',
+  initialsClass = 'text-xs',
+  useColorFallback = false,
+}) {
   const [failed, setFailed] = useState(false);
   const imageSrc = !failed ? String(player?.personaImageSrc || '').trim() : '';
   const initials = getPlayerInitials(player?.name);
@@ -622,7 +696,7 @@ function PlayerPersonaAvatar({ player, fallbackIndex = 0, className = '', sizeCl
   return (
     <div
       className={`relative overflow-hidden rounded-full border border-white/30 bg-black/30 ${sizeClass} ${className}`}
-      style={{ backgroundColor: color }}
+      style={{ backgroundColor: useColorFallback ? color : 'rgba(17,24,39,0.7)' }}
       aria-hidden="true"
     >
       {imageSrc ? (
@@ -640,34 +714,34 @@ function PlayerPersonaAvatar({ player, fallbackIndex = 0, className = '', sizeCl
     </div>
   );
 }
-function BoxerShortScoreIcon({ player, fallbackIndex = 0, isLeader = false }) {
+function PersonaScorePill({ player, fallbackIndex = 0, isLeader = false }) {
   const score = Math.max(0, Number(player?.score || 0));
-  const name = player?.name || 'Player';
+  return (
+    <div className={`flex items-center gap-2 rounded-full border border-white/15 bg-black/20 px-2.5 py-1 ${isLeader ? 'shadow-[0_0_10px_rgba(250,204,21,0.45)]' : ''}`}>
+      <PlayerPersonaAvatar
+        player={player}
+        fallbackIndex={fallbackIndex}
+        sizeClass="h-7 w-7"
+        initialsClass="text-[0.55rem]"
+        useColorFallback={false}
+      />
+      <div className="text-sm font-black text-white">{score}</div>
+      {isLeader && <div className="text-[0.65rem]">👑</div>}
+    </div>
+  );
+}
+function CustomFireScoreIcon({ player, fallbackIndex = 0, isLeader = false }) {
+  const score = Math.max(0, Number(player?.score || 0));
   const color = getPlayerColor(player, fallbackIndex);
-  const initials = getPlayerInitials(name);
   return (
     <div className="flex min-w-[2.8rem] items-center justify-center">
-      <div className={`relative h-11 w-11 ${isLeader ? 'drop-shadow-[0_0_10px_rgba(250,204,21,0.55)]' : ''}`}>
-        <svg viewBox="0 0 64 52" className="h-full w-full">
-          <path d="M8 6h48a4 4 0 0 1 4 4v28a6 6 0 0 1-6 6H38a2 2 0 0 0-2 2v2a2 2 0 0 1-2 2h-4a2 2 0 0 1-2-2v-2a2 2 0 0 0-2-2H10a6 6 0 0 1-6-6V10a4 4 0 0 1 4-4Z" fill={color} />
-          <rect x="8" y="11" width="48" height="6" rx="2" fill="rgba(255,255,255,0.55)" />
-          <rect x="12" y="36" width="16" height="11" rx="3" fill="rgba(20,4,58,0.88)" />
-          <rect x="36" y="36" width="16" height="11" rx="3" fill="rgba(20,4,58,0.88)" />
-          <rect x="26" y="34" width="12" height="14" rx="3" fill="rgba(20,4,58,0.88)" />
-        </svg>
+      <div className={`relative h-11 w-11 rounded-full border border-white/30 ${isLeader ? 'drop-shadow-[0_0_10px_rgba(250,204,21,0.55)]' : ''}`} style={{ backgroundColor: color }}>
+        <div className="absolute inset-0 flex items-center justify-center">
+          <Flame className="h-6 w-6 text-white/80" />
+        </div>
         <div className="absolute inset-0 flex items-center justify-center text-sm font-black text-white [text-shadow:0_2px_6px_rgba(0,0,0,0.55)]">
           {score}
         </div>
-        <div className="absolute bottom-[2px] left-1/2 -translate-x-1/2 text-[0.55rem] font-black uppercase tracking-[0.04em] text-white/90">
-          {initials || 'P'}
-        </div>
-        <PlayerPersonaAvatar
-          player={player}
-          fallbackIndex={fallbackIndex}
-          className="absolute -left-2 -top-2"
-          sizeClass="h-5 w-5"
-          initialsClass="text-[0.45rem]"
-        />
         {isLeader && (
           <div className="absolute -top-2 -right-1 text-xs" aria-hidden="true">👑</div>
         )}
@@ -675,8 +749,9 @@ function BoxerShortScoreIcon({ player, fallbackIndex = 0, isLeader = false }) {
     </div>
   );
 }
-function ScoreStrip({ players, roundNumber, totalRounds }) {
+function ScoreStrip({ players, roundNumber, totalRounds, scoreStyleMode = 'persona' }) {
   const sorted = [...players].sort((a, b) => b.score - a.score);
+  const useCustomStyle = scoreStyleMode === 'custom';
   return (
     <GlassPanel className="rounded-[1.6rem] border-fuchsia-400/20 bg-black/25 p-3">
       <div className="flex items-center justify-between gap-3">
@@ -686,12 +761,21 @@ function ScoreStrip({ players, roundNumber, totalRounds }) {
         </div>
         <div className="flex flex-wrap justify-end gap-2">
           {sorted.map((player, index) => (
-            <BoxerShortScoreIcon
-              key={player.id}
-              player={player}
-              fallbackIndex={index}
-              isLeader={index === 0}
-            />
+            useCustomStyle ? (
+              <CustomFireScoreIcon
+                key={player.id}
+                player={player}
+                fallbackIndex={index}
+                isLeader={index === 0}
+              />
+            ) : (
+              <PersonaScorePill
+                key={player.id}
+                player={player}
+                fallbackIndex={index}
+                isLeader={index === 0}
+              />
+            )
           ))}
         </div>
       </div>
@@ -699,8 +783,19 @@ function ScoreStrip({ players, roundNumber, totalRounds }) {
   );
 }
 function ThemeArt({ src, alt, className = '' }) {
-  if (!src) return null;
-  return <img src={src} alt={alt} className={className} onError={(event) => { event.currentTarget.style.display = 'none'; }} />;
+  const [resolvedSrc, setResolvedSrc] = useState(src || '');
+  useEffect(() => {
+    setResolvedSrc(src || '');
+  }, [src]);
+  if (!resolvedSrc) return null;
+  return (
+    <img
+      src={resolvedSrc}
+      alt={alt}
+      className={className}
+      onError={() => setResolvedSrc('')}
+    />
+  );
 }
 function RoundTypeLogo({ src, alt, className = '' }) {
   if (!src) return null;
@@ -744,20 +839,20 @@ function getThemeHostFrameSources(themeName = 'Default', state = 'idle') {
   const assets = getThemeAssets(themeName);
   const defaultAssets = getThemeAssets('Default');
   const idleFrame =
-    assets.personaHostIdle
-    || assets.hostIdle
+    assets.hostIdle
     || assets.characterCard
+    || assets.personaHostIdle
     || defaultAssets.personaHostIdle
     || defaultAssets.hostIdle
     || defaultAssets.characterCard
     || '';
   const talkingFrames = [
-    assets.personaHostTalk1 || defaultAssets.personaHostTalk1,
-    assets.personaHostTalk2 || defaultAssets.personaHostTalk2,
-    assets.personaHostTalk3 || defaultAssets.personaHostTalk3,
     assets.hostTalk1 || defaultAssets.hostTalk1,
     assets.hostTalk2 || defaultAssets.hostTalk2,
     assets.hostTalk3 || defaultAssets.hostTalk3,
+    assets.personaHostTalk1 || defaultAssets.personaHostTalk1,
+    assets.personaHostTalk2 || defaultAssets.personaHostTalk2,
+    assets.personaHostTalk3 || defaultAssets.personaHostTalk3,
   ].filter(Boolean);
   if (state !== 'talking') return [idleFrame].filter(Boolean);
   if (!talkingFrames.length) return [idleFrame].filter(Boolean);
@@ -789,15 +884,6 @@ function useTalkingAnimation({ enabled = false, themeName = 'Default' } = {}) {
   }
   return idleFrames[0] || '';
 }
-function getThemeHostAssetGuidelines(themeName = 'Default') {
-  const canonicalTheme = toCanonicalThemeName(themeName || 'Default');
-  const slug = canonicalTheme
-    .toLowerCase()
-    .replace(/&/g, 'and')
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '');
-  return `Host PNGs per theme: 900x1400 px (2:3), transparent BG, keep face/torso in safe zone (~70% width, ~80% height). Place files at /public/assets/themes/${slug}/characters/host-idle.png, host-talk-1.png, host-talk-2.png, host-talk-3.png.`;
-}
 const HOST_DIALOGUE_TIMINGS = {
   gameIntroAdvanceMs: 6000,
   roundIntroAdvanceMs: 6000,
@@ -827,10 +913,6 @@ function GameIntroScreen({ theme, onContinue, isOnlineMode = false, totalRounds 
     }),
     [theme, greeting, resolvedRoundCount, resolvedPlayerCount, isOnlineMode]
   );
-  const themeHostAssetGuidelines = useMemo(
-    () => getThemeHostAssetGuidelines(theme),
-    [theme]
-  );
   const [lineIndex, setLineIndex] = useState(0);
   const isTalking = lineIndex < introLines.length - 1;
   const animatedHostSrc = useTalkingAnimation({ enabled: isTalking, themeName: theme });
@@ -858,7 +940,6 @@ function GameIntroScreen({ theme, onContinue, isOnlineMode = false, totalRounds 
             <p className="mt-2 text-sm text-cyan-100/90">
               Your host tonight: <span className="font-black text-yellow-200">{themedHostPersona.name}</span>
             </p>
-            <p className="mt-2 text-[0.68rem] text-white/50">{themeHostAssetGuidelines}</p>
           </div>
           <div className="relative mx-auto mt-6 w-full max-w-3xl min-h-[240px] sm:min-h-[300px]">
             <ThemeArt
@@ -1440,7 +1521,7 @@ function SetupScreen(props) {
       return nextPlayers;
     });
   }, [nameTheme, setPlayers, usePersonaOnlyForTheme]);
-  const visibleThemeOptions = themeOptions.length
+  const allThemeOptions = themeOptions.length
     ? themeOptions
     : Object.keys(NAME_POOLS).map((themeName) => ({
       name: themeName,
@@ -1448,6 +1529,15 @@ function SetupScreen(props) {
       isUnlocked: true,
       packId: null,
     }));
+  const visibleThemeOptions = allThemeOptions.filter((themeOption) => themeOption?.isUnlocked !== false);
+  const selectableThemeOptions = visibleThemeOptions.length
+    ? visibleThemeOptions
+    : [{
+      name: 'Default',
+      isDlc: false,
+      isUnlocked: true,
+      packId: null,
+    }];
   return (
     <TopFrame theme={nameTheme}>
       <div className="mx-auto max-w-7xl space-y-5">
@@ -1480,16 +1570,16 @@ function SetupScreen(props) {
                 value={nameTheme}
                 onChange={(event) => {
                   const nextThemeName = event.target.value;
-                  const nextTheme = visibleThemeOptions.find((option) => option.name === nextThemeName);
-                  if (!(nextTheme && nextTheme.isUnlocked)) return;
+                  const nextTheme = selectableThemeOptions.find((option) => option.name === nextThemeName);
+                  if (!nextTheme) return;
                   setNameTheme(nextThemeName);
                   setPlayers((currentPlayers) => currentPlayers.map((player) => clearPlayerPersonaData(player)));
                 }}
                 className="mt-3 w-full rounded-2xl border border-white/15 bg-white/5 px-3 py-3 text-white"
               >
-                {visibleThemeOptions.map((themeOption) => (
-                  <option key={themeOption.name} value={themeOption.name} className="text-black" disabled={!themeOption.isUnlocked}>
-                    {themeOption.name}{themeOption.isDlc ? ' 🔥' : ''}{themeOption.isUnlocked ? '' : ' (Locked)'}
+                {selectableThemeOptions.map((themeOption) => (
+                  <option key={themeOption.name} value={themeOption.name} className="text-black">
+                    {themeOption.name}{themeOption.isDlc ? ' 🔥' : ''}
                   </option>
                 ))}
               </select>
