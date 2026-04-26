@@ -20,12 +20,17 @@ import { getThemeAssets, ROUND_TYPE_CARD_FRONT_BY_ID } from './data/themeAssets'
 import { NAME_POOLS, randomNameFromTheme } from './data/names';
 import { toCanonicalThemeName } from './data/themeAliases';
 import {
+  getThemeHostPersona,
+  buildThemeIntroDialogue,
+  pickThemeHostRoundStinger,
+} from './data/themeHosts';
+import {
   DLC_THEME_PACKS,
   getThemeOptions,
   normalizeUnlockedThemePackIds,
 } from './data/themeCatalog';
 import { getThemePackRedeemOffer } from './data/dlc/themeRedeemCodes';
-import { COPY_BANK, createCopyPicker } from './data/gameTextContent';
+import { COPY_BANK, createCopyPicker, THEME_STINGER_KEY_OVERRIDES } from './data/gameTextContent';
 import {
   DEFAULT_CATEGORIES,
   CHAIN_REACTION_ROUNDS,
@@ -658,12 +663,17 @@ function getThemeHostFrameSources(themeName = 'Default', state = 'idle') {
   const assets = getThemeAssets(themeName);
   const defaultAssets = getThemeAssets('Default');
   const idleFrame =
-    assets.hostIdle
+    assets.personaHostIdle
+    || assets.hostIdle
     || assets.characterCard
+    || defaultAssets.personaHostIdle
     || defaultAssets.hostIdle
     || defaultAssets.characterCard
     || '';
   const talkingFrames = [
+    assets.personaHostTalk1 || defaultAssets.personaHostTalk1,
+    assets.personaHostTalk2 || defaultAssets.personaHostTalk2,
+    assets.personaHostTalk3 || defaultAssets.personaHostTalk3,
     assets.hostTalk1 || defaultAssets.hostTalk1,
     assets.hostTalk2 || defaultAssets.hostTalk2,
     assets.hostTalk3 || defaultAssets.hostTalk3,
@@ -698,8 +708,14 @@ function useTalkingAnimation({ enabled = false, themeName = 'Default' } = {}) {
   }
   return idleFrames[0] || '';
 }
-function getHostAssetGuidelines() {
-  return 'Host PNG size: 900×1400 px (2:3 ratio), transparent background, keep key face/torso inside ~70% width and ~80% height safe zone. Provide 4 files per theme: host-idle.png + host-talk-1.png + host-talk-2.png + host-talk-3.png.';
+function getThemeHostAssetGuidelines(themeName = 'Default') {
+  const canonicalTheme = toCanonicalThemeName(themeName || 'Default');
+  const slug = canonicalTheme
+    .toLowerCase()
+    .replace(/&/g, 'and')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+  return `Host PNGs per theme: 900x1400 px (2:3), transparent BG, keep face/torso in safe zone (~70% width, ~80% height). Place files at /public/assets/themes/${slug}/characters/host-idle.png, host-talk-1.png, host-talk-2.png, host-talk-3.png.`;
 }
 const HOST_DIALOGUE_TIMINGS = {
   gameIntroAdvanceMs: 6000,
@@ -708,6 +724,10 @@ const HOST_DIALOGUE_TIMINGS = {
   liarRevealCompleteMs: 6000,
 };
 function GameIntroScreen({ theme, onContinue, isOnlineMode = false, totalRounds = 1, playerCount = 0 }) {
+  const themedHostPersona = useMemo(
+    () => getThemeHostPersona(theme),
+    [theme]
+  );
   const greeting = (() => {
     const hour = new Date().getHours();
     if (hour < 12) return 'Good morning';
@@ -716,19 +736,20 @@ function GameIntroScreen({ theme, onContinue, isOnlineMode = false, totalRounds 
   })();
   const resolvedRoundCount = Math.max(1, Number(totalRounds) || 1);
   const resolvedPlayerCount = Math.max(1, Number(playerCount) || 1);
-  const introLines = [
-    `${greeting}, and welcome to Pants on Fire! Find the Liar.`,
-    "I'm your hostess with the mostest... sorry, I mean I am Host with the Most... Ian Poster.",
-    `Through ${resolvedRoundCount} rounds, the ${resolvedPlayerCount} of you will battle it out to find out whose integrity is majorly questionable.`,
-    'We will discover who has the poker face of someone chewing a lemon,',
-    'and which player could gaslight an electric hob.',
-    'Let me explain the rules.',
-    'Each round, players get private prompts and give clues without exposing the exact card.',
-    'Spot the fake, vote the liar, then climb the leaderboard.',
-    isOnlineMode
-      ? 'Online lobbies keep prompts private on each device, then sync discussion and voting for everyone.'
-      : 'Pass the phone during reveals so each prompt stays private.',
-  ];
+  const introLines = useMemo(
+    () => buildThemeIntroDialogue({
+      themeName: theme,
+      greeting,
+      totalRounds: resolvedRoundCount,
+      playerCount: resolvedPlayerCount,
+      isOnlineMode,
+    }),
+    [theme, greeting, resolvedRoundCount, resolvedPlayerCount, isOnlineMode]
+  );
+  const themeHostAssetGuidelines = useMemo(
+    () => getThemeHostAssetGuidelines(theme),
+    [theme]
+  );
   const [lineIndex, setLineIndex] = useState(0);
   const isTalking = lineIndex < introLines.length - 1;
   const animatedHostSrc = useTalkingAnimation({ enabled: isTalking, themeName: theme });
@@ -753,11 +774,15 @@ function GameIntroScreen({ theme, onContinue, isOnlineMode = false, totalRounds 
           <div className="text-center">
             <div className="text-xs uppercase tracking-[0.35em] text-cyan-200/80">Game intro</div>
             <h2 className="mt-3 text-4xl font-black text-yellow-300">Host briefing</h2>
+            <p className="mt-2 text-sm text-cyan-100/90">
+              Your host tonight: <span className="font-black text-yellow-200">{themedHostPersona.name}</span>
+            </p>
+            <p className="mt-2 text-[0.68rem] text-white/50">{themeHostAssetGuidelines}</p>
           </div>
           <div className="relative mx-auto mt-6 w-full max-w-3xl min-h-[240px] sm:min-h-[300px]">
             <ThemeArt
               src={animatedHostSrc}
-              alt={`${theme} host Ian Poster`}
+              alt={`${theme} host ${themedHostPersona.name}`}
               className="pointer-events-none absolute bottom-0 left-0 w-28 sm:w-40 md:w-48"
             />
             <motion.div
@@ -941,7 +966,10 @@ function resolveCategoryChoiceCardArt(category, themeName = 'Default') {
   );
 }
 function HostIntroScreen({ round, stingerLine, onContinue, theme }) {
-  const mascot = MASCOT_BY_ROUND_TYPE[round.roundTypeId] || MASCOT_BY_ROUND_TYPE.prompt;
+  const themedHostPersona = useMemo(
+    () => getThemeHostPersona(theme),
+    [theme]
+  );
   const themeAssets = getThemeAssets(round.roundTypeId === 'grill' ? 'GrillEm' : theme);
   const defaultThemeAssets = getThemeAssets('Default');
   const useAdultCardArt = Boolean(round.isAdultPrompt);
@@ -955,7 +983,7 @@ function HostIntroScreen({ round, stingerLine, onContinue, theme }) {
   const speechSentences = [
     `${round.roundTypeName} round selected.`,
     getRoundRuleText(round.roundTypeId),
-    stingerLine || `${mascot.name} is in the building. Let the chaos begin.`,
+    stingerLine || `${themedHostPersona.name} is in the building. Let the chaos begin.`,
     'Get ready. Cards are about to flip after the countdown.',
   ].filter(Boolean);
   const [speechIndex, setSpeechIndex] = useState(0);
@@ -963,8 +991,8 @@ function HostIntroScreen({ round, stingerLine, onContinue, theme }) {
   const isTalking = speechIndex < speechSentences.length - 1;
   const animatedHostSrc = useTalkingAnimation({ enabled: isTalking, themeName: theme });
   const introLine = round.roundTypeId === 'grill'
-    ? `${mascot.name} is live. Mic up and question the AI.`
-    : `${mascot.name} is in the building. Let the chaos begin.`;
+    ? `${themedHostPersona.name} is live. Mic up and question the AI.`
+    : `${themedHostPersona.name} is in the building. Let the chaos begin.`;
   useEffect(() => {
     setSpeechIndex(0);
   }, [round.id, round.roundNumber, round.roundTypeId]);
@@ -983,7 +1011,7 @@ function HostIntroScreen({ round, stingerLine, onContinue, theme }) {
       <div className="mx-auto flex h-[calc(100dvh-2rem)] w-full max-w-3xl flex-col justify-center">
         <GlassPanel className="relative overflow-hidden rounded-[2.5rem] border-cyan-400/20 bg-black/25 p-6 sm:p-8 text-center">
           <div className="text-xs uppercase tracking-[0.35em] text-white/50">Host enters</div>
-          <h2 className="mt-2 text-3xl sm:text-4xl font-black text-yellow-300">{mascot.name}</h2>
+          <h2 className="mt-2 text-3xl sm:text-4xl font-black text-yellow-300">{themedHostPersona.name}</h2>
           <p className="mt-1.5 text-sm sm:text-base font-semibold text-cyan-200">{introLine}</p>
           <div className="relative mt-4 h-[220px] sm:h-[250px] w-full">
             <div className="absolute inset-0 flex items-start justify-center gap-3">
@@ -3045,16 +3073,6 @@ function AdminDialog({ open, onOpenChange, premiumEnabled, customCategories, set
   return <Dialog open={open}><DialogContent className="max-w-5xl rounded-[2rem] bg-[#13002d] p-6 text-white border border-fuchsia-400/20"><DialogHeader><DialogTitle className="text-2xl text-yellow-300">Category Admin</DialogTitle><DialogDescription className="text-white/60">Local prototype admin for adding custom categories and prompt pairs.</DialogDescription></DialogHeader><div className="grid gap-6 lg:grid-cols-[0.8fr_1.2fr] mt-4"><Card className="bg-white/5 border border-white/10 rounded-[1.75rem] p-4"><CardHeader><CardTitle className="text-lg">Create category</CardTitle></CardHeader><CardContent className="space-y-3"><Input value={categoryName} onChange={(e) => setCategoryName(e.target.value)} className="rounded-2xl bg-white/5 border border-white/10 text-white" /><Button className="w-full rounded-2xl bg-yellow-300 px-4 py-2 text-zinc-950" onClick={() => { const name = categoryName.trim(); if (!name) return; const id = `custom-${name.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`; const next = [...customCategories, { id, name, emoji: '✨', prompts: [] }]; setCustomCategories(next); setStored('imposter-custom-categories-v2', next); setSelectedCategory(id); setCategoryName(''); }}>Add category</Button></CardContent></Card><Card className="bg-white/5 border border-white/10 rounded-[1.75rem] p-4"><CardHeader><CardTitle className="text-lg">Add prompt pair</CardTitle><CardDescription className="text-white/55">Structured custom rounds can be extended later. This version keeps simple pairs.</CardDescription></CardHeader><CardContent className="space-y-3">{!premiumEnabled && <div className="rounded-2xl border border-amber-400/20 bg-amber-500/10 p-4 text-amber-100 text-sm">Premium mode is off in this prototype.</div>}<div className="grid gap-3 md:grid-cols-2"><Input value={mainPrompt} onChange={(e) => setMainPrompt(e.target.value)} placeholder="Common prompt" className="rounded-2xl bg-white/5 border border-white/10 text-white" /><Input value={imposterPrompt} onChange={(e) => setImposterPrompt(e.target.value)} placeholder="Liar prompt" className="rounded-2xl bg-white/5 border border-white/10 text-white" /></div><Button className="rounded-2xl bg-yellow-300 px-4 py-2 text-zinc-950" disabled={!premiumEnabled || !selectedCategory} onClick={() => { const next = customCategories.map((cat) => cat.id === selectedCategory ? { ...cat, prompts: [...cat.prompts, { hint: 'Custom', main: mainPrompt, imposter: imposterPrompt }] } : cat); setCustomCategories(next); setStored('imposter-custom-categories-v2', next); setMainPrompt(''); setImposterPrompt(''); }}>Add prompt pair</Button></CardContent></Card></div><DialogFooter><Button className="rounded-2xl bg-yellow-300 px-4 py-2 text-zinc-950" onClick={() => onOpenChange(false)}>Done</Button></DialogFooter></DialogContent></Dialog>;
 }
 export default function App() {
-  const HOST_STINGER_COPY_KEYS = {
-    prompt: 'hostStingerPrompt',
-    opinion: 'hostStingerOpinion',
-    picture: 'hostStingerPicture',
-    meme: 'hostStingerMeme',
-    noise: 'hostStingerNoise',
-    offtopic: 'hostStingerOfftopic',
-    chain: 'hostStingerChain',
-    grill: 'hostStingerGrill',
-  };
   const [screen, setScreen] = useState('home');
   const [players, setPlayers] = useState(createPlayers(3));
   const [liarCount, setLiarCount] = useState(1);
@@ -3307,59 +3325,21 @@ export default function App() {
   }, [onlineMode, lobbyCode, onlineClientId, screen, onlineRole]);
   useEffect(() => setLiarCount((cur) => Math.max(1, Math.min(Math.max(1, Math.floor(players.length / 2)), cur))), [players.length]);
   const themedKey = (key) => {
-    if (canonicalThemeName === 'Cops and Robbers') {
-      return ({
-        revealLiar: 'gangsterRevealLiar',
-        discussion: 'gangsterDiscussion',
-        voting: 'gangsterVoting',
-        caught: 'gangsterCaught',
-        escaped: 'gangsterEscaped',
-        winner: 'gangsterWinner',
-        hostStingerPrompt: 'gangsterHostStingerPrompt',
-        hostStingerOpinion: 'gangsterHostStingerOpinion',
-        hostStingerPicture: 'gangsterHostStingerPicture',
-        hostStingerMeme: 'gangsterHostStingerPicture',
-        hostStingerNoise: 'gangsterHostStingerPrompt',
-        hostStingerOfftopic: 'gangsterHostStingerOpinion',
-        hostStingerGrill: 'gangsterHostStingerGrill',
-      }[key] || key);
-    }
-    if (canonicalThemeName === 'Ghosts and Ghouls') {
-      return ({
-        hostStingerPrompt: 'monsterHostStingerPrompt',
-        hostStingerOpinion: 'monsterHostStingerOpinion',
-        hostStingerPicture: 'monsterHostStingerPicture',
-        hostStingerMeme: 'monsterHostStingerPicture',
-        hostStingerNoise: 'monsterHostStingerPrompt',
-        hostStingerOfftopic: 'monsterHostStingerOpinion',
-        hostStingerGrill: 'monsterHostStingerGrill',
-      }[key] || key);
-    }
-    if (canonicalThemeName === 'Rock Stars') {
-      return ({
-        hostStingerPrompt: 'rockHostStingerPrompt',
-        hostStingerOpinion: 'rockHostStingerOpinion',
-        hostStingerPicture: 'rockHostStingerPicture',
-        hostStingerMeme: 'rockHostStingerPicture',
-        hostStingerNoise: 'rockHostStingerPrompt',
-        hostStingerOfftopic: 'rockHostStingerOpinion',
-        hostStingerGrill: 'rockHostStingerGrill',
-      }[key] || key);
-    }
-    if (canonicalThemeName === 'Aliens') {
-      return ({
-        hostStingerPrompt: 'alienHostStingerPrompt',
-        hostStingerOpinion: 'alienHostStingerOpinion',
-        hostStingerPicture: 'alienHostStingerPicture',
-        hostStingerMeme: 'alienHostStingerPicture',
-        hostStingerNoise: 'alienHostStingerPrompt',
-        hostStingerOfftopic: 'alienHostStingerOpinion',
-        hostStingerGrill: 'alienHostStingerGrill',
-      }[key] || key);
-    }
-    return key;
+    const overridesByTheme = THEME_STINGER_KEY_OVERRIDES[canonicalThemeName]
+      || THEME_STINGER_KEY_OVERRIDES[toCanonicalThemeName(canonicalThemeName)]
+      || {};
+    return overridesByTheme[key] || key;
   };
   const refreshCopy = (keys) => setCopyState((cur) => ({ ...cur, ...Object.fromEntries(keys.map((key) => [key, getLine(themedKey(key))])) }));
+  const themedHostStingerLineByRoundTypeId = useMemo(
+    () => Object.fromEntries(
+      Object.values(ROUND_TYPES).map((roundType) => [
+        roundType.id,
+        pickThemeHostRoundStinger(canonicalThemeName, roundType.id, roundType.name),
+      ])
+    ),
+    [canonicalThemeName]
+  );
   const totalRounds = winCondition === 'rounds' ? (players.length * roundsPerPlayer) : 99;
   const hasScoreWinner = (list) => winCondition === 'points' && list.some((player) => player.score >= pointsToWin);
 
@@ -3395,7 +3375,6 @@ export default function App() {
     }
     const serverRound = snapshot.activeRound;
     const normalizedPhase = String(serverRound.phase || '').trim() || 'host-intro';
-    const stingerCopyKey = HOST_STINGER_COPY_KEYS[serverRound.roundTypeId] || HOST_STINGER_COPY_KEYS.prompt;
     setRound(serverRound);
     setRoundNumber(serverRound.roundNumber || 1);
     setRevealIndex(0);
@@ -3417,7 +3396,10 @@ export default function App() {
     }
     if (openHostIntro || normalizedPhase === 'host-intro') {
       refreshCopy(['passPhone', 'revealNormal', 'revealLiar']);
-      setCopyState((cur) => ({ ...cur, hostStinger: getLine(themedKey(stingerCopyKey)) }));
+      setCopyState((cur) => ({
+        ...cur,
+        hostStinger: pickThemeHostRoundStinger(canonicalThemeName, serverRound.roundTypeId, serverRound.roundTypeName),
+      }));
       setScreen('host-intro');
       return serverRound;
     }
@@ -3636,7 +3618,6 @@ export default function App() {
       }
     );
     if (!built) return;
-    const stingerCopyKey = HOST_STINGER_COPY_KEYS[built.roundTypeId] || HOST_STINGER_COPY_KEYS.prompt;
     setRound(built);
     setPreviousRoundType(built.roundTypeId);
     setRecentPromptKeys((cur) => [...cur, built.promptKey]);
@@ -3645,7 +3626,10 @@ export default function App() {
     setOnlinePrivatePrompt(null);
     setOnlinePrivatePromptError('');
     refreshCopy(['passPhone', 'revealNormal', 'revealLiar']);
-    setCopyState((cur) => ({ ...cur, hostStinger: getLine(themedKey(stingerCopyKey)) }));
+    setCopyState((cur) => ({
+      ...cur,
+      hostStinger: pickThemeHostRoundStinger(canonicalThemeName, built.roundTypeId, built.roundTypeName),
+    }));
     setScreen('host-intro');
   }
   async function revealResults() {

@@ -272,3 +272,42 @@ export function createCopyPicker(bank) {
     return chosen;
   };
 }
+
+export const THEME_STINGER_KEY_OVERRIDES = {
+  'Cops and Robbers': {
+    hostStingerPrompt: 'gangsterHostStingerPrompt',
+    hostStingerOpinion: 'gangsterHostStingerOpinion',
+    hostStingerPicture: 'gangsterHostStingerPicture',
+    hostStingerMeme: 'gangsterHostStingerPicture',
+    hostStingerNoise: 'gangsterHostStingerPrompt',
+    hostStingerOfftopic: 'gangsterHostStingerOpinion',
+    hostStingerGrill: 'gangsterHostStingerGrill',
+  },
+  'Ghosts and Ghouls': {
+    hostStingerPrompt: 'monsterHostStingerPrompt',
+    hostStingerOpinion: 'monsterHostStingerOpinion',
+    hostStingerPicture: 'monsterHostStingerPicture',
+    hostStingerMeme: 'monsterHostStingerPicture',
+    hostStingerNoise: 'monsterHostStingerPrompt',
+    hostStingerOfftopic: 'monsterHostStingerOpinion',
+    hostStingerGrill: 'monsterHostStingerGrill',
+  },
+  'Rock Stars': {
+    hostStingerPrompt: 'rockHostStingerPrompt',
+    hostStingerOpinion: 'rockHostStingerOpinion',
+    hostStingerPicture: 'rockHostStingerPicture',
+    hostStingerMeme: 'rockHostStingerPicture',
+    hostStingerNoise: 'rockHostStingerPrompt',
+    hostStingerOfftopic: 'rockHostStingerOpinion',
+    hostStingerGrill: 'rockHostStingerGrill',
+  },
+  Aliens: {
+    hostStingerPrompt: 'alienHostStingerPrompt',
+    hostStingerOpinion: 'alienHostStingerOpinion',
+    hostStingerPicture: 'alienHostStingerPicture',
+    hostStingerMeme: 'alienHostStingerPicture',
+    hostStingerNoise: 'alienHostStingerPrompt',
+    hostStingerOfftopic: 'alienHostStingerOpinion',
+    hostStingerGrill: 'alienHostStingerGrill',
+  },
+};
