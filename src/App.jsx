@@ -480,13 +480,13 @@ function RoundTypeLogo({ src, alt, className = '' }) {
   return <img src={src} alt={alt} className={className} onError={(event) => { event.currentTarget.style.display = 'none'; }} />;
 }
 const MASCOT_BY_ROUND_TYPE = {
-  prompt: { name: 'Captain Spark', face: '🎤', blurb: 'Classic chaos host.' },
-  opinion: { name: 'Captain Spark', face: '🎭', blurb: 'Debate instigator.' },
-  picture: { name: 'Captain Spark', face: '🖼️', blurb: 'Flash-frame ringmaster.' },
-  meme: { name: 'Captain Spark', face: '🧠', blurb: 'Decode the meme vibe, sniff the fake.' },
-  noise: { name: 'Captain Spark', face: '🔊', blurb: 'No words. Pure noise. Maximum suspicion.' },
-  offtopic: { name: 'Captain Spark', face: '🛡️', blurb: 'Defend the topic like your life depends on it.' },
-  chain: { name: 'Captain Spark', face: '🧩', blurb: 'Connect the clues, expose the break.' },
+  prompt: { name: 'Ian Poster', face: '🎤', blurb: 'Classic chaos host.' },
+  opinion: { name: 'Ian Poster', face: '🎭', blurb: 'Debate instigator.' },
+  picture: { name: 'Ian Poster', face: '🖼️', blurb: 'Flash-frame ringmaster.' },
+  meme: { name: 'Ian Poster', face: '🧠', blurb: 'Decode the meme vibe, sniff the fake.' },
+  noise: { name: 'Ian Poster', face: '🔊', blurb: 'No words. Pure noise. Maximum suspicion.' },
+  offtopic: { name: 'Ian Poster', face: '🛡️', blurb: 'Defend the topic like your life depends on it.' },
+  chain: { name: 'Ian Poster', face: '🧩', blurb: 'Connect the clues, expose the break.' },
   grill: { name: 'Blaze Byte', face: '🤖', blurb: "AI host for Grill 'Em." },
 };
 function RoundMascot({ roundTypeId }) {
@@ -560,6 +560,12 @@ function useTalkingAnimation({ enabled = false, themeName = 'Default' } = {}) {
 function getHostAssetGuidelines() {
   return 'Host PNG size: 900×1400 px (2:3 ratio), transparent background, keep key face/torso inside ~70% width and ~80% height safe zone. Provide 4 files per theme: host-idle.png + host-talk-1.png + host-talk-2.png + host-talk-3.png.';
 }
+const HOST_DIALOGUE_TIMINGS = {
+  gameIntroAdvanceMs: 3600,
+  roundIntroAdvanceMs: 3600,
+  liarRevealAdvanceMs: 2400,
+  liarRevealCompleteMs: 2600,
+};
 function GameIntroScreen({ theme, onContinue, isOnlineMode = false }) {
   const introLines = [
     'Welcome to Pants on Fire. One or more players are secretly lying.',
@@ -579,7 +585,7 @@ function GameIntroScreen({ theme, onContinue, isOnlineMode = false }) {
     if (lineIndex >= introLines.length - 1) return undefined;
     const timer = setTimeout(() => {
       setLineIndex((current) => Math.min(current + 1, introLines.length - 1));
-    }, 2400);
+    }, HOST_DIALOGUE_TIMINGS.gameIntroAdvanceMs);
     return () => clearTimeout(timer);
   }, [lineIndex, introLines.length]);
   const canContinue = lineIndex >= introLines.length - 1;
@@ -591,23 +597,23 @@ function GameIntroScreen({ theme, onContinue, isOnlineMode = false }) {
             <div className="text-xs uppercase tracking-[0.35em] text-cyan-200/80">Game intro</div>
             <h2 className="mt-3 text-4xl font-black text-yellow-300">Host briefing</h2>
           </div>
-          <div className="mt-6 grid items-end gap-4 md:grid-cols-[0.9fr_1.1fr]">
-            <div className="relative">
-              <ThemeArt
-                src={animatedHostSrc}
-                alt={`${theme} host presenter`}
-                className="mx-auto w-full max-w-[420px] rounded-2xl border border-white/15 bg-black/20"
-              />
-            </div>
+          <div className="relative mx-auto mt-6 w-full max-w-3xl min-h-[220px] sm:min-h-[280px]">
+            <ThemeArt
+              src={animatedHostSrc}
+              alt={`${theme} host Ian Poster`}
+              className="pointer-events-none absolute bottom-0 left-0 w-28 sm:w-40 md:w-48"
+            />
             <motion.div
               key={`intro-line-${lineIndex}`}
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.25, ease: 'easeOut' }}
-              className="rounded-[1.6rem] border border-cyan-300/25 bg-black/45 p-5 text-center text-white"
+              className="ml-[5.5rem] sm:ml-[9.5rem] md:ml-[12rem] pt-2 text-white"
             >
-              <div className="text-[0.68rem] uppercase tracking-[0.2em] text-cyan-100">Host says</div>
-              <p className="mt-2 text-base text-white/95">{introLines[lineIndex]}</p>
+              <div className="relative mx-auto max-w-2xl rounded-[2rem] border-2 border-cyan-200/80 bg-[#1d2376] px-4 py-4 text-center shadow-[0_12px_24px_rgba(0,0,0,0.35)]">
+                <div className="absolute -left-3 top-[55%] h-6 w-6 -translate-y-1/2 rotate-45 border-b-2 border-l-2 border-cyan-200/80 bg-[#1d2376]" />
+                <p className="text-base text-white/95 sm:text-lg">{introLines[lineIndex]}</p>
+              </div>
             </motion.div>
           </div>
           <div className="mt-7 flex justify-center">
@@ -801,7 +807,7 @@ function HostIntroScreen({ round, stingerLine, onContinue, theme }) {
     if (speechIndex >= speechSentences.length - 1) return undefined;
     const timer = setTimeout(() => {
       setSpeechIndex((current) => Math.min(current + 1, speechSentences.length - 1));
-    }, 2500);
+    }, HOST_DIALOGUE_TIMINGS.roundIntroAdvanceMs);
     return () => clearTimeout(timer);
   }, [speechIndex, speechSentences.length]);
   return (
@@ -854,8 +860,7 @@ function HostIntroScreen({ round, stingerLine, onContinue, theme }) {
             >
               <div className="relative mx-auto max-w-xl rounded-[2rem] border-2 border-cyan-200/80 bg-[#1d2376] px-4 py-4 shadow-[0_12px_24px_rgba(0,0,0,0.35)]">
                 <div className="absolute -left-3 top-[58%] h-6 w-6 -translate-y-1/2 rotate-45 border-b-2 border-l-2 border-cyan-200/80 bg-[#1d2376]" />
-                <div className="text-[0.65rem] uppercase tracking-[0.2em] text-cyan-100">{mascot.name} says</div>
-                <p className="mt-2 text-base sm:text-lg text-white/95">{speechSentences[speechIndex]}</p>
+                <p className="text-base sm:text-lg text-white/95">{speechSentences[speechIndex]}</p>
               </div>
             </motion.div>
             {round.roundTypeId === 'grill' && (
@@ -2048,7 +2053,7 @@ function LiarRevealScreen({ players, round, onComplete, theme }) {
     if (announcementIndex >= announcementLines.length - 1) return undefined;
     const timer = setTimeout(() => {
       setAnnouncementIndex((current) => Math.min(current + 1, announcementLines.length - 1));
-    }, 1400);
+    }, HOST_DIALOGUE_TIMINGS.liarRevealAdvanceMs);
     return () => clearTimeout(timer);
   }, [announcementIndex, announcementLines.length]);
   useEffect(() => {
@@ -2056,7 +2061,7 @@ function LiarRevealScreen({ players, round, onComplete, theme }) {
     const timer = setTimeout(() => {
       try { audioRef.current?.pause(); } catch {}
       onComplete();
-    }, 1600);
+    }, HOST_DIALOGUE_TIMINGS.liarRevealCompleteMs);
     return () => clearTimeout(timer);
   }, [announcementIndex, announcementLines.length, onComplete]);
   return <TopFrame theme={theme}><div className="mx-auto max-w-4xl space-y-6"><GlassPanel className="rounded-[2.5rem] p-8 md:p-10 border-red-400/25 bg-black/35 text-center overflow-hidden relative"><div className="absolute inset-0 animate-pulse bg-[radial-gradient(circle,_rgba(255,0,80,0.16)_0%,_rgba(255,0,80,0.08)_35%,_transparent_70%)]" /><div className="relative z-10 space-y-6"><div className="text-xs uppercase tracking-[0.35em] text-white/50">Final accusation</div><div className="grid gap-4 md:grid-cols-[0.9fr_1.1fr] items-end"><ThemeArt src={animatedHostSrc} alt={`${theme} presenter`} className="mx-auto w-full max-w-[330px] rounded-2xl border border-white/15 bg-black/20" /><motion.div initial={{ scale: 0.98, opacity: 0.8 }} animate={{ scale: [1, 1.03, 1], opacity: [0.85, 1, 0.85] }} transition={{ duration: 1.05, repeat: 1, ease: 'easeInOut' }} className="space-y-4 rounded-[1.5rem] border border-red-300/25 bg-black/45 p-5"><div className="text-4xl md:text-6xl font-black text-red-300">{announcementLines[0]}</div><div className="inline-flex flex-wrap justify-center gap-3">{liars.map((player) => <span key={player.id} className="rounded-full border border-red-300/30 bg-red-500/15 px-5 py-2 text-lg md:text-2xl font-black text-yellow-200">🔥 {player.name}</span>)}</div><div className="text-sm text-white/75">{announcementLines[Math.min(announcementIndex, announcementLines.length - 1)]}</div></motion.div></div></div></GlassPanel></div></TopFrame>;
