@@ -1,4 +1,4 @@
-import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   ShieldAlert, Users, EyeOff, Trophy, TimerReset, PlusCircle, Vote,
@@ -702,7 +702,15 @@ function GameIntroScreen({ theme, onContinue, isOnlineMode = false, totalRounds 
               </div>
             </motion.div>
           </div>
-          <div className="mt-7 flex justify-center">
+          <div className="mt-7 flex flex-wrap justify-center gap-3">
+            {!canContinue && (
+              <Button
+                className="h-14 rounded-[1.5rem] border border-white/25 bg-white/10 px-6 text-white"
+                onClick={onContinue}
+              >
+                Skip intro
+              </Button>
+            )}
             <Button
               className="h-14 rounded-[1.5rem] border-2 border-white bg-yellow-300 px-8 text-zinc-950"
               onClick={onContinue}
@@ -956,13 +964,23 @@ function HostIntroScreen({ round, stingerLine, onContinue, theme }) {
             )}
             <div className="mt-3 text-xs text-white/70">{round.roundTypeName} • {round.categoryEmoji} {round.categoryLabel}</div>
           </div>
-          <Button
-            className="mt-7 h-14 rounded-[1.5rem] border-2 border-white bg-yellow-300 px-8 text-zinc-950"
-            onClick={onContinue}
-            disabled={!canContinue}
-          >
-            {canContinue ? 'Deal cards' : 'Host is explaining...'}
-          </Button>
+          <div className="mt-7 flex flex-wrap justify-center gap-3">
+            {!canContinue && (
+              <Button
+                className="h-14 rounded-[1.5rem] border border-white/25 bg-white/10 px-6 text-white"
+                onClick={onContinue}
+              >
+                Skip host dialogue
+              </Button>
+            )}
+            <Button
+              className="h-14 rounded-[1.5rem] border-2 border-white bg-yellow-300 px-8 text-zinc-950"
+              onClick={onContinue}
+              disabled={!canContinue}
+            >
+              {canContinue ? 'Deal cards' : 'Host is explaining...'}
+            </Button>
+          </div>
         </GlassPanel>
       </div>
     </TopFrame>
@@ -1522,10 +1540,10 @@ function RevealScreen({ players, currentRevealIndex, round, totalRounds, onNext,
     if (!promptElement || !fitContainer) return;
 
     const maxSize = 54;
-    const minSize = 12;
+    const minSize = 10;
     let nextSize = maxSize;
     promptElement.style.fontSize = `${nextSize}px`;
-    promptElement.style.lineHeight = '1.05';
+    promptElement.style.lineHeight = '1.08';
 
     const fits = () => (
       promptElement.scrollHeight <= fitContainer.clientHeight
@@ -1597,10 +1615,12 @@ function RevealScreen({ players, currentRevealIndex, round, totalRounds, onNext,
                   />
                   <div className="text-xs uppercase tracking-[0.3em] text-cyan-200/95">{round.roundTypeName}</div>
                   <div className="mt-2 text-sm font-semibold text-white/90">Round {round.roundNumber}</div>
-                  <div className="mt-5 text-sm text-white/95">
-                    {instructionLine}
+                  <div className="mt-5 rounded-xl border border-cyan-200/30 bg-black/45 px-3 py-2 shadow-[0_0_16px_rgba(34,211,238,0.28)]">
+                    <div className="text-sm text-white/95">
+                      {instructionLine}
+                    </div>
+                    <div className="mt-2 text-xs text-white/90">{round.roundTypeTagline}</div>
                   </div>
-                  <div className="mt-2 text-xs text-white/90">{round.roundTypeTagline}</div>
                   <div className="mt-auto pb-4 text-center">
                     <div className="text-3xl font-black uppercase tracking-[0.18em] text-yellow-200">Get Ready</div>
                     <div className="mt-2 text-xs uppercase tracking-[0.2em] text-cyan-100/95">
@@ -1661,18 +1681,18 @@ function RevealScreen({ players, currentRevealIndex, round, totalRounds, onNext,
                   {mediaSrc && (
                     <img src={mediaSrc} alt={`${round.hint} visual clue`} className="mt-3 w-full rounded-2xl" />
                   )}
-                  <div ref={promptFitContainerRef} className="mt-4 max-h-[11.5rem] overflow-hidden">
+                  <div ref={promptFitContainerRef} className="mt-4 max-h-[12.5rem] overflow-hidden px-1">
                     <div
                       ref={promptTextRef}
                       className={`font-black ${isImposter ? 'text-yellow-300' : 'text-white'}`}
                       style={{
                         fontSize: `${promptFontSize}px`,
-                        wordBreak: 'normal',
-                        overflowWrap: 'normal',
-                        whiteSpace: 'nowrap',
-                        hyphens: 'none',
-                        WebkitHyphens: 'none',
-                        lineHeight: 1.05,
+                        wordBreak: 'break-word',
+                        overflowWrap: 'anywhere',
+                        whiteSpace: 'normal',
+                        hyphens: 'auto',
+                        WebkitHyphens: 'auto',
+                        lineHeight: 1.08,
                       }}
                     >
                       {prompt}
@@ -2328,6 +2348,7 @@ function VotingScreen({ players, round, totalRounds, votesByPlayerId, setVotesBy
 function LiarRevealScreen({ players, round, onComplete, theme }) {
   const liars = players.filter((p) => (round.imposterIds || []).includes(p.id));
   const audioRef = useRef(null);
+  const hasCompletedRef = useRef(false);
   const [announcementIndex, setAnnouncementIndex] = useState(0);
   const announcementLines = [
     liars.length > 1 ? 'The Liars are......' : 'The Liar was......',
@@ -2338,6 +2359,12 @@ function LiarRevealScreen({ players, round, onComplete, theme }) {
   ];
   const isTalking = announcementIndex < announcementLines.length - 1;
   const animatedHostSrc = useTalkingAnimation({ enabled: isTalking, themeName: theme });
+  const finishReveal = useCallback(() => {
+    if (hasCompletedRef.current) return;
+    hasCompletedRef.current = true;
+    try { audioRef.current?.pause(); } catch {}
+    onComplete();
+  }, [onComplete]);
   useEffect(() => {
     try {
       audioRef.current = new Audio(HEARTBEAT_SFX_SRC);
@@ -2358,11 +2385,10 @@ function LiarRevealScreen({ players, round, onComplete, theme }) {
   useEffect(() => {
     if (announcementIndex < announcementLines.length - 1) return undefined;
     const timer = setTimeout(() => {
-      try { audioRef.current?.pause(); } catch {}
-      onComplete();
+      finishReveal();
     }, HOST_DIALOGUE_TIMINGS.liarRevealCompleteMs);
     return () => clearTimeout(timer);
-  }, [announcementIndex, announcementLines.length, onComplete]);
+  }, [announcementIndex, announcementLines.length, finishReveal]);
   return (
     <TopFrame theme={theme}>
       <div className="mx-auto flex h-[calc(100dvh-2rem)] w-full max-w-4xl flex-col justify-center">
@@ -2403,6 +2429,14 @@ function LiarRevealScreen({ players, round, onComplete, theme }) {
                 </div>
               </motion.div>
             </div>
+            <div className="mt-6 flex justify-center">
+              <Button
+                className="h-14 rounded-[1.5rem] border border-white/30 bg-white/10 px-6 text-white"
+                onClick={finishReveal}
+              >
+                Skip reveal
+              </Button>
+            </div>
           </div>
         </GlassPanel>
       </div>
@@ -2410,8 +2444,10 @@ function LiarRevealScreen({ players, round, onComplete, theme }) {
   );
 }
 function ResultsScreen({ players, round, totalRounds, tally, roundGains, roundBreakdown, imposterCaught, onNextRound, onEndGame, resultLine, theme }) {
-  const ranked = [...players].sort((a, b) => b.score - a.score);
+  const [resultsStage, setResultsStage] = useState('summary');
   const lastRound = round.roundNumber >= totalRounds;
+  const promptByPlayerId = round.promptsByPlayerId || {};
+  const rankedPlayers = [...players].sort((a, b) => b.score - a.score);
   const roundInfoTitle = round.roundTypeId === 'grill'
     ? 'AI Hidden Prompt'
     : ((round.roundTypeId === 'chain')
@@ -2428,9 +2464,174 @@ function ResultsScreen({ players, round, totalRounds, tally, roundGains, roundBr
     : (round.roundTypeId === 'chain'
       ? (round.imposterPrompt || 'N/A')
       : (round.imposterPrompt || round.aiPrompt || 'N/A'));
-  const promptByPlayerId = round.promptsByPlayerId || {};
+  const sortedVoteRows = [...players].sort((a, b) => (tally?.[b.id] || 0) - (tally?.[a.id] || 0));
+  const ctaLabel = resultsStage === 'summary'
+    ? 'Show round details'
+    : (resultsStage === 'details'
+      ? 'Show leaderboard'
+      : (lastRound ? 'View final winner' : 'Start next round'));
 
-  return <TopFrame theme={theme}><div className="mx-auto max-w-5xl space-y-6"><ScoreStrip players={players} roundNumber={round.roundNumber} totalRounds={totalRounds} /><GlassPanel className="rounded-[2.5rem] p-8 border-white/15 bg-black/25"><div className="space-y-6"><div className="text-center space-y-4"><div className="text-xs uppercase tracking-[0.3em] text-white/50">Liar Reveal</div><h2 className="text-5xl md:text-6xl font-black text-red-400">🔥 WHO WAS THE LIAR? 🔥</h2><div className={`text-2xl font-black ${imposterCaught ? 'text-yellow-300' : 'text-fuchsia-400'}`}>{imposterCaught ? 'LIAR EXPOSED 🔥' : 'THE LIAR ESCAPED 😈'}</div><div className="text-white/75">{resultLine}</div></div><div className="grid grid-cols-2 md:grid-cols-3 gap-4 mt-6">{players.map((player) => { const isLiar = (round.imposterIds || []).includes(player.id); const breakdown = roundBreakdown?.[player.id] || { voteHit: 0, liarSurvived: 0, grillTeamBonus: 0, grillLiarSwing: 0 }; return <div key={player.id} className={`relative rounded-[1.5rem] p-4 text-center border transition-all duration-300 ${isLiar ? 'bg-red-500/20 border-red-400 shadow-[0_0_20px_rgba(255,0,0,0.6)] scale-105' : 'bg-white/5 border-white/10'}`}><img src={FLAME_SRC} alt="flame" className={`absolute -top-4 right-2 h-8 w-8 ${isLiar ? 'block' : 'hidden'}`} />{isLiar && <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 text-xs font-black rounded-full bg-red-500 text-white">🔥 THE LIAR</div>}<div className={`text-lg font-bold ${isLiar ? 'text-red-300' : 'text-white'}`}>{player.name}</div><div className="text-xs text-white/60 mt-2">{promptByPlayerId[player.id] || '—'}</div><div className="mt-3 text-sm font-bold text-cyan-200">+{roundGains?.[player.id] || 0} this round</div><div className="mt-2 text-[11px] text-white/70">Vote hit +{breakdown.voteHit} • Liar survived +{breakdown.liarSurvived}</div>{round.roundTypeId === 'grill' && <div className="mt-1 text-[11px] text-cyan-200">Team bonus +{breakdown.grillTeamBonus} • Swing {breakdown.grillLiarSwing >= 0 ? '+' : ''}{breakdown.grillLiarSwing}</div>}</div>; })}</div><div className="grid gap-6 lg:grid-cols-[1fr_0.9fr]"><div className="space-y-5"><div className="grid gap-4 md:grid-cols-2"><GlassPanel className="rounded-[1.75rem] p-5 border-cyan-400/20 bg-black/20"><div className="text-sm text-white/55">Hint / Subcategory</div><div className="text-2xl font-black mt-2">{round.hint}</div><div className="text-xs text-cyan-200 mt-2">{round.roundTypeTagline}</div></GlassPanel><GlassPanel className="rounded-[1.75rem] p-5 border-orange-400/20 bg-black/20"><div className="text-sm text-white/55">{roundInfoTitle}</div><div className="text-2xl font-black mt-2 text-orange-300">{roundInfoValue}</div></GlassPanel></div><GlassPanel className="rounded-[1.75rem] p-5 border-cyan-400/20 bg-black/20"><div className="text-sm text-white/55">Scoring rules</div><div className="mt-2 text-sm text-cyan-100">Correct liar vote: +1 point. Liar survives: +2 points to that liar.</div>{round.roundTypeId === 'grill' && <div className="mt-2 text-xs text-cyan-200">Grill 'Em bonus: if liars are caught, everyone gains +2. If liars survive, liars gain +2 and non-liars lose 1 (floor 0).</div>}</GlassPanel>{round.roundTypeId === 'grill' && (round.grillData?.transcript || []).length > 0 && <GlassPanel className="rounded-[1.75rem] p-5 border-fuchsia-400/20 bg-black/20"><div className="text-sm text-white/55 mb-3">Grill 'Em transcript</div><div className="space-y-2 max-h-56 overflow-auto pr-1">{round.grillData.transcript.map((row) => <div key={row.id} className="rounded-xl border border-white/10 bg-white/5 p-3"><div className="text-xs text-cyan-200">{row.player} • Q{row.turn}</div><div className="text-sm text-white mt-1">{row.question}</div><div className="text-xs text-fuchsia-200 mt-1">Blaze Byte: {row.answer}</div></div>)}</div></GlassPanel>}{round.mode === 'chaos' && round.bannedWords.length > 0 && <GlassPanel className="rounded-[1.75rem] p-5 border-red-400/20 bg-black/20"><div className="text-sm text-white/55 mb-3">Banned Words</div><div className="flex flex-wrap gap-2">{round.bannedWords.map((word) => <span key={word} className="px-3 py-1 rounded-full bg-red-500/20 border border-red-400/30 text-red-200 text-xs">{word}</span>)}</div></GlassPanel>}<GlassPanel className="rounded-[1.75rem] p-5 border-white/10 bg-black/20"><div className="text-sm text-white/55 mb-3">Vote tally</div><div className="grid gap-3 sm:grid-cols-2">{players.map((player) => <div key={player.id} className="rounded-2xl bg-white/5 border border-white/10 p-3 flex items-center justify-between gap-3"><span>{player.name}</span><Badge className="rounded-full bg-white/10 border border-white/10 text-white">{tally[player.id] || 0} votes</Badge></div>)}</div></GlassPanel></div><div className="space-y-5"><GlassPanel className="rounded-[1.75rem] p-5 border-yellow-300/20 bg-black/20"><div className="flex items-center gap-2 text-yellow-200"><Trophy className="h-5 w-5" /> Scoreboard</div><div className="space-y-3 mt-4">{ranked.map((player, index) => <div key={player.id} className="rounded-2xl bg-white/5 border border-white/10 p-4 flex items-center justify-between gap-3"><div><div className="text-sm text-white/55">Place {index + 1}</div><div className="font-semibold">{player.name}</div></div><div className="text-right"><div className="text-2xl font-black">{player.score}</div><div className="text-xs text-cyan-200">+{roundGains?.[player.id] || 0} this round</div></div></div>)}</div></GlassPanel>{!lastRound ? <Button className="rounded-[1.5rem] h-14 bg-yellow-300 text-zinc-950 w-full border-2 border-white" onClick={onNextRound}><TimerReset className="mr-2 h-5 w-5 inline" />Start next round</Button> : <Button className="rounded-[1.5rem] h-14 bg-yellow-300 text-zinc-950 w-full border-2 border-white" onClick={onEndGame}><Trophy className="mr-2 h-5 w-5 inline" />View final winner</Button>}</div></div></div></GlassPanel></div></TopFrame>;
+  useEffect(() => {
+    setResultsStage('summary');
+  }, [round.id, round.roundNumber]);
+
+  function handleResultsAction() {
+    if (resultsStage === 'summary') {
+      setResultsStage('details');
+      return;
+    }
+    if (resultsStage === 'details') {
+      setResultsStage('leaderboard');
+      return;
+    }
+    if (lastRound) {
+      onEndGame();
+      return;
+    }
+    onNextRound();
+  }
+
+  return (
+    <TopFrame theme={theme}>
+      <div className="mx-auto max-w-5xl space-y-6">
+        <GlassPanel className="rounded-[2.5rem] border-white/15 bg-black/25 p-5 sm:p-8">
+          {resultsStage === 'summary' ? (
+            <>
+              <div className="text-center">
+                <h2 className="text-5xl leading-[0.9] sm:text-6xl font-black text-[#ff7d87] [text-shadow:0_4px_16px_rgba(0,0,0,0.45)]">
+                  🔥 WHO WAS THE LIAR? 🔥
+                </h2>
+                <div className={`mt-5 text-4xl sm:text-5xl font-black tracking-tight ${imposterCaught ? 'text-yellow-300' : 'text-fuchsia-400'}`}>
+                  {imposterCaught ? 'THE LIAR WAS CAUGHT 😤' : 'THE LIAR ESCAPED 😈'}
+                </div>
+                <p className="mx-auto mt-4 max-w-3xl text-xl sm:text-2xl font-bold text-white/75">
+                  {resultLine}
+                </p>
+              </div>
+
+              <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                {players.map((player) => {
+                  const isLiar = (round.imposterIds || []).includes(player.id);
+                  const breakdown = roundBreakdown?.[player.id] || { voteHit: 0, liarSurvived: 0, grillTeamBonus: 0, grillLiarSwing: 0 };
+                  const roundGain = roundGains?.[player.id] || 0;
+                  return (
+                    <div
+                      key={player.id}
+                      className={`relative rounded-[1.7rem] border p-4 text-center transition-all duration-300 ${
+                        isLiar
+                          ? 'border-red-300/75 bg-gradient-to-b from-red-500/12 to-white/5 shadow-[0_0_22px_rgba(255,62,62,0.55)]'
+                          : 'border-white/10 bg-white/5'
+                      }`}
+                    >
+                      {isLiar && (
+                        <div className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full border border-red-200/70 bg-red-500 px-3 py-1 text-xs font-black uppercase tracking-[0.12em] text-white">
+                          🔥 The Liar
+                        </div>
+                      )}
+                      <div className={`text-4xl sm:text-5xl font-black leading-[1.05] ${isLiar ? 'text-[#ffc0ab]' : 'text-white'}`}>
+                        {player.name}
+                      </div>
+                      <div className="mt-3 text-[1.55rem] font-black uppercase leading-tight text-white/70">
+                        {promptByPlayerId[player.id] || '—'}
+                      </div>
+                      <div className="mt-4 text-[2rem] font-black uppercase leading-none text-cyan-200">
+                        {`${roundGain >= 0 ? '+' : ''}${roundGain} THIS ROUND`}
+                      </div>
+                      <div className="mt-3 text-lg font-bold uppercase leading-tight text-white/60">
+                        {`VOTE HIT +${breakdown.voteHit} • LIAR SURVIVED +${breakdown.liarSurvived}`}
+                      </div>
+                      {round.roundTypeId === 'grill' && (
+                        <div className="mt-2 text-sm font-semibold uppercase leading-tight text-cyan-200/90">
+                          {`TEAM BONUS +${breakdown.grillTeamBonus} • SWING ${breakdown.grillLiarSwing >= 0 ? '+' : ''}${breakdown.grillLiarSwing}`}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </>
+          ) : (resultsStage === 'details' ? (
+            <div className="space-y-5">
+              <GlassPanel className="rounded-[1.8rem] border border-white/10 bg-black/25 p-5 text-center">
+                <div className="text-3xl font-black uppercase tracking-[0.06em] text-white/55">Hint / Subcategory</div>
+                <div className="mt-3 text-5xl font-black uppercase leading-tight text-white">{round.hint}</div>
+                <div className="mx-auto mt-4 max-w-3xl text-3xl font-black uppercase leading-tight text-cyan-200/95">{round.roundTypeTagline}</div>
+              </GlassPanel>
+
+              <GlassPanel className="rounded-[1.8rem] border border-white/10 bg-black/25 p-5 text-center">
+                <div className="text-3xl font-black uppercase tracking-[0.06em] text-white/55">{roundInfoTitle}</div>
+                <div className="mx-auto mt-3 max-w-3xl text-6xl font-black uppercase leading-[1.05] text-[#ffb866]">
+                  {roundInfoValue}
+                </div>
+              </GlassPanel>
+
+              <GlassPanel className="rounded-[1.8rem] border border-white/10 bg-black/25 p-5 text-center">
+                <div className="text-3xl font-black uppercase tracking-[0.06em] text-white/55">Scoring Rules</div>
+                <div className="mx-auto mt-3 max-w-3xl text-3xl font-black uppercase leading-tight text-cyan-100">
+                  Correct liar vote: +1 point. Liar survives: +2 points to that liar.
+                </div>
+              </GlassPanel>
+
+              <GlassPanel className="rounded-[1.8rem] border border-white/10 bg-black/25 p-5">
+                <div className="text-center text-4xl font-black uppercase tracking-[0.06em] text-white/65">Vote Tally</div>
+                <div className="mt-4 space-y-3">
+                  {sortedVoteRows.map((player) => {
+                    const votes = tally?.[player.id] || 0;
+                    const voteLabel = `${votes} ${votes === 1 ? 'VOTE' : 'VOTES'}`;
+                    return (
+                      <div key={player.id} className="flex items-center justify-between rounded-[1.3rem] border border-white/10 bg-white/5 px-4 py-3">
+                        <div className="text-3xl font-black uppercase text-white">{player.name}</div>
+                        <div className="rounded-full border border-white/15 bg-white/15 px-5 py-2 text-3xl font-black uppercase text-white/90">
+                          {voteLabel}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </GlassPanel>
+            </div>
+          ) : (
+            <GlassPanel className="rounded-[1.8rem] border border-yellow-300/20 bg-black/25 p-5 sm:p-7">
+              <div className="flex items-center gap-3 text-yellow-200">
+                <Trophy className="h-8 w-8" />
+                <div className="text-5xl font-black uppercase tracking-[0.06em]">Scoreboard</div>
+              </div>
+              <div className="mt-5 space-y-4">
+                {rankedPlayers.map((player, index) => (
+                  <div key={player.id} className="rounded-[1.8rem] border border-white/12 bg-white/5 px-4 py-4 sm:px-6 sm:py-5">
+                    <div className="grid grid-cols-[1fr_auto] items-center gap-3">
+                      <div>
+                        <div className="text-3xl sm:text-4xl font-black uppercase text-white/55">{`Place ${index + 1}`}</div>
+                        <div className="mt-1 text-5xl sm:text-6xl font-black uppercase leading-tight text-white">{player.name}</div>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-7xl sm:text-8xl font-black leading-none text-white">{player.score}</div>
+                        <div className="mt-1 text-4xl sm:text-5xl font-black uppercase leading-tight text-cyan-200">
+                          {`${(roundGains?.[player.id] || 0) >= 0 ? '+' : ''}${roundGains?.[player.id] || 0} THIS ROUND`}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </GlassPanel>
+          ))}
+
+          <div className="mt-8">
+            <Button
+              className="h-14 w-full rounded-[1.5rem] border-2 border-white bg-yellow-300 text-zinc-950"
+              onClick={handleResultsAction}
+            >
+              {resultsStage !== 'leaderboard'
+                ? <SkipForward className="mr-2 inline h-5 w-5" />
+                : (lastRound ? <Trophy className="mr-2 inline h-5 w-5" /> : <TimerReset className="mr-2 inline h-5 w-5" />)}
+              {ctaLabel}
+            </Button>
+          </div>
+        </GlassPanel>
+      </div>
+    </TopFrame>
+  );
 }
 function FinalScreen({ players, onRestart, line, theme }) {
   const ranked = [...players].sort((a, b) => b.score - a.score);
