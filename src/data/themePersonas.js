@@ -459,13 +459,168 @@ const COPS_AND_ROBBERS_THEME_PERSONAS = [
   },
 ];
 
+const GHOSTS_AND_GHOULS_THEME_PERSONAS = [
+  {
+    id: 'ghost-count-smoulder',
+    name: 'Count Smoulder',
+    bio: "Charming vampire with a crooked grin; watches everyone like he's picking his next meal.",
+    imageSrc: '/assets/themes/ghosts-and-ghouls/personas/01-count-smoulder.png',
+  },
+  {
+    id: 'ghost-rotgut-eddie',
+    name: 'Rotgut Eddie',
+    bio: 'Decaying undead bloke who looks confused but somehow always ends up where trouble is.',
+    imageSrc: '/assets/themes/ghosts-and-ghouls/personas/02-rotgut-eddie.png',
+  },
+  {
+    id: 'ghost-bride-static',
+    name: 'Bride Static',
+    bio: "Silent, pale bride with a twitch in her eye; stares like she remembers something she shouldn't.",
+    imageSrc: '/assets/themes/ghosts-and-ghouls/personas/03-bride-static.png',
+  },
+  {
+    id: 'ghost-frank-two-bolts-malone',
+    name: 'Frank "Two-Bolts" Malone',
+    bio: "Gruff stitched-up brute who seems slow... until he suddenly isn't.",
+    imageSrc: '/assets/themes/ghosts-and-ghouls/personas/04-frank-two-bolts-malone.png',
+  },
+  {
+    id: 'ghost-hollow-annie',
+    name: 'Hollow Annie',
+    bio: 'Emotionless girl with dead eyes who never reacts at the right time.',
+    imageSrc: '/assets/themes/ghosts-and-ghouls/personas/05-hollow-annie.png',
+  },
+  {
+    id: 'ghost-fangridge-barry',
+    name: 'Fangridge Barry',
+    bio: "Hairy, tense werewolf who looks one bad moment away from losing control.",
+    imageSrc: '/assets/themes/ghosts-and-ghouls/personas/06-fangridge-barry.png',
+  },
+  {
+    id: 'ghost-medusa-mel',
+    name: 'Medusa Mel',
+    bio: 'Cool-headed but unsettling; avoids eye contact like she knows what happens if she does not.',
+    imageSrc: '/assets/themes/ghosts-and-ghouls/personas/07-medusa-mel.png',
+  },
+  {
+    id: 'ghost-nosfer-stu',
+    name: 'Nosfer Stu',
+    bio: 'Gaunt, twitchy vampire who lingers too long in conversations.',
+    imageSrc: '/assets/themes/ghosts-and-ghouls/personas/08-nosfer-stu.png',
+  },
+  {
+    id: 'ghost-wailer-beth',
+    name: 'Wailer Beth',
+    bio: "Mouth slightly open like she's about to scream - people tend to leave before she does.",
+    imageSrc: '/assets/themes/ghosts-and-ghouls/personas/09-wailer-beth.png',
+  },
+  {
+    id: 'ghost-dr-plagueworth',
+    name: 'Dr. Plagueworth',
+    bio: 'Masked figure who tilts his head too much, like he is studying you.',
+    imageSrc: '/assets/themes/ghosts-and-ghouls/personas/10-dr-plagueworth.png',
+  },
+  {
+    id: 'ghost-dusty-bones',
+    name: 'Dusty Bones',
+    bio: 'Half-rotted skeleton who somehow still looks nervous about being caught.',
+    imageSrc: '/assets/themes/ghosts-and-ghouls/personas/11-dusty-bones.png',
+  },
+  {
+    id: 'ghost-lady-mourne',
+    name: 'Lady Mourne',
+    bio: 'Elegant but cold; smiles politely while clearly judging everyone.',
+    imageSrc: '/assets/themes/ghosts-and-ghouls/personas/12-lady-mourne.png',
+  },
+  {
+    id: 'ghost-grinlock',
+    name: 'Grinlock',
+    bio: 'Horned trickster with a smirk that screams bad intentions.',
+    imageSrc: '/assets/themes/ghosts-and-ghouls/personas/13-grinlock.png',
+  },
+  {
+    id: 'ghost-stringhair-sadie',
+    name: 'Stringhair Sadie',
+    bio: 'Long-haired ghost who barely moves - except when you stop looking.',
+    imageSrc: '/assets/themes/ghosts-and-ghouls/personas/14-stringhair-sadie.png',
+  },
+  {
+    id: 'ghost-crookback-hilda',
+    name: 'Crookback Hilda',
+    bio: 'Old witch muttering to herself... and sometimes answering back.',
+    imageSrc: '/assets/themes/ghosts-and-ghouls/personas/15-crookback-hilda.png',
+  },
+  {
+    id: 'ghost-topper-graves',
+    name: 'Topper Graves',
+    bio: 'Dapper skeleton in a top hat who acts like he owns the place.',
+    imageSrc: '/assets/themes/ghosts-and-ghouls/personas/16-topper-graves.png',
+  },
+  {
+    id: 'ghost-pale-prince-alaric',
+    name: 'Pale Prince Alaric',
+    bio: 'Aristocratic vampire with a superiority complex and a dangerous calm.',
+    imageSrc: '/assets/themes/ghosts-and-ghouls/personas/17-pale-prince-alaric.png',
+  },
+  {
+    id: 'ghost-undertaker-voss',
+    name: 'Undertaker Voss',
+    bio: "Quiet, brooding man who looks like he's already measured everyone.",
+    imageSrc: '/assets/themes/ghosts-and-ghouls/personas/18-undertaker-voss.png',
+  },
+  {
+    id: 'ghost-jester-grin',
+    name: 'Jester Grin',
+    bio: 'Creepy clown with a fixed smile that never quite matches his eyes.',
+    imageSrc: '/assets/themes/ghosts-and-ghouls/personas/19-jester-grin.png',
+  },
+  {
+    id: 'ghost-father-hollow',
+    name: 'Father Hollow',
+    bio: 'Stern priest whose stare feels more like judgment than comfort.',
+    imageSrc: '/assets/themes/ghosts-and-ghouls/personas/20-father-hollow.png',
+  },
+  {
+    id: 'ghost-misty-floe',
+    name: 'Misty Floe',
+    bio: 'Soft, drifting ghost who seems harmless... until she is suddenly right behind you.',
+    imageSrc: '/assets/themes/ghosts-and-ghouls/personas/21-misty-floe.png',
+  },
+  {
+    id: 'ghost-dolly-knots',
+    name: 'Dolly Knots',
+    bio: 'Childlike ghoul with stitched features and unpredictable reactions.',
+    imageSrc: '/assets/themes/ghosts-and-ghouls/personas/22-dolly-knots.png',
+  },
+  {
+    id: 'ghost-void-walker',
+    name: 'Void Walker',
+    bio: 'Hooded figure with glowing eyes; impossible to read, impossible to trust.',
+    imageSrc: '/assets/themes/ghosts-and-ghouls/personas/23-void-walker.png',
+  },
+  {
+    id: 'ghost-velvet-fang',
+    name: 'Velvet Fang',
+    bio: 'Seductive vampire who leans in too close and asks too many questions.',
+    imageSrc: '/assets/themes/ghosts-and-ghouls/personas/24-velvet-fang.png',
+  },
+  {
+    id: 'ghost-bogrot-bill',
+    name: 'Bogrot Bill',
+    bio: 'Sludgy swamp creature who smells like trouble and watches everything.',
+    imageSrc: '/assets/themes/ghosts-and-ghouls/personas/25-bogrot-bill.png',
+  },
+];
+
 const THEME_PERSONA_POOLS = {
   Default: DEFAULT_THEME_PERSONAS,
   'Murder Mystery': MURDER_MYSTERY_THEME_PERSONAS,
   'Cops and Robbers': COPS_AND_ROBBERS_THEME_PERSONAS,
+  'Ghosts and Ghouls': GHOSTS_AND_GHOULS_THEME_PERSONAS,
   Gangsters: COPS_AND_ROBBERS_THEME_PERSONAS,
   Spies: COPS_AND_ROBBERS_THEME_PERSONAS,
   Cowboys: COPS_AND_ROBBERS_THEME_PERSONAS,
+  Monsters: GHOSTS_AND_GHOULS_THEME_PERSONAS,
 };
 
 export function getThemePersonas(themeName = 'Default') {
