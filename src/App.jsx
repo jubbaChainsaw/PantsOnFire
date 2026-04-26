@@ -18,6 +18,12 @@ import { PASS_THE_PHONE_ROUND_TYPES, ROUND_TYPES } from './data/roundTypes';
 import { THEME_META } from './data/themes';
 import { getThemeAssets, ROUND_TYPE_CARD_FRONT_BY_ID } from './data/themeAssets';
 import { NAME_POOLS, randomNameFromTheme } from './data/names';
+import { toCanonicalThemeName } from './data/themeAliases';
+import {
+  DLC_THEME_PACKS,
+  getThemeOptions,
+  normalizeUnlockedThemePackIds,
+} from './data/themeCatalog';
 import { COPY_BANK, createCopyPicker } from './data/gameTextContent';
 import {
   DEFAULT_CATEGORIES,
@@ -1193,12 +1199,20 @@ function SetupScreen(props) {
   const {
     players, setPlayers, liarCount, setLiarCount, nameTheme, setNameTheme, mode, setMode,
     winCondition, setWinCondition, pointsToWin, setPointsToWin, roundsPerPlayer, setRoundsPerPlayer, enabledCategories, onToggleCategory,
-    grillSettings, setGrillSettings, adultMode, categoryCount, onOpenAdmin, onStart, onBack, setupLine, startLabel = 'Start Match', requiredMinPlayers = MIN_PLAYERS,
+    grillSettings, setGrillSettings, adultMode, categoryCount, onOpenAdmin, onStart, onBack, setupLine,
+    themeOptions = [], startLabel = 'Start Match', requiredMinPlayers = MIN_PLAYERS,
   } = props;
   const canStart = players.length >= requiredMinPlayers && players.every((p) => p.name.trim().length > 0);
   const maxLiars = Math.max(1, Math.floor(players.length / 2));
   const [categoryDialogOpen, setCategoryDialogOpen] = useState(false);
-  const themeNames = Object.keys(NAME_POOLS);
+  const visibleThemeOptions = themeOptions.length
+    ? themeOptions
+    : Object.keys(NAME_POOLS).map((themeName) => ({
+      name: themeName,
+      isDlc: false,
+      isUnlocked: true,
+      packId: null,
+    }));
   return (
     <TopFrame theme={nameTheme}>
       <div className="mx-auto max-w-7xl space-y-5">
@@ -1229,12 +1243,16 @@ function SetupScreen(props) {
               </p>
               <select
                 value={nameTheme}
-                onChange={(event) => setNameTheme(event.target.value)}
+                onChange={(event) => {
+                  const nextThemeName = event.target.value;
+                  const nextTheme = visibleThemeOptions.find((option) => option.name === nextThemeName);
+                  if (nextTheme && nextTheme.isUnlocked) setNameTheme(nextThemeName);
+                }}
                 className="mt-3 w-full rounded-2xl border border-white/15 bg-white/5 px-3 py-3 text-white"
               >
-                {themeNames.map((themeName) => (
-                  <option key={themeName} value={themeName} className="text-black">
-                    {themeName}
+                {visibleThemeOptions.map((themeOption) => (
+                  <option key={themeOption.name} value={themeOption.name} className="text-black" disabled={!themeOption.isUnlocked}>
+                    {themeOption.name}{themeOption.isDlc ? ' 🔥' : ''}{themeOption.isUnlocked ? '' : ' (Locked)'}
                   </option>
                 ))}
               </select>
@@ -2418,9 +2436,81 @@ function FinalScreen({ players, onRestart, line, theme }) {
   const winner = ranked[0];
   return <TopFrame theme={theme}><div className="mx-auto max-w-4xl space-y-6"><GlassPanel className="rounded-[2.5rem] p-8 text-center border-yellow-300/20 bg-black/25"><div className="text-xs uppercase tracking-[0.3em] text-white/50">Match complete</div><h2 className="text-5xl font-black mt-3 text-yellow-300">Winner: {winner?.name}</h2><p className="text-white/75 mt-3">{line}</p><div className="mt-8 grid gap-4 md:grid-cols-3">{ranked.map((player, index) => <GlassPanel key={player.id} className="rounded-[1.75rem] p-5 border-white/10 bg-black/20"><div className="text-sm text-white/55">Place {index + 1}</div><div className="text-2xl font-black mt-2">{player.name}</div><div className="text-4xl font-black mt-3">{player.score}</div></GlassPanel>)}</div><Button className="rounded-[1.5rem] h-14 px-8 mt-8 bg-yellow-300 text-zinc-950 border-2 border-white" onClick={onRestart}><Star className="mr-2 h-5 w-5 inline" />New match</Button></GlassPanel></div></TopFrame>;
 }
-function StoreScreen({ onBack, theme }) {
-  return <TopFrame theme={theme}><div className="mx-auto max-w-4xl space-y-6"><div className="flex justify-between items-center gap-4"><Button className="rounded-[1.4rem] bg-white/5 border border-white/10 px-4 py-2 text-white" onClick={onBack}>Back</Button><div className="text-center"><div className="text-xs uppercase tracking-[0.35em] text-cyan-200/80">Store</div><div className="text-white/80 text-sm mt-1">Future monetisation, premium packs, and category tools.</div></div><div className="w-[72px]" /></div><GlassPanel className="rounded-[2.5rem] p-8 border-fuchsia-400/20 bg-black/25"><div className="flex items-center gap-3 mb-4"><ShoppingBag className="h-6 w-6 text-yellow-300" /><h2 className="text-2xl font-black text-yellow-300">Category Editor</h2></div><p className="text-white/75">This is where players will buy premium tools like Category Editor, themed packs, and future prompt expansions.</p></GlassPanel></div></TopFrame>;
+function StoreScreen({ onBack, theme, dlcThemePacks = [], unlockedThemePackIds = [], onUnlockThemePack = () => {} }) {
+  const unlocked = new Set(unlockedThemePackIds || []);
+  return (
+    <TopFrame theme={theme}>
+      <div className="mx-auto max-w-4xl space-y-6">
+        <div className="flex justify-between items-center gap-4">
+          <Button className="rounded-[1.4rem] bg-white/5 border border-white/10 px-4 py-2 text-white" onClick={onBack}>Back</Button>
+          <div className="text-center">
+            <div className="text-xs uppercase tracking-[0.35em] text-cyan-200/80">Store</div>
+            <div className="text-white/80 text-sm mt-1">Unlock DLC theme bundles.</div>
+          </div>
+          <div className="w-[72px]" />
+        </div>
+        <GlassPanel className="rounded-[2.5rem] p-8 border-fuchsia-400/20 bg-black/25">
+          <div className="flex items-center gap-3 mb-4">
+            <ShoppingBag className="h-6 w-6 text-yellow-300" />
+            <h2 className="text-2xl font-black text-yellow-300">Theme DLC Bundles</h2>
+          </div>
+          <p className="text-white/75 mb-5">
+            Each pack is 99p and adds DLC themes marked with a fire icon in the setup dropdown.
+          </p>
+          <div className="space-y-3">
+            {(dlcThemePacks || []).map((pack) => {
+              const isUnlocked = unlocked.has(pack.id);
+              return (
+                <div key={pack.id} className="rounded-2xl border border-white/10 bg-black/25 p-4">
+                  <div className="flex items-center justify-between gap-4">
+                    <div>
+                      <div className="font-black text-lg text-white">{pack.name}</div>
+                      <div className="text-xs text-cyan-200 mt-1">
+                        {(pack.themes || []).map((themeName) => `${themeName} 🔥`).join(' • ')}
+                      </div>
+                      {pack.description && (
+                        <div className="text-xs text-white/65 mt-2">{pack.description}</div>
+                      )}
+                    </div>
+                    <div className="text-right">
+                      <div className="text-yellow-300 font-black">{pack.priceLabel || '99p'}</div>
+                      <Button
+                        className="mt-2 rounded-xl bg-yellow-300 text-zinc-950 border border-white disabled:opacity-60"
+                        disabled={isUnlocked}
+                        onClick={() => onUnlockThemePack(pack.id)}
+                      >
+                        {isUnlocked ? 'Unlocked' : 'Unlock'}
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </GlassPanel>
+      </div>
+    </TopFrame>
+  );
 }
+
+function normalizeThemeSelection(themeName, themeOptions = []) {
+  const canonicalTheme = toCanonicalThemeName(themeName || 'Default');
+  if (!themeOptions.length) return canonicalTheme;
+  const optionByName = new Map(themeOptions.map((option) => [option.name, option]));
+  const canonicalOption = optionByName.get(canonicalTheme);
+  if (canonicalOption?.isUnlocked !== false) return canonicalTheme;
+  const defaultOption = optionByName.get('Default');
+  if (defaultOption?.isUnlocked !== false) return 'Default';
+  const fallback = themeOptions.find((option) => option.isUnlocked !== false);
+  return fallback?.name || 'Default';
+}
+
+function unlockThemePackIds(currentPackIds = [], packId = '') {
+  const next = new Set(normalizeUnlockedThemePackIds(currentPackIds));
+  if (packId) next.add(packId);
+  return [...next];
+}
+
 function SettingsScreen({
   onBack,
   premiumEnabled,
@@ -2549,7 +2639,9 @@ export default function App() {
   const [screen, setScreen] = useState('home');
   const [players, setPlayers] = useState(createPlayers(3));
   const [liarCount, setLiarCount] = useState(1);
-  const [nameTheme, setNameTheme] = useState('Default');
+  const [nameTheme, setNameTheme] = useState(
+    toCanonicalThemeName(getStored('imposter-theme-v3', 'Default'))
+  );
   const [premiumEnabled, setPremiumEnabled] = useState(false);
   const [adultMode, setAdultMode] = useState(getStored('imposter-adult-mode-v1', false));
   const [customCategories, setCustomCategories] = useState(getStored('imposter-custom-categories-v2', []));
@@ -2557,6 +2649,9 @@ export default function App() {
   const [enabledPicturePacks, setEnabledPicturePacks] = useState(getStored('imposter-enabled-picture-packs-v1', normalizeEnabledPicturePacks({}, PICTURE_DLC_MANIFESTS)));
   const [picturePackWeights, setPicturePackWeights] = useState(getStored('imposter-picture-pack-weights-v1', normalizePackWeights({}, PICTURE_DLC_MANIFESTS)));
   const [enabledPictureReleaseChannels, setEnabledPictureReleaseChannels] = useState(getStored('imposter-enabled-picture-release-channels-v1', normalizeEnabledPictureReleaseChannels({}, PICTURE_DLC_MANIFESTS)));
+  const [unlockedThemePackIds, setUnlockedThemePackIds] = useState(
+    normalizeUnlockedThemePackIds(getStored('imposter-unlocked-theme-packs-v1', []))
+  );
   const [onlineMode, setOnlineMode] = useState(false);
   const [onlineRole, setOnlineRole] = useState('offline');
   const [lobbyCode, setLobbyCode] = useState('');
@@ -2600,7 +2695,16 @@ export default function App() {
   const [recentPromptKeys, setRecentPromptKeys] = useState([]);
   const getLine = useMemo(() => createCopyPicker(COPY_BANK), []);
   const [copyState, setCopyState] = useState({ home: COPY_BANK.home[0], setup: COPY_BANK.setup[0], chooser: COPY_BANK.chooser[0], passPhone: COPY_BANK.passPhone[0], revealNormal: COPY_BANK.revealNormal[0], revealLiar: COPY_BANK.revealLiar[0], discussion: COPY_BANK.discussion[0], voting: COPY_BANK.voting[0], result: COPY_BANK.caught[0], winner: COPY_BANK.winner[0], onlineLobby: COPY_BANK.onlineLobby[0], hostStinger: COPY_BANK.hostStingerPrompt[0] });
-  const themeMeta = THEME_META[nameTheme] || THEME_META.Default;
+  const themeOptions = useMemo(
+    () => getThemeOptions(unlockedThemePackIds),
+    [unlockedThemePackIds]
+  );
+  const normalizedThemeName = useMemo(
+    () => normalizeThemeSelection(nameTheme, themeOptions),
+    [nameTheme, themeOptions]
+  );
+  const canonicalThemeName = normalizedThemeName;
+  const themeMeta = THEME_META[normalizedThemeName] || THEME_META.Default;
   const availablePicturePackManifests = useMemo(
     () => (PICTURE_DLC_MANIFESTS || []),
     []
@@ -2625,6 +2729,11 @@ export default function App() {
   useEffect(() => setStored('imposter-enabled-picture-packs-v1', enabledPicturePacks), [enabledPicturePacks]);
   useEffect(() => setStored('imposter-picture-pack-weights-v1', picturePackWeights), [picturePackWeights]);
   useEffect(() => setStored('imposter-enabled-picture-release-channels-v1', enabledPictureReleaseChannels), [enabledPictureReleaseChannels]);
+  useEffect(() => setStored('imposter-unlocked-theme-packs-v1', unlockedThemePackIds), [unlockedThemePackIds]);
+  useEffect(() => setStored('imposter-theme-v3', normalizedThemeName), [normalizedThemeName]);
+  useEffect(() => {
+    if (nameTheme !== normalizedThemeName) setNameTheme(normalizedThemeName);
+  }, [nameTheme, normalizedThemeName]);
   useEffect(() => {
     setEnabledPicturePacks((cur) => normalizeEnabledPicturePacks(cur, availablePicturePackManifests));
     setPicturePackWeights((cur) => normalizePackWeights(cur, availablePicturePackManifests));
@@ -2779,7 +2888,7 @@ export default function App() {
   }, [onlineMode, lobbyCode, onlineClientId, screen, onlineRole]);
   useEffect(() => setLiarCount((cur) => Math.max(1, Math.min(Math.max(1, Math.floor(players.length / 2)), cur))), [players.length]);
   const themedKey = (key) => {
-    if (nameTheme === 'Gangsters') {
+    if (canonicalThemeName === 'Cops and Robbers') {
       return ({
         revealLiar: 'gangsterRevealLiar',
         discussion: 'gangsterDiscussion',
@@ -2796,7 +2905,7 @@ export default function App() {
         hostStingerGrill: 'gangsterHostStingerGrill',
       }[key] || key);
     }
-    if (nameTheme === 'Monsters') {
+    if (canonicalThemeName === 'Ghosts and Ghouls') {
       return ({
         hostStingerPrompt: 'monsterHostStingerPrompt',
         hostStingerOpinion: 'monsterHostStingerOpinion',
@@ -2807,7 +2916,7 @@ export default function App() {
         hostStingerGrill: 'monsterHostStingerGrill',
       }[key] || key);
     }
-    if (nameTheme === 'Rock Stars') {
+    if (canonicalThemeName === 'Rock Stars') {
       return ({
         hostStingerPrompt: 'rockHostStingerPrompt',
         hostStingerOpinion: 'rockHostStingerOpinion',
@@ -2818,7 +2927,7 @@ export default function App() {
         hostStingerGrill: 'rockHostStingerGrill',
       }[key] || key);
     }
-    if (nameTheme === 'Aliens') {
+    if (canonicalThemeName === 'Aliens') {
       return ({
         hostStingerPrompt: 'alienHostStingerPrompt',
         hostStingerOpinion: 'alienHostStingerOpinion',
@@ -3349,7 +3458,7 @@ export default function App() {
     }
   }
   function restartToHome() {
-    setPlayers(createPlayers(3)); setLiarCount(1); setNameTheme('Default'); setMode('classic'); setWinCondition('rounds'); setPointsToWin(15); setRoundsPerPlayer(1); setGrillSettings({ micEnabled: true, ttsEnabled: true }); setRound(null); setRoundNumber(1); setCurrentRoundOwnerIndex(0); setPreviousRoundType(null); setRoundTypeOptions([]); setSelectedRoundType(null); setRevealIndex(0); setVotesByPlayerId({}); setTally({}); setRoundGains({}); setRoundBreakdown({}); setImposterCaught(false); setRecentPromptKeys([]); refreshCopy(['home','onlineLobby']);
+    setPlayers(createPlayers(3)); setLiarCount(1); setNameTheme(normalizeThemeSelection('Default', themeOptions)); setMode('classic'); setWinCondition('rounds'); setPointsToWin(15); setRoundsPerPlayer(1); setGrillSettings({ micEnabled: true, ttsEnabled: true }); setRound(null); setRoundNumber(1); setCurrentRoundOwnerIndex(0); setPreviousRoundType(null); setRoundTypeOptions([]); setSelectedRoundType(null); setRevealIndex(0); setVotesByPlayerId({}); setTally({}); setRoundGains({}); setRoundBreakdown({}); setImposterCaught(false); setRecentPromptKeys([]); refreshCopy(['home', 'onlineLobby']);
     setOnlinePhasePending(false);
     setOnlineVoteSubmissionPending(false);
     setOnlinePrivatePrompt(null);
@@ -3367,10 +3476,10 @@ export default function App() {
       <DevelopmentProgressScreen
         onBack={() => setScreen('home')}
         onlineLobbyLine={copyState.onlineLobby}
-        theme={nameTheme}
+        theme={canonicalThemeName}
       />
     )}
-    {screen === 'setup' && <SetupScreen players={players} setPlayers={setPlayers} liarCount={liarCount} setLiarCount={setLiarCount} nameTheme={nameTheme} setNameTheme={setNameTheme} mode={mode} setMode={setMode} winCondition={winCondition} setWinCondition={setWinCondition} pointsToWin={pointsToWin} setPointsToWin={setPointsToWin} roundsPerPlayer={roundsPerPlayer} setRoundsPerPlayer={setRoundsPerPlayer} grillSettings={grillSettings} setGrillSettings={setGrillSettings} adultMode={adultMode} enabledCategories={enabledCategories} onToggleCategory={(id) => setEnabledCategories((cur) => ({ ...cur, [id]: !cur[id] }))} premiumEnabled={premiumEnabled} setPremiumEnabled={setPremiumEnabled} categoryCount={activeCategories.length} onOpenAdmin={() => setAdminOpen(true)} onStart={startGame} onBack={() => setScreen('home')} setupLine={copyState.setup} />}
+    {screen === 'setup' && <SetupScreen players={players} setPlayers={setPlayers} liarCount={liarCount} setLiarCount={setLiarCount} nameTheme={canonicalThemeName} setNameTheme={setNameTheme} mode={mode} setMode={setMode} winCondition={winCondition} setWinCondition={setWinCondition} pointsToWin={pointsToWin} setPointsToWin={setPointsToWin} roundsPerPlayer={roundsPerPlayer} setRoundsPerPlayer={setRoundsPerPlayer} grillSettings={grillSettings} setGrillSettings={setGrillSettings} adultMode={adultMode} enabledCategories={enabledCategories} onToggleCategory={(id) => setEnabledCategories((cur) => ({ ...cur, [id]: !cur[id] }))} premiumEnabled={premiumEnabled} setPremiumEnabled={setPremiumEnabled} categoryCount={activeCategories.length} onOpenAdmin={() => setAdminOpen(true)} onStart={startGame} onBack={() => setScreen('home')} setupLine={copyState.setup} themeOptions={themeOptions} />}
     {screen === 'online-setup' && (
       <OnlineLobbySetupScreen
         hostName={onlineHostName}
@@ -3383,7 +3492,7 @@ export default function App() {
           setScreen('home');
         }}
         onContinue={createOnlineLobby}
-        nameTheme={nameTheme}
+        nameTheme={canonicalThemeName}
       />
     )}
     {screen === 'online-join' && (
@@ -3392,7 +3501,7 @@ export default function App() {
         setPlayerName={setOnlinePlayerName}
         joinCode={joinLobbyCodeInput}
         setJoinCode={setJoinLobbyCodeInput}
-        nameTheme={nameTheme}
+        nameTheme={canonicalThemeName}
         onBack={() => {
           if (onlineMode || lobbyCode) {
             void leaveOnlineLobby({ nextScreen: 'home' });
@@ -3417,11 +3526,11 @@ export default function App() {
         }}
         onBack={() => { void leaveOnlineLobby({ nextScreen: 'online-setup' }); }}
         onStartMatch={startOnlineMatch}
-        nameTheme={nameTheme}
+        nameTheme={canonicalThemeName}
       />
     )}
     {screen === 'online-lobby-waiting' && (
-      <TopFrame theme={nameTheme}>
+      <TopFrame theme={canonicalThemeName}>
         <div className="mx-auto max-w-3xl space-y-6">
           <GlassPanel className="rounded-[2.5rem] p-8 border-cyan-400/25 bg-black/25 text-center">
             <div className="text-xs uppercase tracking-[0.3em] text-white/55">Joined Lobby</div>
@@ -3454,17 +3563,17 @@ export default function App() {
     )}
     {screen === 'game-intro' && (
       <GameIntroScreen
-        theme={nameTheme}
+        theme={canonicalThemeName}
         isOnlineMode={onlineMode}
         totalRounds={totalRounds}
         playerCount={players.length}
         onContinue={() => setScreen('rules')}
       />
     )}
-    {screen === 'rules' && <RulesSplashScreen mode={mode} onContinue={() => setScreen('category-choice')} theme={nameTheme} isOnlineMode={onlineMode} />}
-    {screen === 'round-type-choice' && round && <TopFrame theme={nameTheme}><div className="mx-auto max-w-3xl space-y-6"><ScoreStrip players={players} roundNumber={round.roundNumber} totalRounds={totalRounds} /><GlassPanel className="rounded-[2.5rem] p-8 text-center border-fuchsia-400/25 bg-black/25 relative overflow-hidden"><div className="text-xs uppercase tracking-[0.3em] text-white/50">Round owner: {players[currentRoundOwnerIndex]?.name}</div><h2 className="text-4xl font-black mt-3 text-yellow-300">Choose round type</h2><p className="text-white/70 mt-3">Pick one of two options. Previous round type is excluded.</p><div className="grid gap-3 sm:grid-cols-2 mt-8">{roundTypeOptions.map((type) => <div key={type.id} className="space-y-2"><RoundMascot roundTypeId={type.id} /><div className="rounded-[1.5rem] border border-white/20 bg-black/20 p-3"><RoundTypeLogo src={type.logoSrc} alt={`${type.name} logo`} className="mx-auto h-16 w-auto rounded-md border border-white/20 bg-black/25 px-2 py-1" /><ThemeArt src={`/assets/themes/default/cards/prompt-front-${type.id}.svg`} alt={`${type.name} default card front`} className="mx-auto mt-3 h-28 w-auto rounded-xl border border-white/20 bg-black/25 p-1" /><div className="mt-3 text-xs uppercase tracking-[0.2em] text-white/60">Round Type Logo + Default Front Card</div></div><Button className={`rounded-[1.75rem] h-20 text-lg bg-gradient-to-r ${themeMeta.gradient} text-white border-2 border-white/20 shadow-lg w-full`} onClick={() => { setSelectedRoundType(type.id); setScreen('category-choice'); }}>{type.name}</Button></div>)}</div></GlassPanel></div></TopFrame>}
+    {screen === 'rules' && <RulesSplashScreen mode={mode} onContinue={() => setScreen('category-choice')} theme={canonicalThemeName} isOnlineMode={onlineMode} />}
+    {screen === 'round-type-choice' && round && <TopFrame theme={canonicalThemeName}><div className="mx-auto max-w-3xl space-y-6"><ScoreStrip players={players} roundNumber={round.roundNumber} totalRounds={totalRounds} /><GlassPanel className="rounded-[2.5rem] p-8 text-center border-fuchsia-400/25 bg-black/25 relative overflow-hidden"><div className="text-xs uppercase tracking-[0.3em] text-white/50">Round owner: {players[currentRoundOwnerIndex]?.name}</div><h2 className="text-4xl font-black mt-3 text-yellow-300">Choose round type</h2><p className="text-white/70 mt-3">Pick one of two options. Previous round type is excluded.</p><div className="grid gap-3 sm:grid-cols-2 mt-8">{roundTypeOptions.map((type) => <div key={type.id} className="space-y-2"><RoundMascot roundTypeId={type.id} /><div className="rounded-[1.5rem] border border-white/20 bg-black/20 p-3"><RoundTypeLogo src={type.logoSrc} alt={`${type.name} logo`} className="mx-auto h-16 w-auto rounded-md border border-white/20 bg-black/25 px-2 py-1" /><ThemeArt src={`/assets/themes/default/cards/prompt-front-${type.id}.svg`} alt={`${type.name} default card front`} className="mx-auto mt-3 h-28 w-auto rounded-xl border border-white/20 bg-black/25 p-1" /><div className="mt-3 text-xs uppercase tracking-[0.2em] text-white/60">Round Type Logo + Default Front Card</div></div><Button className={`rounded-[1.75rem] h-20 text-lg bg-gradient-to-r ${themeMeta.gradient} text-white border-2 border-white/20 shadow-lg w-full`} onClick={() => { setSelectedRoundType(type.id); setScreen('category-choice'); }}>{type.name}</Button></div>)}</div></GlassPanel></div></TopFrame>}
     {screen === 'category-choice' && round && (
-      <TopFrame theme={nameTheme}>
+      <TopFrame theme={canonicalThemeName}>
         <div className="mx-auto max-w-3xl space-y-6">
           <ScoreStrip players={players} roundNumber={round.roundNumber} totalRounds={totalRounds} />
           <GlassPanel className="relative overflow-hidden rounded-[2.5rem] border-fuchsia-400/25 bg-black/25 p-8 text-center">
@@ -3475,7 +3584,7 @@ export default function App() {
             <p className="mt-3 text-white/70">{copyState.chooser}</p>
             <div className="mt-8 grid grid-cols-2 gap-3 sm:gap-4">
               {categoryOptions.map((category) => {
-                const categoryCardArtSrc = resolveCategoryChoiceCardArt(category, nameTheme);
+                const categoryCardArtSrc = resolveCategoryChoiceCardArt(category, canonicalThemeName);
                 return (
                   <button
                     key={category.id}
@@ -3524,7 +3633,7 @@ export default function App() {
           }
           setScreen('reveal');
         }}
-        theme={nameTheme}
+        theme={canonicalThemeName}
       />
     )}
     {screen === 'reveal' && round && (
@@ -3538,7 +3647,7 @@ export default function App() {
         passLine={copyState.passPhone}
         normalLine={copyState.revealNormal}
         liarLine={copyState.revealLiar}
-        theme={nameTheme}
+        theme={canonicalThemeName}
         onlineMode={onlineMode}
         localPlayerName={onlinePlayerName}
         onlinePrivatePrompt={onlinePrivatePrompt}
@@ -3560,7 +3669,7 @@ export default function App() {
           refreshCopy(['voting']);
           setScreen('voting');
         }}
-        theme={nameTheme}
+        theme={canonicalThemeName}
       />
     )}
     {screen === 'discussion' && round && (
@@ -3578,7 +3687,7 @@ export default function App() {
           setScreen('voting');
         }}
         line={copyState.discussion}
-        theme={nameTheme}
+        theme={canonicalThemeName}
         onlineVoiceEnabled={onlineMode}
         onlineVoiceMuted={onlineVoiceMuted}
         setOnlineVoiceMuted={setOnlineVoiceMuted}
@@ -3595,7 +3704,7 @@ export default function App() {
         setVotesByPlayerId={setVotesByPlayerId}
         onSubmitVotes={revealResults}
         line={copyState.voting}
-        theme={nameTheme}
+        theme={canonicalThemeName}
         onlineMode={onlineMode}
         onlinePlayerId={onlineJoinedPlayerId}
         onlineVoiceEnabled={onlineMode}
@@ -3605,10 +3714,10 @@ export default function App() {
         submitPending={onlineVoteSubmissionPending}
       />
     )}
-    {screen === 'liar-reveal' && round && <LiarRevealScreen players={players} round={round} onComplete={finishLiarReveal} theme={nameTheme} />}
-    {screen === 'results' && round && <ResultsScreen players={players} round={round} totalRounds={totalRounds} tally={tally} roundGains={roundGains} roundBreakdown={roundBreakdown} imposterCaught={imposterCaught} onNextRound={winCondition === 'rounds' && round.roundNumber >= totalRounds ? endGame : nextRound} onEndGame={endGame} resultLine={copyState.result} theme={nameTheme} />}
-    {screen === 'final' && <FinalScreen players={players} onRestart={restartToHome} line={copyState.winner} theme={nameTheme} />}
-    {screen === 'store' && <StoreScreen onBack={() => setScreen('home')} theme={nameTheme} />}
+    {screen === 'liar-reveal' && round && <LiarRevealScreen players={players} round={round} onComplete={finishLiarReveal} theme={canonicalThemeName} />}
+    {screen === 'results' && round && <ResultsScreen players={players} round={round} totalRounds={totalRounds} tally={tally} roundGains={roundGains} roundBreakdown={roundBreakdown} imposterCaught={imposterCaught} onNextRound={winCondition === 'rounds' && round.roundNumber >= totalRounds ? endGame : nextRound} onEndGame={endGame} resultLine={copyState.result} theme={canonicalThemeName} />}
+    {screen === 'final' && <FinalScreen players={players} onRestart={restartToHome} line={copyState.winner} theme={canonicalThemeName} />}
+    {screen === 'store' && <StoreScreen onBack={() => setScreen('home')} theme={canonicalThemeName} dlcThemePacks={DLC_THEME_PACKS} unlockedThemePackIds={unlockedThemePackIds} onUnlockThemePack={(packId) => setUnlockedThemePackIds((current) => normalizeUnlockedThemePackIds([...current, packId]))} />}
     {screen === 'settings' && (
       <SettingsScreen
         onBack={() => setScreen('home')}
@@ -3616,7 +3725,7 @@ export default function App() {
         setPremiumEnabled={setPremiumEnabled}
         adultMode={adultMode}
         setAdultMode={setAdultMode}
-        theme={nameTheme}
+        theme={canonicalThemeName}
         picturePackManifests={availablePicturePackManifests}
         enabledPicturePacks={enabledPicturePacks}
         setEnabledPicturePacks={setEnabledPicturePacks}

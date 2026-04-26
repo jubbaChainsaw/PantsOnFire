@@ -28,7 +28,7 @@ const InternetSlangPromptRoundData = {
     { hint: 'Embarrassment Slang', main: 'Cringe', imposter: 'Ick' },
     { hint: 'Self-delusion Slang', main: 'Delulu', imposter: 'Copium' },
     { hint: 'Main Character Vibe', main: 'Main character energy', imposter: 'Big aura' },
-    { hint: 'Late-night DM Slang (18+)', main: 'You up?', imposter: 'Send location', adultOnly: true },
+    { hint: 'Late-night DM Slang', main: 'You up?', imposter: 'Send location' },
   ],
 };
 
@@ -45,7 +45,7 @@ const MemesViralPromptRoundData = {
     { hint: 'Overused GIF Energy', main: 'Slow clap', imposter: 'Eye roll' },
     { hint: 'Viral Trend', main: 'Ice Bucket Challenge', imposter: 'Bottle Cap Challenge' },
     { hint: 'Sound Meme', main: 'Bruh sound effect', imposter: 'Vine boom' },
-    { hint: 'Spicy Viral Drama (18+)', main: 'Leaked close-friends story', imposter: 'Accidental thirst trap post', adultOnly: true },
+    { hint: 'Viral Drama', main: 'Leaked close-friends story', imposter: 'Accidental thirst trap post' },
   ],
 };
 
@@ -62,7 +62,7 @@ const TravelDisastersPromptRoundData = {
     { hint: 'Weather Ruin', main: 'Monsoon beach holiday', imposter: 'Heatwave city break' },
     { hint: 'Luggage Drama', main: 'Suitcase sent to the wrong country', imposter: 'Suitcase arrives days late' },
     { hint: 'Tourist Trap', main: 'Overpriced taxi scam', imposter: 'Fake ticket scam' },
-    { hint: 'Holiday Hookup Chaos (18+)', main: 'Awkward hotel checkout together', imposter: 'Walk of shame airport run', adultOnly: true },
+    { hint: 'Travel Mix-up', main: 'Awkward hotel checkout together', imposter: 'Walk of shame airport run' },
   ],
 };
 
@@ -79,7 +79,7 @@ const FashionFailsPromptRoundData = {
     { hint: 'Accessory Overload', main: 'Too many rings', imposter: 'Too many chains' },
     { hint: 'Makeup Mishap', main: 'Foundation mismatch', imposter: 'Uneven fake tan' },
     { hint: 'Fit Issue', main: 'Overly tight jacket', imposter: 'Overly baggy suit' },
-    { hint: 'After-party Outfit Regret (18+)', main: 'Last-night club outfit at brunch', imposter: 'Glitter still on your face at work', adultOnly: true },
+    { hint: 'After-party Outfit Regret', main: 'Last-night club outfit at brunch', imposter: 'Glitter still on your face at work' },
   ],
 };
 
@@ -96,7 +96,7 @@ const DatingBiosPromptRoundData = {
     { hint: 'Music Taste Line', main: 'Send me your playlist', imposter: 'Concert buddy wanted' },
     { hint: 'Conversation Hook', main: 'Tell me your hot take', imposter: 'Convince me pineapple belongs on pizza' },
     { hint: 'Bio Cliche', main: 'No drama please', imposter: 'Good vibes only' },
-    { hint: 'Risky Bio Prompt (18+)', main: 'Looking for chaos, not closure', imposter: 'Not here for pen pals', adultOnly: true },
+    { hint: 'Risky Bio Prompt', main: 'Looking for chaos, not closure', imposter: 'Not here for pen pals' },
   ],
 };
 
@@ -113,7 +113,7 @@ const SchoolUniPromptRoundData = {
     { hint: 'Uni House Chaos', main: 'Kitchen pile-up', imposter: 'Bathroom queue meltdown' },
     { hint: 'School Memory', main: 'Forgot PE kit', imposter: 'Forgot homework' },
     { hint: 'Deadline Disaster', main: 'Wrong file upload', imposter: 'Submitted one minute late' },
-    { hint: 'Messy Fresher Night (18+)', main: 'Lost your shoes at the student bar', imposter: 'Woke up in the wrong dorm kitchen', adultOnly: true },
+    { hint: 'Messy Fresher Night', main: 'Lost your shoes at the student bar', imposter: 'Woke up in the wrong dorm kitchen' },
   ],
 };
 
@@ -130,7 +130,7 @@ const ConspiracyLitePromptRoundData = {
     { hint: 'Celebrity Theory', main: 'Industry clone rumors', imposter: 'Publicity contract rumors' },
     { hint: 'History Mystery', main: 'Lost civilization map', imposter: 'Hidden ancient technology' },
     { hint: 'Everyday Suspicion', main: 'Birds are drones', imposter: 'Pigeons are camera spies' },
-    { hint: 'After-dark Tin-foil Take (18+)', main: 'Your ex has a burner account watching you', imposter: 'Someone leaked your private voice notes', adultOnly: true },
+    { hint: 'Tin-foil Take', main: 'Your ex has a burner account watching you', imposter: 'Someone leaked your private voice notes' },
   ],
 };
 
@@ -147,7 +147,7 @@ const MythicalCreaturesPromptRoundData = {
     { hint: 'Ancient Guardian', main: 'Griffin', imposter: 'Sphinx' },
     { hint: 'Tiny Myth', main: 'Fairy', imposter: 'Pixie' },
     { hint: 'Dark Fantasy Creature', main: 'Banshee', imposter: 'Wraith' },
-    { hint: 'Spicy Tavern Tale (18+)', main: 'Seductive succubus rumor', imposter: 'Charming vampire rumor', adultOnly: true },
+    { hint: 'Tavern Tale', main: 'Seductive succubus rumor', imposter: 'Charming vampire rumor' },
   ],
 };
 
@@ -164,7 +164,7 @@ const CarsMotorsPromptRoundData = {
     { hint: 'Road Situation', main: 'Traffic jam', imposter: 'Road closure detour' },
     { hint: 'Driver Personality', main: 'Backseat driver', imposter: 'Road-rage driver' },
     { hint: 'Car Clean-up', main: 'Interior detail', imposter: 'Exterior polish' },
-    { hint: 'Car Park Makeout Chaos (18+)', main: 'Foggy windows after date night', imposter: 'Awkward goodbye in the rain', adultOnly: true },
+    { hint: 'Car Park Chaos', main: 'Foggy windows after date night', imposter: 'Awkward goodbye in the rain' },
   ],
 };
 
@@ -181,7 +181,7 @@ const RoommateChaosPromptRoundData = {
     { hint: 'Guest Rule', main: 'Unannounced couch guest', imposter: 'Partner basically moved in' },
     { hint: 'Bills Argument', main: 'Late utility payment', imposter: 'Split calculation argument' },
     { hint: 'Passive Aggressive Move', main: 'Sticky-note warning', imposter: 'Silent treatment in group chat' },
-    { hint: 'Afterparty Flat Chaos (18+)', main: 'Stranger asleep on your sofa', imposter: 'Random jacket and no owner', adultOnly: true },
+    { hint: 'Afterparty Flat Chaos', main: 'Stranger asleep on your sofa', imposter: 'Random jacket and no owner' },
   ],
 };
 
@@ -198,7 +198,7 @@ const ChildhoodNostalgiaPromptRoundData = {
     { hint: 'Toy Chaos', main: 'LEGO on the floor pain', imposter: 'Puzzle piece missing rage' },
     { hint: 'Holiday Memory', main: 'Arcade holiday tokens', imposter: 'Souvenir fridge magnets' },
     { hint: 'School Trip', main: 'Museum coach trip', imposter: 'Farm park coach trip' },
-    { hint: 'Teen Throwback (18+)', main: 'Sneaking out to meet your crush', imposter: 'Secret late-night phone calls', adultOnly: true },
+    { hint: 'Teen Throwback', main: 'Sneaking out to meet your crush', imposter: 'Secret late-night phone calls' },
   ],
 };
 
@@ -215,7 +215,7 @@ const MobileAppsPromptRoundData = {
     { hint: 'Food Delivery App', main: 'Uber Eats', imposter: 'Deliveroo' },
     { hint: 'Fitness App', main: 'Strava', imposter: 'Nike Run Club' },
     { hint: 'Note-taking App', main: 'Notion', imposter: 'Evernote' },
-    { hint: 'Late-night App Mistake (18+)', main: 'Sent risky DM to wrong chat', imposter: 'Accidentally liked an old photo at 2AM', adultOnly: true },
+    { hint: 'Late-night App Mistake', main: 'Sent risky DM to wrong chat', imposter: 'Accidentally liked an old photo at 2AM' },
   ],
 };
 
@@ -232,7 +232,7 @@ const BoardGameLorePromptRoundData = {
     { hint: 'Deckbuilding', main: 'Dominion', imposter: 'Ascension' },
     { hint: 'Dungeon Crawl', main: 'Gloomhaven', imposter: 'Descent' },
     { hint: 'Family Game Night Drama', main: 'House rules argument', imposter: 'Scorekeeping argument' },
-    { hint: 'After-dark Game Night (18+)', main: 'Flirty truth-or-dare card game', imposter: 'Chaotic drinking card game', adultOnly: true },
+    { hint: 'After-dark Game Night', main: 'Flirty truth-or-dare card game', imposter: 'Chaotic drinking card game' },
   ],
 };
 
@@ -249,7 +249,7 @@ const SuperstitionsPromptRoundData = {
     { hint: 'Travel Ritual', main: 'Never say quiet flight', imposter: 'Always board with right foot first' },
     { hint: 'Sports Ritual', main: 'Lucky socks', imposter: 'Lucky pre-game song' },
     { hint: 'Festival Ritual', main: 'Wish at midnight', imposter: 'Burn old notes for fresh luck' },
-    { hint: 'Romance Superstition (18+)', main: 'Never text your ex during Mercury retrograde', imposter: 'Never start dating on a full moon', adultOnly: true },
+    { hint: 'Romance Superstition', main: 'Never text your ex during Mercury retrograde', imposter: 'Never start dating on a full moon' },
   ],
 };
 
@@ -266,7 +266,7 @@ const FestivalsHolidaysPromptRoundData = {
     { hint: 'Family Gathering', main: 'Huge family lunch', imposter: 'Huge family game night' },
     { hint: 'Festival Problem', main: 'Lost your friends in the crowd', imposter: 'Phone died before meetup' },
     { hint: 'Holiday Budget Drama', main: 'Overspent on gifts', imposter: 'Overspent on flights' },
-    { hint: 'Holiday Hookup Story (18+)', main: 'Festival kiss at midnight', imposter: 'Holiday fling that got messy fast', adultOnly: true },
+    { hint: 'Holiday Story', main: 'Festival kiss at midnight', imposter: 'Holiday fling that got messy fast' },
   ],
 };
 

@@ -44,10 +44,9 @@ export const FoodPromptRoundData = {
       "imposter": "Bagel"
     },
     {
-      "hint": "After-party Snack (18+)",
-      "main": "Cold pizza at 3AM",
-      "imposter": "Regret kebab at 3AM",
-      "adultOnly": true
+      "hint": "Street Snack",
+      "main": "Slice of Pizza",
+      "imposter": "Doner Kebab"
     }
   ]
 };

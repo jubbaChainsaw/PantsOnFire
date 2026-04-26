@@ -44,10 +44,9 @@ export const SportsPromptRoundData = {
       "imposter": "Snowboarding"
     },
     {
-      "hint": "Post-match Vibe (18+)",
-      "main": "Kissing your date in the car park",
-      "imposter": "Arguing in the taxi queue",
-      "adultOnly": true
+      "hint": "Stadium Venue",
+      "main": "Sports bar",
+      "imposter": "Stadium concourse"
     }
   ]
 };

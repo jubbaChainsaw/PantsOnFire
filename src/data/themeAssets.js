@@ -1,3 +1,5 @@
+import { toCanonicalThemeName } from './themeAliases';
+
 export const THEME_ASSETS = {
   Default: {
     characterCard: '/assets/themes/default/characters/host-idle.png',
@@ -25,7 +27,20 @@ export const THEME_ASSETS = {
     adultPromptCardFront: '/assets/themes/pirates/cards/prompt-front-18.png',
     adultPromptCardBack: '/assets/themes/pirates/cards/prompt-back-18.png',
   },
-  Gangsters: {
+  'Murder Mystery': {
+    characterCard: '/assets/themes/default/characters/host-idle.png',
+    hostIdle: '/assets/themes/default/characters/host-idle.png',
+    hostTalk1: '/assets/themes/default/characters/host-talk-1.png',
+    hostTalk2: '/assets/themes/default/characters/host-talk-2.png',
+    hostTalk3: '/assets/themes/default/characters/host-talk-3.png',
+    iconSheet: '/assets/themes/default/icons/icons-sheet.png',
+    uiBanner: '/assets/themes/default/ui/banner.png',
+    promptCardFront: '/assets/themes/default/cards/prompt-front.png',
+    promptCardBack: '/assets/themes/default/cards/prompt-back.png',
+    adultPromptCardFront: '/assets/themes/default/cards/prompt-front-18.png',
+    adultPromptCardBack: '/assets/themes/default/cards/prompt-back-18.png',
+  },
+  'Cops and Robbers': {
     characterCard: '/assets/themes/gangsters/characters/presenter.png',
     iconSheet: '/assets/themes/gangsters/icons/icons-sheet.png',
     uiBanner: '/assets/themes/gangsters/ui/banner.png',
@@ -34,7 +49,7 @@ export const THEME_ASSETS = {
     adultPromptCardFront: '/assets/themes/gangsters/cards/prompt-front-18.svg',
     adultPromptCardBack: '/assets/themes/gangsters/cards/prompt-back-18.svg',
   },
-  Monsters: {
+  'Ghosts and Ghouls': {
     characterCard: '/assets/themes/monsters/characters/presenter.png',
     iconSheet: '/assets/themes/monsters/icons/icons-sheet.png',
     uiBanner: '/assets/themes/monsters/ui/banner.png',
@@ -160,7 +175,8 @@ export const ROUND_TYPE_CARD_FRONT_BY_ID = {
 };
 
 export function getThemeAssets(themeName = 'Default') {
-  const selected = THEME_ASSETS[themeName] || THEME_ASSETS.Default;
+  const canonicalThemeName = toCanonicalThemeName(themeName);
+  const selected = THEME_ASSETS[canonicalThemeName] || THEME_ASSETS.Default;
   return {
     ...THEME_ASSETS.Default,
     ...selected,
@@ -168,7 +184,8 @@ export function getThemeAssets(themeName = 'Default') {
 }
 
 export function getThemeHostAssets(themeName = 'Default') {
-  const selected = THEME_ASSETS[themeName] || THEME_ASSETS.Default;
+  const canonicalThemeName = toCanonicalThemeName(themeName);
+  const selected = THEME_ASSETS[canonicalThemeName] || THEME_ASSETS.Default;
   const fallback = THEME_ASSETS.Default || {};
   const collectTalkFrames = (assetEntry = {}) => {
     const framesFromList = Array.isArray(assetEntry.hostTalkingFrames)
