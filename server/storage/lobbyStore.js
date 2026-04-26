@@ -123,6 +123,15 @@ function scoreRoundServer(players, round, votesByPlayerId = {}) {
   const caughtLiars = liarIds.filter((id) => (tally[id] || 0) > 0 && (tally[id] || 0) === topVotes);
   const imposterCaught = caughtLiars.length === liarIds.length;
   const isGrillRound = round.roundTypeId === 'grill';
+  const grillData = isGrillRound && round?.grillData && typeof round.grillData === 'object'
+    ? round.grillData
+    : {};
+  const resolvedGuesserId = String(grillData.guessWinnerId || '').trim();
+  const disqualifiedPlayerIds = new Set(
+    Array.isArray(grillData.disqualifiedPlayerIds)
+      ? grillData.disqualifiedPlayerIds.map((value) => String(value || '').trim()).filter(Boolean)
+      : []
+  );
   const roundGains = {};
   const roundBreakdown = {};
   const nextPlayers = players.map((player) => {
@@ -149,6 +158,16 @@ function scoreRoundServer(players, round, votesByPlayerId = {}) {
       } else {
         gain -= 1;
         grillLiarSwing = -1;
+      }
+      if (resolvedGuesserId && player.id === resolvedGuesserId) {
+        if (liarIds.includes(player.id)) {
+          gain -= 1;
+        } else {
+          gain += 2;
+        }
+      }
+      if (disqualifiedPlayerIds.has(player.id)) {
+        gain -= 1;
       }
     }
     roundGains[player.id] = gain;
