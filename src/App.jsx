@@ -336,6 +336,11 @@ function buildLocalRound(
       ttsEnabled: grillSettings.ttsEnabled ?? true,
       transcript: [],
       askedCounts: {},
+      cheatStrikesByPlayerId: {},
+      disqualifiedPlayerIds: [],
+      scoreAdjustmentsByPlayerId: {},
+      guessWinnerId: '',
+      endedByCorrectGuess: false,
     },
     mediaByPlayerId,
     promptsByPlayerId: Object.fromEntries(
@@ -376,6 +381,14 @@ function calculateRoundResolutionLocal(players, round, votesByPlayerId = {}) {
   const caughtLiars = liarIds.filter((id) => (tally[id] || 0) > 0 && (tally[id] || 0) === topVotes);
   const imposterCaught = liarIds.length > 0 ? caughtLiars.length === liarIds.length : false;
   const isGrillRound = round?.roundTypeId === 'grill';
+  const grillData = round?.grillData && typeof round.grillData === 'object'
+    ? round.grillData
+    : {};
+  const grillScoreAdjustments = grillData?.scoreAdjustmentsByPlayerId
+    && typeof grillData.scoreAdjustmentsByPlayerId === 'object'
+    ? grillData.scoreAdjustmentsByPlayerId
+    : {};
+  const grillGuessWinnerId = String(grillData?.guessWinnerId || '').trim();
   const roundGains = {};
   const roundBreakdown = {};
   const nextPlayers = players.map((player) => {
@@ -384,6 +397,8 @@ function calculateRoundResolutionLocal(players, round, votesByPlayerId = {}) {
     let liarSurvived = 0;
     let grillTeamBonus = 0;
     let grillLiarSwing = 0;
+    let grillGuessBonus = 0;
+    let grillCheatPenalty = 0;
     if (liarIds.includes(normalizedVotes[player.id])) {
       gain += 1;
       voteHit = 1;
@@ -403,9 +418,25 @@ function calculateRoundResolutionLocal(players, round, votesByPlayerId = {}) {
         gain -= 1;
         grillLiarSwing = -1;
       }
+      const extraAdjustment = Number(grillScoreAdjustments[player.id] || 0);
+      if (Number.isFinite(extraAdjustment) && extraAdjustment !== 0) {
+        gain += extraAdjustment;
+        if (player.id === grillGuessWinnerId) {
+          grillGuessBonus = extraAdjustment;
+        } else if (extraAdjustment < 0) {
+          grillCheatPenalty += extraAdjustment;
+        }
+      }
     }
     roundGains[player.id] = gain;
-    roundBreakdown[player.id] = { voteHit, liarSurvived, grillTeamBonus, grillLiarSwing };
+    roundBreakdown[player.id] = {
+      voteHit,
+      liarSurvived,
+      grillTeamBonus,
+      grillLiarSwing,
+      grillGuessBonus,
+      grillCheatPenalty,
+    };
     return {
       ...player,
       score: Math.max(0, Number(player.score || 0) + gain),
@@ -418,6 +449,41 @@ function calculateRoundResolutionLocal(players, round, votesByPlayerId = {}) {
     roundGains,
     roundBreakdown,
     nextPlayers,
+  };
+}
+
+function applyGrillRoundDataToRound(round, grillData = {}, players = []) {
+  if (!round || round.roundTypeId !== 'grill') return round;
+  const playerIds = new Set((players || []).map((player) => player.id));
+  const normalizedGrillData = grillData && typeof grillData === 'object' ? grillData : {};
+  const scoreAdjustmentsByPlayerId = normalizedGrillData.scoreAdjustmentsByPlayerId
+    && typeof normalizedGrillData.scoreAdjustmentsByPlayerId === 'object'
+    ? normalizedGrillData.scoreAdjustmentsByPlayerId
+    : {};
+  const sanitizedAdjustments = Object.fromEntries(
+    Object.entries(scoreAdjustmentsByPlayerId).filter(([playerId, value]) => {
+      if (!playerIds.has(playerId)) return false;
+      const numeric = Number(value);
+      return Number.isFinite(numeric) && numeric !== 0;
+    }).map(([playerId, value]) => [playerId, Number(value)])
+  );
+  const disqualifiedPlayerIds = Array.isArray(normalizedGrillData.disqualifiedPlayerIds)
+    ? normalizedGrillData.disqualifiedPlayerIds
+      .map((value) => String(value || '').trim())
+      .filter((value) => value && playerIds.has(value))
+    : [];
+  const guessWinnerId = String(normalizedGrillData.guessWinnerId || '').trim();
+  const normalizedGuessWinnerId = guessWinnerId && playerIds.has(guessWinnerId) ? guessWinnerId : '';
+  return {
+    ...round,
+    grillData: {
+      ...(round.grillData || {}),
+      ...normalizedGrillData,
+      disqualifiedPlayerIds,
+      scoreAdjustmentsByPlayerId: sanitizedAdjustments,
+      guessWinnerId: normalizedGuessWinnerId,
+      endedByCorrectGuess: Boolean(normalizedGrillData.endedByCorrectGuess),
+    },
   };
 }
 
@@ -1648,41 +1714,110 @@ function pickBritishMaleVoice(voices = []) {
   ));
   return filtered || britishVoices[0];
 }
-function answerGrillQuestion(question = '', round = {}) {
-  const asked = String(question || '').trim().toLowerCase();
-  if (!asked) return 'Not really applicable';
+const GRILL_YES_VARIANTS = ['Yes.', 'Yep.', 'Absolutely yes.', 'Correct.', 'Spot on.'];
+const GRILL_NO_VARIANTS = ['No.', 'Nah.', 'Nope.', 'Negative.', 'Not a chance.'];
+const GRILL_MAYBE_VARIANTS = ['Possibly.', 'Maybe.', 'Could be.', 'Not impossible.', 'Hard maybe.'];
+const GRILL_KIND_OF_VARIANTS = ['Kind of.', 'Sort of.', 'In a way.', 'Depends how you see it.', 'Close-ish.'];
+const GRILL_NOT_APPLICABLE_VARIANTS = ['Not really applicable.', 'Not the right angle.', 'That does not map cleanly.', 'Not quite relevant.'];
+const GRILL_CHEAT_WARNING_VARIANTS = [
+  'Cheeky cheat detected. Naughty naughty, good try... guess again.',
+  'Sneaky move. I am not giving hints, so have another guess.',
+  'Nice try, cheat. No hints from me. Guess again.',
+];
+const GRILL_CHEAT_PENALTY_VARIANTS = [
+  'You did it again, filthy cheat. Point deducted and you are disqualified for this round.',
+  'Second sneaky request detected. You lose a point and you are out of this round.',
+  'Naughty naughty... again. Minus one point, and you are disqualified this round.',
+];
+const GRILL_CORRECT_GUESS_VARIANTS = [
+  'Bingo. Correct guess.',
+  'Yes. You got it exactly right.',
+  'Spot on. That is the answer.',
+];
+const GRILL_LIAR_CORRECT_GUESS_VARIANTS = [
+  'Correct... but filthy cheat behavior from a liar. Minus one.',
+  'You guessed it, liar. Sneaky and shameless. Minus one point.',
+  'Right answer, wrong morals. Liar penalty applied: minus one.',
+];
+
+function pickVariant(options = [], fallback = '') {
+  if (!Array.isArray(options) || options.length === 0) return fallback;
+  return options[Math.floor(Math.random() * options.length)] || fallback;
+}
+
+function normalizeForGuess(value = '') {
+  return String(value || '')
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function isHintOrAnswerRequest(question = '') {
+  const asked = normalizeForGuess(question);
+  if (!asked) return false;
+  const hintPatterns = [
+    /\b(hint|clue)\b/,
+    /\b(answer|give the answer|tell me the answer|what is the answer)\b/,
+    /\b(reveal it|say it|tell me what it is|what is it exactly)\b/,
+  ];
+  return hintPatterns.some((pattern) => pattern.test(asked));
+}
+
+function evaluateGrillQuestion(question = '', round = {}) {
+  const asked = normalizeForGuess(question);
+  if (!asked) {
+    return { answer: pickVariant(GRILL_NOT_APPLICABLE_VARIANTS, 'Not really applicable.'), isCorrectGuess: false, isCheatRequest: false };
+  }
+  if (isHintOrAnswerRequest(asked)) {
+    return { answer: pickVariant(GRILL_CHEAT_WARNING_VARIANTS, 'No hints from me. Guess again.'), isCorrectGuess: false, isCheatRequest: true };
+  }
 
   const targetRaw = String(round?.main || '').trim();
+  const targetCore = targetRaw.includes(':') ? targetRaw.split(':').slice(1).join(':').trim() : targetRaw;
   const targetPrompt = String(round?.aiPrompt || '');
-  const targetLower = `${targetRaw} ${targetPrompt}`.toLowerCase();
-  const targetTokens = [...new Set(
-    targetLower
-      .replace(/[^a-z0-9\s-]/g, ' ')
-      .split(/\s+/)
-      .filter((token) => token.length >= 4)
-  )];
-  const directTokenMatch = targetTokens.some((token) => asked.includes(token));
-  if (directTokenMatch) return 'Yes';
+  const targetNormalized = normalizeForGuess(targetCore || targetRaw);
+  const targetTokens = [...new Set(targetNormalized.split(/\s+/).filter((token) => token.length >= 3))];
+
+  const hasGuessIntent = /\b(is it|is this|is that|could it be|my guess|answer is|it is|it s|its)\b/.test(asked);
+  const fullTargetMatch = targetNormalized && asked.includes(targetNormalized);
+  const tokenGuessMatch = targetTokens.length > 1 && targetTokens.every((token) => asked.includes(token));
+  const isCorrectGuess = Boolean(fullTargetMatch || (hasGuessIntent && tokenGuessMatch));
+  if (isCorrectGuess) {
+    return { answer: pickVariant(GRILL_CORRECT_GUESS_VARIANTS, 'Correct.'), isCorrectGuess: true, isCheatRequest: false };
+  }
 
   const targetTags = inferTargetTags(targetRaw, targetPrompt);
   const questionTags = inferQuestionTags(asked);
   const hasTaggedQuestion = questionTags.size > 0;
   const hasTagOverlap = [...questionTags].some((tag) => targetTags.has(tag));
-  if (hasTaggedQuestion && hasTagOverlap) return 'Yes';
-  if (hasTaggedQuestion && !hasTagOverlap) return 'No';
-
-  if (/\b(is it|does it|can it|would it)\b/.test(asked)) return 'Possibly';
-  if (/\b(where|when|which|who)\b/.test(asked)) return 'Kind of';
-  return 'Not really applicable';
+  if (hasTaggedQuestion && hasTagOverlap) {
+    return { answer: pickVariant(GRILL_YES_VARIANTS, 'Yes.'), isCorrectGuess: false, isCheatRequest: false };
+  }
+  if (hasTaggedQuestion && !hasTagOverlap) {
+    return { answer: pickVariant(GRILL_NO_VARIANTS, 'No.'), isCorrectGuess: false, isCheatRequest: false };
+  }
+  if (/\b(is it|does it|can it|would it)\b/.test(asked)) {
+    return { answer: pickVariant(GRILL_MAYBE_VARIANTS, 'Possibly.'), isCorrectGuess: false, isCheatRequest: false };
+  }
+  if (/\b(where|when|which|who)\b/.test(asked)) {
+    return { answer: pickVariant(GRILL_KIND_OF_VARIANTS, 'Kind of.'), isCorrectGuess: false, isCheatRequest: false };
+  }
+  return { answer: pickVariant(GRILL_NOT_APPLICABLE_VARIANTS, 'Not really applicable.'), isCorrectGuess: false, isCheatRequest: false };
 }
 function GrillEmScreen({ players, round, totalRounds, onContinue, theme }) {
   const [question, setQuestion] = useState('');
   const [transcript, setTranscript] = useState(round.grillData?.transcript || []);
   const questionsPerPlayer = round.grillData?.questionsPerPlayer || getGrillQuestionsPerPlayer(players.length);
   const [askedCounts, setAskedCounts] = useState(round.grillData?.askedCounts || {});
+  const [cheatStrikesByPlayerId, setCheatStrikesByPlayerId] = useState(round.grillData?.cheatStrikesByPlayerId || {});
+  const [disqualifiedPlayerIds, setDisqualifiedPlayerIds] = useState(round.grillData?.disqualifiedPlayerIds || []);
+  const [scoreAdjustmentsByPlayerId, setScoreAdjustmentsByPlayerId] = useState(round.grillData?.scoreAdjustmentsByPlayerId || {});
+  const [guessWinnerId, setGuessWinnerId] = useState(round.grillData?.guessWinnerId || '');
+  const [endedByCorrectGuess, setEndedByCorrectGuess] = useState(Boolean(round.grillData?.endedByCorrectGuess));
   const [isListening, setIsListening] = useState(false);
   const [micError, setMicError] = useState('');
-  const [voiceRevision, setVoiceRevision] = useState(0);
+  const [, setVoiceRevision] = useState(0);
   const recognitionRef = useRef(null);
   const [turnIndex, setTurnIndex] = useState(round.grillData?.turnIndex || 0);
   const speechEnabled = round.grillData?.ttsEnabled !== false;
@@ -1695,31 +1830,40 @@ function GrillEmScreen({ players, round, totalRounds, onContinue, theme }) {
     micEnabled &&
     typeof window !== 'undefined' &&
     (window.SpeechRecognition || window.webkitSpeechRecognition);
-  const totalQuestionsTarget = players.length * questionsPerPlayer;
+  const disqualifiedSet = useMemo(
+    () => new Set((disqualifiedPlayerIds || []).map((value) => String(value || '').trim()).filter(Boolean)),
+    [disqualifiedPlayerIds]
+  );
+  const totalQuestionsTarget = players.reduce((acc, player) => {
+    const asked = Math.min(questionsPerPlayer, Number(askedCounts[player.id] || 0));
+    if (disqualifiedSet.has(player.id)) return acc + asked;
+    return acc + questionsPerPlayer;
+  }, 0);
   const askedSoFar = players.reduce((acc, player) => acc + Math.min(questionsPerPlayer, askedCounts[player.id] || 0), 0);
 
-  function findNextTurnIndex(startIndex, countsSnapshot = askedCounts) {
+  function findNextTurnIndex(startIndex, countsSnapshot = askedCounts, disqualifiedSnapshot = disqualifiedSet) {
     if (!players.length) return -1;
     for (let step = 0; step < players.length; step += 1) {
       const candidate = (startIndex + step + players.length) % players.length;
       const candidatePlayer = players[candidate];
+      if (disqualifiedSnapshot?.has(candidatePlayer.id)) continue;
       if ((countsSnapshot[candidatePlayer.id] || 0) < questionsPerPlayer) return candidate;
     }
     return -1;
   }
-  const activeTurnIndex = findNextTurnIndex(turnIndex);
+  const activeTurnIndex = endedByCorrectGuess ? -1 : findNextTurnIndex(turnIndex);
   const activePlayer = activeTurnIndex === -1 ? null : players[activeTurnIndex];
-  const allAsked = activeTurnIndex === -1;
+  const allAsked = endedByCorrectGuess || activeTurnIndex === -1;
 
   useEffect(() => () => {
     try { recognitionRef.current?.stop(); } catch {}
   }, []);
   useEffect(() => {
-    const validTurnIndex = findNextTurnIndex(turnIndex);
+    const validTurnIndex = findNextTurnIndex(turnIndex, askedCounts, disqualifiedSet);
     if (validTurnIndex !== -1 && validTurnIndex !== turnIndex) {
       setTurnIndex(validTurnIndex);
     }
-  }, [turnIndex, askedCounts, players.length, questionsPerPlayer]);
+  }, [turnIndex, askedCounts, disqualifiedSet, players.length, questionsPerPlayer, endedByCorrectGuess]);
   useEffect(() => {
     if (!canUseSpeech) return undefined;
     const synth = window.speechSynthesis;
@@ -1763,7 +1907,10 @@ function GrillEmScreen({ players, round, totalRounds, onContinue, theme }) {
         recognition.continuous = false;
         recognition.onresult = (event) => {
           const text = event?.results?.[0]?.[0]?.transcript || '';
-          if (text) setQuestion(text);
+          if (text) {
+            setQuestion(text);
+            submitQuestion(text, { source: 'mic' });
+          }
         };
         recognition.onstart = () => setIsListening(true);
         recognition.onend = () => setIsListening(false);
@@ -1796,26 +1943,88 @@ function GrillEmScreen({ players, round, totalRounds, onContinue, theme }) {
     }
   }
 
-  function submitQuestion() {
-    const trimmed = question.trim();
+  function submitQuestion(questionInput = question, { source = 'typed' } = {}) {
+    const trimmed = String(questionInput || '').trim();
     if (!trimmed || allAsked || !activePlayer) return;
-    const answer = answerGrillQuestion(trimmed, round);
+
+    const evaluation = evaluateGrillQuestion(trimmed, round);
+    let answer = evaluation.answer;
     const playerAskedCount = (askedCounts[activePlayer.id] || 0) + 1;
     const nextCounts = { ...askedCounts, [activePlayer.id]: playerAskedCount };
+    const nextCheatStrikes = { ...cheatStrikesByPlayerId };
+    const nextScoreAdjustments = { ...scoreAdjustmentsByPlayerId };
+    const nextDisqualified = Array.isArray(disqualifiedPlayerIds) ? [...disqualifiedPlayerIds] : [];
+    let nextGuessWinnerId = String(guessWinnerId || '').trim();
+    let nextEndedByCorrectGuess = endedByCorrectGuess;
+
+    if (evaluation.isCheatRequest) {
+      const nextStrikeCount = Number(nextCheatStrikes[activePlayer.id] || 0) + 1;
+      nextCheatStrikes[activePlayer.id] = nextStrikeCount;
+      if (nextStrikeCount >= 2) {
+        if (!nextDisqualified.includes(activePlayer.id)) nextDisqualified.push(activePlayer.id);
+        nextScoreAdjustments[activePlayer.id] = Number(nextScoreAdjustments[activePlayer.id] || 0) - 1;
+        answer = pickVariant(GRILL_CHEAT_PENALTY_VARIANTS, 'Minus one point and disqualified for this round.');
+      } else {
+        answer = pickVariant(
+          GRILL_CHEAT_WARNING_VARIANTS,
+          'Cheeky cheat detected. Guess again. Do it again and you lose a point plus disqualification.'
+        );
+      }
+    } else if (evaluation.isCorrectGuess) {
+      const isLiar = (round.imposterIds || []).includes(activePlayer.id);
+      const adjustment = isLiar ? -1 : 2;
+      nextScoreAdjustments[activePlayer.id] = Number(nextScoreAdjustments[activePlayer.id] || 0) + adjustment;
+      nextGuessWinnerId = activePlayer.id;
+      nextEndedByCorrectGuess = true;
+      answer = isLiar
+        ? pickVariant(GRILL_LIAR_CORRECT_GUESS_VARIANTS, 'Correct, liar. Minus one for cheating.')
+        : pickVariant(GRILL_CORRECT_GUESS_VARIANTS, 'Correct guess. Round ending now.');
+    }
+
+    const nextDisqualifiedSet = new Set(nextDisqualified.map((value) => String(value || '').trim()).filter(Boolean));
+    const nextTurnIndex = nextEndedByCorrectGuess
+      ? -1
+      : findNextTurnIndex(activeTurnIndex + 1, nextCounts, nextDisqualifiedSet);
+
     const nextRow = {
       id: `${Date.now()}-${activePlayer.id}-${playerAskedCount}`,
       player: activePlayer?.name || 'Player',
       question: trimmed,
       answer,
       turn: playerAskedCount,
+      source,
+      isCheatRequest: Boolean(evaluation.isCheatRequest),
+      isCorrectGuess: Boolean(evaluation.isCorrectGuess),
     };
-    setTranscript((cur) => [...cur, nextRow]);
+    const nextTranscript = [...transcript, nextRow];
+    setTranscript(nextTranscript);
     setAskedCounts(nextCounts);
-    setTurnIndex(findNextTurnIndex(activeTurnIndex + 1, nextCounts));
+    setCheatStrikesByPlayerId(nextCheatStrikes);
+    setDisqualifiedPlayerIds(nextDisqualified);
+    setScoreAdjustmentsByPlayerId(nextScoreAdjustments);
+    setGuessWinnerId(nextGuessWinnerId);
+    setEndedByCorrectGuess(nextEndedByCorrectGuess);
+    setTurnIndex(nextTurnIndex >= 0 ? nextTurnIndex : activeTurnIndex);
     try { recognitionRef.current?.stop(); } catch {}
     setIsListening(false);
     speak(answer);
     setQuestion('');
+
+    if (nextEndedByCorrectGuess) {
+      onContinue({
+        transcript: nextTranscript,
+        questionsPerPlayer,
+        askedCounts: nextCounts,
+        micEnabled,
+        ttsEnabled: speechEnabled,
+        turnIndex: nextTurnIndex,
+        cheatStrikesByPlayerId: nextCheatStrikes,
+        disqualifiedPlayerIds: nextDisqualified,
+        scoreAdjustmentsByPlayerId: nextScoreAdjustments,
+        guessWinnerId: nextGuessWinnerId,
+        endedByCorrectGuess: true,
+      });
+    }
   }
 
   return (
@@ -1829,13 +2038,23 @@ function GrillEmScreen({ players, round, totalRounds, onContinue, theme }) {
             <p className="text-cyan-200 mt-3">
               One player asks at a time. Turn rotates after each question.
             </p>
+            <p className="text-xs text-yellow-200 mt-2">
+              Correct guess ends the round instantly. Honest guessers get +2. Liar guessers lose 1.
+            </p>
           </div>
 
           <div className="mt-4 rounded-[1.5rem] border border-white/10 bg-white/5 p-4">
             <div className="text-sm text-white/70">Current questioner</div>
             <div className="text-2xl font-black text-yellow-300 mt-1">{allAsked ? 'All questions complete' : activePlayer?.name}</div>
-            <div className="text-xs text-white/55 mt-2">Questions left: {Math.max(0, totalQuestionsTarget - askedSoFar)}</div>
+            <div className="text-xs text-white/55 mt-2">
+              Questions left: {Math.max(0, totalQuestionsTarget - askedSoFar)} / {totalQuestionsTarget}
+            </div>
             <div className="text-xs text-cyan-200 mt-2">AI voice: male British (when supported by device voices)</div>
+            {disqualifiedPlayerIds.length > 0 && (
+              <div className="text-xs text-red-200 mt-2">
+                Disqualified this round: {disqualifiedPlayerIds.map((id) => players.find((player) => player.id === id)?.name || id).join(', ')}
+              </div>
+            )}
           </div>
 
           <div className="grid gap-3 mt-4 md:grid-cols-[1fr_auto_auto]">
@@ -1892,10 +2111,22 @@ function GrillEmScreen({ players, round, totalRounds, onContinue, theme }) {
           <div className="mt-6 flex justify-end">
             <Button
               className="rounded-[1.5rem] h-14 px-8 bg-yellow-300 text-zinc-950 border-2 border-white"
-              onClick={() => onContinue({ transcript, questionsPerPlayer, askedCounts, micEnabled, ttsEnabled: speechEnabled, turnIndex: activeTurnIndex })}
+              onClick={() => onContinue({
+                transcript,
+                questionsPerPlayer,
+                askedCounts,
+                micEnabled,
+                ttsEnabled: speechEnabled,
+                turnIndex: activeTurnIndex,
+                cheatStrikesByPlayerId,
+                disqualifiedPlayerIds,
+                scoreAdjustmentsByPlayerId,
+                guessWinnerId,
+                endedByCorrectGuess,
+              })}
               disabled={!allAsked}
             >
-              Continue to voting
+              {endedByCorrectGuess ? 'Correct guess locked. Continue to voting' : 'Continue to voting'}
             </Button>
           </div>
         </GlassPanel>
@@ -3280,7 +3511,7 @@ export default function App() {
         round={round}
         totalRounds={totalRounds}
         onContinue={(grillData) => {
-          setRound((cur) => ({ ...cur, grillData }));
+          setRound((cur) => applyGrillRoundDataToRound({ ...cur, grillData }, grillData, players));
           setVotesByPlayerId(Object.fromEntries(players.map((p) => [p.id, ''])));
           if (onlineMode) {
             void runOnlinePhaseAdvance();
