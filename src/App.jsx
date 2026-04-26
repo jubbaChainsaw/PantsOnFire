@@ -566,8 +566,16 @@ const HOST_DIALOGUE_TIMINGS = {
   liarRevealAdvanceMs: 2400,
   liarRevealCompleteMs: 2600,
 };
-function GameIntroScreen({ theme, onContinue, isOnlineMode = false }) {
+function GameIntroScreen({ theme, onContinue, isOnlineMode = false, totalRounds = 1, playerCount = 0 }) {
+  const greeting = (() => {
+    const hour = new Date().getHours();
+    if (hour < 12) return 'Good morning';
+    if (hour < 18) return 'Good afternoon';
+    return 'Good evening';
+  })();
+  const introOpeningLine = `${greeting} and welcome to Pants on Fire! Find the Liar. I'm your hostess with the mostest, sorry I mean I am Host with the Most...... Ian Poster. Through ${Math.max(1, Number(totalRounds) || 1)} rounds the ${Math.max(0, Number(playerCount) || 0)} of you will battle it out to find out who's integrity is majorly questionable, who amongst you has the poker face of someone chewing a lemon and which player could gaslight an electric hob. Let me explain the rules.`;
   const introLines = [
+    introOpeningLine,
     'Welcome to Pants on Fire. One or more players are secretly lying.',
     'Each round, players get private prompts and give clues without exposing the exact card.',
     'Spot the fake, vote the liar, then climb the leaderboard.',
@@ -3125,6 +3133,8 @@ export default function App() {
       <GameIntroScreen
         theme={nameTheme}
         isOnlineMode={onlineMode}
+        totalRounds={totalRounds}
+        playerCount={players.length}
         onContinue={() => setScreen('rules')}
       />
     )}
