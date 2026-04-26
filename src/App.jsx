@@ -1597,10 +1597,12 @@ function RevealScreen({ players, currentRevealIndex, round, totalRounds, onNext,
                   />
                   <div className="text-xs uppercase tracking-[0.3em] text-cyan-200/95">{round.roundTypeName}</div>
                   <div className="mt-2 text-sm font-semibold text-white/90">Round {round.roundNumber}</div>
-                  <div className="mt-5 text-sm text-white/95">
-                    {instructionLine}
+                  <div className="mt-5 rounded-xl border border-cyan-200/30 bg-black/45 px-3 py-2 shadow-[0_0_16px_rgba(34,211,238,0.28)]">
+                    <div className="text-sm text-white/95">
+                      {instructionLine}
+                    </div>
+                    <div className="mt-2 text-xs text-white/90">{round.roundTypeTagline}</div>
                   </div>
-                  <div className="mt-2 text-xs text-white/90">{round.roundTypeTagline}</div>
                   <div className="mt-auto pb-4 text-center">
                     <div className="text-3xl font-black uppercase tracking-[0.18em] text-yellow-200">Get Ready</div>
                     <div className="mt-2 text-xs uppercase tracking-[0.2em] text-cyan-100/95">
