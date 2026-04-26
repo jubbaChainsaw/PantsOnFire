@@ -2615,10 +2615,12 @@ function ResultsScreen({ players, round, totalRounds, tally, roundGains, roundBr
                 </p>
               </div>
               <div className="mt-4 grid flex-1 auto-rows-fr gap-2 sm:grid-cols-2 lg:grid-cols-3">
-                {players.map((player) => {
+                {players.map((player, index) => {
                   const isLiar = (round.imposterIds || []).includes(player.id);
                   const breakdown = roundBreakdown?.[player.id] || { voteHit: 0, liarSurvived: 0, grillTeamBonus: 0, grillLiarSwing: 0 };
                   const roundGain = roundGains?.[player.id] || 0;
+                  const centeredOnSm = players.length % 2 === 1 && index === players.length - 1;
+                  const centeredOnLg = players.length % 3 === 1 && index === players.length - 1;
                   return (
                     <div
                       key={player.id}
@@ -2626,7 +2628,7 @@ function ResultsScreen({ players, round, totalRounds, tally, roundGains, roundBr
                         isLiar
                           ? 'border-red-300/75 bg-gradient-to-b from-red-500/12 to-white/5 shadow-[0_0_22px_rgba(255,62,62,0.55)]'
                           : 'border-white/10 bg-white/5'
-                      }`}
+                      } ${centeredOnSm ? 'sm:col-span-2 sm:mx-auto sm:w-full sm:max-w-[22rem] lg:col-span-1 lg:max-w-none' : ''} ${centeredOnLg ? 'lg:col-start-2' : ''}`}
                     >
                       {isLiar && (
                         <div className="absolute -top-2 left-1/2 -translate-x-1/2 rounded-full border border-red-200/70 bg-red-500 px-2.5 py-0.5 text-[0.6rem] font-black uppercase tracking-[0.1em] text-white">
@@ -3996,26 +3998,30 @@ export default function App() {
             <h2 className="mt-3 text-4xl font-black text-yellow-300">Choose round type</h2>
             <p className="mt-3 text-white/70">Pick one of two options. Previous round type is excluded.</p>
             <div className="mt-8 grid gap-4 sm:grid-cols-2">
-              {roundTypeOptions.map((type) => (
-                <button
-                  key={type.id}
-                  type="button"
-                  className="rounded-[1.8rem] border border-white/20 bg-black/20 p-4 text-center transition-transform duration-200 hover:scale-[1.01] hover:border-cyan-300/40"
-                  onClick={() => {
-                    setSelectedRoundType(type.id);
-                    setScreen('category-choice');
-                  }}
-                >
-                  <ThemeArt
-                    src="/assets/themes/default/cards/prompt-back.png"
-                    alt={`${type.name} round card back`}
-                    className="mx-auto h-40 w-auto rounded-[1.2rem] border border-white/20 bg-black/25 p-1"
-                  />
-                  <div className="mt-4 text-2xl font-black uppercase tracking-[0.06em] text-white">
-                    {type.name}
+              {roundTypeOptions.map((type, index) => {
+                const centeredOnSm = roundTypeOptions.length % 2 === 1 && index === roundTypeOptions.length - 1;
+                return (
+                  <div key={type.id} className={centeredOnSm ? 'sm:col-span-2 sm:flex sm:justify-center' : ''}>
+                    <button
+                      type="button"
+                      className={`w-full rounded-[1.8rem] border border-white/20 bg-black/20 p-4 text-center transition-transform duration-200 hover:scale-[1.01] hover:border-cyan-300/40 ${centeredOnSm ? 'sm:max-w-[20rem]' : ''}`}
+                      onClick={() => {
+                        setSelectedRoundType(type.id);
+                        setScreen('category-choice');
+                      }}
+                    >
+                      <ThemeArt
+                        src="/assets/themes/default/cards/prompt-back.png"
+                        alt={`${type.name} round card back`}
+                        className="mx-auto h-40 w-auto rounded-[1.2rem] border border-white/20 bg-black/25 p-1"
+                      />
+                      <div className="mt-4 text-2xl font-black uppercase tracking-[0.06em] text-white">
+                        {type.name}
+                      </div>
+                    </button>
                   </div>
-                </button>
-              ))}
+                );
+              })}
             </div>
           </GlassPanel>
         </div>
@@ -4029,24 +4035,26 @@ export default function App() {
             <h2 className="mt-3 text-4xl font-black text-yellow-300">Choose the next category</h2>
             <p className="mt-3 text-white/70">{copyState.chooser}</p>
             <div className="mt-8 grid gap-4 sm:grid-cols-2">
-              {categoryOptions.map((category) => {
+              {categoryOptions.map((category, index) => {
                 const categoryCardArtSrc = resolveCategoryChoiceCardArt(category, canonicalThemeName);
+                const centeredOnSm = categoryOptions.length % 2 === 1 && index === categoryOptions.length - 1;
                 return (
-                  <button
-                    key={category.id}
-                    type="button"
-                    className="rounded-[1.8rem] border border-white/20 bg-black/20 p-4 text-center transition-transform duration-200 hover:scale-[1.01] hover:border-cyan-300/40"
-                    onClick={() => chooseCategory(category.id)}
-                  >
-                    <ThemeArt
-                      src={categoryCardArtSrc}
-                      alt={`${category.name} category card`}
-                      className="mx-auto h-40 w-auto rounded-[1.2rem] border border-white/20 bg-black/25 p-1"
-                    />
-                    <div className="mt-4 text-2xl font-black uppercase tracking-[0.06em] text-white">
-                      {category.name}
-                    </div>
-                  </button>
+                  <div key={category.id} className={centeredOnSm ? 'sm:col-span-2 sm:flex sm:justify-center' : ''}>
+                    <button
+                      type="button"
+                      className={`w-full rounded-[1.8rem] border border-white/20 bg-black/20 p-4 text-center transition-transform duration-200 hover:scale-[1.01] hover:border-cyan-300/40 ${centeredOnSm ? 'sm:max-w-[20rem]' : ''}`}
+                      onClick={() => chooseCategory(category.id)}
+                    >
+                      <ThemeArt
+                        src={categoryCardArtSrc}
+                        alt={`${category.name} category card`}
+                        className="mx-auto h-40 w-auto rounded-[1.2rem] border border-white/20 bg-black/25 p-1"
+                      />
+                      <div className="mt-4 text-2xl font-black uppercase tracking-[0.06em] text-white">
+                        {category.name}
+                      </div>
+                    </button>
+                  </div>
                 );
               })}
             </div>
