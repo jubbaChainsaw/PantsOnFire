@@ -24,6 +24,7 @@ import {
   getThemeOptions,
   normalizeUnlockedThemePackIds,
 } from './data/themeCatalog';
+import { getThemePackRedeemOffer } from './data/dlc/themeRedeemCodes';
 import { COPY_BANK, createCopyPicker } from './data/gameTextContent';
 import {
   DEFAULT_CATEGORIES,
@@ -2436,8 +2437,56 @@ function FinalScreen({ players, onRestart, line, theme }) {
   const winner = ranked[0];
   return <TopFrame theme={theme}><div className="mx-auto max-w-4xl space-y-6"><GlassPanel className="rounded-[2.5rem] p-8 text-center border-yellow-300/20 bg-black/25"><div className="text-xs uppercase tracking-[0.3em] text-white/50">Match complete</div><h2 className="text-5xl font-black mt-3 text-yellow-300">Winner: {winner?.name}</h2><p className="text-white/75 mt-3">{line}</p><div className="mt-8 grid gap-4 md:grid-cols-3">{ranked.map((player, index) => <GlassPanel key={player.id} className="rounded-[1.75rem] p-5 border-white/10 bg-black/20"><div className="text-sm text-white/55">Place {index + 1}</div><div className="text-2xl font-black mt-2">{player.name}</div><div className="text-4xl font-black mt-3">{player.score}</div></GlassPanel>)}</div><Button className="rounded-[1.5rem] h-14 px-8 mt-8 bg-yellow-300 text-zinc-950 border-2 border-white" onClick={onRestart}><Star className="mr-2 h-5 w-5 inline" />New match</Button></GlassPanel></div></TopFrame>;
 }
-function StoreScreen({ onBack, theme, dlcThemePacks = [], unlockedThemePackIds = [], onUnlockThemePack = () => {} }) {
+function StoreScreen({
+  onBack,
+  theme,
+  dlcThemePacks = [],
+  unlockedThemePackIds = [],
+  onUnlockThemePack = () => {},
+  onRedeemThemeCode = () => ({ status: 'invalid-code' }),
+}) {
   const unlocked = new Set(unlockedThemePackIds || []);
+  const [redeemCodeInput, setRedeemCodeInput] = useState('');
+  const [redeemFeedback, setRedeemFeedback] = useState(null);
+  const packNameById = useMemo(
+    () => Object.fromEntries((dlcThemePacks || []).map((pack) => [pack.id, pack.name || pack.id])),
+    [dlcThemePacks]
+  );
+  const handleRedeemSubmit = (event) => {
+    event.preventDefault();
+    const redemption = onRedeemThemeCode(redeemCodeInput);
+    if (!redemption || redemption.status === 'invalid-code') {
+      setRedeemFeedback({
+        tone: 'error',
+        message: 'Invalid code. Double-check the code and try again.',
+      });
+      return;
+    }
+    if (redemption.status === 'already-unlocked') {
+      setRedeemFeedback({
+        tone: 'neutral',
+        message: 'Code accepted, but those DLC packs are already unlocked on this device.',
+      });
+      setRedeemCodeInput('');
+      return;
+    }
+    if (redemption.status === 'unlocked') {
+      const unlockedNames = (redemption.newlyUnlockedPackIds || [])
+        .map((packId) => packNameById[packId] || packId);
+      setRedeemFeedback({
+        tone: 'success',
+        message: unlockedNames.length
+          ? `Code redeemed! Unlocked: ${unlockedNames.join(', ')}.`
+          : 'Code redeemed! New DLC unlocked.',
+      });
+      setRedeemCodeInput('');
+      return;
+    }
+    setRedeemFeedback({
+      tone: 'error',
+      message: 'Could not redeem this code right now. Please try again.',
+    });
+  };
   return (
     <TopFrame theme={theme}>
       <div className="mx-auto max-w-4xl space-y-6">
@@ -2487,6 +2536,39 @@ function StoreScreen({ onBack, theme, dlcThemePacks = [], unlockedThemePackIds =
               );
             })}
           </div>
+          <div className="mt-6 rounded-2xl border border-cyan-400/25 bg-cyan-500/10 p-4">
+            <div className="flex items-center gap-2 text-cyan-100">
+              <KeyRound className="h-5 w-5" />
+              <div className="font-black">Redeem promo code</div>
+            </div>
+            <p className="text-sm text-white/75 mt-2">
+              Enter giveaway or marketing codes to unlock certain DLC bundles instantly.
+            </p>
+            <form className="mt-3 flex flex-col gap-2 sm:flex-row" onSubmit={handleRedeemSubmit}>
+              <Input
+                value={redeemCodeInput}
+                onChange={(event) => setRedeemCodeInput(event.target.value)}
+                placeholder="e.g. HISTORY-99"
+                className="rounded-xl bg-white/10 border-white/20 text-white"
+              />
+              <Button type="submit" className="rounded-xl bg-cyan-300 text-zinc-950 border border-white">
+                Redeem
+              </Button>
+            </form>
+            {redeemFeedback && (
+              <div
+                className={`mt-3 rounded-xl border px-3 py-2 text-sm ${
+                  redeemFeedback.tone === 'success'
+                    ? 'border-emerald-300/40 bg-emerald-500/20 text-emerald-100'
+                    : redeemFeedback.tone === 'neutral'
+                      ? 'border-amber-300/40 bg-amber-500/15 text-amber-100'
+                      : 'border-red-300/40 bg-red-500/15 text-red-100'
+                }`}
+              >
+                {redeemFeedback.message}
+              </div>
+            )}
+          </div>
         </GlassPanel>
       </div>
     </TopFrame>
@@ -2509,6 +2591,35 @@ function unlockThemePackIds(currentPackIds = [], packId = '') {
   const next = new Set(normalizeUnlockedThemePackIds(currentPackIds));
   if (packId) next.add(packId);
   return [...next];
+}
+
+function redeemThemePackIds(currentPackIds = [], rawCode = '') {
+  const current = normalizeUnlockedThemePackIds(currentPackIds);
+  const offer = getThemePackRedeemOffer(rawCode);
+  if (!offer) {
+    return {
+      status: 'invalid-code',
+      offer: null,
+      newlyUnlockedPackIds: [],
+      nextPackIds: current,
+    };
+  }
+  const unlocked = new Set(current);
+  const redeemablePackIds = (offer.packIds || []).filter((packId) => !unlocked.has(packId));
+  if (!redeemablePackIds.length) {
+    return {
+      status: 'already-unlocked',
+      offer,
+      newlyUnlockedPackIds: [],
+      nextPackIds: current,
+    };
+  }
+  return {
+    status: 'unlocked',
+    offer,
+    newlyUnlockedPackIds: redeemablePackIds,
+    nextPackIds: normalizeUnlockedThemePackIds([...current, ...redeemablePackIds]),
+  };
 }
 
 function SettingsScreen({
@@ -3717,7 +3828,22 @@ export default function App() {
     {screen === 'liar-reveal' && round && <LiarRevealScreen players={players} round={round} onComplete={finishLiarReveal} theme={canonicalThemeName} />}
     {screen === 'results' && round && <ResultsScreen players={players} round={round} totalRounds={totalRounds} tally={tally} roundGains={roundGains} roundBreakdown={roundBreakdown} imposterCaught={imposterCaught} onNextRound={winCondition === 'rounds' && round.roundNumber >= totalRounds ? endGame : nextRound} onEndGame={endGame} resultLine={copyState.result} theme={canonicalThemeName} />}
     {screen === 'final' && <FinalScreen players={players} onRestart={restartToHome} line={copyState.winner} theme={canonicalThemeName} />}
-    {screen === 'store' && <StoreScreen onBack={() => setScreen('home')} theme={canonicalThemeName} dlcThemePacks={DLC_THEME_PACKS} unlockedThemePackIds={unlockedThemePackIds} onUnlockThemePack={(packId) => setUnlockedThemePackIds((current) => normalizeUnlockedThemePackIds([...current, packId]))} />}
+    {screen === 'store' && (
+      <StoreScreen
+        onBack={() => setScreen('home')}
+        theme={canonicalThemeName}
+        dlcThemePacks={DLC_THEME_PACKS}
+        unlockedThemePackIds={unlockedThemePackIds}
+        onUnlockThemePack={(packId) => setUnlockedThemePackIds((current) => unlockThemePackIds(current, packId))}
+        onRedeemThemeCode={(rawCode) => {
+          const redemption = redeemThemePackIds(unlockedThemePackIds, rawCode);
+          if (redemption.status === 'unlocked') {
+            setUnlockedThemePackIds(redemption.nextPackIds);
+          }
+          return redemption;
+        }}
+      />
+    )}
     {screen === 'settings' && (
       <SettingsScreen
         onBack={() => setScreen('home')}
