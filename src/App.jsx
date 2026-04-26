@@ -3920,42 +3920,26 @@ export default function App() {
       <TopFrame theme={canonicalThemeName}>
         <div className="mx-auto max-w-3xl space-y-6">
           <GlassPanel className="relative overflow-hidden rounded-[2.5rem] border-fuchsia-400/25 bg-black/25 p-8 text-center">
-            <LightningBolt className="right-8 top-6" />
-            <LightningBolt className="left-10 bottom-6" />
             <div className="text-xs uppercase tracking-[0.3em] text-white/50">Round owner: {players[currentRoundOwnerIndex]?.name}</div>
             <h2 className="mt-3 text-4xl font-black text-yellow-300">Choose the next category</h2>
             <p className="mt-3 text-white/70">{copyState.chooser}</p>
-            <div className="mt-8 grid grid-cols-2 gap-3 sm:gap-4">
+            <div className="mt-8 grid gap-4 sm:grid-cols-2">
               {categoryOptions.map((category) => {
                 const categoryCardArtSrc = resolveCategoryChoiceCardArt(category, canonicalThemeName);
                 return (
                   <button
                     key={category.id}
                     type="button"
-                    className="w-full"
+                    className="rounded-[1.8rem] border border-white/20 bg-black/20 p-4 text-center transition-transform duration-200 hover:scale-[1.01] hover:border-cyan-300/40"
                     onClick={() => chooseCategory(category.id)}
                   >
-                    <div className="relative mx-auto aspect-[2/3] w-full max-w-[11.5rem] overflow-hidden rounded-[1.35rem] border-2 border-white/25 bg-black/30 shadow-lg">
-                      {categoryCardArtSrc && (
-                        <img
-                          src={categoryCardArtSrc}
-                          alt=""
-                          aria-hidden="true"
-                          className="absolute inset-0 h-full w-full object-contain bg-black/25"
-                          onError={(event) => {
-                            event.currentTarget.style.display = 'none';
-                          }}
-                        />
-                      )}
-                      <div className={`absolute inset-0 bg-gradient-to-b ${themeMeta.gradient} opacity-45`} />
-                      <div className="absolute inset-0 bg-black/35" />
-                      <div className="relative z-10 flex h-full flex-col items-center justify-center p-3">
-                        <div className="text-3xl">{category.emoji}</div>
-                        <div className="mt-2 text-lg font-black text-white">{category.name}</div>
-                        <div className="mt-2 rounded-full border border-white/40 bg-black/35 px-3 py-1 text-[0.65rem] uppercase tracking-[0.2em] text-cyan-100">
-                          Pick category
-                        </div>
-                      </div>
+                    <ThemeArt
+                      src={categoryCardArtSrc}
+                      alt={`${category.name} category card`}
+                      className="mx-auto h-40 w-auto rounded-[1.2rem] border border-white/20 bg-black/25 p-1"
+                    />
+                    <div className="mt-4 text-2xl font-black uppercase tracking-[0.06em] text-white">
+                      {category.name}
                     </div>
                   </button>
                 );
