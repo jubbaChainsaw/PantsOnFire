@@ -306,9 +306,166 @@ const MURDER_MYSTERY_THEME_PERSONAS = [
   },
 ];
 
+const COPS_AND_ROBBERS_THEME_PERSONAS = [
+  {
+    id: 'cops-sergeant-brickjaw',
+    name: 'Sergeant Brickjaw',
+    bio: "Thick-necked veteran cop with a permanent scowl; stares like he's already decided you're guilty.",
+    imageSrc: '/assets/themes/cops-and-robbers/personas/01-sergeant-brickjaw.png',
+  },
+  {
+    id: 'cops-whisper-kev',
+    name: 'Whisper Kev',
+    bio: 'Hoodie-clad street lurker who barely speaks, but always seems to know what is going on.',
+    imageSrc: '/assets/themes/cops-and-robbers/personas/02-whisper-kev.png',
+  },
+  {
+    id: 'cops-pc-bubblegum-harris',
+    name: 'PC Bubblegum Harris',
+    bio: 'Sharp-eyed officer blowing gum bubbles while silently judging everyone in the room.',
+    imageSrc: '/assets/themes/cops-and-robbers/personas/03-pc-bubblegum-harris.png',
+  },
+  {
+    id: 'cops-redline-ricky',
+    name: 'Redline Ricky',
+    bio: "Wild-haired adrenaline junkie who looks like he's one bad idea away from running.",
+    imageSrc: '/assets/themes/cops-and-robbers/personas/04-redline-ricky.png',
+  },
+  {
+    id: 'cops-old-man-latchford',
+    name: 'Old Man Latchford',
+    bio: 'Gruff pensioner who claims innocence but always appears suspiciously nearby.',
+    imageSrc: '/assets/themes/cops-and-robbers/personas/05-old-man-latchford.png',
+  },
+  {
+    id: 'cops-detective-crowe',
+    name: 'Detective Crowe',
+    bio: 'Sleep-deprived investigator with piercing eyes and a mind that never switches off.',
+    imageSrc: '/assets/themes/cops-and-robbers/personas/06-detective-crowe.png',
+  },
+  {
+    id: 'cops-nosey-nadine',
+    name: 'Nosey Nadine',
+    bio: 'Over-observant civilian who inserts herself into everything and remembers too much.',
+    imageSrc: '/assets/themes/cops-and-robbers/personas/07-nosey-nadine.png',
+  },
+  {
+    id: 'cops-two-coat-tony',
+    name: 'Two-Coat Tony',
+    bio: 'Always layered up - no one knows what he is hiding underneath.',
+    imageSrc: '/assets/themes/cops-and-robbers/personas/08-two-coat-tony.png',
+  },
+  {
+    id: 'cops-pc-dullahan',
+    name: 'PC Dullahan',
+    bio: 'Emotionless officer with a blank stare that unsettles even fellow cops.',
+    imageSrc: '/assets/themes/cops-and-robbers/personas/09-pc-dullahan.png',
+  },
+  {
+    id: 'cops-grease-mick',
+    name: 'Grease Mick',
+    bio: 'Slick-backed charmer who smiles through lies and sweats under pressure.',
+    imageSrc: '/assets/themes/cops-and-robbers/personas/10-grease-mick.png',
+  },
+  {
+    id: 'cops-inspector-vale',
+    name: 'Inspector Vale',
+    bio: 'Calm, calculated leader who controls the room without raising her voice.',
+    imageSrc: '/assets/themes/cops-and-robbers/personas/11-inspector-vale.png',
+  },
+  {
+    id: 'cops-skint-davey',
+    name: 'Skint Davey',
+    bio: 'Nervy bloke who always looks broke but somehow never is.',
+    imageSrc: '/assets/themes/cops-and-robbers/personas/12-skint-davey.png',
+  },
+  {
+    id: 'cops-bucket-hat-lenny',
+    name: 'Bucket Hat Lenny',
+    bio: 'Avoids eye contact like a pro - clearly hiding something.',
+    imageSrc: '/assets/themes/cops-and-robbers/personas/13-bucket-hat-lenny.png',
+  },
+  {
+    id: 'cops-pc-rigs',
+    name: 'PC Rigs',
+    bio: 'Built like a unit but cracks under the smallest bit of pressure.',
+    imageSrc: '/assets/themes/cops-and-robbers/personas/14-pc-rigs.png',
+  },
+  {
+    id: 'cops-ciggy-claire',
+    name: 'Ciggy Claire',
+    bio: 'Permanently irritated, cigarette dangling, watching everything unfold.',
+    imageSrc: '/assets/themes/cops-and-robbers/personas/15-ciggy-claire.png',
+  },
+  {
+    id: 'cops-silent-omar',
+    name: 'Silent Omar',
+    bio: 'Speaks rarely, observes constantly, disappears quickly when needed.',
+    imageSrc: '/assets/themes/cops-and-robbers/personas/16-silent-omar.png',
+  },
+  {
+    id: 'cops-detective-bloom',
+    name: 'Detective Bloom',
+    bio: 'Friendly on the surface but mentally ticking off inconsistencies.',
+    imageSrc: '/assets/themes/cops-and-robbers/personas/17-detective-bloom.png',
+  },
+  {
+    id: 'cops-panic-pete',
+    name: 'Panic Pete',
+    bio: "Sweaty, jittery, looks guilty even when he's not.",
+    imageSrc: '/assets/themes/cops-and-robbers/personas/18-panic-pete.png',
+  },
+  {
+    id: 'cops-mumsy-carol',
+    name: 'Mumsy Carol',
+    bio: "Sweet, chatty, and somehow knows everyone's business.",
+    imageSrc: '/assets/themes/cops-and-robbers/personas/19-mumsy-carol.png',
+  },
+  {
+    id: 'cops-flatcap-ronnie',
+    name: 'Flatcap Ronnie',
+    bio: 'Old-school geezer who denies everything before you even ask.',
+    imageSrc: '/assets/themes/cops-and-robbers/personas/20-flatcap-ronnie.png',
+  },
+  {
+    id: 'cops-pc-glitch',
+    name: 'PC Glitch',
+    bio: 'Young officer who freezes mid-thought like his brain lagged out.',
+    imageSrc: '/assets/themes/cops-and-robbers/personas/21-pc-glitch.png',
+  },
+  {
+    id: 'cops-shifty-ellis',
+    name: 'Shifty Ellis',
+    bio: "Never stands still, always angled like he's ready to bolt.",
+    imageSrc: '/assets/themes/cops-and-robbers/personas/22-shifty-ellis.png',
+  },
+  {
+    id: 'cops-lipbite-laura',
+    name: 'Lipbite Laura',
+    bio: 'Constantly biting her lip while thinking - usually mid-lie.',
+    imageSrc: '/assets/themes/cops-and-robbers/personas/23-lipbite-laura.png',
+  },
+  {
+    id: 'cops-sniffer-dan',
+    name: 'Sniffer Dan',
+    bio: 'Always twitching and sniffing like he is tracking something... or hiding nerves.',
+    imageSrc: '/assets/themes/cops-and-robbers/personas/24-sniffer-dan.png',
+  },
+  {
+    id: 'cops-captain-holloway',
+    name: 'Captain Holloway',
+    bio: 'Senior officer with a calm smile that feels just a bit too controlled.',
+    imageSrc: '/assets/themes/cops-and-robbers/personas/25-captain-holloway.png',
+  },
+];
+
 const THEME_PERSONA_POOLS = {
   Default: DEFAULT_THEME_PERSONAS,
   'Murder Mystery': MURDER_MYSTERY_THEME_PERSONAS,
+  'Cops and Robbers': COPS_AND_ROBBERS_THEME_PERSONAS,
+  Gangsters: COPS_AND_ROBBERS_THEME_PERSONAS,
+  Spies: COPS_AND_ROBBERS_THEME_PERSONAS,
+  Cowboys: COPS_AND_ROBBERS_THEME_PERSONAS,
 };
 
 export function getThemePersonas(themeName = 'Default') {
