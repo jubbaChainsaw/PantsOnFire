@@ -1522,10 +1522,10 @@ function RevealScreen({ players, currentRevealIndex, round, totalRounds, onNext,
     if (!promptElement || !fitContainer) return;
 
     const maxSize = 54;
-    const minSize = 12;
+    const minSize = 10;
     let nextSize = maxSize;
     promptElement.style.fontSize = `${nextSize}px`;
-    promptElement.style.lineHeight = '1.05';
+    promptElement.style.lineHeight = '1.08';
 
     const fits = () => (
       promptElement.scrollHeight <= fitContainer.clientHeight
@@ -1663,18 +1663,18 @@ function RevealScreen({ players, currentRevealIndex, round, totalRounds, onNext,
                   {mediaSrc && (
                     <img src={mediaSrc} alt={`${round.hint} visual clue`} className="mt-3 w-full rounded-2xl" />
                   )}
-                  <div ref={promptFitContainerRef} className="mt-4 max-h-[11.5rem] overflow-hidden">
+                  <div ref={promptFitContainerRef} className="mt-4 max-h-[12.5rem] overflow-hidden px-1">
                     <div
                       ref={promptTextRef}
                       className={`font-black ${isImposter ? 'text-yellow-300' : 'text-white'}`}
                       style={{
                         fontSize: `${promptFontSize}px`,
-                        wordBreak: 'normal',
-                        overflowWrap: 'normal',
-                        whiteSpace: 'nowrap',
-                        hyphens: 'none',
-                        WebkitHyphens: 'none',
-                        lineHeight: 1.05,
+                        wordBreak: 'break-word',
+                        overflowWrap: 'anywhere',
+                        whiteSpace: 'normal',
+                        hyphens: 'auto',
+                        WebkitHyphens: 'auto',
+                        lineHeight: 1.08,
                       }}
                     >
                       {prompt}
