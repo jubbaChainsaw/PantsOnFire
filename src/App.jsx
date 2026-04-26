@@ -573,10 +573,15 @@ function GameIntroScreen({ theme, onContinue, isOnlineMode = false, totalRounds 
     if (hour < 18) return 'Good afternoon';
     return 'Good evening';
   })();
-  const introOpeningLine = `${greeting} and welcome to Pants on Fire! Find the Liar. I'm your hostess with the mostest, sorry I mean I am Host with the Most...... Ian Poster. Through ${Math.max(1, Number(totalRounds) || 1)} rounds the ${Math.max(0, Number(playerCount) || 0)} of you will battle it out to find out who's integrity is majorly questionable, who amongst you has the poker face of someone chewing a lemon and which player could gaslight an electric hob. Let me explain the rules.`;
+  const resolvedRoundCount = Math.max(1, Number(totalRounds) || 1);
+  const resolvedPlayerCount = Math.max(1, Number(playerCount) || 1);
   const introLines = [
-    introOpeningLine,
-    'Welcome to Pants on Fire. One or more players are secretly lying.',
+    `${greeting}, and welcome to Pants on Fire! Find the Liar.`,
+    "I'm your hostess with the mostest... sorry, I mean I am Host with the Most... Ian Poster.",
+    `Through ${resolvedRoundCount} rounds, the ${resolvedPlayerCount} of you will battle it out to find out whose integrity is majorly questionable.`,
+    'We will discover who has the poker face of someone chewing a lemon,',
+    'and which player could gaslight an electric hob.',
+    'Let me explain the rules.',
     'Each round, players get private prompts and give clues without exposing the exact card.',
     'Spot the fake, vote the liar, then climb the leaderboard.',
     isOnlineMode
@@ -1092,7 +1097,11 @@ function SetupScreen(props) {
             <div className="mt-1 text-sm text-red-100/90">Adult-only prompts and scenarios are enabled.</div>
           </GlassPanel>
         )}
-        <ThemeArt src={themeAssets.uiBanner} alt={`${nameTheme} theme banner`} className="w-full rounded-[1.4rem] border border-white/15 bg-black/20" />
+        <img
+          src={LOGO_SRC}
+          alt="Pants On Fire logo"
+          className="mx-auto w-full max-w-xl object-contain drop-shadow-[0_10px_28px_rgba(0,0,0,0.65)]"
+        />
         <ThemeIconStrip src={themeAssets.iconSheet} alt={`${nameTheme} icon strip`} />
         <div className="flex items-center justify-between gap-4">
           <Button className="rounded-[1.4rem] border border-white/10 bg-white/5 px-4 py-2 text-white" onClick={onBack}>Back</Button>
