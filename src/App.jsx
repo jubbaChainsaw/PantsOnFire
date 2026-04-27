@@ -144,6 +144,22 @@ function getPlayerColor(player, fallbackIndex = 0, themeName = 'Default') {
 function getHostSizeConfig(themeName = 'Default') {
   const canonicalThemeName = toCanonicalThemeName(themeName);
   const map = {
+    'Murder Mystery': {
+      intro: 'w-42 sm:w-58 md:w-66',
+      hostIntro: 'w-42 sm:w-58 md:w-66',
+      liarReveal: 'w-44 sm:w-60 md:w-68',
+      introBubbleMargin: 'ml-[6.5rem] sm:ml-[11rem] md:ml-[13.75rem]',
+      hostIntroBubbleMargin: 'ml-[6.25rem] sm:ml-[10.75rem] md:ml-[13.5rem]',
+      liarBubbleMargin: 'ml-[7rem] sm:ml-[11.75rem] md:ml-[14.5rem]',
+    },
+    Pirates: {
+      intro: 'w-42 sm:w-58 md:w-66',
+      hostIntro: 'w-42 sm:w-58 md:w-66',
+      liarReveal: 'w-44 sm:w-60 md:w-68',
+      introBubbleMargin: 'ml-[6.5rem] sm:ml-[11rem] md:ml-[13.75rem]',
+      hostIntroBubbleMargin: 'ml-[6.25rem] sm:ml-[10.75rem] md:ml-[13.5rem]',
+      liarBubbleMargin: 'ml-[7rem] sm:ml-[11.75rem] md:ml-[14.5rem]',
+    },
     'Ghosts and Ghouls': {
       intro: 'w-52 sm:w-72 md:w-80',
       hostIntro: 'w-50 sm:w-68 md:w-76',

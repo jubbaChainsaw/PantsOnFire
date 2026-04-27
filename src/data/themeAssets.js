@@ -271,23 +271,30 @@ export function getThemeHostAssets(themeName = 'Default') {
   const canonicalThemeName = toCanonicalThemeName(themeName);
   const selected = THEME_ASSETS[canonicalThemeName] || THEME_ASSETS.Default;
   const fallback = THEME_ASSETS.Default || {};
-  const collectTalkFrames = (assetEntry = {}) => {
-    const framesFromList = Array.isArray(assetEntry.hostTalkingFrames)
-      ? assetEntry.hostTalkingFrames
-      : [];
-    const personaFramesFromNamedSlots = [
-      assetEntry.personaHostTalk1,
-      assetEntry.personaHostTalk2,
-      assetEntry.personaHostTalk3,
-    ];
-    const framesFromNamedSlots = [assetEntry.hostTalk1, assetEntry.hostTalk2, assetEntry.hostTalk3];
-    return [...framesFromList, ...personaFramesFromNamedSlots, ...framesFromNamedSlots]
-      .filter(Boolean)
-      .filter((value, index, arr) => arr.indexOf(value) === index);
+  const unique = (list = []) => list.filter(Boolean).filter((value, index, arr) => arr.indexOf(value) === index);
+  const getPersonaTalkFrames = (assetEntry = {}) => unique([
+    assetEntry.personaHostTalk1,
+    assetEntry.personaHostTalk2,
+    assetEntry.personaHostTalk3,
+  ]);
+  const getHostTalkFrames = (assetEntry = {}) => {
+    const framesFromList = Array.isArray(assetEntry.hostTalkingFrames) ? assetEntry.hostTalkingFrames : [];
+    return unique([
+      ...framesFromList,
+      assetEntry.hostTalk1,
+      assetEntry.hostTalk2,
+      assetEntry.hostTalk3,
+    ]);
   };
 
-  const selectedFrames = collectTalkFrames(selected);
-  const fallbackFrames = collectTalkFrames(fallback);
+  // Critical: never mix persona host frames with generic host frames.
+  // If persona frames are available for a theme, only use that persona set.
+  const selectedPersonaFrames = getPersonaTalkFrames(selected);
+  const selectedHostFrames = getHostTalkFrames(selected);
+  const fallbackPersonaFrames = getPersonaTalkFrames(fallback);
+  const fallbackHostFrames = getHostTalkFrames(fallback);
+  const selectedFrames = selectedPersonaFrames.length ? selectedPersonaFrames : selectedHostFrames;
+  const fallbackFrames = fallbackPersonaFrames.length ? fallbackPersonaFrames : fallbackHostFrames;
   const selectedIdle = selected.personaHostIdle || selected.hostIdle || selected.characterCard || null;
   const fallbackIdle = fallback.personaHostIdle || fallback.hostIdle || fallback.characterCard || null;
 
