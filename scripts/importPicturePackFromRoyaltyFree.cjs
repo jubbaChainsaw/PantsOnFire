@@ -33,6 +33,8 @@ function usage() {
   console.log('Options:');
   console.log('  --provider <pexels|pixabay>    Source provider (default: pexels)');
   console.log('  --api-key <key>                API key (or use env vars PEXELS_API_KEY / PIXABAY_API_KEY)');
+  console.log('  --fallback-provider <provider> Fallback provider when the primary returns no matches');
+  console.log('  --fallback-api-key <key>       API key for fallback provider');
   console.log('  --pack-id <id>                 Override pack id from spec');
   console.log('  --label <label>                Override pack label from spec');
   console.log('  --release-channel <base|dlc>   Override release channel (default: dlc)');
@@ -50,6 +52,7 @@ function usage() {
 function parseArgs(argv) {
   const options = {
     provider: 'pexels',
+    fallbackProvider: '',
     lint: true,
     sync: true,
     overwrite: false,
@@ -75,6 +78,16 @@ function parseArgs(argv) {
     }
     if (arg === '--api-key') {
       options.apiKey = argv[i + 1];
+      i += 1;
+      continue;
+    }
+    if (arg === '--fallback-provider') {
+      options.fallbackProvider = String(argv[i + 1] || '').toLowerCase();
+      i += 1;
+      continue;
+    }
+    if (arg === '--fallback-api-key') {
+      options.fallbackApiKey = argv[i + 1];
       i += 1;
       continue;
     }
@@ -119,19 +132,24 @@ function parseArgs(argv) {
   return options;
 }
 
+function readLocalApiKeys() {
+  if (!fs.existsSync(localApiKeysPath)) return {};
+  try {
+    return JSON.parse(fs.readFileSync(localApiKeysPath, 'utf8'));
+  } catch {
+    return {};
+  }
+}
+
+const LOCAL_API_KEYS = readLocalApiKeys();
+
 function resolveApiKey(provider, cliKey) {
   if (cliKey) return cliKey;
-  if (provider === 'pexels') return process.env.PEXELS_API_KEY || '';
+  if (provider === 'pexels') {
+    return process.env.PEXELS_API_KEY || String(LOCAL_API_KEYS.pexelsApiKey || '').trim();
+  }
   if (provider === 'pixabay') {
-    if (process.env.PIXABAY_API_KEY) return process.env.PIXABAY_API_KEY;
-    if (fs.existsSync(localApiKeysPath)) {
-      try {
-        const parsed = JSON.parse(fs.readFileSync(localApiKeysPath, 'utf8'));
-        const localKey = String(parsed?.pixabayApiKey || '').trim();
-        if (localKey) return localKey;
-      } catch {}
-    }
-    return '';
+    return process.env.PIXABAY_API_KEY || String(LOCAL_API_KEYS.pixabayApiKey || '').trim();
   }
   return '';
 }
@@ -242,13 +260,46 @@ function detectExtension(url, contentType) {
   return '.jpg';
 }
 
-async function fetchJson(url, init) {
-  const response = await fetch(url, init);
-  if (!response.ok) {
+function delay(ms) {
+  return new Promise((resolve) => {
+    setTimeout(resolve, ms);
+  });
+}
+
+function parseRetryAfterMs(response) {
+  const retryAfterRaw = String(response.headers.get('retry-after') || '').trim();
+  if (!retryAfterRaw) return 0;
+  const asNumber = Number(retryAfterRaw);
+  if (Number.isFinite(asNumber) && asNumber > 0) return asNumber * 1000;
+  return 0;
+}
+
+async function fetchJson(url, init, options = {}) {
+  const maxAttempts = Math.max(1, Number(options.maxAttempts || 5));
+  const baseDelayMs = Math.max(250, Number(options.baseDelayMs || 1500));
+
+  for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+    const response = await fetch(url, init);
+    if (response.ok) {
+      return response.json();
+    }
+
     const message = await response.text().catch(() => '');
-    throw new Error(`HTTP ${response.status}: ${message || response.statusText}`);
+    const retryable = response.status === 429 || response.status >= 500;
+    if (!retryable || attempt === maxAttempts) {
+      throw new Error(`HTTP ${response.status}: ${message || response.statusText}`);
+    }
+
+    const retryAfterMs = parseRetryAfterMs(response);
+    const backoffMs = baseDelayMs * 2 ** (attempt - 1);
+    const waitMs = Math.max(retryAfterMs, backoffMs);
+    console.warn(
+      `[importPicturePackFromRoyaltyFree] Request throttled (${response.status}). Retrying in ${Math.round(waitMs / 1000)}s (attempt ${attempt}/${maxAttempts}).`
+    );
+    await delay(waitMs);
   }
-  return response.json();
+
+  throw new Error('Unreachable fetch state');
 }
 
 async function searchPexels(query, apiKey, usedIds) {
@@ -318,6 +369,137 @@ async function findRemoteImage({ provider, apiKey, query, usedIds, allowAdult })
   throw new Error(`Unsupported provider: ${provider}`);
 }
 
+function normalizeSearchQuery(value) {
+  return String(value || '')
+    .replace(/[\/_]+/g, ' ')
+    .replace(/[^\w\s,-]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function pushUnique(values, candidate) {
+  const normalized = normalizeSearchQuery(candidate);
+  if (!normalized) return;
+  if (!values.includes(normalized)) values.push(normalized);
+}
+
+function buildQueryCandidates(primaryQuery, { groupId = '', fallbackValue = '' } = {}) {
+  const candidates = [];
+  const normalizedPrimary = normalizeSearchQuery(primaryQuery);
+  const normalizedFallback = normalizeSearchQuery(fallbackValue);
+  const commaTrimmed = normalizedPrimary.split(',')[0].trim();
+
+  pushUnique(candidates, normalizedPrimary);
+  pushUnique(candidates, commaTrimmed);
+  pushUnique(candidates, normalizedFallback);
+
+  const words = commaTrimmed.split(' ').filter(Boolean);
+  if (words.length === 2) {
+    pushUnique(candidates, `${commaTrimmed} portrait`);
+    pushUnique(candidates, `${commaTrimmed} person`);
+  }
+
+  if (groupId === 'celebrities') {
+    pushUnique(candidates, `${commaTrimmed} celebrity`);
+    pushUnique(candidates, `${commaTrimmed} red carpet`);
+    pushUnique(candidates, 'celebrity portrait');
+  } else if (groupId === 'places') {
+    pushUnique(candidates, `${commaTrimmed} landmark`);
+    pushUnique(candidates, `${commaTrimmed} skyline`);
+  } else if (groupId === 'animals') {
+    pushUnique(candidates, `${commaTrimmed} wildlife`);
+    pushUnique(candidates, `${commaTrimmed} animal`);
+  } else if (groupId === 'foods') {
+    pushUnique(candidates, `${commaTrimmed} food`);
+    pushUnique(candidates, `${commaTrimmed} dish`);
+  }
+
+  pushUnique(candidates, `${commaTrimmed} photo`);
+
+  return candidates;
+}
+
+async function findRemoteImageWithFallback({
+  provider,
+  apiKey,
+  queryCandidates,
+  usedIds,
+  allowAdult,
+  relaxedUsedIds = new Set(),
+}) {
+  let lastError = null;
+
+  for (const query of queryCandidates) {
+    try {
+      const remote = await findRemoteImage({
+        provider,
+        apiKey,
+        query,
+        usedIds,
+        allowAdult,
+      });
+      if (remote) {
+        return { remote, selectedQuery: query, usedRelaxedDedup: false };
+      }
+    } catch (error) {
+      lastError = error;
+    }
+  }
+
+  for (const query of queryCandidates) {
+    try {
+      const remote = await findRemoteImage({
+        provider,
+        apiKey,
+        query,
+        usedIds: relaxedUsedIds,
+        allowAdult,
+      });
+      if (remote) {
+        return { remote, selectedQuery: query, usedRelaxedDedup: true };
+      }
+    } catch (error) {
+      lastError = error;
+    }
+  }
+
+  if (lastError) throw lastError;
+  return null;
+}
+
+async function findRemoteImageAcrossProviders({
+  providerCandidates,
+  queryCandidates,
+  usedIds,
+  allowAdult,
+  relaxedUsedIds,
+}) {
+  let lastError = null;
+  for (const candidate of providerCandidates) {
+    try {
+      const result = await findRemoteImageWithFallback({
+        provider: candidate.provider,
+        apiKey: candidate.apiKey,
+        queryCandidates,
+        usedIds,
+        allowAdult,
+        relaxedUsedIds,
+      });
+      if (result) {
+        return {
+          ...result,
+          provider: candidate.provider,
+        };
+      }
+    } catch (error) {
+      lastError = error;
+    }
+  }
+
+  if (lastError) throw lastError;
+  return null;
+}
+
 async function downloadBinary(url) {
   const response = await fetch(url);
   if (!response.ok) {
@@ -361,11 +543,24 @@ async function main() {
   if (!['pexels', 'pixabay'].includes(options.provider)) {
     throw new Error(`Unsupported provider "${options.provider}". Use "pexels" or "pixabay".`);
   }
+  if (options.fallbackProvider && !['pexels', 'pixabay'].includes(options.fallbackProvider)) {
+    throw new Error(`Unsupported fallback provider "${options.fallbackProvider}". Use "pexels" or "pixabay".`);
+  }
+  if (options.fallbackProvider && options.fallbackProvider === options.provider) {
+    throw new Error('Fallback provider must differ from primary provider.');
+  }
 
   const apiKey = resolveApiKey(options.provider, options.apiKey);
   if (!apiKey) {
     const envVar = options.provider === 'pexels' ? 'PEXELS_API_KEY' : 'PIXABAY_API_KEY';
     throw new Error(`Missing API key. Provide --api-key or set ${envVar}.`);
+  }
+  const fallbackApiKey = options.fallbackProvider
+    ? resolveApiKey(options.fallbackProvider, options.fallbackApiKey)
+    : '';
+  if (options.fallbackProvider && !fallbackApiKey) {
+    const envVar = options.fallbackProvider === 'pexels' ? 'PEXELS_API_KEY' : 'PIXABAY_API_KEY';
+    throw new Error(`Missing fallback API key. Provide --fallback-api-key or set ${envVar}.`);
   }
 
   const { parsed: spec, absolutePath: specAbsolutePath } = readSpec(options.specPath);
@@ -392,33 +587,54 @@ async function main() {
   console.log(`[importPicturePackFromRoyaltyFree] Spec:     ${specAbsolutePath}`);
   console.log(`[importPicturePackFromRoyaltyFree] Pack:     ${normalized.packId}`);
   console.log(`[importPicturePackFromRoyaltyFree] Entries:  ${normalized.entries.length}`);
+  if (options.fallbackProvider) {
+    console.log(`[importPicturePackFromRoyaltyFree] Fallback provider: ${options.fallbackProvider}`);
+  }
+
+  const providerCandidates = [
+    { provider: options.provider, apiKey },
+    ...(options.fallbackProvider ? [{ provider: options.fallbackProvider, apiKey: fallbackApiKey }] : []),
+  ];
 
   for (let i = 0; i < normalized.entries.length; i += 1) {
     const entry = normalized.entries[i];
     console.log(`- [${i + 1}/${normalized.entries.length}] ${entry.entryId}`);
 
-    const mainRemote = await findRemoteImage({
-      provider: options.provider,
-      apiKey,
-      query: entry.mainQuery,
+    const mainQueryCandidates = buildQueryCandidates(entry.mainQuery, {
+      groupId: entry.groupId,
+      fallbackValue: entry.main,
+    });
+    const mainResult = await findRemoteImageAcrossProviders({
+      providerCandidates,
+      queryCandidates: mainQueryCandidates,
       usedIds: usedSourceIds,
       allowAdult: options.allowAdult,
     });
-    if (!mainRemote) {
-      throw new Error(`No image results found for mainQuery "${entry.mainQuery}" (entry ${entry.entryId})`);
+    if (!mainResult) {
+      throw new Error(
+        `No image results found for mainQuery "${entry.mainQuery}" (entry ${entry.entryId}). Tried providers [${providerCandidates.map((candidate) => candidate.provider).join(', ')}], queries [${mainQueryCandidates.join(', ')}]`
+      );
     }
+    const mainRemote = mainResult.remote;
     usedSourceIds.add(mainRemote.sourceId);
 
-    const imposterRemote = await findRemoteImage({
-      provider: options.provider,
-      apiKey,
-      query: entry.imposterQuery,
+    const imposterQueryCandidates = buildQueryCandidates(entry.imposterQuery, {
+      groupId: entry.groupId,
+      fallbackValue: entry.imposter,
+    });
+    const imposterResult = await findRemoteImageAcrossProviders({
+      providerCandidates,
+      queryCandidates: imposterQueryCandidates,
       usedIds: usedSourceIds,
       allowAdult: options.allowAdult,
+      relaxedUsedIds: new Set([mainRemote.sourceId]),
     });
-    if (!imposterRemote) {
-      throw new Error(`No image results found for imposterQuery "${entry.imposterQuery}" (entry ${entry.entryId})`);
+    if (!imposterResult) {
+      throw new Error(
+        `No image results found for imposterQuery "${entry.imposterQuery}" (entry ${entry.entryId}). Tried providers [${providerCandidates.map((candidate) => candidate.provider).join(', ')}], queries [${imposterQueryCandidates.join(', ')}]`
+      );
     }
+    const imposterRemote = imposterResult.remote;
     usedSourceIds.add(imposterRemote.sourceId);
 
     let mainMediaFile = '';
@@ -458,6 +674,12 @@ async function main() {
       entryId: entry.entryId,
       mainQuery: entry.mainQuery,
       imposterQuery: entry.imposterQuery,
+      selectedMainQuery: mainResult.selectedQuery,
+      selectedImposterQuery: imposterResult.selectedQuery,
+      selectedMainProvider: mainResult.provider,
+      selectedImposterProvider: imposterResult.provider,
+      relaxedDedupMain: mainResult.usedRelaxedDedup,
+      relaxedDedupImposter: imposterResult.usedRelaxedDedup,
       sourceMain: mainRemote.attribution,
       sourceImposter: imposterRemote.attribution,
     });
