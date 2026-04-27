@@ -964,13 +964,39 @@ function useTalkingAnimation({ enabled = false, themeName = 'Default' } = {}) {
     if (talkingFrames.length <= 1) return undefined;
     const timer = setInterval(() => {
       setTalkIndex((current) => (current + 1) % talkingFrames.length);
-    }, 220);
+    }, 760);
     return () => clearInterval(timer);
   }, [enabled, talkingFrames.length]);
   if (enabled && talkingFrames.length > 0) {
     return talkingFrames[talkIndex] || talkingFrames[0];
   }
   return idleFrames[0] || '';
+}
+function fitTextToBubble(textElement, containerElement, {
+  maxSize = 34,
+  minSize = 12,
+  lineHeight = 1.1,
+} = {}) {
+  if (!textElement || !containerElement) return maxSize;
+  let nextSize = maxSize;
+  textElement.style.fontSize = `${nextSize}px`;
+  textElement.style.lineHeight = String(lineHeight);
+  textElement.style.whiteSpace = 'normal';
+  textElement.style.wordBreak = 'normal';
+  textElement.style.overflowWrap = 'break-word';
+  textElement.style.hyphens = 'manual';
+  textElement.style.WebkitHyphens = 'manual';
+
+  const fits = () => (
+    textElement.scrollHeight <= containerElement.clientHeight
+    && textElement.scrollWidth <= containerElement.clientWidth
+  );
+
+  while (nextSize > minSize && !fits()) {
+    nextSize -= 1;
+    textElement.style.fontSize = `${nextSize}px`;
+  }
+  return nextSize;
 }
 const HOST_DIALOGUE_TIMINGS = {
   gameIntroAdvanceMs: 6000,
@@ -1003,6 +1029,9 @@ function GameIntroScreen({ theme, onContinue, isOnlineMode = false, totalRounds 
     [theme, greeting, resolvedRoundCount, resolvedPlayerCount, isOnlineMode]
   );
   const [lineIndex, setLineIndex] = useState(0);
+  const introSpeechTextRef = useRef(null);
+  const introSpeechBubbleRef = useRef(null);
+  const [introLineFontSize, setIntroLineFontSize] = useState(30);
   const isTalking = lineIndex < introLines.length - 1;
   const animatedHostSrc = useTalkingAnimation({ enabled: isTalking, themeName: theme });
   useEffect(() => {
@@ -1015,6 +1044,14 @@ function GameIntroScreen({ theme, onContinue, isOnlineMode = false, totalRounds 
     }, HOST_DIALOGUE_TIMINGS.gameIntroAdvanceMs);
     return () => clearTimeout(timer);
   }, [lineIndex, introLines.length]);
+  useLayoutEffect(() => {
+    const nextSize = fitTextToBubble(introSpeechTextRef.current, introSpeechBubbleRef.current, {
+      maxSize: 32,
+      minSize: 14,
+      lineHeight: 1.1,
+    });
+    setIntroLineFontSize((current) => (current === nextSize ? current : nextSize));
+  }, [lineIndex, introLines]);
   const canContinue = lineIndex >= introLines.length - 1;
   function advanceIntroLine() {
     setLineIndex((current) => Math.min(current + 1, introLines.length - 1));
@@ -1043,9 +1080,23 @@ function GameIntroScreen({ theme, onContinue, isOnlineMode = false, totalRounds 
               transition={{ duration: 0.25, ease: 'easeOut' }}
               className={`${hostSizeConfig.introBubbleMargin} h-[10.75rem] sm:h-[11.75rem] pt-2 text-white`}
             >
-              <div className="relative mx-auto flex h-full max-w-2xl items-center justify-center rounded-[2rem] border-2 border-cyan-200/80 bg-[#1d2376] px-4 py-4 text-center shadow-[0_12px_24px_rgba(0,0,0,0.35)]">
+              <div ref={introSpeechBubbleRef} className="relative mx-auto flex h-full max-w-2xl items-center justify-center rounded-[2rem] border-2 border-cyan-200/80 bg-[#1d2376] px-4 py-4 text-center shadow-[0_12px_24px_rgba(0,0,0,0.35)] overflow-hidden">
                 <div className="absolute -left-3 top-[55%] h-6 w-6 -translate-y-1/2 rotate-45 border-b-2 border-l-2 border-cyan-200/80 bg-[#1d2376]" />
-                <p className="text-base leading-snug text-white/95 sm:text-lg">{introLines[lineIndex]}</p>
+                <p
+                  ref={introSpeechTextRef}
+                  className="text-white/95"
+                  style={{
+                    fontSize: `${introLineFontSize}px`,
+                    lineHeight: 1.1,
+                    whiteSpace: 'normal',
+                    wordBreak: 'normal',
+                    overflowWrap: 'break-word',
+                    hyphens: 'manual',
+                    WebkitHyphens: 'manual',
+                  }}
+                >
+                  {introLines[lineIndex]}
+                </p>
               </div>
             </motion.div>
           </div>
@@ -1239,6 +1290,9 @@ function HostIntroScreen({ round, stingerLine, onContinue, theme }) {
     'Get ready. Cards are about to flip after the countdown.',
   ].filter(Boolean);
   const [speechIndex, setSpeechIndex] = useState(0);
+  const speechBubbleTextRef = useRef(null);
+  const speechBubbleFitRef = useRef(null);
+  const [speechBubbleFontSize, setSpeechBubbleFontSize] = useState(28);
   const canContinue = speechIndex >= speechSentences.length - 1;
   const isTalking = speechIndex < speechSentences.length - 1;
   const animatedHostSrc = useTalkingAnimation({ enabled: isTalking, themeName: theme });
@@ -1255,6 +1309,14 @@ function HostIntroScreen({ round, stingerLine, onContinue, theme }) {
     }, HOST_DIALOGUE_TIMINGS.roundIntroAdvanceMs);
     return () => clearTimeout(timer);
   }, [speechIndex, speechSentences.length]);
+  useLayoutEffect(() => {
+    const nextSize = fitTextToBubble(speechBubbleTextRef.current, speechBubbleFitRef.current, {
+      maxSize: 28,
+      minSize: 12,
+      lineHeight: 1.16,
+    });
+    setSpeechBubbleFontSize((current) => (current === nextSize ? current : nextSize));
+  }, [speechIndex, speechSentences]);
   function advanceSpeechLine() {
     setSpeechIndex((current) => Math.min(current + 1, speechSentences.length - 1));
   }
@@ -1306,9 +1368,23 @@ function HostIntroScreen({ round, stingerLine, onContinue, theme }) {
               transition={{ duration: 0.28, ease: 'easeOut' }}
               className={`${hostSizeConfig.hostIntroBubbleMargin} h-full p-1 text-white`}
             >
-              <div className="relative mx-auto flex h-full max-w-xl items-center justify-center rounded-[2rem] border-2 border-cyan-200/80 bg-[#1d2376] px-4 py-4 shadow-[0_12px_24px_rgba(0,0,0,0.35)]">
+              <div ref={speechBubbleFitRef} className="relative mx-auto flex h-full max-w-xl items-center justify-center overflow-hidden rounded-[2rem] border-2 border-cyan-200/80 bg-[#1d2376] px-4 py-4 shadow-[0_12px_24px_rgba(0,0,0,0.35)]">
                 <div className="absolute -left-3 top-[58%] h-6 w-6 -translate-y-1/2 rotate-45 border-b-2 border-l-2 border-cyan-200/80 bg-[#1d2376]" />
-                <p className="text-base leading-snug sm:text-lg text-white/95">{speechSentences[speechIndex]}</p>
+                <p
+                  ref={speechBubbleTextRef}
+                  className="text-white/95"
+                  style={{
+                    fontSize: `${speechBubbleFontSize}px`,
+                    lineHeight: 1.16,
+                    wordBreak: 'normal',
+                    overflowWrap: 'normal',
+                    whiteSpace: 'normal',
+                    hyphens: 'manual',
+                    WebkitHyphens: 'manual',
+                  }}
+                >
+                  {speechSentences[speechIndex]}
+                </p>
               </div>
             </motion.div>
             {round.roundTypeId === 'grill' && (
@@ -2852,6 +2928,9 @@ function LiarRevealScreen({ players, round, onComplete, theme }) {
   const audioRef = useRef(null);
   const hasCompletedRef = useRef(false);
   const [announcementIndex, setAnnouncementIndex] = useState(0);
+  const announcementBubbleTextRef = useRef(null);
+  const announcementBubbleFitRef = useRef(null);
+  const [announcementBubbleFontSize, setAnnouncementBubbleFontSize] = useState(34);
   const announcementLines = [
     liars.length > 1 ? 'The Liars are......' : 'The Liar was......',
     liars.length > 0
@@ -2891,6 +2970,14 @@ function LiarRevealScreen({ players, round, onComplete, theme }) {
     }, HOST_DIALOGUE_TIMINGS.liarRevealCompleteMs);
     return () => clearTimeout(timer);
   }, [announcementIndex, announcementLines.length, finishReveal]);
+  useLayoutEffect(() => {
+    const nextSize = fitTextToBubble(announcementBubbleTextRef.current, announcementBubbleFitRef.current, {
+      maxSize: 34,
+      minSize: 14,
+      lineHeight: 1.1,
+    });
+    setAnnouncementBubbleFontSize((current) => (current === nextSize ? current : nextSize));
+  }, [announcementIndex, announcementLines]);
   function advanceAnnouncementLine() {
     if (announcementIndex >= announcementLines.length - 1) {
       finishReveal();
@@ -2918,9 +3005,21 @@ function LiarRevealScreen({ players, round, onComplete, theme }) {
                 transition={{ duration: 0.3, ease: 'easeOut' }}
                 className={`${hostSizeConfig.liarBubbleMargin} h-[11rem] sm:h-[12rem] p-1 text-white`}
               >
-                <div className="relative mx-auto flex h-full max-w-2xl flex-col items-center justify-center rounded-[2rem] border-2 border-red-300/70 bg-[#2a0f2e] px-4 py-4 shadow-[0_12px_24px_rgba(0,0,0,0.42)]">
+                <div ref={announcementBubbleFitRef} className="relative mx-auto flex h-full max-w-2xl flex-col items-center justify-center overflow-hidden rounded-[2rem] border-2 border-red-300/70 bg-[#2a0f2e] px-4 py-4 shadow-[0_12px_24px_rgba(0,0,0,0.42)]">
                   <div className="absolute -left-3 top-[58%] h-6 w-6 -translate-y-1/2 rotate-45 border-b-2 border-l-2 border-red-300/70 bg-[#2a0f2e]" />
-                  <p className="text-lg sm:text-2xl font-black leading-snug text-red-200">
+                  <p
+                    ref={announcementBubbleTextRef}
+                    className="font-black text-red-200"
+                    style={{
+                      fontSize: `${announcementBubbleFontSize}px`,
+                      lineHeight: 1.1,
+                      whiteSpace: 'normal',
+                      wordBreak: 'normal',
+                      overflowWrap: 'break-word',
+                      hyphens: 'manual',
+                      WebkitHyphens: 'manual',
+                    }}
+                  >
                     {announcementLines[Math.min(announcementIndex, announcementLines.length - 1)]}
                   </p>
                   {announcementIndex >= 1 && liars.length > 0 && (
