@@ -271,6 +271,7 @@ export function getThemeHostAssets(themeName = 'Default') {
   const canonicalThemeName = toCanonicalThemeName(themeName);
   const selected = THEME_ASSETS[canonicalThemeName] || THEME_ASSETS.Default;
   const fallback = THEME_ASSETS.Default || {};
+  const isDefaultTheme = canonicalThemeName === 'Default';
   const unique = (list = []) => list.filter(Boolean).filter((value, index, arr) => arr.indexOf(value) === index);
   const getPersonaTalkFrames = (assetEntry = {}) => unique([
     assetEntry.personaHostTalk1,
@@ -291,17 +292,33 @@ export function getThemeHostAssets(themeName = 'Default') {
   // If persona frames are available for a theme, only use that persona set.
   const selectedPersonaFrames = getPersonaTalkFrames(selected);
   const selectedHostFrames = getHostTalkFrames(selected);
+  const hasPersonaHostConfig = Boolean(
+    selected.personaHostIdle
+    || selected.personaHostTalk1
+    || selected.personaHostTalk2
+    || selected.personaHostTalk3
+  );
+  const selectedFrames = selectedPersonaFrames.length ? selectedPersonaFrames : selectedHostFrames;
+  const selectedIdle = hasPersonaHostConfig
+    ? (selected.personaHostIdle || null)
+    : (selected.hostIdle || selected.characterCard || null);
   const fallbackPersonaFrames = getPersonaTalkFrames(fallback);
   const fallbackHostFrames = getHostTalkFrames(fallback);
-  const selectedFrames = selectedPersonaFrames.length ? selectedPersonaFrames : selectedHostFrames;
   const fallbackFrames = fallbackPersonaFrames.length ? fallbackPersonaFrames : fallbackHostFrames;
-  const selectedIdle = selected.personaHostIdle || selected.hostIdle || selected.characterCard || null;
   const fallbackIdle = fallback.personaHostIdle || fallback.hostIdle || fallback.characterCard || null;
+  const selectedTalkingFrames = selectedFrames.length
+    ? selectedFrames
+    : [selectedIdle].filter(Boolean);
 
   return {
-    idle: selectedIdle || fallbackIdle || null,
-    talkingFrames: selectedFrames.length
-      ? selectedFrames
-      : (fallbackFrames.length ? fallbackFrames : [selected.characterCard || fallback.characterCard].filter(Boolean)),
+    // For non-default themes, never fall back to default host assets.
+    idle: isDefaultTheme ? (selectedIdle || fallbackIdle || null) : selectedIdle,
+    talkingFrames: isDefaultTheme
+      ? (
+        selectedTalkingFrames.length
+          ? selectedTalkingFrames
+          : (fallbackFrames.length ? fallbackFrames : [selected.characterCard || fallback.characterCard].filter(Boolean))
+      )
+      : selectedTalkingFrames,
   };
 }

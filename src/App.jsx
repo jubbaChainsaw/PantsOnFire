@@ -1455,21 +1455,64 @@ function RulesSplashScreen({ mode, onContinue, theme, isOnlineMode = false }) {
 }
 function HomeScreen({ onNavigate, homeLine, adultMode }) {
   const logoSrc = adultMode ? LOGO_18PLUS_SRC : LOGO_SRC;
+  const bottomFlames = [
+    { src: HOME_FLAME_SOURCES[0] || FLAME_SRC, left: '4%', size: 'h-24 w-20', delay: '0s', duration: '2.4s', drift: '3deg', rise: '-22px' },
+    { src: HOME_FLAME_SOURCES[1] || FLAME_SRC, left: '17%', size: 'h-28 w-24', delay: '0.15s', duration: '2.8s', drift: '-4deg', rise: '-28px' },
+    { src: HOME_FLAME_SOURCES[2] || FLAME_SRC, left: '31%', size: 'h-22 w-20', delay: '0.35s', duration: '2.2s', drift: '2deg', rise: '-20px' },
+    { src: HOME_FLAME_SOURCES[3] || FLAME_SRC, left: '47%', size: 'h-26 w-22', delay: '0.1s', duration: '2.95s', drift: '-3deg', rise: '-24px' },
+    { src: HOME_FLAME_SOURCES[4] || FLAME_SRC, left: '62%', size: 'h-24 w-20', delay: '0.25s', duration: '2.5s', drift: '4deg', rise: '-21px' },
+    { src: HOME_FLAME_SOURCES[5] || FLAME_SRC, left: '76%', size: 'h-27 w-24', delay: '0.4s', duration: '2.65s', drift: '-2deg', rise: '-26px' },
+    { src: HOME_FLAME_SOURCES[6] || FLAME_SRC, left: '90%', size: 'h-23 w-20', delay: '0.2s', duration: '2.3s', drift: '3deg', rise: '-19px' },
+  ];
+  const topFlames = [
+    { src: HOME_FLAME_SOURCES[6] || FLAME_SRC, right: '6%', size: 'h-18 w-16', delay: '0.05s', duration: '2.35s', drift: '-2deg', rise: '18px' },
+    { src: HOME_FLAME_SOURCES[5] || FLAME_SRC, right: '24%', size: 'h-20 w-18', delay: '0.2s', duration: '2.7s', drift: '3deg', rise: '22px' },
+    { src: HOME_FLAME_SOURCES[4] || FLAME_SRC, right: '43%', size: 'h-16 w-14', delay: '0.35s', duration: '2.25s', drift: '-3deg', rise: '16px' },
+    { src: HOME_FLAME_SOURCES[3] || FLAME_SRC, right: '62%', size: 'h-19 w-16', delay: '0.1s', duration: '2.5s', drift: '2deg', rise: '19px' },
+    { src: HOME_FLAME_SOURCES[2] || FLAME_SRC, right: '80%', size: 'h-17 w-15', delay: '0.3s', duration: '2.2s', drift: '-2deg', rise: '15px' },
+  ];
   return (
     <TopFrame theme="Default" allowScroll={false}>
       <div className="relative h-[calc(100dvh-2rem)] px-2 flex items-center justify-center overflow-hidden">
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-52">
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_100%,rgba(255,94,0,0.45)_0%,rgba(255,94,0,0.2)_35%,rgba(0,0,0,0)_70%)] animate-pulse" />
-          <img src={HOME_FLAME_SOURCES[0] || FLAME_SRC} alt="" aria-hidden="true" className="absolute -bottom-6 left-[6%] h-24 w-24 opacity-80 [animation:home-flame-float_2.4s_ease-in-out_infinite] drop-shadow-[0_0_16px_rgba(255,98,0,0.98)]" />
-          <img src={HOME_FLAME_SOURCES[1] || FLAME_SRC} alt="" aria-hidden="true" className="absolute -bottom-8 left-[24%] h-28 w-28 opacity-85 [animation:home-flame-float_2.8s_ease-in-out_0.2s_infinite] drop-shadow-[0_0_16px_rgba(255,98,0,0.98)]" />
-          <img src={HOME_FLAME_SOURCES[2] || FLAME_SRC} alt="" aria-hidden="true" className="absolute -bottom-5 left-[44%] h-24 w-24 opacity-80 [animation:home-flame-float_2.2s_ease-in-out_0.35s_infinite] drop-shadow-[0_0_16px_rgba(255,98,0,0.98)]" />
-          <img src={HOME_FLAME_SOURCES[3] || FLAME_SRC} alt="" aria-hidden="true" className="absolute -bottom-9 left-[66%] h-28 w-28 opacity-85 [animation:home-flame-float_2.95s_ease-in-out_0.1s_infinite] drop-shadow-[0_0_16px_rgba(255,98,0,0.98)]" />
-          <img src={HOME_FLAME_SOURCES[4] || FLAME_SRC} alt="" aria-hidden="true" className="absolute -bottom-6 right-[8%] h-24 w-24 opacity-80 [animation:home-flame-float_2.5s_ease-in-out_0.25s_infinite] drop-shadow-[0_0_16px_rgba(255,98,0,0.98)]" />
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-56 overflow-visible">
+          <div className="absolute inset-x-0 bottom-0 h-40 bg-[radial-gradient(circle_at_50%_100%,rgba(255,94,0,0.45)_0%,rgba(255,94,0,0.2)_35%,rgba(0,0,0,0)_74%)] animate-pulse" />
+          {bottomFlames.map((flame, index) => (
+            <img
+              key={`bottom-flame-${index}`}
+              src={flame.src}
+              alt=""
+              aria-hidden="true"
+              className={`absolute -bottom-9 ${flame.size} opacity-85 drop-shadow-[0_0_16px_rgba(255,98,0,0.98)]`}
+              style={{
+                left: flame.left,
+                animation: `home-flame-ripple ${flame.duration} ease-in-out ${flame.delay} infinite`,
+                '--home-flame-drift': flame.drift,
+                '--home-flame-rise': flame.rise,
+              }}
+            />
+          ))}
+        </div>
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-24 overflow-visible">
+          <div className="absolute inset-x-0 top-0 h-20 bg-[radial-gradient(circle_at_50%_0%,rgba(255,94,0,0.2)_0%,rgba(255,94,0,0.1)_32%,rgba(0,0,0,0)_75%)]" />
+          {topFlames.map((flame, index) => (
+            <img
+              key={`top-flame-${index}`}
+              src={flame.src}
+              alt=""
+              aria-hidden="true"
+              className={`absolute -top-6 ${flame.size} opacity-75 drop-shadow-[0_0_14px_rgba(255,98,0,0.9)]`}
+              style={{
+                right: flame.right,
+                transform: 'scaleY(-1)',
+                animation: `home-flame-ripple ${flame.duration} ease-in-out ${flame.delay} infinite`,
+                '--home-flame-drift': flame.drift,
+                '--home-flame-rise': flame.rise,
+              }}
+            />
+          ))}
         </div>
         <div className="relative z-10 w-full max-w-xl h-full max-h-[calc(100dvh-2.5rem)] text-center flex flex-col justify-between gap-2 py-1">
           <div className="relative px-2 pt-0.5">
-            <img src={HOME_FLAME_SOURCES[5] || FLAME_SRC} alt="" aria-hidden="true" className="pointer-events-none absolute top-3 left-5 h-12 w-12 opacity-85 [animation:home-flame-float_2.1s_ease-in-out_infinite] drop-shadow-[0_0_12px_rgba(255,98,0,0.95)]" />
-            <img src={HOME_FLAME_SOURCES[6] || FLAME_SRC} alt="" aria-hidden="true" className="pointer-events-none absolute top-8 right-6 h-12 w-12 opacity-85 [animation:home-flame-float_2.45s_ease-in-out_0.2s_infinite] drop-shadow-[0_0_12px_rgba(255,98,0,0.95)]" />
             <img src={logoSrc} alt="Pants On Fire logo" className="mx-auto w-full max-w-xl object-contain drop-shadow-[0_10px_30px_rgba(0,0,0,0.7)]" />
             {adultMode && (
               <div className="mt-1 flex items-center justify-center gap-2 text-[0.7rem] sm:text-xs uppercase tracking-[0.2em] text-red-100">
