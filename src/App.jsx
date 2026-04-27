@@ -1033,13 +1033,24 @@ function ThemeIconStrip({ src, alt }) {
 }
 function IntroVideoScreen({ onDone }) {
   const [canSkip, setCanSkip] = useState(false);
+  const hasCompletedRef = useRef(false);
+  const completeIntro = useCallback(() => {
+    if (hasCompletedRef.current) return;
+    hasCompletedRef.current = true;
+    onDone();
+  }, [onDone]);
   useEffect(() => {
     const timer = setTimeout(() => setCanSkip(true), 850);
     return () => clearTimeout(timer);
   }, []);
+  useEffect(() => {
+    // Safety net for browsers/webviews where intro video never fires ended/error.
+    const fallbackTimer = setTimeout(() => completeIntro(), 4200);
+    return () => clearTimeout(fallbackTimer);
+  }, [completeIntro]);
   return (
     <TopFrame theme="Default" allowScroll={false}>
-      <div className="relative h-[calc(100dvh-2rem)] overflow-hidden rounded-[2.2rem] border border-orange-300/25 bg-black">
+      <div className="relative h-[calc(100vh-2rem)] min-h-[calc(100vh-2rem)] overflow-hidden rounded-[2.2rem] border border-orange-300/25 bg-black">
         <video
           className="absolute inset-0 h-full w-full object-cover"
           src={INTRO_LOGO_VIDEO_SRC}
@@ -1047,13 +1058,16 @@ function IntroVideoScreen({ onDone }) {
           muted
           playsInline
           preload="auto"
-          onEnded={onDone}
+          poster={LOGO_SRC}
+          onLoadedData={() => setCanSkip(true)}
+          onEnded={completeIntro}
+          onError={completeIntro}
         />
         <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/45 via-transparent to-black/30" />
         <div className="absolute inset-x-0 bottom-6 flex justify-center">
           <Button
             className="rounded-[1.2rem] border border-white/30 bg-black/35 px-5 py-2 text-white backdrop-blur-sm"
-            onClick={onDone}
+            onClick={completeIntro}
             disabled={!canSkip}
           >
             {canSkip ? 'Skip intro' : 'Loading intro...'}
@@ -3811,7 +3825,10 @@ function AdminDialog({ open, onOpenChange, premiumEnabled, customCategories, set
   return <Dialog open={open}><DialogContent className="max-w-5xl rounded-[2rem] bg-[#13002d] p-6 text-white border border-fuchsia-400/20"><DialogHeader><DialogTitle className="text-2xl text-yellow-300">Category Admin</DialogTitle><DialogDescription className="text-white/60">Local prototype admin for adding custom categories and prompt pairs.</DialogDescription></DialogHeader><div className="grid gap-6 lg:grid-cols-[0.8fr_1.2fr] mt-4"><Card className="bg-white/5 border border-white/10 rounded-[1.75rem] p-4"><CardHeader><CardTitle className="text-lg">Create category</CardTitle></CardHeader><CardContent className="space-y-3"><Input value={categoryName} onChange={(e) => setCategoryName(e.target.value)} className="rounded-2xl bg-white/5 border border-white/10 text-white" /><Button className="w-full rounded-2xl bg-yellow-300 px-4 py-2 text-zinc-950" onClick={() => { const name = categoryName.trim(); if (!name) return; const id = `custom-${name.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`; const next = [...customCategories, { id, name, emoji: '✨', prompts: [] }]; setCustomCategories(next); setStored('imposter-custom-categories-v2', next); setSelectedCategory(id); setCategoryName(''); }}>Add category</Button></CardContent></Card><Card className="bg-white/5 border border-white/10 rounded-[1.75rem] p-4"><CardHeader><CardTitle className="text-lg">Add prompt pair</CardTitle><CardDescription className="text-white/55">Structured custom rounds can be extended later. This version keeps simple pairs.</CardDescription></CardHeader><CardContent className="space-y-3">{!premiumEnabled && <div className="rounded-2xl border border-amber-400/20 bg-amber-500/10 p-4 text-amber-100 text-sm">Premium mode is off in this prototype.</div>}<div className="grid gap-3 md:grid-cols-2"><Input value={mainPrompt} onChange={(e) => setMainPrompt(e.target.value)} placeholder="Common prompt" className="rounded-2xl bg-white/5 border border-white/10 text-white" /><Input value={imposterPrompt} onChange={(e) => setImposterPrompt(e.target.value)} placeholder="Liar prompt" className="rounded-2xl bg-white/5 border border-white/10 text-white" /></div><Button className="rounded-2xl bg-yellow-300 px-4 py-2 text-zinc-950" disabled={!premiumEnabled || !selectedCategory} onClick={() => { const next = customCategories.map((cat) => cat.id === selectedCategory ? { ...cat, prompts: [...cat.prompts, { hint: 'Custom', main: mainPrompt, imposter: imposterPrompt }] } : cat); setCustomCategories(next); setStored('imposter-custom-categories-v2', next); setMainPrompt(''); setImposterPrompt(''); }}>Add prompt pair</Button></CardContent></Card></div><DialogFooter><Button className="rounded-2xl bg-yellow-300 px-4 py-2 text-zinc-950" onClick={() => onOpenChange(false)}>Done</Button></DialogFooter></DialogContent></Dialog>;
 }
 export default function App() {
-  const [screen, setScreen] = useState('intro-video');
+  const [screen, setScreen] = useState(() => {
+    const hasSeenIntro = Boolean(getStored(APP_INTRO_VIDEO_SEEN_KEY, false));
+    return hasSeenIntro ? 'home' : 'intro-video';
+  });
     const [players, setPlayers] = useState(createPlayers(3, toCanonicalThemeName(getStored('imposter-theme-v3', 'Default'))));
   const [liarCount, setLiarCount] = useState(1);
   const [nameTheme, setNameTheme] = useState(
@@ -4668,6 +4685,7 @@ export default function App() {
     }
   }
   function goToHomeScreen() {
+    setStored(APP_INTRO_VIDEO_SEEN_KEY, true);
     setScreen('home');
   }
   function restartToHome() {
