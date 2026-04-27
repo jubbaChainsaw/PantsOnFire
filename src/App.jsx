@@ -63,6 +63,8 @@ import {
 
 const LOGO_SRC = '/assets/images/logo.png';
 const LOGO_18PLUS_SRC = '/assets/images/logo-18plus.png';
+const INTRO_LOGO_VIDEO_SRC = '/assets/videos/intro-logo.mp4';
+const FIRE_FRAME_VIDEO_SRC = '/assets/videos/fire-frame.mp4';
 const FLAME_SRC = '/assets/images/flames/flame-8.png';
 const HOME_FLAME_SOURCES = [
   '/assets/images/flames/flame-1.png',
@@ -79,8 +81,63 @@ const CARD_FIRE_FLAME_SOURCES = [
   '/assets/images/flames/flame-7.png',
   '/assets/images/flames/flame-9.png',
 ];
+const APP_INTRO_VIDEO_SEEN_KEY = 'imposter-intro-video-seen-v1';
+const INTRO_THEME_BGM_SRC = '/assets/audio/music/intro-theme.mp3';
+const VOTING_THEME_BGM_SRC = '/assets/audio/music/voting-suspense.mp3';
 const HEARTBEAT_SFX_SRC = '/assets/sfx/heartbeat.mp3';
 const FIRE_CRACKLE_SFX_SRC = '/assets/sfx/fire-crackle.wav';
+const IMPOSTER_FOUND_SFX_SRC = '/assets/sfx/imposter-found.wav';
+const IMPOSTER_ANNOUNCED_SFX_SRC = '/assets/sfx/imposter-announced.wav';
+const CARD_FLIP_SFX_SRC = '/assets/sfx/card-flip.wav';
+const BYTEBLITZ_CUE_MEDIA = {
+  yes: {
+    videoSrc: '/assets/videos/byteblitz/yes.mp4',
+    sfxSrc: '/assets/sfx/byteblitz/yes.wav',
+  },
+  no: {
+    videoSrc: '/assets/videos/byteblitz/no.mp4',
+    sfxSrc: '/assets/sfx/byteblitz/no.wav',
+  },
+  maybe: {
+    videoSrc: '/assets/videos/byteblitz/maybe.mp4',
+    sfxSrc: '/assets/sfx/byteblitz/maybe.wav',
+  },
+  kindOf: {
+    videoSrc: '/assets/videos/byteblitz/kind-of.mp4',
+    sfxSrc: '/assets/sfx/byteblitz/kind-of.wav',
+  },
+  notApplicable: {
+    videoSrc: '/assets/videos/byteblitz/not-applicable.mp4',
+    sfxSrc: '/assets/sfx/byteblitz/not-applicable.wav',
+  },
+  correct: {
+    videoSrc: '/assets/videos/byteblitz/correct.mp4',
+    sfxSrc: '/assets/sfx/byteblitz/correct.wav',
+  },
+  cheatWarning: {
+    videoSrc: '/assets/videos/byteblitz/cheat-warning.mp4',
+    sfxSrc: '/assets/sfx/byteblitz/cheat-warning.wav',
+  },
+  cheatPenalty: {
+    videoSrc: '/assets/videos/byteblitz/cheat-penalty.mp4',
+    sfxSrc: '/assets/sfx/byteblitz/cheat-penalty.wav',
+  },
+  liarCorrect: {
+    videoSrc: '/assets/videos/byteblitz/liar-correct.mp4',
+    sfxSrc: '/assets/sfx/byteblitz/liar-correct.wav',
+  },
+};
+const BYTEBLITZ_CUE_KEYS = Object.keys(BYTEBLITZ_CUE_MEDIA);
+const INTRO_THEME_BGM_SCREENS = new Set([
+  'intro-video',
+  'home',
+  'setup',
+  'online-setup',
+  'online-join',
+  'online-lobby-created',
+  'online-lobby-waiting',
+  'game-intro',
+]);
 const UI_ICON_BOXERS_RED_SRC = '/assets/images/ui-icons/boxers-red.png';
 const UI_ICON_BOXERS_GREEN_SRC = '/assets/images/ui-icons/boxers-green.png';
 const UI_ICON_FLAME_RED_SRC = '/assets/images/ui-icons/flame-red.png';
@@ -142,18 +199,7 @@ function getPlayerColor(player, fallbackIndex = 0, themeName = 'Default') {
   return normalizePlayerColor(player?.color, fallbackIndex, themeName);
 }
 function getHostSizeConfig(themeName = 'Default') {
-  const canonicalThemeName = toCanonicalThemeName(themeName);
-  const map = {
-    'Ghosts and Ghouls': {
-      intro: 'w-52 sm:w-72 md:w-80',
-      hostIntro: 'w-50 sm:w-68 md:w-76',
-      liarReveal: 'w-52 sm:w-72 md:w-80',
-      introBubbleMargin: 'ml-[7.5rem] sm:ml-[12.5rem] md:ml-[15.5rem]',
-      hostIntroBubbleMargin: 'ml-[7rem] sm:ml-[11.5rem] md:ml-[14rem]',
-      liarBubbleMargin: 'ml-[8rem] sm:ml-[13rem] md:ml-[15rem]',
-    },
-  };
-  return map[canonicalThemeName] || {
+  return {
     intro: 'w-32 sm:w-44 md:w-52',
     hostIntro: 'w-32 sm:w-44 md:w-50',
     liarReveal: 'w-34 sm:w-48 md:w-54',
@@ -951,6 +997,38 @@ function ThemeIconStrip({ src, alt }) {
     />
   );
 }
+function IntroVideoScreen({ onDone }) {
+  const [canSkip, setCanSkip] = useState(false);
+  useEffect(() => {
+    const timer = setTimeout(() => setCanSkip(true), 850);
+    return () => clearTimeout(timer);
+  }, []);
+  return (
+    <TopFrame theme="Default" allowScroll={false}>
+      <div className="relative h-[calc(100dvh-2rem)] overflow-hidden rounded-[2.2rem] border border-orange-300/25 bg-black">
+        <video
+          className="absolute inset-0 h-full w-full object-cover"
+          src={INTRO_LOGO_VIDEO_SRC}
+          autoPlay
+          muted
+          playsInline
+          preload="auto"
+          onEnded={onDone}
+        />
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/45 via-transparent to-black/30" />
+        <div className="absolute inset-x-0 bottom-6 flex justify-center">
+          <Button
+            className="rounded-[1.2rem] border border-white/30 bg-black/35 px-5 py-2 text-white backdrop-blur-sm"
+            onClick={onDone}
+            disabled={!canSkip}
+          >
+            {canSkip ? 'Skip intro' : 'Loading intro...'}
+          </Button>
+        </div>
+      </div>
+    </TopFrame>
+  );
+}
 function getThemeHostFrameSources(themeName = 'Default', state = 'idle') {
   const hostAssets = getThemeHostAssets(themeName);
   const idleFrame = hostAssets?.idle || '';
@@ -1464,23 +1542,88 @@ function RulesSplashScreen({ mode, onContinue, theme, isOnlineMode = false }) {
     </TopFrame>
   );
 }
-function HomeScreen({ onNavigate, homeLine, adultMode }) {
+function HomeScreen({ onNavigate, homeLine, adultMode, fireFrameVideoSrc = FIRE_FRAME_VIDEO_SRC }) {
   const logoSrc = adultMode ? LOGO_18PLUS_SRC : LOGO_SRC;
+  const bottomFlames = [
+    { src: HOME_FLAME_SOURCES[0] || FLAME_SRC, left: '4%', size: 'h-24 w-20', delay: '0s', duration: '2.4s', drift: '3deg', rise: '-22px' },
+    { src: HOME_FLAME_SOURCES[1] || FLAME_SRC, left: '17%', size: 'h-28 w-24', delay: '0.15s', duration: '2.8s', drift: '-4deg', rise: '-28px' },
+    { src: HOME_FLAME_SOURCES[2] || FLAME_SRC, left: '31%', size: 'h-22 w-20', delay: '0.35s', duration: '2.2s', drift: '2deg', rise: '-20px' },
+    { src: HOME_FLAME_SOURCES[3] || FLAME_SRC, left: '47%', size: 'h-26 w-22', delay: '0.1s', duration: '2.95s', drift: '-3deg', rise: '-24px' },
+    { src: HOME_FLAME_SOURCES[4] || FLAME_SRC, left: '62%', size: 'h-24 w-20', delay: '0.25s', duration: '2.5s', drift: '4deg', rise: '-21px' },
+    { src: HOME_FLAME_SOURCES[5] || FLAME_SRC, left: '76%', size: 'h-27 w-24', delay: '0.4s', duration: '2.65s', drift: '-2deg', rise: '-26px' },
+    { src: HOME_FLAME_SOURCES[6] || FLAME_SRC, left: '90%', size: 'h-23 w-20', delay: '0.2s', duration: '2.3s', drift: '3deg', rise: '-19px' },
+  ];
+  const topFlames = [
+    { src: HOME_FLAME_SOURCES[6] || FLAME_SRC, right: '6%', size: 'h-18 w-16', delay: '0.05s', duration: '2.35s', drift: '-2deg', rise: '18px' },
+    { src: HOME_FLAME_SOURCES[5] || FLAME_SRC, right: '24%', size: 'h-20 w-18', delay: '0.2s', duration: '2.7s', drift: '3deg', rise: '22px' },
+    { src: HOME_FLAME_SOURCES[4] || FLAME_SRC, right: '43%', size: 'h-16 w-14', delay: '0.35s', duration: '2.25s', drift: '-3deg', rise: '16px' },
+    { src: HOME_FLAME_SOURCES[3] || FLAME_SRC, right: '62%', size: 'h-19 w-16', delay: '0.1s', duration: '2.5s', drift: '2deg', rise: '19px' },
+    { src: HOME_FLAME_SOURCES[2] || FLAME_SRC, right: '80%', size: 'h-17 w-15', delay: '0.3s', duration: '2.2s', drift: '-2deg', rise: '15px' },
+  ];
   return (
     <TopFrame theme="Default" allowScroll={false}>
       <div className="relative h-[calc(100dvh-2rem)] px-2 flex items-center justify-center overflow-hidden">
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-52">
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_100%,rgba(255,94,0,0.45)_0%,rgba(255,94,0,0.2)_35%,rgba(0,0,0,0)_70%)] animate-pulse" />
-          <img src={HOME_FLAME_SOURCES[0] || FLAME_SRC} alt="" aria-hidden="true" className="absolute -bottom-6 left-[6%] h-24 w-24 opacity-80 [animation:home-flame-float_2.4s_ease-in-out_infinite] drop-shadow-[0_0_16px_rgba(255,98,0,0.98)]" />
-          <img src={HOME_FLAME_SOURCES[1] || FLAME_SRC} alt="" aria-hidden="true" className="absolute -bottom-8 left-[24%] h-28 w-28 opacity-85 [animation:home-flame-float_2.8s_ease-in-out_0.2s_infinite] drop-shadow-[0_0_16px_rgba(255,98,0,0.98)]" />
-          <img src={HOME_FLAME_SOURCES[2] || FLAME_SRC} alt="" aria-hidden="true" className="absolute -bottom-5 left-[44%] h-24 w-24 opacity-80 [animation:home-flame-float_2.2s_ease-in-out_0.35s_infinite] drop-shadow-[0_0_16px_rgba(255,98,0,0.98)]" />
-          <img src={HOME_FLAME_SOURCES[3] || FLAME_SRC} alt="" aria-hidden="true" className="absolute -bottom-9 left-[66%] h-28 w-28 opacity-85 [animation:home-flame-float_2.95s_ease-in-out_0.1s_infinite] drop-shadow-[0_0_16px_rgba(255,98,0,0.98)]" />
-          <img src={HOME_FLAME_SOURCES[4] || FLAME_SRC} alt="" aria-hidden="true" className="absolute -bottom-6 right-[8%] h-24 w-24 opacity-80 [animation:home-flame-float_2.5s_ease-in-out_0.25s_infinite] drop-shadow-[0_0_16px_rgba(255,98,0,0.98)]" />
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-56 overflow-visible">
+          <video
+            className="absolute inset-x-0 bottom-0 h-56 w-full object-cover opacity-45 mix-blend-screen"
+            src={fireFrameVideoSrc}
+            autoPlay
+            loop
+            muted
+            playsInline
+            preload="auto"
+            aria-hidden="true"
+          />
+          <div className="absolute inset-x-0 bottom-0 h-40 bg-[radial-gradient(circle_at_50%_100%,rgba(255,94,0,0.45)_0%,rgba(255,94,0,0.2)_35%,rgba(0,0,0,0)_74%)] animate-pulse" />
+          {bottomFlames.map((flame, index) => (
+            <img
+              key={`bottom-flame-${index}`}
+              src={flame.src}
+              alt=""
+              aria-hidden="true"
+              className={`absolute -bottom-9 ${flame.size} opacity-85 drop-shadow-[0_0_16px_rgba(255,98,0,0.98)]`}
+              style={{
+                left: flame.left,
+                animation: `home-flame-ripple ${flame.duration} ease-in-out ${flame.delay} infinite`,
+                '--home-flame-drift': flame.drift,
+                '--home-flame-rise': flame.rise,
+              }}
+            />
+          ))}
+        </div>
+        <div className="pointer-events-none absolute inset-0 z-[1]">
+          <video
+            className="absolute inset-0 h-full w-full object-cover opacity-22 mix-blend-screen"
+            src={fireFrameVideoSrc}
+            autoPlay
+            loop
+            muted
+            playsInline
+            preload="auto"
+            aria-hidden="true"
+          />
+        </div>
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-24 overflow-visible">
+          <div className="absolute inset-x-0 top-0 h-20 bg-[radial-gradient(circle_at_50%_0%,rgba(255,94,0,0.2)_0%,rgba(255,94,0,0.1)_32%,rgba(0,0,0,0)_75%)]" />
+          {topFlames.map((flame, index) => (
+            <img
+              key={`top-flame-${index}`}
+              src={flame.src}
+              alt=""
+              aria-hidden="true"
+              className={`absolute -top-6 ${flame.size} opacity-75 drop-shadow-[0_0_14px_rgba(255,98,0,0.9)]`}
+              style={{
+                right: flame.right,
+                transform: 'scaleY(-1)',
+                animation: `home-flame-ripple ${flame.duration} ease-in-out ${flame.delay} infinite`,
+                '--home-flame-drift': flame.drift,
+                '--home-flame-rise': flame.rise,
+              }}
+            />
+          ))}
         </div>
         <div className="relative z-10 w-full max-w-xl h-full max-h-[calc(100dvh-2.5rem)] text-center flex flex-col justify-between gap-2 py-1">
           <div className="relative px-2 pt-0.5">
-            <img src={HOME_FLAME_SOURCES[5] || FLAME_SRC} alt="" aria-hidden="true" className="pointer-events-none absolute top-3 left-5 h-12 w-12 opacity-85 [animation:home-flame-float_2.1s_ease-in-out_infinite] drop-shadow-[0_0_12px_rgba(255,98,0,0.95)]" />
-            <img src={HOME_FLAME_SOURCES[6] || FLAME_SRC} alt="" aria-hidden="true" className="pointer-events-none absolute top-8 right-6 h-12 w-12 opacity-85 [animation:home-flame-float_2.45s_ease-in-out_0.2s_infinite] drop-shadow-[0_0_12px_rgba(255,98,0,0.95)]" />
             <img src={logoSrc} alt="Pants On Fire logo" className="mx-auto w-full max-w-xl object-contain drop-shadow-[0_10px_30px_rgba(0,0,0,0.7)]" />
             {adultMode && (
               <div className="mt-1 flex items-center justify-center gap-2 text-[0.7rem] sm:text-xs uppercase tracking-[0.2em] text-red-100">
@@ -2016,7 +2159,7 @@ function SetupScreen(props) {
     </TopFrame>
   );
 }
-function RevealScreen({ players, currentRevealIndex, round, totalRounds, onNext, passLine, normalLine, liarLine, theme, onlineMode = false, localPlayerName = '', onlinePrivatePrompt = null, onlinePrivatePromptError = '', privatePromptLoading = false }) {
+function RevealScreen({ players, currentRevealIndex, round, totalRounds, onNext, passLine, normalLine, liarLine, theme, onlineMode = false, localPlayerName = '', onlinePrivatePrompt = null, onlinePrivatePromptError = '', privatePromptLoading = false, playSfx = () => {} }) {
   const player = players[currentRevealIndex];
   const prompt = onlineMode
     ? (onlinePrivatePrompt?.prompt || '')
@@ -2056,6 +2199,7 @@ function RevealScreen({ players, currentRevealIndex, round, totalRounds, onNext,
   useEffect(() => {
     if (!isCountingDown) return undefined;
     if (countdownValue === 0) {
+      playSfx(CARD_FLIP_SFX_SRC, { volume: 0.58 });
       setIsCountingDown(false);
       setCardFace('front');
       return undefined;
@@ -2064,7 +2208,7 @@ function RevealScreen({ players, currentRevealIndex, round, totalRounds, onNext,
       setCountdownValue((value) => (typeof value === 'number' ? value - 1 : 0));
     }, 700);
     return () => clearTimeout(timer);
-  }, [isCountingDown, countdownValue]);
+  }, [isCountingDown, countdownValue, playSfx]);
   useEffect(() => {
     if (cardFace !== 'front') {
       try {
@@ -2072,9 +2216,11 @@ function RevealScreen({ players, currentRevealIndex, round, totalRounds, onNext,
       } catch {}
       return undefined;
     }
+    if (!isImposter) return undefined;
     try {
       const audio = new Audio(FIRE_CRACKLE_SFX_SRC);
-      audio.volume = isImposter ? 0.4 : 0.22;
+      audio.volume = 0.4;
+      audio.loop = true;
       fireAudioRef.current = audio;
       audio.play().catch(() => {});
     } catch {}
@@ -2439,7 +2585,7 @@ function evaluateGrillQuestion(question = '', round = {}) {
   }
   return { answer: pickVariant(GRILL_NOT_APPLICABLE_VARIANTS, 'Not really applicable.'), isCorrectGuess: false, isCheatRequest: false };
 }
-function GrillEmScreen({ players, round, totalRounds, onContinue, theme }) {
+function GrillEmScreen({ players, round, totalRounds, onContinue, theme, playSfx = () => {}, onByteBlitzCue = () => {} }) {
   const [question, setQuestion] = useState('');
   const [transcript, setTranscript] = useState(round.grillData?.transcript || []);
   const questionsPerPlayer = round.grillData?.questionsPerPlayer || getGrillQuestionsPerPlayer(players.length);
@@ -2642,6 +2788,23 @@ function GrillEmScreen({ players, round, totalRounds, onContinue, theme }) {
     try { recognitionRef.current?.stop(); } catch {}
     setIsListening(false);
     speak(answer);
+    const cueType = evaluation.isCheatRequest
+      ? (Number(nextCheatStrikes[activePlayer.id] || 0) >= 2 ? 'cheatPenalty' : 'cheatWarning')
+      : (evaluation.isCorrectGuess
+        ? ((round.imposterIds || []).includes(activePlayer.id) ? 'liarCorrect' : 'correct')
+        : (/^yes[.!]?$/i.test(answer)
+          ? 'yes'
+          : (/^no[.!]?$/i.test(answer)
+            ? 'no'
+            : (/^possibly[.!]?$/i.test(answer)
+              ? 'maybe'
+              : (/^kind of[.!]?$/i.test(answer) ? 'kindOf' : 'notApplicable')))));
+    onByteBlitzCue({
+      cueType,
+      answer,
+      playerId: activePlayer.id,
+      playerName: activePlayer.name,
+    });
     setQuestion('');
 
     if (nextEndedByCorrectGuess) {
@@ -2805,7 +2968,7 @@ function DiscussionScreen({ players, round, totalRounds, onContinue, line, theme
   const roundRule = getRoundRuleText(round.roundTypeId);
   return <TopFrame theme={theme}><div className="mx-auto max-w-3xl space-y-6"><ScoreStrip players={players} roundNumber={round.roundNumber} totalRounds={totalRounds} themeName={theme} /><VoicePartyStatusStrip onlineVoiceEnabled={onlineVoiceEnabled} onlineVoiceMuted={onlineVoiceMuted} setOnlineVoiceMuted={setOnlineVoiceMuted} canTalk={canTalk} /><GlassPanel className="rounded-[2.5rem] p-8 text-center border-emerald-400/20 bg-black/25"><Badge className="rounded-full bg-emerald-500/20 border border-emerald-400/20 text-emerald-100 px-4 py-1.5">All prompts delivered</Badge><div className="text-xs uppercase tracking-[0.3em] text-white/50 mt-4">{round.roundTypeName}</div><h2 className="text-4xl font-black mt-3 text-yellow-300">{round.roundTypeTagline}</h2><p className="text-white/75 mt-3 max-w-2xl mx-auto">{line}</p><p className="text-cyan-200 mt-3 max-w-2xl mx-auto font-semibold">{roundRule}</p><div className="mt-8 flex justify-center"><Button className="rounded-[1.5rem] h-16 min-w-[16rem] px-8 bg-yellow-300 text-zinc-950 border-2 border-white" onClick={onContinue} disabled={submitPending}><SkipForward className="mr-2 h-5 w-5 inline" />{submitPending ? 'Syncing...' : 'Finish discussion and vote'}</Button></div></GlassPanel></div></TopFrame>;
 }
-function VotingScreen({ players, round, totalRounds, votesByPlayerId, setVotesByPlayerId, onSubmitVotes, line, theme, onlineMode = false, onlinePlayerId = '', onlineVoiceEnabled = false, onlineVoiceMuted = false, setOnlineVoiceMuted = () => {}, canTalk = true, submitPending = false }) {
+function VotingScreen({ players, round, totalRounds, votesByPlayerId, setVotesByPlayerId, onSubmitVotes, line, theme, onlineMode = false, onlinePlayerId = '', onlineVoiceEnabled = false, onlineVoiceMuted = false, setOnlineVoiceMuted = () => {}, canTalk = true, submitPending = false, playSfx = () => {} }) {
   const leader = players.find((p) => p.id === round.leaderId);
   const localVoters = useMemo(() => players.filter((player) => player.id), [players]);
   const activeLocalVoter = useMemo(
@@ -2937,7 +3100,7 @@ function VotingScreen({ players, round, totalRounds, votesByPlayerId, setVotesBy
     </TopFrame>
   );
 }
-function LiarRevealScreen({ players, round, onComplete, theme }) {
+function LiarRevealScreen({ players, round, onComplete, theme, playSfx = () => {} }) {
   const liars = players.filter((p) => (round.imposterIds || []).includes(p.id));
   const hostSizeConfig = getHostSizeConfig(theme);
   const audioRef = useRef(null);
@@ -2946,6 +3109,9 @@ function LiarRevealScreen({ players, round, onComplete, theme }) {
   const announcementBubbleTextRef = useRef(null);
   const announcementBubbleFitRef = useRef(null);
   const [announcementBubbleFontSize, setAnnouncementBubbleFontSize] = useState(34);
+  useEffect(() => {
+    playSfx(IMPOSTER_ANNOUNCED_SFX_SRC, { volume: 0.72 });
+  }, [playSfx]);
   const announcementLines = [
     liars.length > 1 ? 'The Liars are......' : 'The Liar was......',
     liars.length > 0
@@ -3492,6 +3658,8 @@ function SettingsScreen({
   setPremiumEnabled,
   adultMode,
   setAdultMode,
+  audioSettings,
+  setAudioSettings,
   theme,
   picturePackManifests,
   enabledPicturePacks,
@@ -3523,6 +3691,14 @@ function SettingsScreen({
           <div className="rounded-[1.75rem] border border-white/10 bg-white/5 p-5 flex items-center justify-between gap-4">
             <div><div className="font-black text-lg">Premium Mode Toggle</div><div className="text-sm text-white/60 mt-1">Prototype switch for premium/admin features.</div></div>
             <Switch checked={premiumEnabled} onCheckedChange={setPremiumEnabled} />
+          </div>
+          <div className="rounded-[1.75rem] border border-white/10 bg-white/5 p-5 flex items-center justify-between gap-4">
+            <div><div className="font-black text-lg">Background Music</div><div className="text-sm text-white/60 mt-1">Enable or disable background tracks (intro/setup/voting).</div></div>
+            <Switch checked={audioSettings.musicEnabled} onCheckedChange={(next) => setAudioSettings((cur) => ({ ...cur, musicEnabled: next }))} />
+          </div>
+          <div className="rounded-[1.75rem] border border-white/10 bg-white/5 p-5 flex items-center justify-between gap-4">
+            <div><div className="font-black text-lg">Sound Effects</div><div className="text-sm text-white/60 mt-1">Toggle fire, card flip, imposter, and ByteBlitz cue SFX.</div></div>
+            <Switch checked={audioSettings.sfxEnabled} onCheckedChange={(next) => setAudioSettings((cur) => ({ ...cur, sfxEnabled: next }))} />
           </div>
           <div className="rounded-[1.75rem] border border-white/10 bg-white/5 p-5 flex items-center justify-between gap-4">
             <div><div className="font-black text-lg">Visual Effects</div><div className="text-sm text-white/60 mt-1">Future hook for motion, glows, and extra juice.</div></div>
@@ -3601,8 +3777,8 @@ function AdminDialog({ open, onOpenChange, premiumEnabled, customCategories, set
   return <Dialog open={open}><DialogContent className="max-w-5xl rounded-[2rem] bg-[#13002d] p-6 text-white border border-fuchsia-400/20"><DialogHeader><DialogTitle className="text-2xl text-yellow-300">Category Admin</DialogTitle><DialogDescription className="text-white/60">Local prototype admin for adding custom categories and prompt pairs.</DialogDescription></DialogHeader><div className="grid gap-6 lg:grid-cols-[0.8fr_1.2fr] mt-4"><Card className="bg-white/5 border border-white/10 rounded-[1.75rem] p-4"><CardHeader><CardTitle className="text-lg">Create category</CardTitle></CardHeader><CardContent className="space-y-3"><Input value={categoryName} onChange={(e) => setCategoryName(e.target.value)} className="rounded-2xl bg-white/5 border border-white/10 text-white" /><Button className="w-full rounded-2xl bg-yellow-300 px-4 py-2 text-zinc-950" onClick={() => { const name = categoryName.trim(); if (!name) return; const id = `custom-${name.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`; const next = [...customCategories, { id, name, emoji: '✨', prompts: [] }]; setCustomCategories(next); setStored('imposter-custom-categories-v2', next); setSelectedCategory(id); setCategoryName(''); }}>Add category</Button></CardContent></Card><Card className="bg-white/5 border border-white/10 rounded-[1.75rem] p-4"><CardHeader><CardTitle className="text-lg">Add prompt pair</CardTitle><CardDescription className="text-white/55">Structured custom rounds can be extended later. This version keeps simple pairs.</CardDescription></CardHeader><CardContent className="space-y-3">{!premiumEnabled && <div className="rounded-2xl border border-amber-400/20 bg-amber-500/10 p-4 text-amber-100 text-sm">Premium mode is off in this prototype.</div>}<div className="grid gap-3 md:grid-cols-2"><Input value={mainPrompt} onChange={(e) => setMainPrompt(e.target.value)} placeholder="Common prompt" className="rounded-2xl bg-white/5 border border-white/10 text-white" /><Input value={imposterPrompt} onChange={(e) => setImposterPrompt(e.target.value)} placeholder="Liar prompt" className="rounded-2xl bg-white/5 border border-white/10 text-white" /></div><Button className="rounded-2xl bg-yellow-300 px-4 py-2 text-zinc-950" disabled={!premiumEnabled || !selectedCategory} onClick={() => { const next = customCategories.map((cat) => cat.id === selectedCategory ? { ...cat, prompts: [...cat.prompts, { hint: 'Custom', main: mainPrompt, imposter: imposterPrompt }] } : cat); setCustomCategories(next); setStored('imposter-custom-categories-v2', next); setMainPrompt(''); setImposterPrompt(''); }}>Add prompt pair</Button></CardContent></Card></div><DialogFooter><Button className="rounded-2xl bg-yellow-300 px-4 py-2 text-zinc-950" onClick={() => onOpenChange(false)}>Done</Button></DialogFooter></DialogContent></Dialog>;
 }
 export default function App() {
-  const [screen, setScreen] = useState('home');
-  const [players, setPlayers] = useState(createPlayers(3, toCanonicalThemeName(getStored('imposter-theme-v3', 'Default'))));
+  const [screen, setScreen] = useState('intro-video');
+    const [players, setPlayers] = useState(createPlayers(3, toCanonicalThemeName(getStored('imposter-theme-v3', 'Default'))));
   const [liarCount, setLiarCount] = useState(1);
   const [nameTheme, setNameTheme] = useState(
     toCanonicalThemeName(getStored('imposter-theme-v3', 'Default'))
@@ -3657,6 +3833,7 @@ export default function App() {
   const [roundGains, setRoundGains] = useState({});
   const [roundBreakdown, setRoundBreakdown] = useState({});
   const [imposterCaught, setImposterCaught] = useState(false);
+  const [audioSettings, setAudioSettings] = useState(getStored('imposter-audio-settings-v1', { musicEnabled: true, sfxEnabled: true }));
   const [adminOpen, setAdminOpen] = useState(false);
   const [recentPromptKeys, setRecentPromptKeys] = useState([]);
   const getLine = useMemo(() => createCopyPicker(COPY_BANK), []);
@@ -3698,6 +3875,59 @@ export default function App() {
   useEffect(() => setStored('imposter-unlocked-theme-packs-v1', unlockedThemePackIds), [unlockedThemePackIds]);
   useEffect(() => setStored('imposter-theme-v3', normalizedThemeName), [normalizedThemeName]);
   useEffect(() => setStored('imposter-persona-only-v1', Boolean(personaOnlyMode)), [personaOnlyMode]);
+  useEffect(() => setStored('imposter-audio-settings-v1', audioSettings), [audioSettings]);
+  const bgmAudioRef = useRef(null);
+  const playSfx = useCallback((src, { volume = 0.55 } = {}) => {
+    if (!audioSettings?.sfxEnabled) return;
+    if (!src) return;
+    try {
+      const audio = new Audio(src);
+      audio.volume = Math.max(0, Math.min(1, Number(volume) || 0.55));
+      audio.play().catch(() => {});
+    } catch {}
+  }, [audioSettings?.sfxEnabled]);
+  const resolveBgmForScreen = useCallback((currentScreen) => {
+    if (currentScreen === 'intro-video') return INTRO_THEME_BGM_SRC;
+    if (currentScreen === 'home') return INTRO_THEME_BGM_SRC;
+    if (currentScreen === 'setup') return INTRO_THEME_BGM_SRC;
+    if (currentScreen === 'game-intro') return INTRO_THEME_BGM_SRC;
+    if (currentScreen === 'voting') return VOTING_THEME_BGM_SRC;
+    return '';
+  }, []);
+  useEffect(() => {
+    const trackSrc = resolveBgmForScreen(screen);
+    if (!audioSettings?.musicEnabled || !trackSrc) {
+      try {
+        bgmAudioRef.current?.pause();
+      } catch {}
+      bgmAudioRef.current = null;
+      return;
+    }
+    const currentAudio = bgmAudioRef.current;
+    if (currentAudio && currentAudio.src.includes(trackSrc)) {
+      currentAudio.volume = 0.42;
+      if (currentAudio.paused) currentAudio.play().catch(() => {});
+      return;
+    }
+    try {
+      currentAudio?.pause();
+    } catch {}
+    try {
+      const next = new Audio(trackSrc);
+      next.loop = true;
+      next.volume = 0.42;
+      bgmAudioRef.current = next;
+      next.play().catch(() => {});
+    } catch {
+      bgmAudioRef.current = null;
+    }
+  }, [screen, audioSettings?.musicEnabled, resolveBgmForScreen]);
+  useEffect(() => () => {
+    try {
+      bgmAudioRef.current?.pause();
+    } catch {}
+    bgmAudioRef.current = null;
+  }, []);
   useEffect(() => {
     if (nameTheme !== normalizedThemeName) setNameTheme(normalizedThemeName);
   }, [nameTheme, normalizedThemeName]);
@@ -3949,6 +4179,7 @@ export default function App() {
       return serverRound;
     }
     if (normalizedPhase === 'liar-reveal') {
+      playSfx(IMPOSTER_FOUND_SFX_SRC, { volume: 0.8 });
       refreshCopy([Boolean(resolution?.imposterCaught) ? 'caught' : 'escaped']);
       setScreen('liar-reveal');
       return serverRound;
@@ -4033,11 +4264,19 @@ export default function App() {
       }
       setOnlineLobbyError('');
       if (result?.lobby?.activeRound) {
-        return await syncOnlineRoundFromSnapshot(result.lobby, { openHostIntro: false });
+        const syncedRound = await syncOnlineRoundFromSnapshot(result.lobby, { openHostIntro: false });
+        if (result?.lobby?.activeRound?.phase === 'liar-reveal') {
+          playSfx(IMPOSTER_FOUND_SFX_SRC, { volume: 0.8 });
+        }
+        return syncedRound;
       }
       const synced = await onlineTransportRef.current?.syncSnapshot();
       if (synced?.activeRound) {
-        return await syncOnlineRoundFromSnapshot(synced, { openHostIntro: false });
+        const syncedRound = await syncOnlineRoundFromSnapshot(synced, { openHostIntro: false });
+        if (synced?.activeRound?.phase === 'liar-reveal') {
+          playSfx(IMPOSTER_FOUND_SFX_SRC, { volume: 0.8 });
+        }
+        return syncedRound;
       }
       return null;
     } catch (error) {
@@ -4164,7 +4403,10 @@ export default function App() {
   }
   async function revealResults() {
     if (onlineMode) {
-      await submitOnlineVotes();
+      const syncedRound = await submitOnlineVotes();
+      if (syncedRound?.resolution) {
+        playSfx(IMPOSTER_FOUND_SFX_SRC, { volume: 0.78 });
+      }
       return;
     }
     const resolution = calculateRoundResolutionLocal(players, round, votesByPlayerId);
@@ -4173,6 +4415,7 @@ export default function App() {
     setRoundGains(resolution.roundGains);
     setRoundBreakdown(resolution.roundBreakdown);
     setImposterCaught(Boolean(resolution.imposterCaught));
+    playSfx(IMPOSTER_FOUND_SFX_SRC, { volume: 0.74 });
     setScreen('liar-reveal');
   }
   async function finishLiarReveal() {
@@ -4214,7 +4457,7 @@ export default function App() {
     refreshCopy(['winner']);
     setScreen('final');
   }
-  async function leaveOnlineLobby({ nextScreen = 'home' } = {}) {
+  async function leaveOnlineLobby({ nextScreen = 'intro-video' } = {}) {
     const normalizedCode = lobbyCode?.trim().toUpperCase();
     if (normalizedCode) {
       try {
@@ -4390,6 +4633,9 @@ export default function App() {
       setScreen('game-intro');
     }
   }
+  function goToHomeScreen() {
+    setScreen('home');
+  }
   function restartToHome() {
     setPlayers(createPlayers(3, 'Default')); setLiarCount(1); setNameTheme(normalizeThemeSelection('Default', themeOptions)); setPersonaOnlyMode(false); setMode('classic'); setWinCondition('rounds'); setPointsToWin(15); setRoundsPerPlayer(1); setGrillSettings({ micEnabled: true, ttsEnabled: true }); setRound(null); setRoundNumber(1); setCurrentRoundOwnerIndex(0); setPreviousRoundType(null); setRoundTypeOptions([]); setSelectedRoundType(null); setRevealIndex(0); setVotesByPlayerId({}); setTally({}); setRoundGains({}); setRoundBreakdown({}); setImposterCaught(false); setRecentPromptKeys([]); refreshCopy(['home', 'onlineLobby']);
     setOnlinePhasePending(false);
@@ -4397,32 +4643,33 @@ export default function App() {
     setOnlinePrivatePrompt(null);
     setOnlinePrivatePromptError('');
     if (onlineMode || lobbyCode) {
-      void leaveOnlineLobby({ nextScreen: 'home' });
+      void leaveOnlineLobby({ nextScreen: 'intro-video' });
       return;
     }
-    setScreen('home');
+    setScreen('intro-video');
   }
 
   return <>
+    {screen === 'intro-video' && <IntroVideoScreen onDone={goToHomeScreen} />}
     {screen === 'home' && <HomeScreen onNavigate={(to) => to === 'setup' ? (refreshCopy(['setup']), setScreen('setup')) : setScreen(to)} homeLine={copyState.home} adultMode={adultMode} />}
     {screen === 'development-progress' && (
       <DevelopmentProgressScreen
-        onBack={() => setScreen('home')}
+        onBack={() => setScreen('intro-video')}
         onlineLobbyLine={copyState.onlineLobby}
         theme={canonicalThemeName}
       />
     )}
-    {screen === 'setup' && <SetupScreen players={players} setPlayers={setPlayers} liarCount={liarCount} setLiarCount={setLiarCount} nameTheme={canonicalThemeName} setNameTheme={setNameTheme} mode={mode} setMode={setMode} winCondition={winCondition} setWinCondition={setWinCondition} pointsToWin={pointsToWin} setPointsToWin={setPointsToWin} roundsPerPlayer={roundsPerPlayer} setRoundsPerPlayer={setRoundsPerPlayer} grillSettings={grillSettings} setGrillSettings={setGrillSettings} adultMode={adultMode} enabledCategories={enabledCategories} onToggleCategory={(id) => setEnabledCategories((cur) => ({ ...cur, [id]: !cur[id] }))} premiumEnabled={premiumEnabled} setPremiumEnabled={setPremiumEnabled} categoryCount={activeCategories.length} onOpenAdmin={() => setAdminOpen(true)} onStart={startGame} onBack={() => setScreen('home')} setupLine={copyState.setup} themeOptions={themeOptions} personaOnlyMode={personaOnlyMode} setPersonaOnlyMode={setPersonaOnlyMode} />}
+    {screen === 'setup' && <SetupScreen players={players} setPlayers={setPlayers} liarCount={liarCount} setLiarCount={setLiarCount} nameTheme={canonicalThemeName} setNameTheme={setNameTheme} mode={mode} setMode={setMode} winCondition={winCondition} setWinCondition={setWinCondition} pointsToWin={pointsToWin} setPointsToWin={setPointsToWin} roundsPerPlayer={roundsPerPlayer} setRoundsPerPlayer={setRoundsPerPlayer} grillSettings={grillSettings} setGrillSettings={setGrillSettings} adultMode={adultMode} enabledCategories={enabledCategories} onToggleCategory={(id) => setEnabledCategories((cur) => ({ ...cur, [id]: !cur[id] }))} premiumEnabled={premiumEnabled} setPremiumEnabled={setPremiumEnabled} categoryCount={activeCategories.length} onOpenAdmin={() => setAdminOpen(true)} onStart={startGame} onBack={() => setScreen('intro-video')} setupLine={copyState.setup} themeOptions={themeOptions} personaOnlyMode={personaOnlyMode} setPersonaOnlyMode={setPersonaOnlyMode} />}
     {screen === 'online-setup' && (
       <OnlineLobbySetupScreen
         hostName={onlineHostName}
         setHostName={setOnlineHostName}
         onBack={() => {
           if (onlineMode || lobbyCode) {
-            void leaveOnlineLobby({ nextScreen: 'home' });
+            void leaveOnlineLobby({ nextScreen: 'intro-video' });
             return;
           }
-          setScreen('home');
+          setScreen('intro-video');
         }}
         onContinue={createOnlineLobby}
         nameTheme={canonicalThemeName}
@@ -4437,10 +4684,10 @@ export default function App() {
         nameTheme={canonicalThemeName}
         onBack={() => {
           if (onlineMode || lobbyCode) {
-            void leaveOnlineLobby({ nextScreen: 'home' });
+            void leaveOnlineLobby({ nextScreen: 'intro-video' });
             return;
           }
-          setScreen('home');
+          setScreen('intro-video');
         }}
         onJoin={joinOnlineLobby}
         joinError={onlineLobbyError}
@@ -4615,6 +4862,7 @@ export default function App() {
         localPlayerName={onlinePlayerName}
         onlinePrivatePrompt={onlinePrivatePrompt}
         onlinePrivatePromptError={onlinePrivatePromptError}
+        playSfx={playSfx}
       />
     )}
     {screen === 'grill' && round && (
@@ -4633,6 +4881,14 @@ export default function App() {
           setScreen('voting');
         }}
         theme={canonicalThemeName}
+        playSfx={playSfx}
+        onByteBlitzCue={(cue) => {
+          const cueType = String(cue?.cueType || '').trim();
+          const cueAsset = BYTEBLITZ_CUE_MEDIA[cueType];
+          if (cueAsset?.sfxSrc) {
+            playSfx(cueAsset.sfxSrc, { volume: 0.62 });
+          }
+        }}
       />
     )}
     {screen === 'discussion' && round && (
@@ -4675,14 +4931,15 @@ export default function App() {
         setOnlineVoiceMuted={setOnlineVoiceMuted}
         canTalk={onlineVoiceEnabled}
         submitPending={onlineVoteSubmissionPending}
+        playSfx={playSfx}
       />
     )}
-    {screen === 'liar-reveal' && round && <LiarRevealScreen players={players} round={round} onComplete={finishLiarReveal} theme={canonicalThemeName} />}
+    {screen === 'liar-reveal' && round && <LiarRevealScreen players={players} round={round} onComplete={finishLiarReveal} theme={canonicalThemeName} playSfx={playSfx} />}
     {screen === 'results' && round && <ResultsScreen players={players} round={round} totalRounds={totalRounds} tally={tally} roundGains={roundGains} roundBreakdown={roundBreakdown} imposterCaught={imposterCaught} onNextRound={winCondition === 'rounds' && round.roundNumber >= totalRounds ? endGame : nextRound} onEndGame={endGame} resultLine={copyState.result} theme={canonicalThemeName} />}
     {screen === 'final' && <FinalScreen players={players} onRestart={restartToHome} line={copyState.winner} theme={canonicalThemeName} />}
     {screen === 'store' && (
       <StoreScreen
-        onBack={() => setScreen('home')}
+        onBack={() => setScreen('intro-video')}
         theme={canonicalThemeName}
         dlcThemePacks={DLC_THEME_PACKS}
         unlockedThemePackIds={unlockedThemePackIds}
@@ -4698,11 +4955,13 @@ export default function App() {
     )}
     {screen === 'settings' && (
       <SettingsScreen
-        onBack={() => setScreen('home')}
+        onBack={() => setScreen('intro-video')}
         premiumEnabled={premiumEnabled}
         setPremiumEnabled={setPremiumEnabled}
         adultMode={adultMode}
         setAdultMode={setAdultMode}
+        audioSettings={audioSettings}
+        setAudioSettings={setAudioSettings}
         theme={canonicalThemeName}
         picturePackManifests={availablePicturePackManifests}
         enabledPicturePacks={enabledPicturePacks}
@@ -4714,6 +4973,7 @@ export default function App() {
         releaseChannelSummary={releaseChannelSummary}
       />
     )}
+    <BgmController screen={screen} audioSettings={audioSettings} />
     <AdminDialog open={adminOpen} onOpenChange={setAdminOpen} premiumEnabled={premiumEnabled} customCategories={customCategories} setCustomCategories={setCustomCategories} />
   </>;
 }
