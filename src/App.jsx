@@ -62,6 +62,7 @@ import {
 } from './online/lobbyTransport';
 
 const LOGO_SRC = '/assets/images/logo.png';
+const LOGO_18PLUS_SRC = '/assets/images/logo-18plus.png';
 const FLAME_SRC = '/assets/images/flame-placeholder.svg';
 const HEARTBEAT_SFX_SRC = '/assets/sfx/heartbeat.mp3';
 const FIRE_CRACKLE_SFX_SRC = '/assets/sfx/fire-crackle.wav';
@@ -1373,6 +1374,7 @@ function RulesSplashScreen({ mode, onContinue, theme, isOnlineMode = false }) {
   );
 }
 function HomeScreen({ onNavigate, homeLine, adultMode }) {
+  const logoSrc = adultMode ? LOGO_18PLUS_SRC : LOGO_SRC;
   return (
     <TopFrame theme="Default" allowScroll={false}>
       <div className="relative h-[calc(100dvh-2rem)] px-2 flex items-center justify-center overflow-hidden">
@@ -1388,7 +1390,7 @@ function HomeScreen({ onNavigate, homeLine, adultMode }) {
           <div className="relative px-2 pt-0.5">
             <img src={FLAME_SRC} alt="" aria-hidden="true" className="pointer-events-none absolute top-3 left-5 h-12 w-12 opacity-85 [animation:home-flame-float_2.1s_ease-in-out_infinite] drop-shadow-[0_0_12px_rgba(255,98,0,0.95)]" />
             <img src={FLAME_SRC} alt="" aria-hidden="true" className="pointer-events-none absolute top-8 right-6 h-12 w-12 opacity-85 [animation:home-flame-float_2.45s_ease-in-out_0.2s_infinite] drop-shadow-[0_0_12px_rgba(255,98,0,0.95)]" />
-            <img src={LOGO_SRC} alt="Pants On Fire logo" className="mx-auto w-full max-w-xl object-contain drop-shadow-[0_10px_30px_rgba(0,0,0,0.7)]" />
+            <img src={logoSrc} alt="Pants On Fire logo" className="mx-auto w-full max-w-xl object-contain drop-shadow-[0_10px_30px_rgba(0,0,0,0.7)]" />
             {adultMode && (
               <div className="mt-1 flex items-center justify-center gap-2 text-[0.7rem] sm:text-xs uppercase tracking-[0.2em] text-red-100">
                 <img src={UI_ICON_BADGE_18_PLUS_SRC} alt="" aria-hidden="true" className="h-5 w-5 object-contain" />
