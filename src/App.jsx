@@ -16,7 +16,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Switch } from './components/ui/switch';
 import { PASS_THE_PHONE_ROUND_TYPES, ROUND_TYPES } from './data/roundTypes';
 import { THEME_META } from './data/themes';
-import { getThemeAssets, ROUND_TYPE_CARD_FRONT_BY_ID } from './data/themeAssets';
+import { getThemeAssets, getThemeHostAssets, ROUND_TYPE_CARD_FRONT_BY_ID } from './data/themeAssets';
 import { NAME_POOLS, randomNameFromTheme } from './data/names';
 import { toCanonicalThemeName } from './data/themeAliases';
 import { getThemePersonas, pickRandomThemePersona } from './data/themePersonas';
@@ -65,6 +65,14 @@ const LOGO_SRC = '/assets/images/logo.png';
 const FLAME_SRC = '/assets/images/flame-placeholder.svg';
 const HEARTBEAT_SFX_SRC = '/assets/sfx/heartbeat.mp3';
 const FIRE_CRACKLE_SFX_SRC = '/assets/sfx/fire-crackle.wav';
+const UI_ICON_BOXERS_RED_SRC = '/assets/images/ui-icons/boxers-red.png';
+const UI_ICON_BOXERS_GREEN_SRC = '/assets/images/ui-icons/boxers-green.png';
+const UI_ICON_FLAME_RED_SRC = '/assets/images/ui-icons/flame-red.png';
+const UI_ICON_FLAME_GREEN_SRC = '/assets/images/ui-icons/flame-green.png';
+const UI_ICON_CROWN_GOLD_SRC = '/assets/images/ui-icons/crown-gold.png';
+const UI_ICON_BADGE_18_PLUS_SRC = '/assets/images/ui-icons/badge-18-plus.png';
+const UI_ICON_BADGE_LIAR_SRC = '/assets/images/ui-icons/badge-liar.png';
+const UI_ICON_MAGNIFIER_FIRE_SRC = '/assets/images/ui-icons/magnifier-fire.png';
 const MIN_PLAYERS = 3;
 const MAX_PLAYERS = 12;
 const ONLINE_VOICE_ACTIVE_SCREENS = new Set(['discussion', 'grill', 'round-type-choice', 'category-choice', 'results']);
@@ -121,15 +129,21 @@ function getHostSizeConfig(themeName = 'Default') {
   const canonicalThemeName = toCanonicalThemeName(themeName);
   const map = {
     'Ghosts and Ghouls': {
-      intro: 'w-44 sm:w-60 md:w-72',
-      hostIntro: 'w-44 sm:w-56',
-      liarReveal: 'w-44 sm:w-56',
+      intro: 'w-52 sm:w-72 md:w-80',
+      hostIntro: 'w-50 sm:w-68 md:w-76',
+      liarReveal: 'w-52 sm:w-72 md:w-80',
+      introBubbleMargin: 'ml-[7.5rem] sm:ml-[12.5rem] md:ml-[15.5rem]',
+      hostIntroBubbleMargin: 'ml-[7rem] sm:ml-[11.5rem] md:ml-[14rem]',
+      liarBubbleMargin: 'ml-[8rem] sm:ml-[13rem] md:ml-[15rem]',
     },
   };
   return map[canonicalThemeName] || {
     intro: 'w-32 sm:w-44 md:w-52',
-    hostIntro: 'w-32 sm:w-42',
-    liarReveal: 'w-34 sm:w-46',
+    hostIntro: 'w-32 sm:w-44 md:w-50',
+    liarReveal: 'w-34 sm:w-48 md:w-54',
+    introBubbleMargin: 'ml-[5.5rem] sm:ml-[9.5rem] md:ml-[12rem]',
+    hostIntroBubbleMargin: 'ml-[5.25rem] sm:ml-[8.75rem] md:ml-[10.75rem]',
+    liarBubbleMargin: 'ml-[6rem] sm:ml-[10.5rem] md:ml-[12.5rem]',
   };
 }
 function getPlayerInitials(name = 'P') {
@@ -753,7 +767,14 @@ function PersonaScorePill({ player, fallbackIndex = 0, isLeader = false, themeNa
         themeName={themeName}
       />
       <div className="text-sm font-black text-white">{score}</div>
-      {isLeader && <div className="text-[0.65rem]">👑</div>}
+      {isLeader && (
+        <img
+          src={UI_ICON_CROWN_GOLD_SRC}
+          alt=""
+          aria-hidden="true"
+          className="h-4 w-4 object-contain"
+        />
+      )}
     </div>
   );
 }
@@ -764,13 +785,23 @@ function CustomFireScoreIcon({ player, fallbackIndex = 0, isLeader = false, them
     <div className="flex min-w-[2.8rem] items-center justify-center">
       <div className={`relative h-11 w-11 rounded-full border border-white/30 ${isLeader ? 'drop-shadow-[0_0_10px_rgba(250,204,21,0.55)]' : ''}`} style={{ backgroundColor: color }}>
         <div className="absolute inset-0 flex items-center justify-center">
-          <Flame className="h-6 w-6 text-white/80" />
+          <img
+            src={color.toLowerCase().includes('22c55e') || color.toLowerCase().includes('16a34a') ? UI_ICON_FLAME_GREEN_SRC : UI_ICON_FLAME_RED_SRC}
+            alt=""
+            aria-hidden="true"
+            className="h-6 w-6 object-contain opacity-90"
+          />
         </div>
         <div className="absolute inset-0 flex items-center justify-center text-sm font-black text-white [text-shadow:0_2px_6px_rgba(0,0,0,0.55)]">
           {score}
         </div>
         {isLeader && (
-          <div className="absolute -top-2 -right-1 text-xs" aria-hidden="true">👑</div>
+          <img
+            src={UI_ICON_CROWN_GOLD_SRC}
+            alt=""
+            aria-hidden="true"
+            className="absolute -top-2 -right-1 h-4 w-4 object-contain"
+          />
         )}
       </div>
     </div>
@@ -820,6 +851,7 @@ function BoxerToggle({ checked = false, onCheckedChange = () => {}, disabled = f
   const shellClass = active
     ? 'border-emerald-300/75 bg-emerald-500/28'
     : 'border-red-300/70 bg-red-500/24';
+  const iconSrc = active ? UI_ICON_BOXERS_GREEN_SRC : UI_ICON_BOXERS_RED_SRC;
   return (
     <button
       type="button"
@@ -832,41 +864,36 @@ function BoxerToggle({ checked = false, onCheckedChange = () => {}, disabled = f
         onCheckedChange(!active);
       }}
     >
-      <svg viewBox="0 0 96 72" className="h-10 w-14" role="presentation" aria-hidden="true">
-        <defs>
-          <linearGradient id="boxer-main-fill" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" stopColor="#f8fafc" />
-            <stop offset="100%" stopColor="#dbeafe" />
-          </linearGradient>
-        </defs>
-        <path
-          d="M8 18c0-4 3-7 7-7h66c4 0 7 3 7 7v9c0 2-1 4-2 6L74 54c-2 4-6 7-11 7H33c-5 0-9-3-11-7L10 33c-1-2-2-4-2-6z"
-          fill="url(#boxer-main-fill)"
-          stroke="rgba(15,23,42,0.72)"
-          strokeWidth="3"
-        />
-        <path d="M15 18h66v9H15z" fill={active ? '#16a34a' : '#dc2626'} opacity="0.95" />
-        <path d="M48 27v31" stroke="rgba(30,41,59,0.55)" strokeWidth="3" />
-        <circle cx="48" cy="24.5" r="2.6" fill="rgba(15,23,42,0.72)" />
-      </svg>
+      <img src={iconSrc} alt="" className="h-10 w-12 object-contain" aria-hidden="true" />
       <span className="pointer-events-none absolute bottom-1 text-[0.55rem] font-black uppercase tracking-[0.15em] text-white/90">
         {active ? 'On' : 'Off'}
       </span>
     </button>
   );
 }
-function ThemeArt({ src, alt, className = '' }) {
-  const [resolvedSrc, setResolvedSrc] = useState(src || '');
-  useEffect(() => {
-    setResolvedSrc(src || '');
-  }, [src]);
-  if (!resolvedSrc) return null;
+function ThemedIcon({ src, alt = '', className = '' }) {
+  if (!src) return null;
   return (
     <img
-      src={resolvedSrc}
+      src={src}
       alt={alt}
       className={className}
-      onError={() => setResolvedSrc('')}
+      onError={(event) => { event.currentTarget.style.display = 'none'; }}
+    />
+  );
+}
+function ThemeArt({ src, alt, className = '' }) {
+  const [isBroken, setIsBroken] = useState(false);
+  useEffect(() => {
+    setIsBroken(false);
+  }, [src]);
+  if (!src || isBroken) return null;
+  return (
+    <img
+      src={src}
+      alt={alt}
+      className={className}
+      onError={() => setIsBroken(true)}
     />
   );
 }
@@ -909,24 +936,11 @@ function ThemeIconStrip({ src, alt }) {
   );
 }
 function getThemeHostFrameSources(themeName = 'Default', state = 'idle') {
-  const assets = getThemeAssets(themeName);
-  const defaultAssets = getThemeAssets('Default');
-  const idleFrame =
-    assets.personaHostIdle
-    || assets.hostIdle
-    || assets.characterCard
-    || defaultAssets.personaHostIdle
-    || defaultAssets.hostIdle
-    || defaultAssets.characterCard
-    || '';
-  const talkingFrames = [
-    assets.personaHostTalk1 || defaultAssets.personaHostTalk1,
-    assets.personaHostTalk2 || defaultAssets.personaHostTalk2,
-    assets.personaHostTalk3 || defaultAssets.personaHostTalk3,
-    assets.hostTalk1 || defaultAssets.hostTalk1,
-    assets.hostTalk2 || defaultAssets.hostTalk2,
-    assets.hostTalk3 || defaultAssets.hostTalk3,
-  ].filter(Boolean);
+  const hostAssets = getThemeHostAssets(themeName);
+  const idleFrame = hostAssets?.idle || '';
+  const talkingFrames = Array.isArray(hostAssets?.talkingFrames)
+    ? hostAssets.talkingFrames.filter(Boolean)
+    : [];
   if (state !== 'talking') return [idleFrame].filter(Boolean);
   if (!talkingFrames.length) return [idleFrame].filter(Boolean);
   return talkingFrames;
@@ -964,6 +978,7 @@ const HOST_DIALOGUE_TIMINGS = {
   liarRevealCompleteMs: 6000,
 };
 function GameIntroScreen({ theme, onContinue, isOnlineMode = false, totalRounds = 1, playerCount = 0 }) {
+  const hostSizeConfig = useMemo(() => getHostSizeConfig(theme), [theme]);
   const themedHostPersona = useMemo(
     () => getThemeHostPersona(theme),
     [theme]
@@ -1018,14 +1033,14 @@ function GameIntroScreen({ theme, onContinue, isOnlineMode = false, totalRounds 
             <ThemeArt
               src={animatedHostSrc}
               alt={`${theme} host ${themedHostPersona.name}`}
-              className="pointer-events-none absolute bottom-0 left-0 w-28 sm:w-40 md:w-48"
+              className={`pointer-events-none absolute bottom-0 left-0 ${hostSizeConfig.intro}`}
             />
             <motion.div
               key={`intro-line-${lineIndex}`}
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.25, ease: 'easeOut' }}
-              className="ml-[5.5rem] sm:ml-[9.5rem] md:ml-[12rem] h-[10.75rem] sm:h-[11.75rem] pt-2 text-white"
+              className={`${hostSizeConfig.introBubbleMargin} h-[10.75rem] sm:h-[11.75rem] pt-2 text-white`}
             >
               <div className="relative mx-auto flex h-full max-w-2xl items-center justify-center rounded-[2rem] border-2 border-cyan-200/80 bg-[#1d2376] px-4 py-4 text-center shadow-[0_12px_24px_rgba(0,0,0,0.35)]">
                 <div className="absolute -left-3 top-[55%] h-6 w-6 -translate-y-1/2 rotate-45 border-b-2 border-l-2 border-cyan-200/80 bg-[#1d2376]" />
@@ -1043,7 +1058,7 @@ function GameIntroScreen({ theme, onContinue, isOnlineMode = false, totalRounds 
               </Button>
             )}
             <Button
-              className="h-14 rounded-[1.5rem] border-2 border-white bg-yellow-300 px-8 text-zinc-950"
+              className="h-14 min-w-[16rem] rounded-[1.5rem] border-2 border-white bg-yellow-300 px-8 text-zinc-950"
               onClick={onContinue}
               disabled={!canContinue}
             >
@@ -1201,6 +1216,7 @@ function resolveCategoryChoiceCardArt(category, themeName = 'Default') {
   );
 }
 function HostIntroScreen({ round, stingerLine, onContinue, theme }) {
+  const hostSizeConfig = useMemo(() => getHostSizeConfig(theme), [theme]);
   const themedHostPersona = useMemo(
     () => getThemeHostPersona(theme),
     [theme]
@@ -1280,14 +1296,14 @@ function HostIntroScreen({ round, stingerLine, onContinue, theme }) {
             <ThemeArt
               src={animatedHostSrc}
               alt={`${theme} presenter`}
-              className="pointer-events-none absolute bottom-0 left-0 w-28 sm:w-36"
+              className={`pointer-events-none absolute bottom-0 left-0 ${hostSizeConfig.hostIntro}`}
             />
             <motion.div
               key={`${round.id || round.roundNumber}-${speechIndex}`}
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.28, ease: 'easeOut' }}
-              className="ml-[5.25rem] sm:ml-[8.75rem] h-full p-1 text-white"
+              className={`${hostSizeConfig.hostIntroBubbleMargin} h-full p-1 text-white`}
             >
               <div className="relative mx-auto flex h-full max-w-xl items-center justify-center rounded-[2rem] border-2 border-cyan-200/80 bg-[#1d2376] px-4 py-4 shadow-[0_12px_24px_rgba(0,0,0,0.35)]">
                 <div className="absolute -left-3 top-[58%] h-6 w-6 -translate-y-1/2 rotate-45 border-b-2 border-l-2 border-cyan-200/80 bg-[#1d2376]" />
@@ -1311,7 +1327,7 @@ function HostIntroScreen({ round, stingerLine, onContinue, theme }) {
               </Button>
             )}
             <Button
-              className="h-14 rounded-[1.5rem] border-2 border-white bg-yellow-300 px-8 text-zinc-950"
+              className="h-14 min-w-[16rem] rounded-[1.5rem] border-2 border-white bg-yellow-300 px-8 text-zinc-950"
               onClick={onContinue}
               disabled={!canContinue}
             >
@@ -1374,8 +1390,9 @@ function HomeScreen({ onNavigate, homeLine, adultMode }) {
             <img src={FLAME_SRC} alt="" aria-hidden="true" className="pointer-events-none absolute top-8 right-6 h-12 w-12 opacity-85 [animation:home-flame-float_2.45s_ease-in-out_0.2s_infinite] drop-shadow-[0_0_12px_rgba(255,98,0,0.95)]" />
             <img src={LOGO_SRC} alt="Pants On Fire logo" className="mx-auto w-full max-w-xl object-contain drop-shadow-[0_10px_30px_rgba(0,0,0,0.7)]" />
             {adultMode && (
-              <div className="mt-1 text-[0.7rem] sm:text-xs uppercase tracking-[0.2em] text-red-100">
-                18+ CONTENT ENABLED
+              <div className="mt-1 flex items-center justify-center gap-2 text-[0.7rem] sm:text-xs uppercase tracking-[0.2em] text-red-100">
+                <img src={UI_ICON_BADGE_18_PLUS_SRC} alt="" aria-hidden="true" className="h-5 w-5 object-contain" />
+                <span>18+ CONTENT ENABLED</span>
               </div>
             )}
             <p className="mt-1 text-white/80 text-xs sm:text-sm">{homeLine}</p>
@@ -2139,8 +2156,14 @@ function RevealScreen({ players, currentRevealIndex, round, totalRounds, onNext,
                     alt={`${round.roundTypeName} logo`}
                     className="mt-3 h-14 w-auto mx-auto"
                   />
-                  <div className={`mt-3 text-xs font-semibold uppercase tracking-[0.25em] ${isImposter ? 'text-orange-100' : 'text-cyan-200'}`}>
-                    {isImposter ? 'IMPOSTER CARD' : round.hint}
+                  <div className={`mt-3 inline-flex items-center justify-center gap-2 text-xs font-semibold uppercase tracking-[0.2em] ${isImposter ? 'text-orange-100' : 'text-cyan-200'}`}>
+                    <img
+                      src={isImposter ? UI_ICON_BADGE_LIAR_SRC : UI_ICON_MAGNIFIER_FIRE_SRC}
+                      alt=""
+                      aria-hidden="true"
+                      className="h-4 w-4 object-contain"
+                    />
+                    <span>{isImposter ? 'IMPOSTER CARD' : round.hint}</span>
                   </div>
                   {round.mediaPreviewLabel && (
                     <div className="mt-3 text-sm text-white/85">{round.mediaPreviewLabel}</div>
@@ -2647,7 +2670,7 @@ function GrillEmScreen({ players, round, totalRounds, onContinue, theme }) {
             ))}
           </div>
 
-          <div className="mt-6 flex justify-end">
+          <div className="mt-6 flex justify-center">
             <Button
               className="rounded-[1.5rem] h-14 px-8 bg-yellow-300 text-zinc-950 border-2 border-white"
               onClick={() => onContinue({
@@ -2708,7 +2731,7 @@ function VoicePartyStatusStrip({ onlineVoiceEnabled, onlineVoiceMuted, setOnline
 
 function DiscussionScreen({ players, round, totalRounds, onContinue, line, theme, onlineVoiceEnabled = false, onlineVoiceMuted = false, setOnlineVoiceMuted = () => {}, canTalk = true, submitPending = false }) {
   const roundRule = getRoundRuleText(round.roundTypeId);
-  return <TopFrame theme={theme}><div className="mx-auto max-w-3xl space-y-6"><ScoreStrip players={players} roundNumber={round.roundNumber} totalRounds={totalRounds} themeName={theme} /><VoicePartyStatusStrip onlineVoiceEnabled={onlineVoiceEnabled} onlineVoiceMuted={onlineVoiceMuted} setOnlineVoiceMuted={setOnlineVoiceMuted} canTalk={canTalk} /><GlassPanel className="rounded-[2.5rem] p-8 text-center border-emerald-400/20 bg-black/25"><Badge className="rounded-full bg-emerald-500/20 border border-emerald-400/20 text-emerald-100 px-4 py-1.5">All prompts delivered</Badge><div className="text-xs uppercase tracking-[0.3em] text-white/50 mt-4">{round.roundTypeName}</div><h2 className="text-4xl font-black mt-3 text-yellow-300">{round.roundTypeTagline}</h2><p className="text-white/75 mt-3 max-w-2xl mx-auto">{line}</p><p className="text-cyan-200 mt-3 max-w-2xl mx-auto font-semibold">{roundRule}</p><Button className="rounded-[1.5rem] h-16 px-8 mt-8 bg-yellow-300 text-zinc-950 border-2 border-white" onClick={onContinue} disabled={submitPending}><SkipForward className="mr-2 h-5 w-5 inline" />{submitPending ? 'Syncing...' : 'Finish discussion and vote'}</Button></GlassPanel></div></TopFrame>;
+  return <TopFrame theme={theme}><div className="mx-auto max-w-3xl space-y-6"><ScoreStrip players={players} roundNumber={round.roundNumber} totalRounds={totalRounds} themeName={theme} /><VoicePartyStatusStrip onlineVoiceEnabled={onlineVoiceEnabled} onlineVoiceMuted={onlineVoiceMuted} setOnlineVoiceMuted={setOnlineVoiceMuted} canTalk={canTalk} /><GlassPanel className="rounded-[2.5rem] p-8 text-center border-emerald-400/20 bg-black/25"><Badge className="rounded-full bg-emerald-500/20 border border-emerald-400/20 text-emerald-100 px-4 py-1.5">All prompts delivered</Badge><div className="text-xs uppercase tracking-[0.3em] text-white/50 mt-4">{round.roundTypeName}</div><h2 className="text-4xl font-black mt-3 text-yellow-300">{round.roundTypeTagline}</h2><p className="text-white/75 mt-3 max-w-2xl mx-auto">{line}</p><p className="text-cyan-200 mt-3 max-w-2xl mx-auto font-semibold">{roundRule}</p><div className="mt-8 flex justify-center"><Button className="rounded-[1.5rem] h-16 min-w-[16rem] px-8 bg-yellow-300 text-zinc-950 border-2 border-white" onClick={onContinue} disabled={submitPending}><SkipForward className="mr-2 h-5 w-5 inline" />{submitPending ? 'Syncing...' : 'Finish discussion and vote'}</Button></div></GlassPanel></div></TopFrame>;
 }
 function VotingScreen({ players, round, totalRounds, votesByPlayerId, setVotesByPlayerId, onSubmitVotes, line, theme, onlineMode = false, onlinePlayerId = '', onlineVoiceEnabled = false, onlineVoiceMuted = false, setOnlineVoiceMuted = () => {}, canTalk = true, submitPending = false }) {
   const leader = players.find((p) => p.id === round.leaderId);
@@ -2816,7 +2839,7 @@ function VotingScreen({ players, round, totalRounds, votesByPlayerId, setVotesBy
             )}
           </div>
 
-          <div className="mt-8 flex justify-end">
+          <div className="mt-8 flex justify-center">
             {onlineMode ? (
               <Button
                 className="rounded-[1.5rem] h-14 px-8 bg-yellow-300 text-zinc-950 border-2 border-white"
@@ -2844,6 +2867,7 @@ function VotingScreen({ players, round, totalRounds, votesByPlayerId, setVotesBy
 }
 function LiarRevealScreen({ players, round, onComplete, theme }) {
   const liars = players.filter((p) => (round.imposterIds || []).includes(p.id));
+  const hostSizeConfig = getHostSizeConfig(theme);
   const audioRef = useRef(null);
   const hasCompletedRef = useRef(false);
   const [announcementIndex, setAnnouncementIndex] = useState(0);
@@ -2904,14 +2928,14 @@ function LiarRevealScreen({ players, round, onComplete, theme }) {
               <ThemeArt
                 src={animatedHostSrc}
                 alt={`${theme} presenter`}
-                className="pointer-events-none absolute bottom-0 left-0 w-32 sm:w-44"
+                className={`pointer-events-none absolute bottom-0 left-0 ${hostSizeConfig.liarReveal}`}
               />
               <motion.div
                 key={`liar-announce-${announcementIndex}`}
                 initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3, ease: 'easeOut' }}
-                className="ml-[6rem] sm:ml-[10.5rem] h-[11rem] sm:h-[12rem] p-1 text-white"
+                className={`${hostSizeConfig.liarBubbleMargin} h-[11rem] sm:h-[12rem] p-1 text-white`}
               >
                 <div className="relative mx-auto flex h-full max-w-2xl flex-col items-center justify-center rounded-[2rem] border-2 border-red-300/70 bg-[#2a0f2e] px-4 py-4 shadow-[0_12px_24px_rgba(0,0,0,0.42)]">
                   <div className="absolute -left-3 top-[58%] h-6 w-6 -translate-y-1/2 rotate-45 border-b-2 border-l-2 border-red-300/70 bg-[#2a0f2e]" />
@@ -2925,7 +2949,7 @@ function LiarRevealScreen({ players, round, onComplete, theme }) {
                           key={player.id}
                           className="rounded-full border border-red-300/35 bg-red-500/15 px-4 py-1.5 text-sm sm:text-base font-black text-yellow-200"
                         >
-                          🔥 {player.name}
+                          <img src={UI_ICON_BADGE_LIAR_SRC} alt="" aria-hidden="true" className="mr-1 inline h-4 w-4 object-contain align-[-2px]" />{player.name}
                         </span>
                       ))}
                     </div>
@@ -4391,7 +4415,7 @@ export default function App() {
           <GlassPanel className="relative overflow-hidden rounded-[2.5rem] border-fuchsia-400/25 bg-black/25 p-8 text-center">
             <h2 className="mt-3 text-4xl font-black text-yellow-300">Choose your game mode</h2>
             <p className="mt-3 text-white/70">Pick one of two options. Previous round type is excluded.</p>
-            <div className="mt-8 grid grid-cols-2 gap-4">
+            <div className="mt-8 grid grid-cols-2 gap-4 items-stretch">
               {roundTypeOptions.map((type, index) => {
                 const centeredOnSm = roundTypeOptions.length % 2 === 1 && index === roundTypeOptions.length - 1;
                 const isGrillRoundType = type.id === 'grill';
@@ -4399,7 +4423,7 @@ export default function App() {
                   <div key={type.id} className={centeredOnSm ? 'sm:col-span-2 sm:flex sm:justify-center' : ''}>
                     <button
                       type="button"
-                      className={`relative w-full rounded-[1.8rem] border border-white/20 bg-black/20 p-4 text-center transition-transform duration-200 hover:scale-[1.01] hover:border-cyan-300/40 ${centeredOnSm ? 'sm:max-w-[20rem]' : ''}`}
+                      className={`relative h-full min-h-[20rem] w-full rounded-[1.8rem] border border-white/20 bg-black/20 p-4 text-center transition-transform duration-200 hover:scale-[1.01] hover:border-cyan-300/40 ${centeredOnSm ? 'sm:max-w-[20rem]' : ''}`}
                       onClick={() => {
                         setSelectedRoundType(type.id);
                         setScreen('category-choice');
@@ -4420,7 +4444,7 @@ export default function App() {
                         alt={`${type.name} round card back`}
                         className="mx-auto h-40 w-auto rounded-[1.2rem] border border-white/20 bg-black/25 p-1"
                       />
-                      <div className="mt-4 text-2xl font-black uppercase tracking-[0.06em] text-white">
+                      <div className="mt-4 text-xl sm:text-2xl font-black uppercase tracking-[0.05em] text-white leading-tight min-h-[3.2rem] flex items-center justify-center">
                         {type.name}
                       </div>
                     </button>
@@ -4454,7 +4478,7 @@ export default function App() {
                         alt={`${category.name} category card`}
                         className="mx-auto h-40 w-auto rounded-[1.2rem] border border-white/20 bg-black/25 p-1"
                       />
-                      <div className="mt-4 text-2xl font-black uppercase tracking-[0.06em] text-white">
+                      <div className="mt-4 text-lg sm:text-xl font-black uppercase tracking-[0.04em] text-white leading-tight min-h-[2.6rem] flex items-center justify-center">
                         {category.name}
                       </div>
                     </button>
