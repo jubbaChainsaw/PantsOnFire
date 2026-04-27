@@ -142,34 +142,7 @@ function getPlayerColor(player, fallbackIndex = 0, themeName = 'Default') {
   return normalizePlayerColor(player?.color, fallbackIndex, themeName);
 }
 function getHostSizeConfig(themeName = 'Default') {
-  const canonicalThemeName = toCanonicalThemeName(themeName);
-  const map = {
-    'Murder Mystery': {
-      intro: 'w-42 sm:w-58 md:w-66',
-      hostIntro: 'w-42 sm:w-58 md:w-66',
-      liarReveal: 'w-44 sm:w-60 md:w-68',
-      introBubbleMargin: 'ml-[6.5rem] sm:ml-[11rem] md:ml-[13.75rem]',
-      hostIntroBubbleMargin: 'ml-[6.25rem] sm:ml-[10.75rem] md:ml-[13.5rem]',
-      liarBubbleMargin: 'ml-[7rem] sm:ml-[11.75rem] md:ml-[14.5rem]',
-    },
-    Pirates: {
-      intro: 'w-42 sm:w-58 md:w-66',
-      hostIntro: 'w-42 sm:w-58 md:w-66',
-      liarReveal: 'w-44 sm:w-60 md:w-68',
-      introBubbleMargin: 'ml-[6.5rem] sm:ml-[11rem] md:ml-[13.75rem]',
-      hostIntroBubbleMargin: 'ml-[6.25rem] sm:ml-[10.75rem] md:ml-[13.5rem]',
-      liarBubbleMargin: 'ml-[7rem] sm:ml-[11.75rem] md:ml-[14.5rem]',
-    },
-    'Ghosts and Ghouls': {
-      intro: 'w-52 sm:w-72 md:w-80',
-      hostIntro: 'w-50 sm:w-68 md:w-76',
-      liarReveal: 'w-52 sm:w-72 md:w-80',
-      introBubbleMargin: 'ml-[7.5rem] sm:ml-[12.5rem] md:ml-[15.5rem]',
-      hostIntroBubbleMargin: 'ml-[7rem] sm:ml-[11.5rem] md:ml-[14rem]',
-      liarBubbleMargin: 'ml-[8rem] sm:ml-[13rem] md:ml-[15rem]',
-    },
-  };
-  return map[canonicalThemeName] || {
+  return {
     intro: 'w-32 sm:w-44 md:w-52',
     hostIntro: 'w-32 sm:w-44 md:w-50',
     liarReveal: 'w-34 sm:w-48 md:w-54',
