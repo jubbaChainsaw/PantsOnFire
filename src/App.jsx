@@ -91,7 +91,7 @@ function shuffle(arr) {
   return clone;
 }
 function pickRandom(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
-const PLAYER_COLOR_OPTIONS = [
+const DEFAULT_PLAYER_COLOR_OPTIONS = [
   '#ef4444',
   '#f97316',
   '#eab308',
@@ -101,14 +101,21 @@ const PLAYER_COLOR_OPTIONS = [
   '#8b5cf6',
   '#ec4899',
 ];
-function normalizePlayerColor(color, fallbackIndex = 0) {
-  const fallback = PLAYER_COLOR_OPTIONS[fallbackIndex % PLAYER_COLOR_OPTIONS.length];
+function getThemePlayerColorOptions(themeName = 'Default') {
+  const canonicalThemeName = toCanonicalThemeName(themeName);
+  const themeColorOptions = THEME_META[canonicalThemeName]?.playerColorOptions;
+  if (Array.isArray(themeColorOptions) && themeColorOptions.length) return themeColorOptions;
+  return DEFAULT_PLAYER_COLOR_OPTIONS;
+}
+function normalizePlayerColor(color, fallbackIndex = 0, themeName = 'Default') {
+  const options = getThemePlayerColorOptions(themeName);
+  const fallback = options[fallbackIndex % options.length] || DEFAULT_PLAYER_COLOR_OPTIONS[0];
   if (!color) return fallback;
   const normalized = String(color).trim().toLowerCase();
-  return PLAYER_COLOR_OPTIONS.find((option) => option.toLowerCase() === normalized) || fallback;
+  return options.find((option) => option.toLowerCase() === normalized) || fallback;
 }
-function getPlayerColor(player, fallbackIndex = 0) {
-  return normalizePlayerColor(player?.color, fallbackIndex);
+function getPlayerColor(player, fallbackIndex = 0, themeName = 'Default') {
+  return normalizePlayerColor(player?.color, fallbackIndex, themeName);
 }
 function getPlayerInitials(name = 'P') {
   return String(name || 'P')
@@ -227,12 +234,12 @@ function normalizePlayerRecord(player = {}) {
   if (typeof player?.personaImageSrc === 'string') next.personaImageSrc = player.personaImageSrc;
   return next;
 }
-function createPlayers(count = 3) {
+function createPlayers(count = 3, themeName = 'Default') {
   return Array.from({ length: count }, (_, i) => ({
     id: `p-${Date.now()}-${i + 1}`,
     name: `Player ${i + 1}`,
     score: 0,
-    color: normalizePlayerColor('', i),
+    color: normalizePlayerColor('', i, themeName),
   }));
 }
 function getStored(key, fallback) {
@@ -645,14 +652,17 @@ function applyGrillRoundDataToRound(round, grillData = {}, players = []) {
 function GlassPanel({ children, className = '' }) {
   return <div className={`backdrop-blur-xl bg-white/8 border border-white/10 shadow-2xl ${className}`}>{children}</div>;
 }
-function ZanyAccentBurst({ className = '' }) {
-  return <div className={`pointer-events-none absolute ${className}`}><div className="relative h-16 w-16"><div className="absolute inset-0 rotate-12 rounded-[30%] bg-fuchsia-500/25 blur-xl" /><div className="absolute left-6 top-0 h-16 w-2 rounded-full bg-yellow-300" /><div className="absolute left-0 top-6 h-16 w-2 rounded-full bg-cyan-300 rotate-90 origin-top-left" /></div></div>;
+function ZanyAccentBurst({ className = '', glowClass = 'bg-fuchsia-500/25' }) {
+  return <div className={`pointer-events-none absolute ${className}`}><div className="relative h-16 w-16"><div className={`absolute inset-0 rotate-12 rounded-[30%] ${glowClass} blur-xl`} /><div className="absolute left-6 top-0 h-16 w-2 rounded-full bg-yellow-300" /><div className="absolute left-0 top-6 h-16 w-2 rounded-full bg-cyan-300 rotate-90 origin-top-left" /></div></div>;
 }
-function LightningBolt({ className = '' }) {
-  return <div className={`pointer-events-none absolute ${className}`}><div className="text-yellow-300 drop-shadow-[0_0_12px_rgba(255,220,0,0.95)] text-4xl font-black">⚡</div></div>;
+function LightningBolt({ className = '', boltClass = 'text-yellow-300' }) {
+  return <div className={`pointer-events-none absolute ${className}`}><div className={`${boltClass} drop-shadow-[0_0_12px_rgba(255,220,0,0.95)] text-4xl font-black`}>⚡</div></div>;
 }
 function TopFrame({ children, theme = 'Default', allowScroll = false }) {
-  const gradient = THEME_META[theme]?.gradient || THEME_META.Default.gradient;
+  const themeMeta = THEME_META[theme] || THEME_META.Default;
+  const gradient = themeMeta.gradient || THEME_META.Default.gradient;
+  const uiGlowClass = themeMeta.uiGlowClass || THEME_META.Default.uiGlowClass || 'bg-fuchsia-500/25';
+  const uiBoltClass = themeMeta.uiBoltClass || THEME_META.Default.uiBoltClass || 'text-yellow-300';
   return (
     <div className={`min-h-screen min-h-[100dvh] overflow-x-hidden ${allowScroll ? 'overflow-y-auto' : 'overflow-y-hidden'} text-white relative bg-[linear-gradient(135deg,#14043a_8%,#2d126f_45%,#1d0a51_100%)]`}>
       <div
@@ -663,10 +673,10 @@ function TopFrame({ children, theme = 'Default', allowScroll = false }) {
         }}
       />
       <div className={`absolute inset-0 opacity-20 bg-gradient-to-br ${gradient}`} />
-      <ZanyAccentBurst className="left-5 top-12" />
-      <ZanyAccentBurst className="right-5 bottom-20 scale-125" />
-      <LightningBolt className="left-8 bottom-28" />
-      <LightningBolt className="right-8 top-24 -rotate-12" />
+      <ZanyAccentBurst className="left-5 top-12" glowClass={uiGlowClass} />
+      <ZanyAccentBurst className="right-5 bottom-20 scale-125" glowClass={uiGlowClass} />
+      <LightningBolt className="left-8 bottom-28" boltClass={uiBoltClass} />
+      <LightningBolt className="right-8 top-24 -rotate-12" boltClass={uiBoltClass} />
       <div
         className="relative z-10 md:p-8"
         style={{
@@ -688,11 +698,12 @@ function PlayerPersonaAvatar({
   sizeClass = 'h-8 w-8',
   initialsClass = 'text-xs',
   useColorFallback = false,
+  themeName = 'Default',
 }) {
   const [failed, setFailed] = useState(false);
   const imageSrc = !failed ? String(player?.personaImageSrc || '').trim() : '';
   const initials = getPlayerInitials(player?.name);
-  const color = getPlayerColor(player, fallbackIndex);
+  const color = getPlayerColor(player, fallbackIndex, themeName);
   return (
     <div
       className={`relative overflow-hidden rounded-full border border-white/30 bg-black/30 ${sizeClass} ${className}`}
@@ -714,7 +725,7 @@ function PlayerPersonaAvatar({
     </div>
   );
 }
-function PersonaScorePill({ player, fallbackIndex = 0, isLeader = false }) {
+function PersonaScorePill({ player, fallbackIndex = 0, isLeader = false, themeName = 'Default' }) {
   const score = Math.max(0, Number(player?.score || 0));
   return (
     <div className={`flex items-center gap-2 rounded-full border border-white/15 bg-black/20 px-2.5 py-1 ${isLeader ? 'shadow-[0_0_10px_rgba(250,204,21,0.45)]' : ''}`}>
@@ -724,15 +735,16 @@ function PersonaScorePill({ player, fallbackIndex = 0, isLeader = false }) {
         sizeClass="h-7 w-7"
         initialsClass="text-[0.55rem]"
         useColorFallback={false}
+        themeName={themeName}
       />
       <div className="text-sm font-black text-white">{score}</div>
       {isLeader && <div className="text-[0.65rem]">👑</div>}
     </div>
   );
 }
-function CustomFireScoreIcon({ player, fallbackIndex = 0, isLeader = false }) {
+function CustomFireScoreIcon({ player, fallbackIndex = 0, isLeader = false, themeName = 'Default' }) {
   const score = Math.max(0, Number(player?.score || 0));
-  const color = getPlayerColor(player, fallbackIndex);
+  const color = getPlayerColor(player, fallbackIndex, themeName);
   return (
     <div className="flex min-w-[2.8rem] items-center justify-center">
       <div className={`relative h-11 w-11 rounded-full border border-white/30 ${isLeader ? 'drop-shadow-[0_0_10px_rgba(250,204,21,0.55)]' : ''}`} style={{ backgroundColor: color }}>
@@ -749,15 +761,19 @@ function CustomFireScoreIcon({ player, fallbackIndex = 0, isLeader = false }) {
     </div>
   );
 }
-function ScoreStrip({ players, roundNumber, totalRounds, scoreStyleMode = 'persona' }) {
+function ScoreStrip({ players, roundNumber, totalRounds, scoreStyleMode = 'persona', themeName = 'Default' }) {
   const sorted = [...players].sort((a, b) => b.score - a.score);
   const useCustomStyle = scoreStyleMode === 'custom';
+  const scoreThemeMeta = THEME_META[themeName] || THEME_META.Default;
+  const scoreStripBorderClass = scoreThemeMeta.scoreStripBorderClass || THEME_META.Default.scoreStripBorderClass || 'border-fuchsia-400/20';
+  const scoreProgressLabelClass = scoreThemeMeta.scoreProgressLabelClass || THEME_META.Default.scoreProgressLabelClass || 'text-cyan-200/80';
+  const scoreProgressValueClass = scoreThemeMeta.scoreProgressValueClass || THEME_META.Default.scoreProgressValueClass || 'text-yellow-300';
   return (
-    <GlassPanel className="rounded-[1.6rem] border-fuchsia-400/20 bg-black/25 p-3">
+    <GlassPanel className={`rounded-[1.6rem] ${scoreStripBorderClass} bg-black/25 p-3`}>
       <div className="flex items-center justify-between gap-3">
         <div>
-          <div className="text-[0.62rem] uppercase tracking-[0.26em] text-cyan-200/80">Match progress</div>
-          <div className="text-base font-black text-yellow-300">Round {roundNumber} of {totalRounds}</div>
+          <div className={`text-[0.62rem] uppercase tracking-[0.26em] ${scoreProgressLabelClass}`}>Match progress</div>
+          <div className={`text-base font-black ${scoreProgressValueClass}`}>Round {roundNumber} of {totalRounds}</div>
         </div>
         <div className="flex flex-wrap justify-end gap-2">
           {sorted.map((player, index) => (
@@ -767,6 +783,7 @@ function ScoreStrip({ players, roundNumber, totalRounds, scoreStyleMode = 'perso
                 player={player}
                 fallbackIndex={index}
                 isLeader={index === 0}
+                themeName={themeName}
               />
             ) : (
               <PersonaScorePill
@@ -774,6 +791,7 @@ function ScoreStrip({ players, roundNumber, totalRounds, scoreStyleMode = 'perso
                 player={player}
                 fallbackIndex={index}
                 isLeader={index === 0}
+                themeName={themeName}
               />
             )
           ))}
@@ -1491,6 +1509,12 @@ function SetupScreen(props) {
   const [categoryDialogOpen, setCategoryDialogOpen] = useState(false);
   const hasThemePersonas = useMemo(() => getThemePersonas(nameTheme).length > 0, [nameTheme]);
   const usePersonaOnlyForTheme = hasThemePersonas && Boolean(personaOnlyMode);
+  const setupThemeMeta = THEME_META[nameTheme] || THEME_META.Default;
+  const setupThemeLabelClass = setupThemeMeta.setupThemeLabelClass || THEME_META.Default.setupThemeLabelClass || 'text-cyan-200';
+  const setupThemeButtonClass = setupThemeMeta.setupThemeButtonClass || THEME_META.Default.setupThemeButtonClass || 'border-cyan-400/30 bg-cyan-500/15 text-cyan-100';
+  const setupPlayerIconClass = setupThemeMeta.setupPlayerIconClass || THEME_META.Default.setupPlayerIconClass || 'text-cyan-300';
+  const setupRulesIconClass = setupThemeMeta.setupRulesIconClass || THEME_META.Default.setupRulesIconClass || 'text-yellow-300';
+  const setupPlayerColorOptions = getThemePlayerColorOptions(nameTheme);
   useEffect(() => {
     if (!hasThemePersonas && personaOnlyMode) setPersonaOnlyMode(false);
   }, [hasThemePersonas, personaOnlyMode, setPersonaOnlyMode]);
@@ -1562,7 +1586,7 @@ function SetupScreen(props) {
         <div className="grid gap-5 lg:grid-cols-[1.1fr_0.9fr]">
           <GlassPanel className="rounded-[2.5rem] border-fuchsia-400/25 bg-black/25 p-5">
             <div className="mb-4 rounded-[1.7rem] border border-white/15 bg-black/25 p-4">
-              <div className="text-xs uppercase tracking-[0.3em] text-cyan-200">Game Theme</div>
+              <div className={`text-xs uppercase tracking-[0.3em] ${setupThemeLabelClass}`}>Game Theme</div>
               <p className="mt-2 text-sm text-white/75">
                 This impacts randomised names, card styling and in game dialog.
               </p>
@@ -1573,7 +1597,10 @@ function SetupScreen(props) {
                   const nextTheme = selectableThemeOptions.find((option) => option.name === nextThemeName);
                   if (!nextTheme) return;
                   setNameTheme(nextThemeName);
-                  setPlayers((currentPlayers) => currentPlayers.map((player) => clearPlayerPersonaData(player)));
+                  setPlayers((currentPlayers) => currentPlayers.map((player, playerIndex) => ({
+                    ...clearPlayerPersonaData(player),
+                    color: normalizePlayerColor(player.color, playerIndex, nextThemeName),
+                  })));
                 }}
                 className="mt-3 w-full rounded-2xl border border-white/15 bg-white/5 px-3 py-3 text-white"
               >
@@ -1586,7 +1613,7 @@ function SetupScreen(props) {
               {hasThemePersonas && (
                 <Button
                   type="button"
-                  className="mt-3 rounded-2xl border border-cyan-400/30 bg-cyan-500/15 px-4 text-cyan-100"
+                  className={`mt-3 rounded-2xl border px-4 ${setupThemeButtonClass}`}
                   onClick={randomizeAllPlayersForTheme}
                 >
                   <Dice6 className="mr-2 h-4 w-4" />
@@ -1612,7 +1639,7 @@ function SetupScreen(props) {
               </div>
             </div>
             <div className="mb-4 flex items-center justify-center gap-2">
-              <Users className="h-5 w-5 text-cyan-300" />
+              <Users className={`h-5 w-5 ${setupPlayerIconClass}`} />
               <h2 className="text-xl font-black">Player Setup</h2>
             </div>
             <div className="grid gap-3">
@@ -1674,8 +1701,8 @@ function SetupScreen(props) {
                   <div className="mt-3 flex items-center justify-between gap-3">
                     <div className="text-xs uppercase tracking-[0.16em] text-white/55">Player color</div>
                     <div className="flex flex-wrap items-center justify-end gap-2">
-                      {PLAYER_COLOR_OPTIONS.map((color) => {
-                        const selected = normalizePlayerColor(player.color, index) === color;
+                      {setupPlayerColorOptions.map((color) => {
+                        const selected = normalizePlayerColor(player.color, index, nameTheme) === color;
                         return (
                           <button
                             key={`${player.id}-${color}`}
@@ -1683,7 +1710,7 @@ function SetupScreen(props) {
                             className={`h-7 w-7 rounded-full border-2 transition-transform ${selected ? 'scale-110 border-white' : 'border-white/25'}`}
                             style={{ backgroundColor: color }}
                             onClick={() => setPlayers((currentPlayers) => currentPlayers.map((item, itemIndex) => (
-                              item.id === player.id ? { ...item, color: normalizePlayerColor(color, itemIndex) } : item
+                              item.id === player.id ? { ...item, color: normalizePlayerColor(color, itemIndex, nameTheme) } : item
                             )))}
                             aria-label={`Set ${player.name || `Player ${index + 1}`} color`}
                           />
@@ -1704,7 +1731,7 @@ function SetupScreen(props) {
                     id: `p-${Date.now()}-${currentPlayers.length + 1}`,
                     name: `Player ${currentPlayers.length + 1}`,
                     score: 0,
-                    color: normalizePlayerColor('', currentPlayers.length),
+                    color: normalizePlayerColor('', currentPlayers.length, nameTheme),
                   },
                 ])}
               >
@@ -1715,7 +1742,7 @@ function SetupScreen(props) {
           </GlassPanel>
           <GlassPanel className="rounded-[2.5rem] border-yellow-300/20 bg-black/25 p-5">
             <div className="mb-4 flex items-center justify-center gap-2">
-              <ShieldAlert className="h-5 w-5 text-yellow-300" />
+              <ShieldAlert className={`h-5 w-5 ${setupRulesIconClass}`} />
               <h2 className="text-xl font-black">Rules</h2>
             </div>
             <div className="space-y-4">
@@ -2486,7 +2513,7 @@ function GrillEmScreen({ players, round, totalRounds, onContinue, theme }) {
   return (
     <TopFrame theme={theme}>
       <div className="mx-auto max-w-5xl space-y-6">
-        <ScoreStrip players={players} roundNumber={round.roundNumber} totalRounds={totalRounds} />
+        <ScoreStrip players={players} roundNumber={round.roundNumber} totalRounds={totalRounds} themeName={theme} />
         <GlassPanel className="rounded-[2.5rem] p-8 border-cyan-400/20 bg-black/25">
           <div className="text-center">
             <div className="text-xs uppercase tracking-[0.3em] text-white/50">{round.roundTypeName}</div>
@@ -2625,7 +2652,7 @@ function VoicePartyStatusStrip({ onlineVoiceEnabled, onlineVoiceMuted, setOnline
 
 function DiscussionScreen({ players, round, totalRounds, onContinue, line, theme, onlineVoiceEnabled = false, onlineVoiceMuted = false, setOnlineVoiceMuted = () => {}, canTalk = true, submitPending = false }) {
   const roundRule = getRoundRuleText(round.roundTypeId);
-  return <TopFrame theme={theme}><div className="mx-auto max-w-3xl space-y-6"><ScoreStrip players={players} roundNumber={round.roundNumber} totalRounds={totalRounds} /><VoicePartyStatusStrip onlineVoiceEnabled={onlineVoiceEnabled} onlineVoiceMuted={onlineVoiceMuted} setOnlineVoiceMuted={setOnlineVoiceMuted} canTalk={canTalk} /><GlassPanel className="rounded-[2.5rem] p-8 text-center border-emerald-400/20 bg-black/25"><Badge className="rounded-full bg-emerald-500/20 border border-emerald-400/20 text-emerald-100 px-4 py-1.5">All prompts delivered</Badge><div className="text-xs uppercase tracking-[0.3em] text-white/50 mt-4">{round.roundTypeName}</div><h2 className="text-4xl font-black mt-3 text-yellow-300">{round.roundTypeTagline}</h2><p className="text-white/75 mt-3 max-w-2xl mx-auto">{line}</p><p className="text-cyan-200 mt-3 max-w-2xl mx-auto font-semibold">{roundRule}</p><Button className="rounded-[1.5rem] h-16 px-8 mt-8 bg-yellow-300 text-zinc-950 border-2 border-white" onClick={onContinue} disabled={submitPending}><SkipForward className="mr-2 h-5 w-5 inline" />{submitPending ? 'Syncing...' : 'Finish discussion and vote'}</Button></GlassPanel></div></TopFrame>;
+  return <TopFrame theme={theme}><div className="mx-auto max-w-3xl space-y-6"><ScoreStrip players={players} roundNumber={round.roundNumber} totalRounds={totalRounds} themeName={theme} /><VoicePartyStatusStrip onlineVoiceEnabled={onlineVoiceEnabled} onlineVoiceMuted={onlineVoiceMuted} setOnlineVoiceMuted={setOnlineVoiceMuted} canTalk={canTalk} /><GlassPanel className="rounded-[2.5rem] p-8 text-center border-emerald-400/20 bg-black/25"><Badge className="rounded-full bg-emerald-500/20 border border-emerald-400/20 text-emerald-100 px-4 py-1.5">All prompts delivered</Badge><div className="text-xs uppercase tracking-[0.3em] text-white/50 mt-4">{round.roundTypeName}</div><h2 className="text-4xl font-black mt-3 text-yellow-300">{round.roundTypeTagline}</h2><p className="text-white/75 mt-3 max-w-2xl mx-auto">{line}</p><p className="text-cyan-200 mt-3 max-w-2xl mx-auto font-semibold">{roundRule}</p><Button className="rounded-[1.5rem] h-16 px-8 mt-8 bg-yellow-300 text-zinc-950 border-2 border-white" onClick={onContinue} disabled={submitPending}><SkipForward className="mr-2 h-5 w-5 inline" />{submitPending ? 'Syncing...' : 'Finish discussion and vote'}</Button></GlassPanel></div></TopFrame>;
 }
 function VotingScreen({ players, round, totalRounds, votesByPlayerId, setVotesByPlayerId, onSubmitVotes, line, theme, onlineMode = false, onlinePlayerId = '', onlineVoiceEnabled = false, onlineVoiceMuted = false, setOnlineVoiceMuted = () => {}, canTalk = true, submitPending = false }) {
   const leader = players.find((p) => p.id === round.leaderId);
@@ -2660,7 +2687,7 @@ function VotingScreen({ players, round, totalRounds, votesByPlayerId, setVotesBy
   return (
     <TopFrame theme={theme}>
       <div className="mx-auto max-w-5xl space-y-6">
-        <ScoreStrip players={players} roundNumber={round.roundNumber} totalRounds={totalRounds} />
+        <ScoreStrip players={players} roundNumber={round.roundNumber} totalRounds={totalRounds} themeName={theme} />
         {onlineMode && (
           <VoicePartyStatusStrip
             onlineVoiceEnabled={onlineVoiceEnabled}
@@ -3370,7 +3397,7 @@ function AdminDialog({ open, onOpenChange, premiumEnabled, customCategories, set
 }
 export default function App() {
   const [screen, setScreen] = useState('home');
-  const [players, setPlayers] = useState(createPlayers(3));
+  const [players, setPlayers] = useState(createPlayers(3, toCanonicalThemeName(getStored('imposter-theme-v3', 'Default'))));
   const [liarCount, setLiarCount] = useState(1);
   const [nameTheme, setNameTheme] = useState(
     toCanonicalThemeName(getStored('imposter-theme-v3', 'Default'))
@@ -4159,7 +4186,7 @@ export default function App() {
     }
   }
   function restartToHome() {
-    setPlayers(createPlayers(3)); setLiarCount(1); setNameTheme(normalizeThemeSelection('Default', themeOptions)); setPersonaOnlyMode(false); setMode('classic'); setWinCondition('rounds'); setPointsToWin(15); setRoundsPerPlayer(1); setGrillSettings({ micEnabled: true, ttsEnabled: true }); setRound(null); setRoundNumber(1); setCurrentRoundOwnerIndex(0); setPreviousRoundType(null); setRoundTypeOptions([]); setSelectedRoundType(null); setRevealIndex(0); setVotesByPlayerId({}); setTally({}); setRoundGains({}); setRoundBreakdown({}); setImposterCaught(false); setRecentPromptKeys([]); refreshCopy(['home', 'onlineLobby']);
+    setPlayers(createPlayers(3, 'Default')); setLiarCount(1); setNameTheme(normalizeThemeSelection('Default', themeOptions)); setPersonaOnlyMode(false); setMode('classic'); setWinCondition('rounds'); setPointsToWin(15); setRoundsPerPlayer(1); setGrillSettings({ micEnabled: true, ttsEnabled: true }); setRound(null); setRoundNumber(1); setCurrentRoundOwnerIndex(0); setPreviousRoundType(null); setRoundTypeOptions([]); setSelectedRoundType(null); setRevealIndex(0); setVotesByPlayerId({}); setTally({}); setRoundGains({}); setRoundBreakdown({}); setImposterCaught(false); setRecentPromptKeys([]); refreshCopy(['home', 'onlineLobby']);
     setOnlinePhasePending(false);
     setOnlineVoteSubmissionPending(false);
     setOnlinePrivatePrompt(null);
