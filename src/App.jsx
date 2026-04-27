@@ -116,6 +116,21 @@ function normalizePlayerColor(color, fallbackIndex = 0, themeName = 'Default') {
 function getPlayerColor(player, fallbackIndex = 0, themeName = 'Default') {
   return normalizePlayerColor(player?.color, fallbackIndex, themeName);
 }
+function getHostSizeConfig(themeName = 'Default') {
+  const canonicalThemeName = toCanonicalThemeName(themeName);
+  const map = {
+    'Ghosts and Ghouls': {
+      intro: 'w-44 sm:w-60 md:w-72',
+      hostIntro: 'w-44 sm:w-56',
+      liarReveal: 'w-44 sm:w-56',
+    },
+  };
+  return map[canonicalThemeName] || {
+    intro: 'w-32 sm:w-44 md:w-52',
+    hostIntro: 'w-32 sm:w-42',
+    liarReveal: 'w-34 sm:w-46',
+  };
+}
 function getPlayerInitials(name = 'P') {
   return String(name || 'P')
     .trim()
@@ -799,6 +814,46 @@ function ScoreStrip({ players, roundNumber, totalRounds, scoreStyleMode = 'perso
     </GlassPanel>
   );
 }
+function BoxerToggle({ checked = false, onCheckedChange = () => {}, disabled = false, className = '', label = 'Toggle option' }) {
+  const active = Boolean(checked);
+  const shellClass = active
+    ? 'border-emerald-300/75 bg-emerald-500/28'
+    : 'border-red-300/70 bg-red-500/24';
+  return (
+    <button
+      type="button"
+      className={`relative inline-flex h-14 w-20 items-center justify-center rounded-2xl border-2 shadow-[0_6px_16px_rgba(0,0,0,0.35)] transition-transform ${disabled ? 'cursor-not-allowed opacity-45' : 'hover:scale-[1.04] active:scale-[0.98]'} ${shellClass} ${className}`}
+      aria-pressed={active}
+      aria-label={label}
+      disabled={disabled}
+      onClick={() => {
+        if (disabled) return;
+        onCheckedChange(!active);
+      }}
+    >
+      <svg viewBox="0 0 96 72" className="h-10 w-14" role="presentation" aria-hidden="true">
+        <defs>
+          <linearGradient id="boxer-main-fill" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stopColor="#f8fafc" />
+            <stop offset="100%" stopColor="#dbeafe" />
+          </linearGradient>
+        </defs>
+        <path
+          d="M8 18c0-4 3-7 7-7h66c4 0 7 3 7 7v9c0 2-1 4-2 6L74 54c-2 4-6 7-11 7H33c-5 0-9-3-11-7L10 33c-1-2-2-4-2-6z"
+          fill="url(#boxer-main-fill)"
+          stroke="rgba(15,23,42,0.72)"
+          strokeWidth="3"
+        />
+        <path d="M15 18h66v9H15z" fill={active ? '#16a34a' : '#dc2626'} opacity="0.95" />
+        <path d="M48 27v31" stroke="rgba(30,41,59,0.55)" strokeWidth="3" />
+        <circle cx="48" cy="24.5" r="2.6" fill="rgba(15,23,42,0.72)" />
+      </svg>
+      <span className="pointer-events-none absolute bottom-1 text-[0.55rem] font-black uppercase tracking-[0.15em] text-white/90">
+        {active ? 'On' : 'Off'}
+      </span>
+    </button>
+  );
+}
 function ThemeArt({ src, alt, className = '' }) {
   const [resolvedSrc, setResolvedSrc] = useState(src || '');
   useEffect(() => {
@@ -856,20 +911,20 @@ function getThemeHostFrameSources(themeName = 'Default', state = 'idle') {
   const assets = getThemeAssets(themeName);
   const defaultAssets = getThemeAssets('Default');
   const idleFrame =
-    assets.hostIdle
+    assets.personaHostIdle
+    || assets.hostIdle
     || assets.characterCard
-    || assets.personaHostIdle
     || defaultAssets.personaHostIdle
     || defaultAssets.hostIdle
     || defaultAssets.characterCard
     || '';
   const talkingFrames = [
-    assets.hostTalk1 || defaultAssets.hostTalk1,
-    assets.hostTalk2 || defaultAssets.hostTalk2,
-    assets.hostTalk3 || defaultAssets.hostTalk3,
     assets.personaHostTalk1 || defaultAssets.personaHostTalk1,
     assets.personaHostTalk2 || defaultAssets.personaHostTalk2,
     assets.personaHostTalk3 || defaultAssets.personaHostTalk3,
+    assets.hostTalk1 || defaultAssets.hostTalk1,
+    assets.hostTalk2 || defaultAssets.hostTalk2,
+    assets.hostTalk3 || defaultAssets.hostTalk3,
   ].filter(Boolean);
   if (state !== 'talking') return [idleFrame].filter(Boolean);
   if (!talkingFrames.length) return [idleFrame].filter(Boolean);
@@ -1629,10 +1684,11 @@ function SetupScreen(props) {
                         : 'No persona pack is available for this theme yet.'}
                     </div>
                   </div>
-                  <Switch
+                  <BoxerToggle
                     checked={usePersonaOnlyForTheme}
                     onCheckedChange={(next) => setPersonaOnlyMode(Boolean(next))}
                     disabled={!hasThemePersonas}
+                    label="Toggle persona-only mode"
                   />
                 </div>
               </div>

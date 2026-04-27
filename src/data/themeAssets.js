@@ -281,7 +281,9 @@ export function getThemeHostAssets(themeName = 'Default') {
       assetEntry.personaHostTalk3,
     ];
     const framesFromNamedSlots = [assetEntry.hostTalk1, assetEntry.hostTalk2, assetEntry.hostTalk3];
-    return [...framesFromList, ...framesFromNamedSlots].filter(Boolean);
+    return [...framesFromList, ...personaFramesFromNamedSlots, ...framesFromNamedSlots]
+      .filter(Boolean)
+      .filter((value, index, arr) => arr.indexOf(value) === index);
   };
 
   const selectedFrames = collectTalkFrames(selected);
