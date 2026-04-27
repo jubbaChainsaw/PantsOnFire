@@ -63,7 +63,22 @@ import {
 
 const LOGO_SRC = '/assets/images/logo.png';
 const LOGO_18PLUS_SRC = '/assets/images/logo-18plus.png';
-const FLAME_SRC = '/assets/images/flame-placeholder.svg';
+const FLAME_SRC = '/assets/images/flames/flame-8.png';
+const HOME_FLAME_SOURCES = [
+  '/assets/images/flames/flame-1.png',
+  '/assets/images/flames/flame-2.png',
+  '/assets/images/flames/flame-3.png',
+  '/assets/images/flames/flame-8.png',
+  '/assets/images/flames/flame-9.png',
+  '/assets/images/flames/flame-5.png',
+  '/assets/images/flames/flame-7.png',
+];
+const CARD_FIRE_FLAME_SOURCES = [
+  '/assets/images/flames/flame-4.png',
+  '/assets/images/flames/flame-6.png',
+  '/assets/images/flames/flame-7.png',
+  '/assets/images/flames/flame-9.png',
+];
 const HEARTBEAT_SFX_SRC = '/assets/sfx/heartbeat.mp3';
 const FIRE_CRACKLE_SFX_SRC = '/assets/sfx/fire-crackle.wav';
 const UI_ICON_BOXERS_RED_SRC = '/assets/images/ui-icons/boxers-red.png';
@@ -1456,16 +1471,16 @@ function HomeScreen({ onNavigate, homeLine, adultMode }) {
       <div className="relative h-[calc(100dvh-2rem)] px-2 flex items-center justify-center overflow-hidden">
         <div className="pointer-events-none absolute inset-x-0 bottom-0 h-52">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_100%,rgba(255,94,0,0.45)_0%,rgba(255,94,0,0.2)_35%,rgba(0,0,0,0)_70%)] animate-pulse" />
-          <img src={FLAME_SRC} alt="" aria-hidden="true" className="absolute -bottom-6 left-[6%] h-24 w-24 opacity-80 [animation:home-flame-float_2.4s_ease-in-out_infinite] drop-shadow-[0_0_16px_rgba(255,98,0,0.98)]" />
-          <img src={FLAME_SRC} alt="" aria-hidden="true" className="absolute -bottom-8 left-[24%] h-28 w-28 opacity-85 [animation:home-flame-float_2.8s_ease-in-out_0.2s_infinite] drop-shadow-[0_0_16px_rgba(255,98,0,0.98)]" />
-          <img src={FLAME_SRC} alt="" aria-hidden="true" className="absolute -bottom-5 left-[44%] h-24 w-24 opacity-80 [animation:home-flame-float_2.2s_ease-in-out_0.35s_infinite] drop-shadow-[0_0_16px_rgba(255,98,0,0.98)]" />
-          <img src={FLAME_SRC} alt="" aria-hidden="true" className="absolute -bottom-9 left-[66%] h-28 w-28 opacity-85 [animation:home-flame-float_2.95s_ease-in-out_0.1s_infinite] drop-shadow-[0_0_16px_rgba(255,98,0,0.98)]" />
-          <img src={FLAME_SRC} alt="" aria-hidden="true" className="absolute -bottom-6 right-[8%] h-24 w-24 opacity-80 [animation:home-flame-float_2.5s_ease-in-out_0.25s_infinite] drop-shadow-[0_0_16px_rgba(255,98,0,0.98)]" />
+          <img src={HOME_FLAME_SOURCES[0] || FLAME_SRC} alt="" aria-hidden="true" className="absolute -bottom-6 left-[6%] h-24 w-24 opacity-80 [animation:home-flame-float_2.4s_ease-in-out_infinite] drop-shadow-[0_0_16px_rgba(255,98,0,0.98)]" />
+          <img src={HOME_FLAME_SOURCES[1] || FLAME_SRC} alt="" aria-hidden="true" className="absolute -bottom-8 left-[24%] h-28 w-28 opacity-85 [animation:home-flame-float_2.8s_ease-in-out_0.2s_infinite] drop-shadow-[0_0_16px_rgba(255,98,0,0.98)]" />
+          <img src={HOME_FLAME_SOURCES[2] || FLAME_SRC} alt="" aria-hidden="true" className="absolute -bottom-5 left-[44%] h-24 w-24 opacity-80 [animation:home-flame-float_2.2s_ease-in-out_0.35s_infinite] drop-shadow-[0_0_16px_rgba(255,98,0,0.98)]" />
+          <img src={HOME_FLAME_SOURCES[3] || FLAME_SRC} alt="" aria-hidden="true" className="absolute -bottom-9 left-[66%] h-28 w-28 opacity-85 [animation:home-flame-float_2.95s_ease-in-out_0.1s_infinite] drop-shadow-[0_0_16px_rgba(255,98,0,0.98)]" />
+          <img src={HOME_FLAME_SOURCES[4] || FLAME_SRC} alt="" aria-hidden="true" className="absolute -bottom-6 right-[8%] h-24 w-24 opacity-80 [animation:home-flame-float_2.5s_ease-in-out_0.25s_infinite] drop-shadow-[0_0_16px_rgba(255,98,0,0.98)]" />
         </div>
         <div className="relative z-10 w-full max-w-xl h-full max-h-[calc(100dvh-2.5rem)] text-center flex flex-col justify-between gap-2 py-1">
           <div className="relative px-2 pt-0.5">
-            <img src={FLAME_SRC} alt="" aria-hidden="true" className="pointer-events-none absolute top-3 left-5 h-12 w-12 opacity-85 [animation:home-flame-float_2.1s_ease-in-out_infinite] drop-shadow-[0_0_12px_rgba(255,98,0,0.95)]" />
-            <img src={FLAME_SRC} alt="" aria-hidden="true" className="pointer-events-none absolute top-8 right-6 h-12 w-12 opacity-85 [animation:home-flame-float_2.45s_ease-in-out_0.2s_infinite] drop-shadow-[0_0_12px_rgba(255,98,0,0.95)]" />
+            <img src={HOME_FLAME_SOURCES[5] || FLAME_SRC} alt="" aria-hidden="true" className="pointer-events-none absolute top-3 left-5 h-12 w-12 opacity-85 [animation:home-flame-float_2.1s_ease-in-out_infinite] drop-shadow-[0_0_12px_rgba(255,98,0,0.95)]" />
+            <img src={HOME_FLAME_SOURCES[6] || FLAME_SRC} alt="" aria-hidden="true" className="pointer-events-none absolute top-8 right-6 h-12 w-12 opacity-85 [animation:home-flame-float_2.45s_ease-in-out_0.2s_infinite] drop-shadow-[0_0_12px_rgba(255,98,0,0.95)]" />
             <img src={logoSrc} alt="Pants On Fire logo" className="mx-auto w-full max-w-xl object-contain drop-shadow-[0_10px_30px_rgba(0,0,0,0.7)]" />
             {adultMode && (
               <div className="mt-1 flex items-center justify-center gap-2 text-[0.7rem] sm:text-xs uppercase tracking-[0.2em] text-red-100">
@@ -2185,10 +2200,10 @@ function RevealScreen({ players, currentRevealIndex, round, totalRounds, onNext,
                   <>
                     <div className="pointer-events-none absolute -inset-2 rounded-[2rem] border-2 border-orange-300/45 shadow-[inset_0_0_30px_rgba(255,97,24,0.45)]" />
                     <div className="pointer-events-none absolute inset-0 rounded-[1.7rem] bg-[radial-gradient(circle_at_50%_90%,rgba(255,150,0,0.38)_0%,rgba(255,70,0,0.24)_35%,rgba(0,0,0,0)_68%)]" />
-                    <img src={FLAME_SRC} alt="" aria-hidden="true" className="pointer-events-none absolute -top-5 -left-3 h-14 w-14 opacity-95 animate-pulse drop-shadow-[0_0_12px_rgba(255,98,0,0.95)]" />
-                    <img src={FLAME_SRC} alt="" aria-hidden="true" className="pointer-events-none absolute -top-6 right-1 h-16 w-16 opacity-95 animate-pulse drop-shadow-[0_0_12px_rgba(255,98,0,0.95)]" />
-                    <img src={FLAME_SRC} alt="" aria-hidden="true" className="pointer-events-none absolute bottom-1 -right-3 h-14 w-14 opacity-90 animate-pulse drop-shadow-[0_0_12px_rgba(255,98,0,0.95)]" />
-                    <img src={FLAME_SRC} alt="" aria-hidden="true" className="pointer-events-none absolute bottom-0 -left-2 h-12 w-12 opacity-85 animate-pulse drop-shadow-[0_0_12px_rgba(255,98,0,0.95)]" />
+                    <img src={CARD_FIRE_FLAME_SOURCES[0] || FLAME_SRC} alt="" aria-hidden="true" className="pointer-events-none absolute -top-5 -left-3 h-14 w-14 opacity-95 animate-pulse drop-shadow-[0_0_12px_rgba(255,98,0,0.95)]" />
+                    <img src={CARD_FIRE_FLAME_SOURCES[1] || FLAME_SRC} alt="" aria-hidden="true" className="pointer-events-none absolute -top-6 right-1 h-16 w-16 opacity-95 animate-pulse drop-shadow-[0_0_12px_rgba(255,98,0,0.95)]" />
+                    <img src={CARD_FIRE_FLAME_SOURCES[2] || FLAME_SRC} alt="" aria-hidden="true" className="pointer-events-none absolute bottom-1 -right-3 h-14 w-14 opacity-90 animate-pulse drop-shadow-[0_0_12px_rgba(255,98,0,0.95)]" />
+                    <img src={CARD_FIRE_FLAME_SOURCES[3] || FLAME_SRC} alt="" aria-hidden="true" className="pointer-events-none absolute bottom-0 -left-2 h-12 w-12 opacity-85 animate-pulse drop-shadow-[0_0_12px_rgba(255,98,0,0.95)]" />
                     {imposterEmberParticles.map((particle) => (
                       <span
                         key={particle.id}
