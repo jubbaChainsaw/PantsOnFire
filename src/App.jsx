@@ -65,6 +65,7 @@ const LOGO_SRC = '/assets/images/logo.png';
 const LOGO_18PLUS_SRC = '/assets/images/logo-18plus.png';
 const INTRO_LOGO_VIDEO_SRC = '/assets/videos/intro-logo.mp4';
 const FIRE_FRAME_VIDEO_SRC = '/assets/videos/fire-frame.mp4';
+const BYTEBLITZ_VIDEO_PLACEHOLDER_SRC = '/assets/videos/byteblitz/placeholder.mp4';
 const FLAME_SRC = '/assets/images/flames/flame-8.png';
 const HOME_FLAME_SOURCES = [
   '/assets/images/flames/flame-1.png',
@@ -91,39 +92,39 @@ const IMPOSTER_ANNOUNCED_SFX_SRC = '/assets/sfx/imposter-announced.wav';
 const CARD_FLIP_SFX_SRC = '/assets/sfx/card-flip.wav';
 const BYTEBLITZ_CUE_MEDIA = {
   yes: {
-    videoSrc: '/assets/videos/byteblitz/yes.mp4',
+    videoSrc: BYTEBLITZ_VIDEO_PLACEHOLDER_SRC,
     sfxSrc: '/assets/sfx/byteblitz/yes.wav',
   },
   no: {
-    videoSrc: '/assets/videos/byteblitz/no.mp4',
+    videoSrc: BYTEBLITZ_VIDEO_PLACEHOLDER_SRC,
     sfxSrc: '/assets/sfx/byteblitz/no.wav',
   },
   maybe: {
-    videoSrc: '/assets/videos/byteblitz/maybe.mp4',
+    videoSrc: BYTEBLITZ_VIDEO_PLACEHOLDER_SRC,
     sfxSrc: '/assets/sfx/byteblitz/maybe.wav',
   },
   kindOf: {
-    videoSrc: '/assets/videos/byteblitz/kind-of.mp4',
+    videoSrc: BYTEBLITZ_VIDEO_PLACEHOLDER_SRC,
     sfxSrc: '/assets/sfx/byteblitz/kind-of.wav',
   },
   notApplicable: {
-    videoSrc: '/assets/videos/byteblitz/not-applicable.mp4',
+    videoSrc: BYTEBLITZ_VIDEO_PLACEHOLDER_SRC,
     sfxSrc: '/assets/sfx/byteblitz/not-applicable.wav',
   },
   correct: {
-    videoSrc: '/assets/videos/byteblitz/correct.mp4',
+    videoSrc: BYTEBLITZ_VIDEO_PLACEHOLDER_SRC,
     sfxSrc: '/assets/sfx/byteblitz/correct.wav',
   },
   cheatWarning: {
-    videoSrc: '/assets/videos/byteblitz/cheat-warning.mp4',
+    videoSrc: BYTEBLITZ_VIDEO_PLACEHOLDER_SRC,
     sfxSrc: '/assets/sfx/byteblitz/cheat-warning.wav',
   },
   cheatPenalty: {
-    videoSrc: '/assets/videos/byteblitz/cheat-penalty.mp4',
+    videoSrc: BYTEBLITZ_VIDEO_PLACEHOLDER_SRC,
     sfxSrc: '/assets/sfx/byteblitz/cheat-penalty.wav',
   },
   liarCorrect: {
-    videoSrc: '/assets/videos/byteblitz/liar-correct.mp4',
+    videoSrc: BYTEBLITZ_VIDEO_PLACEHOLDER_SRC,
     sfxSrc: '/assets/sfx/byteblitz/liar-correct.wav',
   },
 };
@@ -959,6 +960,54 @@ function ThemeArt({ src, alt, className = '' }) {
     />
   );
 }
+function toWebmSrc(src = '') {
+  const normalized = String(src || '').trim();
+  if (!normalized || !normalized.toLowerCase().endsWith('.mp4')) return '';
+  return `${normalized.slice(0, -4)}.webm`;
+}
+function MultiSourceVideo({
+  src = '',
+  className = '',
+  poster = '',
+  autoPlay = false,
+  loop = false,
+  muted = true,
+  playsInline = true,
+  preload = 'metadata',
+  ariaHidden = true,
+  onLoadedData,
+  onEnded,
+  onError,
+}) {
+  const [isBroken, setIsBroken] = useState(false);
+  const normalizedSrc = String(src || '').trim();
+  const webmSrc = toWebmSrc(normalizedSrc);
+  useEffect(() => {
+    setIsBroken(false);
+  }, [normalizedSrc, webmSrc, poster]);
+  if (!normalizedSrc || isBroken) return null;
+  return (
+    <video
+      className={className}
+      autoPlay={autoPlay}
+      loop={loop}
+      muted={muted}
+      playsInline={playsInline}
+      preload={preload}
+      poster={poster || undefined}
+      aria-hidden={ariaHidden ? 'true' : undefined}
+      onLoadedData={onLoadedData}
+      onEnded={onEnded}
+      onError={(event) => {
+        setIsBroken(true);
+        if (typeof onError === 'function') onError(event);
+      }}
+    >
+      {webmSrc && <source src={webmSrc} type="video/webm" />}
+      <source src={normalizedSrc} type="video/mp4" />
+    </video>
+  );
+}
 function ThemeHostVisual({
   themeName = 'Default',
   isTalking = false,
@@ -976,8 +1025,7 @@ function ThemeHostVisual({
 
   if (talkingVideoSrc && !videoBroken) {
     return (
-      <video
-        key={`${themeName}-${isTalking ? 'talking' : 'idle'}`}
+      <MultiSourceVideo
         src={talkingVideoSrc}
         className={className}
         autoPlay={isTalking}
@@ -986,6 +1034,7 @@ function ThemeHostVisual({
         playsInline
         preload="metadata"
         poster={animatedHostSrc || undefined}
+        ariaHidden
         onError={() => setVideoBroken(true)}
       />
     );
@@ -1033,27 +1082,42 @@ function ThemeIconStrip({ src, alt }) {
 }
 function IntroVideoScreen({ onDone }) {
   const [canSkip, setCanSkip] = useState(false);
+  const hasCompletedRef = useRef(false);
+  const completeIntro = useCallback(() => {
+    if (hasCompletedRef.current) return;
+    hasCompletedRef.current = true;
+    onDone();
+  }, [onDone]);
   useEffect(() => {
     const timer = setTimeout(() => setCanSkip(true), 850);
     return () => clearTimeout(timer);
   }, []);
+  useEffect(() => {
+    // Safety net for browsers/webviews where intro video never fires ended/error.
+    const fallbackTimer = setTimeout(() => completeIntro(), 4200);
+    return () => clearTimeout(fallbackTimer);
+  }, [completeIntro]);
   return (
     <TopFrame theme="Default" allowScroll={false}>
-      <div className="relative h-[calc(100dvh-2rem)] overflow-hidden rounded-[2.2rem] border border-orange-300/25 bg-black">
-        <video
+      <div className="relative h-[calc(100vh-2rem)] min-h-[calc(100vh-2rem)] overflow-hidden rounded-[2.2rem] border border-orange-300/25 bg-black">
+        <MultiSourceVideo
           className="absolute inset-0 h-full w-full object-cover"
           src={INTRO_LOGO_VIDEO_SRC}
           autoPlay
           muted
           playsInline
           preload="auto"
-          onEnded={onDone}
+          poster={LOGO_SRC}
+          ariaHidden
+          onLoadedData={() => setCanSkip(true)}
+          onEnded={completeIntro}
+          onError={completeIntro}
         />
         <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/45 via-transparent to-black/30" />
         <div className="absolute inset-x-0 bottom-6 flex justify-center">
           <Button
             className="rounded-[1.2rem] border border-white/30 bg-black/35 px-5 py-2 text-white backdrop-blur-sm"
-            onClick={onDone}
+            onClick={completeIntro}
             disabled={!canSkip}
           >
             {canSkip ? 'Skip intro' : 'Loading intro...'}
@@ -1598,7 +1662,7 @@ function HomeScreen({ onNavigate, homeLine, adultMode, fireFrameVideoSrc = FIRE_
     <TopFrame theme="Default" allowScroll={false}>
       <div className="relative h-[calc(100dvh-2rem)] px-2 flex items-center justify-center overflow-hidden">
         <div className="pointer-events-none absolute inset-x-0 bottom-0 h-56 overflow-visible">
-          <video
+          <MultiSourceVideo
             className="absolute inset-x-0 bottom-0 h-56 w-full object-cover opacity-45 mix-blend-screen"
             src={fireFrameVideoSrc}
             autoPlay
@@ -1606,7 +1670,7 @@ function HomeScreen({ onNavigate, homeLine, adultMode, fireFrameVideoSrc = FIRE_
             muted
             playsInline
             preload="auto"
-            aria-hidden="true"
+            ariaHidden
           />
           <div className="absolute inset-x-0 bottom-0 h-40 bg-[radial-gradient(circle_at_50%_100%,rgba(255,94,0,0.45)_0%,rgba(255,94,0,0.2)_35%,rgba(0,0,0,0)_74%)] animate-pulse" />
           {bottomFlames.map((flame, index) => (
@@ -1626,7 +1690,7 @@ function HomeScreen({ onNavigate, homeLine, adultMode, fireFrameVideoSrc = FIRE_
           ))}
         </div>
         <div className="pointer-events-none absolute inset-0 z-[1]">
-          <video
+          <MultiSourceVideo
             className="absolute inset-0 h-full w-full object-cover opacity-22 mix-blend-screen"
             src={fireFrameVideoSrc}
             autoPlay
@@ -1634,7 +1698,7 @@ function HomeScreen({ onNavigate, homeLine, adultMode, fireFrameVideoSrc = FIRE_
             muted
             playsInline
             preload="auto"
-            aria-hidden="true"
+            ariaHidden
           />
         </div>
         <div className="pointer-events-none absolute inset-x-0 top-0 h-24 overflow-visible">
@@ -3811,7 +3875,10 @@ function AdminDialog({ open, onOpenChange, premiumEnabled, customCategories, set
   return <Dialog open={open}><DialogContent className="max-w-5xl rounded-[2rem] bg-[#13002d] p-6 text-white border border-fuchsia-400/20"><DialogHeader><DialogTitle className="text-2xl text-yellow-300">Category Admin</DialogTitle><DialogDescription className="text-white/60">Local prototype admin for adding custom categories and prompt pairs.</DialogDescription></DialogHeader><div className="grid gap-6 lg:grid-cols-[0.8fr_1.2fr] mt-4"><Card className="bg-white/5 border border-white/10 rounded-[1.75rem] p-4"><CardHeader><CardTitle className="text-lg">Create category</CardTitle></CardHeader><CardContent className="space-y-3"><Input value={categoryName} onChange={(e) => setCategoryName(e.target.value)} className="rounded-2xl bg-white/5 border border-white/10 text-white" /><Button className="w-full rounded-2xl bg-yellow-300 px-4 py-2 text-zinc-950" onClick={() => { const name = categoryName.trim(); if (!name) return; const id = `custom-${name.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`; const next = [...customCategories, { id, name, emoji: '✨', prompts: [] }]; setCustomCategories(next); setStored('imposter-custom-categories-v2', next); setSelectedCategory(id); setCategoryName(''); }}>Add category</Button></CardContent></Card><Card className="bg-white/5 border border-white/10 rounded-[1.75rem] p-4"><CardHeader><CardTitle className="text-lg">Add prompt pair</CardTitle><CardDescription className="text-white/55">Structured custom rounds can be extended later. This version keeps simple pairs.</CardDescription></CardHeader><CardContent className="space-y-3">{!premiumEnabled && <div className="rounded-2xl border border-amber-400/20 bg-amber-500/10 p-4 text-amber-100 text-sm">Premium mode is off in this prototype.</div>}<div className="grid gap-3 md:grid-cols-2"><Input value={mainPrompt} onChange={(e) => setMainPrompt(e.target.value)} placeholder="Common prompt" className="rounded-2xl bg-white/5 border border-white/10 text-white" /><Input value={imposterPrompt} onChange={(e) => setImposterPrompt(e.target.value)} placeholder="Liar prompt" className="rounded-2xl bg-white/5 border border-white/10 text-white" /></div><Button className="rounded-2xl bg-yellow-300 px-4 py-2 text-zinc-950" disabled={!premiumEnabled || !selectedCategory} onClick={() => { const next = customCategories.map((cat) => cat.id === selectedCategory ? { ...cat, prompts: [...cat.prompts, { hint: 'Custom', main: mainPrompt, imposter: imposterPrompt }] } : cat); setCustomCategories(next); setStored('imposter-custom-categories-v2', next); setMainPrompt(''); setImposterPrompt(''); }}>Add prompt pair</Button></CardContent></Card></div><DialogFooter><Button className="rounded-2xl bg-yellow-300 px-4 py-2 text-zinc-950" onClick={() => onOpenChange(false)}>Done</Button></DialogFooter></DialogContent></Dialog>;
 }
 export default function App() {
-  const [screen, setScreen] = useState('intro-video');
+  const [screen, setScreen] = useState(() => {
+    const hasSeenIntro = Boolean(getStored(APP_INTRO_VIDEO_SEEN_KEY, false));
+    return hasSeenIntro ? 'home' : 'intro-video';
+  });
     const [players, setPlayers] = useState(createPlayers(3, toCanonicalThemeName(getStored('imposter-theme-v3', 'Default'))));
   const [liarCount, setLiarCount] = useState(1);
   const [nameTheme, setNameTheme] = useState(
@@ -4668,6 +4735,7 @@ export default function App() {
     }
   }
   function goToHomeScreen() {
+    setStored(APP_INTRO_VIDEO_SEEN_KEY, true);
     setScreen('home');
   }
   function restartToHome() {
@@ -4919,6 +4987,12 @@ export default function App() {
         onByteBlitzCue={(cue) => {
           const cueType = String(cue?.cueType || '').trim();
           const cueAsset = BYTEBLITZ_CUE_MEDIA[cueType];
+          if (cueAsset?.videoSrc) {
+            // Keep the media path "hot" in runtime so missing asset failures surface early.
+            const preloadVideo = document.createElement('video');
+            preloadVideo.preload = 'metadata';
+            preloadVideo.src = cueAsset.videoSrc;
+          }
           if (cueAsset?.sfxSrc) {
             playSfx(cueAsset.sfxSrc, { volume: 0.62 });
           }
