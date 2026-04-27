@@ -2711,9 +2711,14 @@ function DiscussionScreen({ players, round, totalRounds, onContinue, line, theme
 }
 function VotingScreen({ players, round, totalRounds, votesByPlayerId, setVotesByPlayerId, onSubmitVotes, line, theme, onlineMode = false, onlinePlayerId = '', onlineVoiceEnabled = false, onlineVoiceMuted = false, setOnlineVoiceMuted = () => {}, canTalk = true, submitPending = false }) {
   const leader = players.find((p) => p.id === round.leaderId);
-  const votersToRender = onlineMode && onlinePlayerId
-    ? players.filter((player) => player.id === onlinePlayerId)
-    : players;
+  const localVoters = useMemo(() => players.filter((player) => player.id), [players]);
+  const activeLocalVoter = useMemo(
+    () => localVoters.find((player) => !votesByPlayerId[player.id]) || null,
+    [localVoters, votesByPlayerId]
+  );
+  const votersToRender = onlineMode
+    ? (onlinePlayerId ? players.filter((player) => player.id === onlinePlayerId) : [])
+    : (activeLocalVoter ? [activeLocalVoter] : []);
   const localVoteCount = Object.values(votesByPlayerId).filter(Boolean).length;
   const completeCount = onlineMode
     ? Number(round.voteCompletionCount || 0)
@@ -2727,6 +2732,8 @@ function VotingScreen({ players, round, totalRounds, votesByPlayerId, setVotesBy
   const allComplete = onlineMode
     ? onlineVoteReady
     : players.every((player) => votesByPlayerId[player.id]);
+  const canRevealResults = !onlineMode && allComplete;
+  const canSubmitOnlineVote = onlineMode && onlineVoteReady;
   const voteInstruction = round.roundTypeId === 'grill'
     ? "Vote for who sounded like they already knew the AI's hidden prompt."
     : (round.roundTypeId === 'chain'
@@ -2759,7 +2766,9 @@ function VotingScreen({ players, round, totalRounds, votesByPlayerId, setVotesBy
               <p className="text-white/70 mt-2">
                 {onlineMode
                   ? 'Vote from your own device. Pick one suspect and submit.'
-                  : <>Pass the phone to <span className="font-semibold text-cyan-300">{leader?.name}</span>. </>}
+                  : activeLocalVoter
+                    ? <>Pass the phone to <span className="font-semibold text-cyan-300">{activeLocalVoter.name}</span>. </>
+                    : <>All votes are in. Get ready to reveal the results. </>}
                 {line}
               </p>
               <p className="text-cyan-200 mt-2 font-semibold">{voteInstruction}</p>
@@ -2792,19 +2801,40 @@ function VotingScreen({ players, round, totalRounds, votesByPlayerId, setVotesBy
                 </div>
               </GlassPanel>
             ))}
+            {!onlineMode && !activeLocalVoter && (
+              <GlassPanel className="rounded-[1.75rem] p-5 border-emerald-300/25 bg-emerald-500/10">
+                <div className="text-sm uppercase tracking-[0.2em] text-emerald-200">All votes submitted</div>
+                <div className="mt-2 text-xl font-black text-yellow-200">Reveal the results when ready.</div>
+              </GlassPanel>
+            )}
+            {onlineMode && !votersToRender.length && (
+              <GlassPanel className="rounded-[1.75rem] p-5 border-cyan-300/25 bg-cyan-500/10">
+                <div className="text-sm uppercase tracking-[0.2em] text-cyan-200">Other players are voting</div>
+                <div className="mt-2 text-base text-white/85">Please wait for your turn to submit your vote.</div>
+              </GlassPanel>
+            )}
           </div>
 
           <div className="mt-8 flex justify-end">
-            <Button
-              className="rounded-[1.5rem] h-14 px-8 bg-yellow-300 text-zinc-950 border-2 border-white"
-              disabled={!allComplete || submitPending}
-              onClick={onSubmitVotes}
-            >
-              <Vote className="mr-2 h-5 w-5 inline" />
-              {submitPending
-                ? (onlineMode ? 'Submitting vote...' : 'Submitting votes...')
-                : (onlineMode ? 'Submit my vote' : 'Reveal results')}
-            </Button>
+            {onlineMode ? (
+              <Button
+                className="rounded-[1.5rem] h-14 px-8 bg-yellow-300 text-zinc-950 border-2 border-white"
+                disabled={!canSubmitOnlineVote || submitPending}
+                onClick={onSubmitVotes}
+              >
+                <Vote className="mr-2 h-5 w-5 inline" />
+                {submitPending ? 'Submitting vote...' : 'Submit my vote'}
+              </Button>
+            ) : (
+              <Button
+                className="rounded-[1.5rem] h-14 px-8 bg-yellow-300 text-zinc-950 border-2 border-white"
+                disabled={!canRevealResults || submitPending}
+                onClick={onSubmitVotes}
+              >
+                <Vote className="mr-2 h-5 w-5 inline" />
+                Reveal results
+              </Button>
+            )}
           </div>
         </GlassPanel>
       </div>
@@ -4361,7 +4391,7 @@ export default function App() {
             <div className="text-xs uppercase tracking-[0.3em] text-white/50">Round owner: {players[currentRoundOwnerIndex]?.name}</div>
             <h2 className="mt-3 text-4xl font-black text-yellow-300">Choose round type</h2>
             <p className="mt-3 text-white/70">Pick one of two options. Previous round type is excluded.</p>
-            <div className="mt-8 grid gap-4 sm:grid-cols-2">
+            <div className="mt-8 grid grid-cols-2 gap-4">
               {roundTypeOptions.map((type, index) => {
                 const centeredOnSm = roundTypeOptions.length % 2 === 1 && index === roundTypeOptions.length - 1;
                 return (
@@ -4398,15 +4428,14 @@ export default function App() {
             <div className="text-xs uppercase tracking-[0.3em] text-white/50">Round owner: {players[currentRoundOwnerIndex]?.name}</div>
             <h2 className="mt-3 text-4xl font-black text-yellow-300">Choose the next category</h2>
             <p className="mt-3 text-white/70">{copyState.chooser}</p>
-            <div className="mt-8 grid gap-4 sm:grid-cols-2">
-              {categoryOptions.map((category, index) => {
+            <div className="mt-8 grid grid-cols-2 gap-4 items-stretch">
+              {categoryOptions.map((category) => {
                 const categoryCardArtSrc = resolveCategoryChoiceCardArt(category, canonicalThemeName);
-                const centeredOnSm = categoryOptions.length % 2 === 1 && index === categoryOptions.length - 1;
                 return (
-                  <div key={category.id} className={centeredOnSm ? 'sm:col-span-2 sm:flex sm:justify-center' : ''}>
+                  <div key={category.id} className="flex">
                     <button
                       type="button"
-                      className={`w-full rounded-[1.8rem] border border-white/20 bg-black/20 p-4 text-center transition-transform duration-200 hover:scale-[1.01] hover:border-cyan-300/40 ${centeredOnSm ? 'sm:max-w-[20rem]' : ''}`}
+                      className="flex h-full w-full flex-col rounded-[1.8rem] border border-white/20 bg-black/20 p-4 text-center transition-transform duration-200 hover:scale-[1.01] hover:border-cyan-300/40"
                       onClick={() => chooseCategory(category.id)}
                     >
                       <ThemeArt
