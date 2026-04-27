@@ -62,6 +62,7 @@ import {
 } from './online/lobbyTransport';
 
 const LOGO_SRC = '/assets/images/logo.png';
+const LOGO_18PLUS_SRC = '/assets/images/logo-18plus.png';
 const FLAME_SRC = '/assets/images/flame-placeholder.svg';
 const HEARTBEAT_SFX_SRC = '/assets/sfx/heartbeat.mp3';
 const FIRE_CRACKLE_SFX_SRC = '/assets/sfx/fire-crackle.wav';
@@ -1373,6 +1374,7 @@ function RulesSplashScreen({ mode, onContinue, theme, isOnlineMode = false }) {
   );
 }
 function HomeScreen({ onNavigate, homeLine, adultMode }) {
+  const logoSrc = adultMode ? LOGO_18PLUS_SRC : LOGO_SRC;
   return (
     <TopFrame theme="Default" allowScroll={false}>
       <div className="relative h-[calc(100dvh-2rem)] px-2 flex items-center justify-center overflow-hidden">
@@ -1388,7 +1390,7 @@ function HomeScreen({ onNavigate, homeLine, adultMode }) {
           <div className="relative px-2 pt-0.5">
             <img src={FLAME_SRC} alt="" aria-hidden="true" className="pointer-events-none absolute top-3 left-5 h-12 w-12 opacity-85 [animation:home-flame-float_2.1s_ease-in-out_infinite] drop-shadow-[0_0_12px_rgba(255,98,0,0.95)]" />
             <img src={FLAME_SRC} alt="" aria-hidden="true" className="pointer-events-none absolute top-8 right-6 h-12 w-12 opacity-85 [animation:home-flame-float_2.45s_ease-in-out_0.2s_infinite] drop-shadow-[0_0_12px_rgba(255,98,0,0.95)]" />
-            <img src={LOGO_SRC} alt="Pants On Fire logo" className="mx-auto w-full max-w-xl object-contain drop-shadow-[0_10px_30px_rgba(0,0,0,0.7)]" />
+            <img src={logoSrc} alt="Pants On Fire logo" className="mx-auto w-full max-w-xl object-contain drop-shadow-[0_10px_30px_rgba(0,0,0,0.7)]" />
             {adultMode && (
               <div className="mt-1 flex items-center justify-center gap-2 text-[0.7rem] sm:text-xs uppercase tracking-[0.2em] text-red-100">
                 <img src={UI_ICON_BADGE_18_PLUS_SRC} alt="" aria-hidden="true" className="h-5 w-5 object-contain" />
@@ -1586,7 +1588,6 @@ function SetupScreen(props) {
   const setupThemeButtonClass = setupThemeMeta.setupThemeButtonClass || THEME_META.Default.setupThemeButtonClass || 'border-cyan-400/30 bg-cyan-500/15 text-cyan-100';
   const setupPlayerIconClass = setupThemeMeta.setupPlayerIconClass || THEME_META.Default.setupPlayerIconClass || 'text-cyan-300';
   const setupRulesIconClass = setupThemeMeta.setupRulesIconClass || THEME_META.Default.setupRulesIconClass || 'text-yellow-300';
-  const setupPlayerColorOptions = getThemePlayerColorOptions(nameTheme);
   useEffect(() => {
     if (!hasThemePersonas && personaOnlyMode) setPersonaOnlyMode(false);
   }, [hasThemePersonas, personaOnlyMode, setPersonaOnlyMode]);
@@ -1771,26 +1772,6 @@ function SetupScreen(props) {
                       </div>
                     </div>
                   )}
-                  <div className="mt-3 flex items-center justify-between gap-3">
-                    <div className="text-xs uppercase tracking-[0.16em] text-white/55">Player color</div>
-                    <div className="flex flex-wrap items-center justify-end gap-2">
-                      {setupPlayerColorOptions.map((color) => {
-                        const selected = normalizePlayerColor(player.color, index, nameTheme) === color;
-                        return (
-                          <button
-                            key={`${player.id}-${color}`}
-                            type="button"
-                            className={`h-7 w-7 rounded-full border-2 transition-transform ${selected ? 'scale-110 border-white' : 'border-white/25'}`}
-                            style={{ backgroundColor: color }}
-                            onClick={() => setPlayers((currentPlayers) => currentPlayers.map((item, itemIndex) => (
-                              item.id === player.id ? { ...item, color: normalizePlayerColor(color, itemIndex, nameTheme) } : item
-                            )))}
-                            aria-label={`Set ${player.name || `Player ${index + 1}`} color`}
-                          />
-                        );
-                      })}
-                    </div>
-                  </div>
                 </div>
               ))}
             </div>
@@ -2177,12 +2158,12 @@ function RevealScreen({ players, currentRevealIndex, round, totalRounds, onNext,
                       className={`font-black ${isImposter ? 'text-yellow-300' : 'text-white'}`}
                       style={{
                         fontSize: `${promptFontSize}px`,
-                        wordBreak: 'break-word',
-                        overflowWrap: 'anywhere',
+                        wordBreak: 'normal',
+                        overflowWrap: 'normal',
                         whiteSpace: 'normal',
-                        hyphens: 'auto',
-                        WebkitHyphens: 'auto',
-                        lineHeight: 1.08,
+                        hyphens: 'manual',
+                        WebkitHyphens: 'manual',
+                        lineHeight: 1.1,
                       }}
                     >
                       {prompt}
