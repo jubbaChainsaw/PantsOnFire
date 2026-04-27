@@ -20,6 +20,8 @@ import { ComicBooksMangaPromptRoundData } from './comic-books-manga/promptRoundD
 import { HistoricalFiguresPromptRoundData } from './historical-figures/promptRoundData';
 import { ArtPromptRoundData } from './art/promptRoundData';
 import { BooksPromptRoundData } from './books/promptRoundData';
+import { NerdCulturePromptRoundData } from './nerd-culture/promptRoundData';
+import { ToysPromptRoundData } from './toys/promptRoundData';
 
 const InternetSlangPromptRoundData = {
   id: 'internet-slang',
@@ -295,6 +297,8 @@ export const CATEGORY_PROMPT_PACKS = [
   HistoricalFiguresPromptRoundData,
   ArtPromptRoundData,
   BooksPromptRoundData,
+  NerdCulturePromptRoundData,
+  ToysPromptRoundData,
   HobbiesPromptRoundData,
   BrandsPromptRoundData,
   SciencePromptRoundData,

@@ -151,6 +151,18 @@ export const CATEGORY_GUESSABLE_ENTITY_POOLS = {
     adultMain: ['Book club night', 'Author signing event', 'Library reading room', 'Poetry open mic', 'Fantasy novel launch'],
     adultImposter: ['Film adaptation screening', 'Comic reading circle', 'Writers workshop event', 'Storytelling cafe night', 'Literary festival panel'],
   },
+  'nerd-culture': {
+    regularMain: ['Comic-Con', 'Dungeons & Dragons', 'Magic: The Gathering', 'Pokémon cards', 'Star Wars', 'Marvel Cinematic Universe', 'PC gaming rig', 'Retro arcade', 'Anime convention', 'Board game café'],
+    regularImposter: ['Gamescom', 'Pathfinder', 'Yu-Gi-Oh! cards', 'Baseball cards', 'Star Trek', 'DC Extended Universe', 'Console gaming setup', 'Pinball hall', 'Manga expo', 'Tabletop club'],
+    adultMain: ['Midnight game launch queue', 'LAN party night', 'Collector figure swap', 'Cosplay afterparty', 'Trivia pub quiz'],
+    adultImposter: ['Esports watch party', 'Comic shop release night', 'Card draft event', 'Retro game tournament', 'Late-night modding meetup'],
+  },
+  toys: {
+    regularMain: ['LEGO set', 'Play-Doh', 'Hot Wheels', 'Barbie', 'Action figure', 'Rubik\'s Cube', 'Nerf blaster', 'Remote-control car', 'Stuffed teddy bear', 'Toy train set'],
+    regularImposter: ['Mega Bloks set', 'Kinetic sand', 'Matchbox cars', 'Bratz doll', 'Collectible figurine', 'Puzzle cube', 'Water blaster', 'Mini drone', 'Plush rabbit', 'Slot car set'],
+    adultMain: ['Toy collector fair', 'Vintage toy auction', 'Model kit hobby table', 'Retro toy store night', 'Arcade prize counter'],
+    adultImposter: ['Comic collector market', 'Memorabilia swap meet', 'Board game trade night', 'Pop culture flea market', 'Collector convention booth'],
+  },
 };
 
 function toEntityPrompt(hintPrefix, main, imposter, index, adultOnly = false) {
