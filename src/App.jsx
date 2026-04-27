@@ -959,6 +959,40 @@ function ThemeArt({ src, alt, className = '' }) {
     />
   );
 }
+function ThemeHostVisual({
+  themeName = 'Default',
+  isTalking = false,
+  alt = '',
+  className = '',
+}) {
+  const hostAssets = useMemo(() => getThemeHostAssets(themeName), [themeName]);
+  const animatedHostSrc = useTalkingAnimation({ enabled: isTalking, themeName });
+  const talkingVideoSrc = hostAssets?.talkingVideo || '';
+  const [videoBroken, setVideoBroken] = useState(false);
+
+  useEffect(() => {
+    setVideoBroken(false);
+  }, [talkingVideoSrc, themeName]);
+
+  if (talkingVideoSrc && !videoBroken) {
+    return (
+      <video
+        key={`${themeName}-${isTalking ? 'talking' : 'idle'}`}
+        src={talkingVideoSrc}
+        className={className}
+        autoPlay={isTalking}
+        loop={isTalking}
+        muted
+        playsInline
+        preload="metadata"
+        poster={animatedHostSrc || undefined}
+        onError={() => setVideoBroken(true)}
+      />
+    );
+  }
+
+  return <ThemeArt src={animatedHostSrc} alt={alt} className={className} />;
+}
 function RoundTypeLogo({ src, alt, className = '' }) {
   if (!src) return null;
   return <img src={src} alt={alt} className={className} onError={(event) => { event.currentTarget.style.display = 'none'; }} />;
@@ -1035,7 +1069,7 @@ function getThemeHostFrameSources(themeName = 'Default', state = 'idle') {
   const talkingFrames = Array.isArray(hostAssets?.talkingFrames)
     ? hostAssets.talkingFrames.filter(Boolean)
     : [];
-  if (state !== 'talking') return [idleFrame].filter(Boolean);
+  if (state !== 'talking') return [idleFrame || talkingFrames[0]].filter(Boolean);
   if (!talkingFrames.length) return [idleFrame].filter(Boolean);
   return talkingFrames;
 }
@@ -1126,7 +1160,6 @@ function GameIntroScreen({ theme, onContinue, isOnlineMode = false, totalRounds 
   const introSpeechBubbleRef = useRef(null);
   const [introLineFontSize, setIntroLineFontSize] = useState(30);
   const isTalking = lineIndex < introLines.length - 1;
-  const animatedHostSrc = useTalkingAnimation({ enabled: isTalking, themeName: theme });
   useEffect(() => {
     setLineIndex(0);
   }, [theme, isOnlineMode]);
@@ -1161,8 +1194,9 @@ function GameIntroScreen({ theme, onContinue, isOnlineMode = false, totalRounds 
             </p>
           </div>
           <div className="relative mx-auto mt-6 w-full max-w-3xl min-h-[240px] sm:min-h-[300px]">
-            <ThemeArt
-              src={animatedHostSrc}
+            <ThemeHostVisual
+              themeName={theme}
+              isTalking={isTalking}
               alt={`${theme} host ${themedHostPersona.name}`}
               className={`pointer-events-none absolute bottom-0 left-0 ${hostSizeConfig.intro}`}
             />
@@ -1388,7 +1422,6 @@ function HostIntroScreen({ round, stingerLine, onContinue, theme }) {
   const [speechBubbleFontSize, setSpeechBubbleFontSize] = useState(28);
   const canContinue = speechIndex >= speechSentences.length - 1;
   const isTalking = speechIndex < speechSentences.length - 1;
-  const animatedHostSrc = useTalkingAnimation({ enabled: isTalking, themeName: theme });
   const introLine = round.roundTypeId === 'grill'
     ? `${themedHostPersona.name} is live. Mic up and question the AI.`
     : `${themedHostPersona.name} is in the building. Let the chaos begin.`;
@@ -1449,8 +1482,9 @@ function HostIntroScreen({ round, stingerLine, onContinue, theme }) {
             </div>
           </div>
           <div className="relative mx-auto mt-2 w-full max-w-2xl h-[11.5rem] sm:h-[12.5rem]">
-            <ThemeArt
-              src={animatedHostSrc}
+            <ThemeHostVisual
+              themeName={theme}
+              isTalking={isTalking}
               alt={`${theme} presenter`}
               className={`pointer-events-none absolute bottom-0 left-0 ${hostSizeConfig.hostIntro}`}
             />
@@ -3120,7 +3154,6 @@ function LiarRevealScreen({ players, round, onComplete, theme, playSfx = () => {
     'Hearts pounding. Friendships wobbling. Truth incoming.',
   ];
   const isTalking = announcementIndex < announcementLines.length - 1;
-  const animatedHostSrc = useTalkingAnimation({ enabled: isTalking, themeName: theme });
   const finishReveal = useCallback(() => {
     if (hasCompletedRef.current) return;
     hasCompletedRef.current = true;
@@ -3174,8 +3207,9 @@ function LiarRevealScreen({ players, round, onComplete, theme, playSfx = () => {
           <div className="relative z-10">
             <div className="text-xs uppercase tracking-[0.35em] text-white/50">Final accusation</div>
             <div className="relative mx-auto mt-4 w-full max-w-3xl min-h-[230px] sm:min-h-[280px]">
-              <ThemeArt
-                src={animatedHostSrc}
+              <ThemeHostVisual
+                themeName={theme}
+                isTalking={isTalking}
                 alt={`${theme} presenter`}
                 className={`pointer-events-none absolute bottom-0 left-0 ${hostSizeConfig.liarReveal}`}
               />
