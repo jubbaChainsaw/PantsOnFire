@@ -16,7 +16,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Switch } from './components/ui/switch';
 import { PASS_THE_PHONE_ROUND_TYPES, ROUND_TYPES } from './data/roundTypes';
 import { THEME_META } from './data/themes';
-import { getThemeAssets, ROUND_TYPE_CARD_FRONT_BY_ID } from './data/themeAssets';
+import { getThemeAssets, getThemeHostAssets, ROUND_TYPE_CARD_FRONT_BY_ID } from './data/themeAssets';
 import { NAME_POOLS, randomNameFromTheme } from './data/names';
 import { toCanonicalThemeName } from './data/themeAliases';
 import { getThemePersonas, pickRandomThemePersona } from './data/themePersonas';
@@ -120,15 +120,21 @@ function getHostSizeConfig(themeName = 'Default') {
   const canonicalThemeName = toCanonicalThemeName(themeName);
   const map = {
     'Ghosts and Ghouls': {
-      intro: 'w-44 sm:w-60 md:w-72',
-      hostIntro: 'w-44 sm:w-56',
-      liarReveal: 'w-44 sm:w-56',
+      intro: 'w-52 sm:w-72 md:w-80',
+      hostIntro: 'w-50 sm:w-68 md:w-76',
+      liarReveal: 'w-52 sm:w-72 md:w-80',
+      introBubbleMargin: 'ml-[7.5rem] sm:ml-[12.5rem] md:ml-[15.5rem]',
+      hostIntroBubbleMargin: 'ml-[7rem] sm:ml-[11.5rem] md:ml-[14rem]',
+      liarBubbleMargin: 'ml-[8rem] sm:ml-[13rem] md:ml-[15rem]',
     },
   };
   return map[canonicalThemeName] || {
     intro: 'w-32 sm:w-44 md:w-52',
-    hostIntro: 'w-32 sm:w-42',
-    liarReveal: 'w-34 sm:w-46',
+    hostIntro: 'w-32 sm:w-44 md:w-50',
+    liarReveal: 'w-34 sm:w-48 md:w-54',
+    introBubbleMargin: 'ml-[5.5rem] sm:ml-[9.5rem] md:ml-[12rem]',
+    hostIntroBubbleMargin: 'ml-[5.25rem] sm:ml-[8.75rem] md:ml-[10.75rem]',
+    liarBubbleMargin: 'ml-[6rem] sm:ml-[10.5rem] md:ml-[12.5rem]',
   };
 }
 function getPlayerInitials(name = 'P') {
@@ -855,17 +861,17 @@ function BoxerToggle({ checked = false, onCheckedChange = () => {}, disabled = f
   );
 }
 function ThemeArt({ src, alt, className = '' }) {
-  const [resolvedSrc, setResolvedSrc] = useState(src || '');
+  const [isBroken, setIsBroken] = useState(false);
   useEffect(() => {
-    setResolvedSrc(src || '');
+    setIsBroken(false);
   }, [src]);
-  if (!resolvedSrc) return null;
+  if (!src || isBroken) return null;
   return (
     <img
-      src={resolvedSrc}
+      src={src}
       alt={alt}
       className={className}
-      onError={() => setResolvedSrc('')}
+      onError={() => setIsBroken(true)}
     />
   );
 }
@@ -908,24 +914,11 @@ function ThemeIconStrip({ src, alt }) {
   );
 }
 function getThemeHostFrameSources(themeName = 'Default', state = 'idle') {
-  const assets = getThemeAssets(themeName);
-  const defaultAssets = getThemeAssets('Default');
-  const idleFrame =
-    assets.personaHostIdle
-    || assets.hostIdle
-    || assets.characterCard
-    || defaultAssets.personaHostIdle
-    || defaultAssets.hostIdle
-    || defaultAssets.characterCard
-    || '';
-  const talkingFrames = [
-    assets.personaHostTalk1 || defaultAssets.personaHostTalk1,
-    assets.personaHostTalk2 || defaultAssets.personaHostTalk2,
-    assets.personaHostTalk3 || defaultAssets.personaHostTalk3,
-    assets.hostTalk1 || defaultAssets.hostTalk1,
-    assets.hostTalk2 || defaultAssets.hostTalk2,
-    assets.hostTalk3 || defaultAssets.hostTalk3,
-  ].filter(Boolean);
+  const hostAssets = getThemeHostAssets(themeName);
+  const idleFrame = hostAssets?.idle || '';
+  const talkingFrames = Array.isArray(hostAssets?.talkingFrames)
+    ? hostAssets.talkingFrames.filter(Boolean)
+    : [];
   if (state !== 'talking') return [idleFrame].filter(Boolean);
   if (!talkingFrames.length) return [idleFrame].filter(Boolean);
   return talkingFrames;
@@ -963,6 +956,7 @@ const HOST_DIALOGUE_TIMINGS = {
   liarRevealCompleteMs: 6000,
 };
 function GameIntroScreen({ theme, onContinue, isOnlineMode = false, totalRounds = 1, playerCount = 0 }) {
+  const hostSizeConfig = useMemo(() => getHostSizeConfig(theme), [theme]);
   const themedHostPersona = useMemo(
     () => getThemeHostPersona(theme),
     [theme]
@@ -1017,14 +1011,14 @@ function GameIntroScreen({ theme, onContinue, isOnlineMode = false, totalRounds 
             <ThemeArt
               src={animatedHostSrc}
               alt={`${theme} host ${themedHostPersona.name}`}
-              className="pointer-events-none absolute bottom-0 left-0 w-28 sm:w-40 md:w-48"
+              className={`pointer-events-none absolute bottom-0 left-0 ${hostSizeConfig.intro}`}
             />
             <motion.div
               key={`intro-line-${lineIndex}`}
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.25, ease: 'easeOut' }}
-              className="ml-[5.5rem] sm:ml-[9.5rem] md:ml-[12rem] h-[10.75rem] sm:h-[11.75rem] pt-2 text-white"
+              className={`${hostSizeConfig.introBubbleMargin} h-[10.75rem] sm:h-[11.75rem] pt-2 text-white`}
             >
               <div className="relative mx-auto flex h-full max-w-2xl items-center justify-center rounded-[2rem] border-2 border-cyan-200/80 bg-[#1d2376] px-4 py-4 text-center shadow-[0_12px_24px_rgba(0,0,0,0.35)]">
                 <div className="absolute -left-3 top-[55%] h-6 w-6 -translate-y-1/2 rotate-45 border-b-2 border-l-2 border-cyan-200/80 bg-[#1d2376]" />
@@ -1042,7 +1036,7 @@ function GameIntroScreen({ theme, onContinue, isOnlineMode = false, totalRounds 
               </Button>
             )}
             <Button
-              className="h-14 rounded-[1.5rem] border-2 border-white bg-yellow-300 px-8 text-zinc-950"
+              className="h-14 min-w-[16rem] rounded-[1.5rem] border-2 border-white bg-yellow-300 px-8 text-zinc-950"
               onClick={onContinue}
               disabled={!canContinue}
             >
@@ -1200,6 +1194,7 @@ function resolveCategoryChoiceCardArt(category, themeName = 'Default') {
   );
 }
 function HostIntroScreen({ round, stingerLine, onContinue, theme }) {
+  const hostSizeConfig = useMemo(() => getHostSizeConfig(theme), [theme]);
   const themedHostPersona = useMemo(
     () => getThemeHostPersona(theme),
     [theme]
@@ -1279,14 +1274,14 @@ function HostIntroScreen({ round, stingerLine, onContinue, theme }) {
             <ThemeArt
               src={animatedHostSrc}
               alt={`${theme} presenter`}
-              className="pointer-events-none absolute bottom-0 left-0 w-28 sm:w-36"
+              className={`pointer-events-none absolute bottom-0 left-0 ${hostSizeConfig.hostIntro}`}
             />
             <motion.div
               key={`${round.id || round.roundNumber}-${speechIndex}`}
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.28, ease: 'easeOut' }}
-              className="ml-[5.25rem] sm:ml-[8.75rem] h-full p-1 text-white"
+              className={`${hostSizeConfig.hostIntroBubbleMargin} h-full p-1 text-white`}
             >
               <div className="relative mx-auto flex h-full max-w-xl items-center justify-center rounded-[2rem] border-2 border-cyan-200/80 bg-[#1d2376] px-4 py-4 shadow-[0_12px_24px_rgba(0,0,0,0.35)]">
                 <div className="absolute -left-3 top-[58%] h-6 w-6 -translate-y-1/2 rotate-45 border-b-2 border-l-2 border-cyan-200/80 bg-[#1d2376]" />
@@ -1310,7 +1305,7 @@ function HostIntroScreen({ round, stingerLine, onContinue, theme }) {
               </Button>
             )}
             <Button
-              className="h-14 rounded-[1.5rem] border-2 border-white bg-yellow-300 px-8 text-zinc-950"
+              className="h-14 min-w-[16rem] rounded-[1.5rem] border-2 border-white bg-yellow-300 px-8 text-zinc-950"
               onClick={onContinue}
               disabled={!canContinue}
             >
@@ -2646,7 +2641,7 @@ function GrillEmScreen({ players, round, totalRounds, onContinue, theme }) {
             ))}
           </div>
 
-          <div className="mt-6 flex justify-end">
+          <div className="mt-6 flex justify-center">
             <Button
               className="rounded-[1.5rem] h-14 px-8 bg-yellow-300 text-zinc-950 border-2 border-white"
               onClick={() => onContinue({
@@ -2707,7 +2702,7 @@ function VoicePartyStatusStrip({ onlineVoiceEnabled, onlineVoiceMuted, setOnline
 
 function DiscussionScreen({ players, round, totalRounds, onContinue, line, theme, onlineVoiceEnabled = false, onlineVoiceMuted = false, setOnlineVoiceMuted = () => {}, canTalk = true, submitPending = false }) {
   const roundRule = getRoundRuleText(round.roundTypeId);
-  return <TopFrame theme={theme}><div className="mx-auto max-w-3xl space-y-6"><ScoreStrip players={players} roundNumber={round.roundNumber} totalRounds={totalRounds} themeName={theme} /><VoicePartyStatusStrip onlineVoiceEnabled={onlineVoiceEnabled} onlineVoiceMuted={onlineVoiceMuted} setOnlineVoiceMuted={setOnlineVoiceMuted} canTalk={canTalk} /><GlassPanel className="rounded-[2.5rem] p-8 text-center border-emerald-400/20 bg-black/25"><Badge className="rounded-full bg-emerald-500/20 border border-emerald-400/20 text-emerald-100 px-4 py-1.5">All prompts delivered</Badge><div className="text-xs uppercase tracking-[0.3em] text-white/50 mt-4">{round.roundTypeName}</div><h2 className="text-4xl font-black mt-3 text-yellow-300">{round.roundTypeTagline}</h2><p className="text-white/75 mt-3 max-w-2xl mx-auto">{line}</p><p className="text-cyan-200 mt-3 max-w-2xl mx-auto font-semibold">{roundRule}</p><Button className="rounded-[1.5rem] h-16 px-8 mt-8 bg-yellow-300 text-zinc-950 border-2 border-white" onClick={onContinue} disabled={submitPending}><SkipForward className="mr-2 h-5 w-5 inline" />{submitPending ? 'Syncing...' : 'Finish discussion and vote'}</Button></GlassPanel></div></TopFrame>;
+  return <TopFrame theme={theme}><div className="mx-auto max-w-3xl space-y-6"><ScoreStrip players={players} roundNumber={round.roundNumber} totalRounds={totalRounds} themeName={theme} /><VoicePartyStatusStrip onlineVoiceEnabled={onlineVoiceEnabled} onlineVoiceMuted={onlineVoiceMuted} setOnlineVoiceMuted={setOnlineVoiceMuted} canTalk={canTalk} /><GlassPanel className="rounded-[2.5rem] p-8 text-center border-emerald-400/20 bg-black/25"><Badge className="rounded-full bg-emerald-500/20 border border-emerald-400/20 text-emerald-100 px-4 py-1.5">All prompts delivered</Badge><div className="text-xs uppercase tracking-[0.3em] text-white/50 mt-4">{round.roundTypeName}</div><h2 className="text-4xl font-black mt-3 text-yellow-300">{round.roundTypeTagline}</h2><p className="text-white/75 mt-3 max-w-2xl mx-auto">{line}</p><p className="text-cyan-200 mt-3 max-w-2xl mx-auto font-semibold">{roundRule}</p><div className="mt-8 flex justify-center"><Button className="rounded-[1.5rem] h-16 min-w-[16rem] px-8 bg-yellow-300 text-zinc-950 border-2 border-white" onClick={onContinue} disabled={submitPending}><SkipForward className="mr-2 h-5 w-5 inline" />{submitPending ? 'Syncing...' : 'Finish discussion and vote'}</Button></div></GlassPanel></div></TopFrame>;
 }
 function VotingScreen({ players, round, totalRounds, votesByPlayerId, setVotesByPlayerId, onSubmitVotes, line, theme, onlineMode = false, onlinePlayerId = '', onlineVoiceEnabled = false, onlineVoiceMuted = false, setOnlineVoiceMuted = () => {}, canTalk = true, submitPending = false }) {
   const leader = players.find((p) => p.id === round.leaderId);
@@ -2815,7 +2810,7 @@ function VotingScreen({ players, round, totalRounds, votesByPlayerId, setVotesBy
             )}
           </div>
 
-          <div className="mt-8 flex justify-end">
+          <div className="mt-8 flex justify-center">
             {onlineMode ? (
               <Button
                 className="rounded-[1.5rem] h-14 px-8 bg-yellow-300 text-zinc-950 border-2 border-white"
@@ -2843,6 +2838,7 @@ function VotingScreen({ players, round, totalRounds, votesByPlayerId, setVotesBy
 }
 function LiarRevealScreen({ players, round, onComplete, theme }) {
   const liars = players.filter((p) => (round.imposterIds || []).includes(p.id));
+  const hostSizeConfig = getHostSizeConfig(theme);
   const audioRef = useRef(null);
   const hasCompletedRef = useRef(false);
   const [announcementIndex, setAnnouncementIndex] = useState(0);
@@ -2903,14 +2899,14 @@ function LiarRevealScreen({ players, round, onComplete, theme }) {
               <ThemeArt
                 src={animatedHostSrc}
                 alt={`${theme} presenter`}
-                className="pointer-events-none absolute bottom-0 left-0 w-32 sm:w-44"
+                className={`pointer-events-none absolute bottom-0 left-0 ${hostSizeConfig.liarReveal}`}
               />
               <motion.div
                 key={`liar-announce-${announcementIndex}`}
                 initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3, ease: 'easeOut' }}
-                className="ml-[6rem] sm:ml-[10.5rem] h-[11rem] sm:h-[12rem] p-1 text-white"
+                className={`${hostSizeConfig.liarBubbleMargin} h-[11rem] sm:h-[12rem] p-1 text-white`}
               >
                 <div className="relative mx-auto flex h-full max-w-2xl flex-col items-center justify-center rounded-[2rem] border-2 border-red-300/70 bg-[#2a0f2e] px-4 py-4 shadow-[0_12px_24px_rgba(0,0,0,0.42)]">
                   <div className="absolute -left-3 top-[58%] h-6 w-6 -translate-y-1/2 rotate-45 border-b-2 border-l-2 border-red-300/70 bg-[#2a0f2e]" />
@@ -4391,14 +4387,14 @@ export default function App() {
             <div className="text-xs uppercase tracking-[0.3em] text-white/50">Round owner: {players[currentRoundOwnerIndex]?.name}</div>
             <h2 className="mt-3 text-4xl font-black text-yellow-300">Choose round type</h2>
             <p className="mt-3 text-white/70">Pick one of two options. Previous round type is excluded.</p>
-            <div className="mt-8 grid grid-cols-2 gap-4">
+            <div className="mt-8 grid grid-cols-2 gap-4 items-stretch">
               {roundTypeOptions.map((type, index) => {
                 const centeredOnSm = roundTypeOptions.length % 2 === 1 && index === roundTypeOptions.length - 1;
                 return (
                   <div key={type.id} className={centeredOnSm ? 'sm:col-span-2 sm:flex sm:justify-center' : ''}>
                     <button
                       type="button"
-                      className={`w-full rounded-[1.8rem] border border-white/20 bg-black/20 p-4 text-center transition-transform duration-200 hover:scale-[1.01] hover:border-cyan-300/40 ${centeredOnSm ? 'sm:max-w-[20rem]' : ''}`}
+                      className={`h-full min-h-[20rem] w-full rounded-[1.8rem] border border-white/20 bg-black/20 p-4 text-center transition-transform duration-200 hover:scale-[1.01] hover:border-cyan-300/40 ${centeredOnSm ? 'sm:max-w-[20rem]' : ''}`}
                       onClick={() => {
                         setSelectedRoundType(type.id);
                         setScreen('category-choice');
@@ -4409,7 +4405,7 @@ export default function App() {
                         alt={`${type.name} round card back`}
                         className="mx-auto h-40 w-auto rounded-[1.2rem] border border-white/20 bg-black/25 p-1"
                       />
-                      <div className="mt-4 text-2xl font-black uppercase tracking-[0.06em] text-white">
+                      <div className="mt-4 text-xl sm:text-2xl font-black uppercase tracking-[0.05em] text-white leading-tight min-h-[3.2rem] flex items-center justify-center">
                         {type.name}
                       </div>
                     </button>
@@ -4443,7 +4439,7 @@ export default function App() {
                         alt={`${category.name} category card`}
                         className="mx-auto h-40 w-auto rounded-[1.2rem] border border-white/20 bg-black/25 p-1"
                       />
-                      <div className="mt-4 text-2xl font-black uppercase tracking-[0.06em] text-white">
+                      <div className="mt-4 text-lg sm:text-xl font-black uppercase tracking-[0.04em] text-white leading-tight min-h-[2.6rem] flex items-center justify-center">
                         {category.name}
                       </div>
                     </button>
