@@ -65,6 +65,14 @@ const LOGO_SRC = '/assets/images/logo.png';
 const FLAME_SRC = '/assets/images/flame-placeholder.svg';
 const HEARTBEAT_SFX_SRC = '/assets/sfx/heartbeat.mp3';
 const FIRE_CRACKLE_SFX_SRC = '/assets/sfx/fire-crackle.wav';
+const UI_ICON_BOXERS_RED_SRC = '/assets/images/ui-icons/boxers-red.png';
+const UI_ICON_BOXERS_GREEN_SRC = '/assets/images/ui-icons/boxers-green.png';
+const UI_ICON_FLAME_RED_SRC = '/assets/images/ui-icons/flame-red.png';
+const UI_ICON_FLAME_GREEN_SRC = '/assets/images/ui-icons/flame-green.png';
+const UI_ICON_CROWN_GOLD_SRC = '/assets/images/ui-icons/crown-gold.png';
+const UI_ICON_BADGE_18_PLUS_SRC = '/assets/images/ui-icons/badge-18-plus.png';
+const UI_ICON_BADGE_LIAR_SRC = '/assets/images/ui-icons/badge-liar.png';
+const UI_ICON_MAGNIFIER_FIRE_SRC = '/assets/images/ui-icons/magnifier-fire.png';
 const MIN_PLAYERS = 3;
 const MAX_PLAYERS = 12;
 const ONLINE_VOICE_ACTIVE_SCREENS = new Set(['discussion', 'grill', 'round-type-choice', 'category-choice', 'results']);
@@ -759,7 +767,14 @@ function PersonaScorePill({ player, fallbackIndex = 0, isLeader = false, themeNa
         themeName={themeName}
       />
       <div className="text-sm font-black text-white">{score}</div>
-      {isLeader && <div className="text-[0.65rem]">👑</div>}
+      {isLeader && (
+        <img
+          src={UI_ICON_CROWN_GOLD_SRC}
+          alt=""
+          aria-hidden="true"
+          className="h-4 w-4 object-contain"
+        />
+      )}
     </div>
   );
 }
@@ -770,13 +785,23 @@ function CustomFireScoreIcon({ player, fallbackIndex = 0, isLeader = false, them
     <div className="flex min-w-[2.8rem] items-center justify-center">
       <div className={`relative h-11 w-11 rounded-full border border-white/30 ${isLeader ? 'drop-shadow-[0_0_10px_rgba(250,204,21,0.55)]' : ''}`} style={{ backgroundColor: color }}>
         <div className="absolute inset-0 flex items-center justify-center">
-          <Flame className="h-6 w-6 text-white/80" />
+          <img
+            src={color.toLowerCase().includes('22c55e') || color.toLowerCase().includes('16a34a') ? UI_ICON_FLAME_GREEN_SRC : UI_ICON_FLAME_RED_SRC}
+            alt=""
+            aria-hidden="true"
+            className="h-6 w-6 object-contain opacity-90"
+          />
         </div>
         <div className="absolute inset-0 flex items-center justify-center text-sm font-black text-white [text-shadow:0_2px_6px_rgba(0,0,0,0.55)]">
           {score}
         </div>
         {isLeader && (
-          <div className="absolute -top-2 -right-1 text-xs" aria-hidden="true">👑</div>
+          <img
+            src={UI_ICON_CROWN_GOLD_SRC}
+            alt=""
+            aria-hidden="true"
+            className="absolute -top-2 -right-1 h-4 w-4 object-contain"
+          />
         )}
       </div>
     </div>
@@ -826,6 +851,7 @@ function BoxerToggle({ checked = false, onCheckedChange = () => {}, disabled = f
   const shellClass = active
     ? 'border-emerald-300/75 bg-emerald-500/28'
     : 'border-red-300/70 bg-red-500/24';
+  const iconSrc = active ? UI_ICON_BOXERS_GREEN_SRC : UI_ICON_BOXERS_RED_SRC;
   return (
     <button
       type="button"
@@ -838,27 +864,22 @@ function BoxerToggle({ checked = false, onCheckedChange = () => {}, disabled = f
         onCheckedChange(!active);
       }}
     >
-      <svg viewBox="0 0 96 72" className="h-10 w-14" role="presentation" aria-hidden="true">
-        <defs>
-          <linearGradient id="boxer-main-fill" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" stopColor="#f8fafc" />
-            <stop offset="100%" stopColor="#dbeafe" />
-          </linearGradient>
-        </defs>
-        <path
-          d="M8 18c0-4 3-7 7-7h66c4 0 7 3 7 7v9c0 2-1 4-2 6L74 54c-2 4-6 7-11 7H33c-5 0-9-3-11-7L10 33c-1-2-2-4-2-6z"
-          fill="url(#boxer-main-fill)"
-          stroke="rgba(15,23,42,0.72)"
-          strokeWidth="3"
-        />
-        <path d="M15 18h66v9H15z" fill={active ? '#16a34a' : '#dc2626'} opacity="0.95" />
-        <path d="M48 27v31" stroke="rgba(30,41,59,0.55)" strokeWidth="3" />
-        <circle cx="48" cy="24.5" r="2.6" fill="rgba(15,23,42,0.72)" />
-      </svg>
+      <img src={iconSrc} alt="" className="h-10 w-12 object-contain" aria-hidden="true" />
       <span className="pointer-events-none absolute bottom-1 text-[0.55rem] font-black uppercase tracking-[0.15em] text-white/90">
         {active ? 'On' : 'Off'}
       </span>
     </button>
+  );
+}
+function ThemedIcon({ src, alt = '', className = '' }) {
+  if (!src) return null;
+  return (
+    <img
+      src={src}
+      alt={alt}
+      className={className}
+      onError={(event) => { event.currentTarget.style.display = 'none'; }}
+    />
   );
 }
 function ThemeArt({ src, alt, className = '' }) {
@@ -1369,8 +1390,9 @@ function HomeScreen({ onNavigate, homeLine, adultMode }) {
             <img src={FLAME_SRC} alt="" aria-hidden="true" className="pointer-events-none absolute top-8 right-6 h-12 w-12 opacity-85 [animation:home-flame-float_2.45s_ease-in-out_0.2s_infinite] drop-shadow-[0_0_12px_rgba(255,98,0,0.95)]" />
             <img src={LOGO_SRC} alt="Pants On Fire logo" className="mx-auto w-full max-w-xl object-contain drop-shadow-[0_10px_30px_rgba(0,0,0,0.7)]" />
             {adultMode && (
-              <div className="mt-1 text-[0.7rem] sm:text-xs uppercase tracking-[0.2em] text-red-100">
-                18+ CONTENT ENABLED
+              <div className="mt-1 flex items-center justify-center gap-2 text-[0.7rem] sm:text-xs uppercase tracking-[0.2em] text-red-100">
+                <img src={UI_ICON_BADGE_18_PLUS_SRC} alt="" aria-hidden="true" className="h-5 w-5 object-contain" />
+                <span>18+ CONTENT ENABLED</span>
               </div>
             )}
             <p className="mt-1 text-white/80 text-xs sm:text-sm">{homeLine}</p>
@@ -2134,8 +2156,14 @@ function RevealScreen({ players, currentRevealIndex, round, totalRounds, onNext,
                     alt={`${round.roundTypeName} logo`}
                     className="mt-3 h-14 w-auto mx-auto"
                   />
-                  <div className={`mt-3 text-xs font-semibold uppercase tracking-[0.25em] ${isImposter ? 'text-orange-100' : 'text-cyan-200'}`}>
-                    {isImposter ? 'IMPOSTER CARD' : round.hint}
+                  <div className={`mt-3 inline-flex items-center justify-center gap-2 text-xs font-semibold uppercase tracking-[0.2em] ${isImposter ? 'text-orange-100' : 'text-cyan-200'}`}>
+                    <img
+                      src={isImposter ? UI_ICON_BADGE_LIAR_SRC : UI_ICON_MAGNIFIER_FIRE_SRC}
+                      alt=""
+                      aria-hidden="true"
+                      className="h-4 w-4 object-contain"
+                    />
+                    <span>{isImposter ? 'IMPOSTER CARD' : round.hint}</span>
                   </div>
                   {round.mediaPreviewLabel && (
                     <div className="mt-3 text-sm text-white/85">{round.mediaPreviewLabel}</div>
@@ -2921,7 +2949,7 @@ function LiarRevealScreen({ players, round, onComplete, theme }) {
                           key={player.id}
                           className="rounded-full border border-red-300/35 bg-red-500/15 px-4 py-1.5 text-sm sm:text-base font-black text-yellow-200"
                         >
-                          🔥 {player.name}
+                          <img src={UI_ICON_BADGE_LIAR_SRC} alt="" aria-hidden="true" className="mr-1 inline h-4 w-4 object-contain align-[-2px]" />{player.name}
                         </span>
                       ))}
                     </div>
