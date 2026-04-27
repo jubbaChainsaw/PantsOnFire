@@ -1586,7 +1586,6 @@ function SetupScreen(props) {
   const setupThemeButtonClass = setupThemeMeta.setupThemeButtonClass || THEME_META.Default.setupThemeButtonClass || 'border-cyan-400/30 bg-cyan-500/15 text-cyan-100';
   const setupPlayerIconClass = setupThemeMeta.setupPlayerIconClass || THEME_META.Default.setupPlayerIconClass || 'text-cyan-300';
   const setupRulesIconClass = setupThemeMeta.setupRulesIconClass || THEME_META.Default.setupRulesIconClass || 'text-yellow-300';
-  const setupPlayerColorOptions = getThemePlayerColorOptions(nameTheme);
   useEffect(() => {
     if (!hasThemePersonas && personaOnlyMode) setPersonaOnlyMode(false);
   }, [hasThemePersonas, personaOnlyMode, setPersonaOnlyMode]);
@@ -1771,26 +1770,6 @@ function SetupScreen(props) {
                       </div>
                     </div>
                   )}
-                  <div className="mt-3 flex items-center justify-between gap-3">
-                    <div className="text-xs uppercase tracking-[0.16em] text-white/55">Player color</div>
-                    <div className="flex flex-wrap items-center justify-end gap-2">
-                      {setupPlayerColorOptions.map((color) => {
-                        const selected = normalizePlayerColor(player.color, index, nameTheme) === color;
-                        return (
-                          <button
-                            key={`${player.id}-${color}`}
-                            type="button"
-                            className={`h-7 w-7 rounded-full border-2 transition-transform ${selected ? 'scale-110 border-white' : 'border-white/25'}`}
-                            style={{ backgroundColor: color }}
-                            onClick={() => setPlayers((currentPlayers) => currentPlayers.map((item, itemIndex) => (
-                              item.id === player.id ? { ...item, color: normalizePlayerColor(color, itemIndex, nameTheme) } : item
-                            )))}
-                            aria-label={`Set ${player.name || `Player ${index + 1}`} color`}
-                          />
-                        );
-                      })}
-                    </div>
-                  </div>
                 </div>
               ))}
             </div>
@@ -2177,12 +2156,12 @@ function RevealScreen({ players, currentRevealIndex, round, totalRounds, onNext,
                       className={`font-black ${isImposter ? 'text-yellow-300' : 'text-white'}`}
                       style={{
                         fontSize: `${promptFontSize}px`,
-                        wordBreak: 'break-word',
-                        overflowWrap: 'anywhere',
+                        wordBreak: 'normal',
+                        overflowWrap: 'normal',
                         whiteSpace: 'normal',
-                        hyphens: 'auto',
-                        WebkitHyphens: 'auto',
-                        lineHeight: 1.08,
+                        hyphens: 'manual',
+                        WebkitHyphens: 'manual',
+                        lineHeight: 1.1,
                       }}
                     >
                       {prompt}
