@@ -10,6 +10,8 @@
     "build": "vite build",
     "preview": "vite preview",
     "media:validate-videos": "node scripts/validateVideoAssets.cjs",
+    "media:validate": "node scripts/validateVideoAssets.cjs",
+    "validate:videos": "node scripts/validateVideoAssets.cjs",
     "dlc:sync-picture-manifests": "node scripts/syncPictureDlcManifests.cjs",
     "dlc:lint-picture-manifests": "node scripts/lintPictureDlcManifests.cjs",
     "dlc:new-picture-pack": "node scripts/newPictureDlcPack.cjs",
