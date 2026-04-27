@@ -22,6 +22,9 @@ import { ArtPromptRoundData } from './art/promptRoundData';
 import { BooksPromptRoundData } from './books/promptRoundData';
 import { NerdCulturePromptRoundData } from './nerd-culture/promptRoundData';
 import { ToysPromptRoundData } from './toys/promptRoundData';
+import { WrestlingPromptRoundData } from './wrestling/promptRoundData';
+import { UfcPromptRoundData } from './ufc/promptRoundData';
+import { MotorsportPromptRoundData } from './motorsport/promptRoundData';
 
 const InternetSlangPromptRoundData = {
   id: 'internet-slang',
@@ -299,6 +302,9 @@ export const CATEGORY_PROMPT_PACKS = [
   BooksPromptRoundData,
   NerdCulturePromptRoundData,
   ToysPromptRoundData,
+  WrestlingPromptRoundData,
+  UfcPromptRoundData,
+  MotorsportPromptRoundData,
   HobbiesPromptRoundData,
   BrandsPromptRoundData,
   SciencePromptRoundData,

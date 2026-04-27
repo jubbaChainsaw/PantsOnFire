@@ -163,6 +163,24 @@ export const CATEGORY_GUESSABLE_ENTITY_POOLS = {
     adultMain: ['Toy collector fair', 'Vintage toy auction', 'Model kit hobby table', 'Retro toy store night', 'Arcade prize counter'],
     adultImposter: ['Comic collector market', 'Memorabilia swap meet', 'Board game trade night', 'Pop culture flea market', 'Collector convention booth'],
   },
+  wrestling: {
+    regularMain: ['WWE Raw', 'SmackDown', 'WrestleMania', 'Royal Rumble', 'Steel cage match', 'Tag team match', 'Suplex', 'Powerbomb', 'Entrance ramp', 'Championship belt'],
+    regularImposter: ['NXT', 'AEW Dynamite', 'SummerSlam', 'Survivor Series', 'Hell in a Cell', 'Triple threat match', 'DDT', 'Piledriver', 'Ring apron', 'Title contract'],
+    adultMain: ['Wrestling arena crowd', 'Backstage promo segment', 'Pay-per-view watch party', 'Gym wrestling drill', 'Merch table queue'],
+    adultImposter: ['Indie wrestling event', 'Press conference face-off', 'Fan meetup line', 'Post-show autograph table', 'Live podcast panel'],
+  },
+  ufc: {
+    regularMain: ['UFC octagon', 'Main event', 'Featherweight division', 'Welterweight division', 'Rear-naked choke', 'Armbar', 'Spinning back kick', 'Ground and pound', 'Fight camp', 'Cornerman advice'],
+    regularImposter: ['Bellator cage', 'Co-main event', 'Bantamweight division', 'Middleweight division', 'Guillotine choke', 'Kimura', 'Roundhouse kick', 'Clinch control', 'Sparring session', 'Coach instructions'],
+    adultMain: ['Fight night broadcast', 'Pre-fight weigh-in', 'Post-fight press conference', 'Gym pad session', 'Title fight promo'],
+    adultImposter: ['MMA media day', 'Prelim fight card', 'Gym grappling session', 'Bout contract signing', 'Commentary desk breakdown'],
+  },
+  motorsport: {
+    regularMain: ['Formula 1 car', 'NASCAR stock car', 'Rally stage', 'Pit stop', 'Checkered flag', 'Pole position', 'Safety car', 'Grand Prix circuit', 'Race helmet', 'Tire compound'],
+    regularImposter: ['IndyCar', 'Touring car', 'Drift course', 'Fuel stop', 'Green flag', 'Front row start', 'Pace car', 'Street circuit', 'Fireproof suit', 'Brake bias'],
+    adultMain: ['Paddock pass area', 'Team garage', 'Race strategy wall', 'Post-race interview', 'Night race grandstand'],
+    adultImposter: ['Pit lane media zone', 'Engineering briefing room', 'Qualifying debrief', 'Podium ceremony area', 'Trackside hospitality suite'],
+  },
 };
 
 function toEntityPrompt(hintPrefix, main, imposter, index, adultOnly = false) {
