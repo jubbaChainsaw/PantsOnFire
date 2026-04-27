@@ -117,6 +117,21 @@ function normalizePlayerColor(color, fallbackIndex = 0, themeName = 'Default') {
 function getPlayerColor(player, fallbackIndex = 0, themeName = 'Default') {
   return normalizePlayerColor(player?.color, fallbackIndex, themeName);
 }
+function getHostSizeConfig(themeName = 'Default') {
+  const canonicalThemeName = toCanonicalThemeName(themeName);
+  const map = {
+    'Ghosts and Ghouls': {
+      intro: 'w-44 sm:w-60 md:w-72',
+      hostIntro: 'w-44 sm:w-56',
+      liarReveal: 'w-44 sm:w-56',
+    },
+  };
+  return map[canonicalThemeName] || {
+    intro: 'w-32 sm:w-44 md:w-52',
+    hostIntro: 'w-32 sm:w-42',
+    liarReveal: 'w-34 sm:w-46',
+  };
+}
 function getPlayerInitials(name = 'P') {
   return String(name || 'P')
     .trim()
@@ -800,6 +815,46 @@ function ScoreStrip({ players, roundNumber, totalRounds, scoreStyleMode = 'perso
     </GlassPanel>
   );
 }
+function BoxerToggle({ checked = false, onCheckedChange = () => {}, disabled = false, className = '', label = 'Toggle option' }) {
+  const active = Boolean(checked);
+  const shellClass = active
+    ? 'border-emerald-300/75 bg-emerald-500/28'
+    : 'border-red-300/70 bg-red-500/24';
+  return (
+    <button
+      type="button"
+      className={`relative inline-flex h-14 w-20 items-center justify-center rounded-2xl border-2 shadow-[0_6px_16px_rgba(0,0,0,0.35)] transition-transform ${disabled ? 'cursor-not-allowed opacity-45' : 'hover:scale-[1.04] active:scale-[0.98]'} ${shellClass} ${className}`}
+      aria-pressed={active}
+      aria-label={label}
+      disabled={disabled}
+      onClick={() => {
+        if (disabled) return;
+        onCheckedChange(!active);
+      }}
+    >
+      <svg viewBox="0 0 96 72" className="h-10 w-14" role="presentation" aria-hidden="true">
+        <defs>
+          <linearGradient id="boxer-main-fill" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stopColor="#f8fafc" />
+            <stop offset="100%" stopColor="#dbeafe" />
+          </linearGradient>
+        </defs>
+        <path
+          d="M8 18c0-4 3-7 7-7h66c4 0 7 3 7 7v9c0 2-1 4-2 6L74 54c-2 4-6 7-11 7H33c-5 0-9-3-11-7L10 33c-1-2-2-4-2-6z"
+          fill="url(#boxer-main-fill)"
+          stroke="rgba(15,23,42,0.72)"
+          strokeWidth="3"
+        />
+        <path d="M15 18h66v9H15z" fill={active ? '#16a34a' : '#dc2626'} opacity="0.95" />
+        <path d="M48 27v31" stroke="rgba(30,41,59,0.55)" strokeWidth="3" />
+        <circle cx="48" cy="24.5" r="2.6" fill="rgba(15,23,42,0.72)" />
+      </svg>
+      <span className="pointer-events-none absolute bottom-1 text-[0.55rem] font-black uppercase tracking-[0.15em] text-white/90">
+        {active ? 'On' : 'Off'}
+      </span>
+    </button>
+  );
+}
 function ThemeArt({ src, alt, className = '' }) {
   const [resolvedSrc, setResolvedSrc] = useState(src || '');
   useEffect(() => {
@@ -857,20 +912,20 @@ function getThemeHostFrameSources(themeName = 'Default', state = 'idle') {
   const assets = getThemeAssets(themeName);
   const defaultAssets = getThemeAssets('Default');
   const idleFrame =
-    assets.hostIdle
+    assets.personaHostIdle
+    || assets.hostIdle
     || assets.characterCard
-    || assets.personaHostIdle
     || defaultAssets.personaHostIdle
     || defaultAssets.hostIdle
     || defaultAssets.characterCard
     || '';
   const talkingFrames = [
-    assets.hostTalk1 || defaultAssets.hostTalk1,
-    assets.hostTalk2 || defaultAssets.hostTalk2,
-    assets.hostTalk3 || defaultAssets.hostTalk3,
     assets.personaHostTalk1 || defaultAssets.personaHostTalk1,
     assets.personaHostTalk2 || defaultAssets.personaHostTalk2,
     assets.personaHostTalk3 || defaultAssets.personaHostTalk3,
+    assets.hostTalk1 || defaultAssets.hostTalk1,
+    assets.hostTalk2 || defaultAssets.hostTalk2,
+    assets.hostTalk3 || defaultAssets.hostTalk3,
   ].filter(Boolean);
   if (state !== 'talking') return [idleFrame].filter(Boolean);
   if (!talkingFrames.length) return [idleFrame].filter(Boolean);
@@ -1630,10 +1685,11 @@ function SetupScreen(props) {
                         : 'No persona pack is available for this theme yet.'}
                     </div>
                   </div>
-                  <Switch
+                  <BoxerToggle
                     checked={usePersonaOnlyForTheme}
                     onCheckedChange={(next) => setPersonaOnlyMode(Boolean(next))}
                     disabled={!hasThemePersonas}
+                    label="Toggle persona-only mode"
                   />
                 </div>
               </div>
@@ -2656,9 +2712,14 @@ function DiscussionScreen({ players, round, totalRounds, onContinue, line, theme
 }
 function VotingScreen({ players, round, totalRounds, votesByPlayerId, setVotesByPlayerId, onSubmitVotes, line, theme, onlineMode = false, onlinePlayerId = '', onlineVoiceEnabled = false, onlineVoiceMuted = false, setOnlineVoiceMuted = () => {}, canTalk = true, submitPending = false }) {
   const leader = players.find((p) => p.id === round.leaderId);
-  const votersToRender = onlineMode && onlinePlayerId
-    ? players.filter((player) => player.id === onlinePlayerId)
-    : players;
+  const localVoters = useMemo(() => players.filter((player) => player.id), [players]);
+  const activeLocalVoter = useMemo(
+    () => localVoters.find((player) => !votesByPlayerId[player.id]) || null,
+    [localVoters, votesByPlayerId]
+  );
+  const votersToRender = onlineMode
+    ? (onlinePlayerId ? players.filter((player) => player.id === onlinePlayerId) : [])
+    : (activeLocalVoter ? [activeLocalVoter] : []);
   const localVoteCount = Object.values(votesByPlayerId).filter(Boolean).length;
   const completeCount = onlineMode
     ? Number(round.voteCompletionCount || 0)
@@ -2672,6 +2733,8 @@ function VotingScreen({ players, round, totalRounds, votesByPlayerId, setVotesBy
   const allComplete = onlineMode
     ? onlineVoteReady
     : players.every((player) => votesByPlayerId[player.id]);
+  const canRevealResults = !onlineMode && allComplete;
+  const canSubmitOnlineVote = onlineMode && onlineVoteReady;
   const voteInstruction = round.roundTypeId === 'grill'
     ? "Vote for who sounded like they already knew the AI's hidden prompt."
     : (round.roundTypeId === 'chain'
@@ -2704,7 +2767,9 @@ function VotingScreen({ players, round, totalRounds, votesByPlayerId, setVotesBy
               <p className="text-white/70 mt-2">
                 {onlineMode
                   ? 'Vote from your own device. Pick one suspect and submit.'
-                  : <>Pass the phone to <span className="font-semibold text-cyan-300">{leader?.name}</span>. </>}
+                  : activeLocalVoter
+                    ? <>Pass the phone to <span className="font-semibold text-cyan-300">{activeLocalVoter.name}</span>. </>
+                    : <>All votes are in. Get ready to reveal the results. </>}
                 {line}
               </p>
               <p className="text-cyan-200 mt-2 font-semibold">{voteInstruction}</p>
@@ -2737,19 +2802,40 @@ function VotingScreen({ players, round, totalRounds, votesByPlayerId, setVotesBy
                 </div>
               </GlassPanel>
             ))}
+            {!onlineMode && !activeLocalVoter && (
+              <GlassPanel className="rounded-[1.75rem] p-5 border-emerald-300/25 bg-emerald-500/10">
+                <div className="text-sm uppercase tracking-[0.2em] text-emerald-200">All votes submitted</div>
+                <div className="mt-2 text-xl font-black text-yellow-200">Reveal the results when ready.</div>
+              </GlassPanel>
+            )}
+            {onlineMode && !votersToRender.length && (
+              <GlassPanel className="rounded-[1.75rem] p-5 border-cyan-300/25 bg-cyan-500/10">
+                <div className="text-sm uppercase tracking-[0.2em] text-cyan-200">Other players are voting</div>
+                <div className="mt-2 text-base text-white/85">Please wait for your turn to submit your vote.</div>
+              </GlassPanel>
+            )}
           </div>
 
           <div className="mt-8 flex justify-end">
-            <Button
-              className="rounded-[1.5rem] h-14 px-8 bg-yellow-300 text-zinc-950 border-2 border-white"
-              disabled={!allComplete || submitPending}
-              onClick={onSubmitVotes}
-            >
-              <Vote className="mr-2 h-5 w-5 inline" />
-              {submitPending
-                ? (onlineMode ? 'Submitting vote...' : 'Submitting votes...')
-                : (onlineMode ? 'Submit my vote' : 'Reveal results')}
-            </Button>
+            {onlineMode ? (
+              <Button
+                className="rounded-[1.5rem] h-14 px-8 bg-yellow-300 text-zinc-950 border-2 border-white"
+                disabled={!canSubmitOnlineVote || submitPending}
+                onClick={onSubmitVotes}
+              >
+                <Vote className="mr-2 h-5 w-5 inline" />
+                {submitPending ? 'Submitting vote...' : 'Submit my vote'}
+              </Button>
+            ) : (
+              <Button
+                className="rounded-[1.5rem] h-14 px-8 bg-yellow-300 text-zinc-950 border-2 border-white"
+                disabled={!canRevealResults || submitPending}
+                onClick={onSubmitVotes}
+              >
+                <Vote className="mr-2 h-5 w-5 inline" />
+                Reveal results
+              </Button>
+            )}
           </div>
         </GlassPanel>
       </div>
@@ -4305,7 +4391,7 @@ export default function App() {
           <GlassPanel className="relative overflow-hidden rounded-[2.5rem] border-fuchsia-400/25 bg-black/25 p-8 text-center">
             <h2 className="mt-3 text-4xl font-black text-yellow-300">Choose your game mode</h2>
             <p className="mt-3 text-white/70">Pick one of two options. Previous round type is excluded.</p>
-            <div className="mt-8 grid gap-4 sm:grid-cols-2">
+            <div className="mt-8 grid grid-cols-2 gap-4">
               {roundTypeOptions.map((type, index) => {
                 const centeredOnSm = roundTypeOptions.length % 2 === 1 && index === roundTypeOptions.length - 1;
                 const isGrillRoundType = type.id === 'grill';
@@ -4353,15 +4439,14 @@ export default function App() {
             <div className="text-xs uppercase tracking-[0.3em] text-white/50">Round owner: {players[currentRoundOwnerIndex]?.name}</div>
             <h2 className="mt-3 text-4xl font-black text-yellow-300">Choose the next category</h2>
             <p className="mt-3 text-white/70">{copyState.chooser}</p>
-            <div className="mt-8 grid gap-4 sm:grid-cols-2">
-              {categoryOptions.map((category, index) => {
+            <div className="mt-8 grid grid-cols-2 gap-4 items-stretch">
+              {categoryOptions.map((category) => {
                 const categoryCardArtSrc = resolveCategoryChoiceCardArt(category, canonicalThemeName);
-                const centeredOnSm = categoryOptions.length % 2 === 1 && index === categoryOptions.length - 1;
                 return (
-                  <div key={category.id} className={centeredOnSm ? 'sm:col-span-2 sm:flex sm:justify-center' : ''}>
+                  <div key={category.id} className="flex">
                     <button
                       type="button"
-                      className={`w-full rounded-[1.8rem] border border-white/20 bg-black/20 p-4 text-center transition-transform duration-200 hover:scale-[1.01] hover:border-cyan-300/40 ${centeredOnSm ? 'sm:max-w-[20rem]' : ''}`}
+                      className="flex h-full w-full flex-col rounded-[1.8rem] border border-white/20 bg-black/20 p-4 text-center transition-transform duration-200 hover:scale-[1.01] hover:border-cyan-300/40"
                       onClick={() => chooseCategory(category.id)}
                     >
                       <ThemeArt
