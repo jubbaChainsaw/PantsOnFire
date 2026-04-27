@@ -66,20 +66,20 @@ const TravelDisastersPromptRoundData = {
   ],
 };
 
-const FashionFailsPromptRoundData = {
+const FashionPromptRoundData = {
   id: 'fashion-fails',
-  name: 'Fashion Fails',
+  name: 'Fashion',
   emoji: '👗',
   prompts: [
-    { hint: 'Wardrobe Malfunction', main: 'Split trousers', imposter: 'Broken heel' },
-    { hint: 'Color Clash', main: 'Neon-on-neon outfit', imposter: 'Animal print overload' },
-    { hint: 'Event Misread', main: 'Black tie in sneakers', imposter: 'Casual hoodie at gala' },
-    { hint: 'Trend Mistake', main: 'Micro sunglasses at night', imposter: 'Oversized scarf in summer' },
-    { hint: 'Shoe Disaster', main: 'Two different shoes', imposter: 'Brand-new shoes blistering' },
-    { hint: 'Accessory Overload', main: 'Too many rings', imposter: 'Too many chains' },
-    { hint: 'Makeup Mishap', main: 'Foundation mismatch', imposter: 'Uneven fake tan' },
-    { hint: 'Fit Issue', main: 'Overly tight jacket', imposter: 'Overly baggy suit' },
-    { hint: 'After-party Outfit Regret', main: 'Last-night club outfit at brunch', imposter: 'Glitter still on your face at work' },
+    { hint: 'Clothing Type', main: 'T-shirt', imposter: 'Hoodie' },
+    { hint: 'Footwear', main: 'Sneakers', imposter: 'Boots' },
+    { hint: 'Formal Wear', main: 'Suit', imposter: 'Tuxedo' },
+    { hint: 'Summer Outfit', main: 'Shorts', imposter: 'Skirt' },
+    { hint: 'Outerwear', main: 'Jacket', imposter: 'Coat' },
+    { hint: 'Headwear', main: 'Cap', imposter: 'Beanie' },
+    { hint: 'Accessories', main: 'Watch', imposter: 'Bracelet' },
+    { hint: 'Bags', main: 'Backpack', imposter: 'Handbag' },
+    { hint: 'Party Look', main: 'Smart casual outfit', imposter: 'Formal evening outfit' },
   ],
 };
 
@@ -219,20 +219,20 @@ const MobileAppsPromptRoundData = {
   ],
 };
 
-const BoardGameLorePromptRoundData = {
+const BoardGamesPromptRoundData = {
   id: 'board-game-lore',
-  name: 'Board Game Lore',
+  name: 'Board Games',
   emoji: '🎲',
   prompts: [
     { hint: 'Classic Board Game', main: 'Monopoly', imposter: 'The Game of Life' },
+    { hint: 'Word Game', main: 'Scrabble', imposter: 'Boggle' },
+    { hint: 'Mystery Game', main: 'Cluedo', imposter: 'Mysterium' },
+    { hint: 'Card Game', main: 'UNO', imposter: 'Exploding Kittens' },
     { hint: 'Strategy Game', main: 'Catan', imposter: 'Ticket to Ride' },
-    { hint: 'Deduction Game', main: 'Cluedo', imposter: 'Mysterium' },
-    { hint: 'Party Card Game', main: 'UNO', imposter: 'Exploding Kittens' },
-    { hint: 'Co-op Game', main: 'Pandemic', imposter: 'Forbidden Island' },
-    { hint: 'Deckbuilding', main: 'Dominion', imposter: 'Ascension' },
-    { hint: 'Dungeon Crawl', main: 'Gloomhaven', imposter: 'Descent' },
-    { hint: 'Family Game Night Drama', main: 'House rules argument', imposter: 'Scorekeeping argument' },
-    { hint: 'After-dark Game Night', main: 'Flirty truth-or-dare card game', imposter: 'Chaotic drinking card game' },
+    { hint: 'Team Game', main: 'Pictionary', imposter: 'Charades' },
+    { hint: 'Quick Game', main: 'Connect 4', imposter: 'Jenga' },
+    { hint: 'Family Game', main: 'Snakes and Ladders', imposter: 'Ludo' },
+    { hint: 'Game Night Vibe', main: 'Friendly game night', imposter: 'Competitive game night' },
   ],
 };
 
@@ -290,7 +290,7 @@ export const CATEGORY_PROMPT_PACKS = [
   InternetSlangPromptRoundData,
   MemesViralPromptRoundData,
   TravelDisastersPromptRoundData,
-  FashionFailsPromptRoundData,
+  FashionPromptRoundData,
   DatingBiosPromptRoundData,
   SchoolUniPromptRoundData,
   ConspiracyLitePromptRoundData,
@@ -299,7 +299,7 @@ export const CATEGORY_PROMPT_PACKS = [
   RoommateChaosPromptRoundData,
   ChildhoodNostalgiaPromptRoundData,
   MobileAppsPromptRoundData,
-  BoardGameLorePromptRoundData,
+  BoardGamesPromptRoundData,
   SuperstitionsPromptRoundData,
   FestivalsHolidaysPromptRoundData,
 ];

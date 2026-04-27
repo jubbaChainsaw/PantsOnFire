@@ -1,0 +1,33 @@
+{
+  "packId": "city-scenes-v1",
+  "label": "City Scenes Picture Pack",
+  "releaseChannel": "dlc",
+  "enabled": true,
+  "defaultOrientation": "landscape",
+  "entries": [
+    {
+      "entryId": "city-01",
+      "groupId": "city",
+      "groupName": "City",
+      "hint": "Picture Prompt • City 1",
+      "main": "Times Square, New York",
+      "imposter": "Shibuya Crossing, Tokyo",
+      "previewLabel": "Graphic pack clue from city prompts.",
+      "mainQuery": "times square new york street lights",
+      "imposterQuery": "shibuya crossing tokyo night street",
+      "adultOnly": false
+    },
+    {
+      "entryId": "city-02",
+      "groupId": "city",
+      "groupName": "City",
+      "hint": "Picture Prompt • City 2",
+      "main": "Golden Gate Bridge",
+      "imposter": "Brooklyn Bridge",
+      "previewLabel": "Graphic pack clue from city prompts.",
+      "mainQuery": "golden gate bridge fog",
+      "imposterQuery": "brooklyn bridge sunset",
+      "adultOnly": false
+    }
+  ]
+}
