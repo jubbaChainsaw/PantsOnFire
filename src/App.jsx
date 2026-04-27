@@ -24,6 +24,7 @@ import {
   getThemeHostPersona,
   buildThemeIntroDialogue,
   pickThemeHostRoundStinger,
+  pickThemeGuestHostName,
 } from './data/themeHosts';
 import {
   DLC_THEME_PACKS,
@@ -4381,25 +4382,35 @@ export default function App() {
     )}
     {screen === 'rules' && <RulesSplashScreen mode={mode} onContinue={() => setScreen('category-choice')} theme={canonicalThemeName} isOnlineMode={onlineMode} />}
     {screen === 'round-type-choice' && round && (
-      <TopFrame theme={canonicalThemeName}>
+      <TopFrame theme={canonicalThemeName} allowScroll={false}>
         <div className="mx-auto max-w-3xl space-y-6">
           <GlassPanel className="relative overflow-hidden rounded-[2.5rem] border-fuchsia-400/25 bg-black/25 p-8 text-center">
-            <div className="text-xs uppercase tracking-[0.3em] text-white/50">Round owner: {players[currentRoundOwnerIndex]?.name}</div>
-            <h2 className="mt-3 text-4xl font-black text-yellow-300">Choose round type</h2>
+            <h2 className="mt-3 text-4xl font-black text-yellow-300">Choose your game mode</h2>
             <p className="mt-3 text-white/70">Pick one of two options. Previous round type is excluded.</p>
             <div className="mt-8 grid grid-cols-2 gap-4 items-stretch">
               {roundTypeOptions.map((type, index) => {
                 const centeredOnSm = roundTypeOptions.length % 2 === 1 && index === roundTypeOptions.length - 1;
+                const isGrillRoundType = type.id === 'grill';
                 return (
                   <div key={type.id} className={centeredOnSm ? 'sm:col-span-2 sm:flex sm:justify-center' : ''}>
                     <button
                       type="button"
-                      className={`h-full min-h-[20rem] w-full rounded-[1.8rem] border border-white/20 bg-black/20 p-4 text-center transition-transform duration-200 hover:scale-[1.01] hover:border-cyan-300/40 ${centeredOnSm ? 'sm:max-w-[20rem]' : ''}`}
+                      className={`relative h-full min-h-[20rem] w-full rounded-[1.8rem] border border-white/20 bg-black/20 p-4 text-center transition-transform duration-200 hover:scale-[1.01] hover:border-cyan-300/40 ${centeredOnSm ? 'sm:max-w-[20rem]' : ''}`}
                       onClick={() => {
                         setSelectedRoundType(type.id);
                         setScreen('category-choice');
                       }}
                     >
+                      {isGrillRoundType && (
+                        <>
+                          <Badge className="absolute -top-3 right-6 rounded-full border-2 border-red-300/40 bg-red-500/10 px-3 py-1 text-[0.6rem] font-black uppercase tracking-[0.1em] text-white">
+                            With Special Guest Host
+                          </Badge>
+                          <div className="absolute -top-1.5 left-4 text-sm font-semibold text-yellow-200 drop-shadow-[0_0_8px_rgba(251,146,60,0.75)]">
+                            {pickThemeGuestHostName(canonicalThemeName, type.id)}
+                          </div>
+                        </>
+                      )}
                       <ThemeArt
                         src="/assets/themes/default/cards/prompt-back.png"
                         alt={`${type.name} round card back`}
