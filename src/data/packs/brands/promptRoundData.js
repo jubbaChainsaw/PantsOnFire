@@ -1,22 +1,17 @@
 export const BrandsPromptRoundData = {
   "id": "brands",
-  "name": "Brands",
+  "name": "Famous Brands",
   "emoji": "🛍️",
   "prompts": [
     {
-      "hint": "Sportswear Brand",
+      "hint": "Sports Brand",
       "main": "Nike",
       "imposter": "Adidas"
     },
     {
       "hint": "Fast Food Brand",
-      "main": "McDonald’s",
+      "main": "McDonald's",
       "imposter": "Burger King"
-    },
-    {
-      "hint": "Coffee Chain",
-      "main": "Starbucks",
-      "imposter": "Costa Coffee"
     },
     {
       "hint": "Phone Brand",
@@ -24,24 +19,29 @@ export const BrandsPromptRoundData = {
       "imposter": "Samsung"
     },
     {
-      "hint": "Luxury Brand",
-      "main": "Gucci",
-      "imposter": "Prada"
+      "hint": "Soft Drink Brand",
+      "main": "Coca-Cola",
+      "imposter": "Pepsi"
+    },
+    {
+      "hint": "Online Shopping Brand",
+      "main": "Amazon",
+      "imposter": "eBay"
+    },
+    {
+      "hint": "Search Engine Brand",
+      "main": "Google",
+      "imposter": "Bing"
+    },
+    {
+      "hint": "Streaming Brand",
+      "main": "Netflix",
+      "imposter": "Disney+"
     },
     {
       "hint": "Car Brand",
       "main": "BMW",
       "imposter": "Mercedes"
-    },
-    {
-      "hint": "E-commerce Brand",
-      "main": "Amazon",
-      "imposter": "eBay"
-    },
-    {
-      "hint": "Soda Brand",
-      "main": "Coca-Cola",
-      "imposter": "Pepsi"
     }
   ]
 };
