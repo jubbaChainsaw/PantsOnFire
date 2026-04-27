@@ -126,6 +126,54 @@ npm install
 npm run dev
 ```
 
+## Royalty-free picture pack importer (Pexels / Pixabay)
+
+You can auto-populate picture clue packs from royalty-free sources and generate
+`manifest.json` entries with one command.
+
+### 1) Prepare an import spec JSON
+
+Copy:
+
+- `tools/royalty-free-import-template/picture-import.spec.example.json`
+
+Then edit:
+
+- `pack.id`, `pack.label`, `pack.releaseChannel`
+- prompt pairs in `entries[]` (`main` / `imposter`)
+- per-side search terms (`mainQuery` / `imposterQuery`)
+
+### 2) Add API keys
+
+Use environment variables:
+
+- `PEXELS_API_KEY` for Pexels
+- `PIXABAY_API_KEY` for Pixabay
+
+The importer can use one or both. It tries each entry's preferred provider first,
+then falls back to the other provider if available.
+
+### 3) Run importer
+
+```bash
+npm run dlc:import-picture-pack -- --spec tools/royalty-free-import-template/picture-import.spec.example.json
+```
+
+Importer output:
+
+- downloads images into `public/assets/graphic-packs/picture/<pack-id>/images/`
+- writes/updates `public/assets/graphic-packs/picture/<pack-id>/manifest.json`
+- writes attribution info to `public/assets/graphic-packs/picture/<pack-id>/attribution.json`
+- runs:
+  - `npm run dlc:lint-picture-manifests`
+  - `npm run dlc:sync-picture-manifests`
+
+### Notes
+
+- Saved image files use `.png` names for manifest compatibility, even if source media is jpg/webp.
+- Keep attribution metadata (`attribution.json`) for legal/audit tracking.
+- Check source site terms before shipping; provider terms may change over time.
+
 ## Global Online Lobbies (App Store / Play Store ready)
 
 To support players in different homes/countries, you must run the lobby server on a

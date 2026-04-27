@@ -12,6 +12,7 @@
     "dlc:sync-picture-manifests": "node scripts/syncPictureDlcManifests.cjs",
     "dlc:lint-picture-manifests": "node scripts/lintPictureDlcManifests.cjs",
     "dlc:new-picture-pack": "node scripts/newPictureDlcPack.cjs",
+    "dlc:import-picture-pack": "node scripts/importPicturePackFromRoyaltyFree.cjs",
     "expo:start": "expo start",
     "expo:android": "expo run:android",
     "expo:ios": "expo run:ios",
