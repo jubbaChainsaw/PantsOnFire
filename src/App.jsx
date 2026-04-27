@@ -65,6 +65,7 @@ const LOGO_SRC = '/assets/images/logo.png';
 const LOGO_18PLUS_SRC = '/assets/images/logo-18plus.png';
 const INTRO_LOGO_VIDEO_SRC = '/assets/videos/intro-logo.mp4';
 const FIRE_FRAME_VIDEO_SRC = '/assets/videos/fire-frame.mp4';
+const BYTEBLITZ_VIDEO_PLACEHOLDER_SRC = '/assets/videos/byteblitz/placeholder.mp4';
 const FLAME_SRC = '/assets/images/flames/flame-8.png';
 const HOME_FLAME_SOURCES = [
   '/assets/images/flames/flame-1.png',
@@ -91,39 +92,39 @@ const IMPOSTER_ANNOUNCED_SFX_SRC = '/assets/sfx/imposter-announced.wav';
 const CARD_FLIP_SFX_SRC = '/assets/sfx/card-flip.wav';
 const BYTEBLITZ_CUE_MEDIA = {
   yes: {
-    videoSrc: '/assets/videos/byteblitz/yes.mp4',
+    videoSrc: BYTEBLITZ_VIDEO_PLACEHOLDER_SRC,
     sfxSrc: '/assets/sfx/byteblitz/yes.wav',
   },
   no: {
-    videoSrc: '/assets/videos/byteblitz/no.mp4',
+    videoSrc: BYTEBLITZ_VIDEO_PLACEHOLDER_SRC,
     sfxSrc: '/assets/sfx/byteblitz/no.wav',
   },
   maybe: {
-    videoSrc: '/assets/videos/byteblitz/maybe.mp4',
+    videoSrc: BYTEBLITZ_VIDEO_PLACEHOLDER_SRC,
     sfxSrc: '/assets/sfx/byteblitz/maybe.wav',
   },
   kindOf: {
-    videoSrc: '/assets/videos/byteblitz/kind-of.mp4',
+    videoSrc: BYTEBLITZ_VIDEO_PLACEHOLDER_SRC,
     sfxSrc: '/assets/sfx/byteblitz/kind-of.wav',
   },
   notApplicable: {
-    videoSrc: '/assets/videos/byteblitz/not-applicable.mp4',
+    videoSrc: BYTEBLITZ_VIDEO_PLACEHOLDER_SRC,
     sfxSrc: '/assets/sfx/byteblitz/not-applicable.wav',
   },
   correct: {
-    videoSrc: '/assets/videos/byteblitz/correct.mp4',
+    videoSrc: BYTEBLITZ_VIDEO_PLACEHOLDER_SRC,
     sfxSrc: '/assets/sfx/byteblitz/correct.wav',
   },
   cheatWarning: {
-    videoSrc: '/assets/videos/byteblitz/cheat-warning.mp4',
+    videoSrc: BYTEBLITZ_VIDEO_PLACEHOLDER_SRC,
     sfxSrc: '/assets/sfx/byteblitz/cheat-warning.wav',
   },
   cheatPenalty: {
-    videoSrc: '/assets/videos/byteblitz/cheat-penalty.mp4',
+    videoSrc: BYTEBLITZ_VIDEO_PLACEHOLDER_SRC,
     sfxSrc: '/assets/sfx/byteblitz/cheat-penalty.wav',
   },
   liarCorrect: {
-    videoSrc: '/assets/videos/byteblitz/liar-correct.mp4',
+    videoSrc: BYTEBLITZ_VIDEO_PLACEHOLDER_SRC,
     sfxSrc: '/assets/sfx/byteblitz/liar-correct.wav',
   },
 };
@@ -959,6 +960,54 @@ function ThemeArt({ src, alt, className = '' }) {
     />
   );
 }
+function toWebmSrc(src = '') {
+  const normalized = String(src || '').trim();
+  if (!normalized || !normalized.toLowerCase().endsWith('.mp4')) return '';
+  return `${normalized.slice(0, -4)}.webm`;
+}
+function MultiSourceVideo({
+  src = '',
+  className = '',
+  poster = '',
+  autoPlay = false,
+  loop = false,
+  muted = true,
+  playsInline = true,
+  preload = 'metadata',
+  ariaHidden = true,
+  onLoadedData,
+  onEnded,
+  onError,
+}) {
+  const [isBroken, setIsBroken] = useState(false);
+  const normalizedSrc = String(src || '').trim();
+  const webmSrc = toWebmSrc(normalizedSrc);
+  useEffect(() => {
+    setIsBroken(false);
+  }, [normalizedSrc, webmSrc, poster]);
+  if (!normalizedSrc || isBroken) return null;
+  return (
+    <video
+      className={className}
+      autoPlay={autoPlay}
+      loop={loop}
+      muted={muted}
+      playsInline={playsInline}
+      preload={preload}
+      poster={poster || undefined}
+      aria-hidden={ariaHidden ? 'true' : undefined}
+      onLoadedData={onLoadedData}
+      onEnded={onEnded}
+      onError={(event) => {
+        setIsBroken(true);
+        if (typeof onError === 'function') onError(event);
+      }}
+    >
+      {webmSrc && <source src={webmSrc} type="video/webm" />}
+      <source src={normalizedSrc} type="video/mp4" />
+    </video>
+  );
+}
 function ThemeHostVisual({
   themeName = 'Default',
   isTalking = false,
@@ -976,8 +1025,7 @@ function ThemeHostVisual({
 
   if (talkingVideoSrc && !videoBroken) {
     return (
-      <video
-        key={`${themeName}-${isTalking ? 'talking' : 'idle'}`}
+      <MultiSourceVideo
         src={talkingVideoSrc}
         className={className}
         autoPlay={isTalking}
@@ -986,6 +1034,7 @@ function ThemeHostVisual({
         playsInline
         preload="metadata"
         poster={animatedHostSrc || undefined}
+        ariaHidden
         onError={() => setVideoBroken(true)}
       />
     );
@@ -1051,7 +1100,7 @@ function IntroVideoScreen({ onDone }) {
   return (
     <TopFrame theme="Default" allowScroll={false}>
       <div className="relative h-[calc(100vh-2rem)] min-h-[calc(100vh-2rem)] overflow-hidden rounded-[2.2rem] border border-orange-300/25 bg-black">
-        <video
+        <MultiSourceVideo
           className="absolute inset-0 h-full w-full object-cover"
           src={INTRO_LOGO_VIDEO_SRC}
           autoPlay
@@ -1059,6 +1108,7 @@ function IntroVideoScreen({ onDone }) {
           playsInline
           preload="auto"
           poster={LOGO_SRC}
+          ariaHidden
           onLoadedData={() => setCanSkip(true)}
           onEnded={completeIntro}
           onError={completeIntro}
@@ -1612,7 +1662,7 @@ function HomeScreen({ onNavigate, homeLine, adultMode, fireFrameVideoSrc = FIRE_
     <TopFrame theme="Default" allowScroll={false}>
       <div className="relative h-[calc(100dvh-2rem)] px-2 flex items-center justify-center overflow-hidden">
         <div className="pointer-events-none absolute inset-x-0 bottom-0 h-56 overflow-visible">
-          <video
+          <MultiSourceVideo
             className="absolute inset-x-0 bottom-0 h-56 w-full object-cover opacity-45 mix-blend-screen"
             src={fireFrameVideoSrc}
             autoPlay
@@ -1620,7 +1670,7 @@ function HomeScreen({ onNavigate, homeLine, adultMode, fireFrameVideoSrc = FIRE_
             muted
             playsInline
             preload="auto"
-            aria-hidden="true"
+            ariaHidden
           />
           <div className="absolute inset-x-0 bottom-0 h-40 bg-[radial-gradient(circle_at_50%_100%,rgba(255,94,0,0.45)_0%,rgba(255,94,0,0.2)_35%,rgba(0,0,0,0)_74%)] animate-pulse" />
           {bottomFlames.map((flame, index) => (
@@ -1640,7 +1690,7 @@ function HomeScreen({ onNavigate, homeLine, adultMode, fireFrameVideoSrc = FIRE_
           ))}
         </div>
         <div className="pointer-events-none absolute inset-0 z-[1]">
-          <video
+          <MultiSourceVideo
             className="absolute inset-0 h-full w-full object-cover opacity-22 mix-blend-screen"
             src={fireFrameVideoSrc}
             autoPlay
@@ -1648,7 +1698,7 @@ function HomeScreen({ onNavigate, homeLine, adultMode, fireFrameVideoSrc = FIRE_
             muted
             playsInline
             preload="auto"
-            aria-hidden="true"
+            ariaHidden
           />
         </div>
         <div className="pointer-events-none absolute inset-x-0 top-0 h-24 overflow-visible">
@@ -4937,6 +4987,12 @@ export default function App() {
         onByteBlitzCue={(cue) => {
           const cueType = String(cue?.cueType || '').trim();
           const cueAsset = BYTEBLITZ_CUE_MEDIA[cueType];
+          if (cueAsset?.videoSrc) {
+            // Keep the media path "hot" in runtime so missing asset failures surface early.
+            const preloadVideo = document.createElement('video');
+            preloadVideo.preload = 'metadata';
+            preloadVideo.src = cueAsset.videoSrc;
+          }
           if (cueAsset?.sfxSrc) {
             playSfx(cueAsset.sfxSrc, { volume: 0.62 });
           }
