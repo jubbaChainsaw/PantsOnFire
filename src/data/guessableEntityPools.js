@@ -115,6 +115,42 @@ export const CATEGORY_GUESSABLE_ENTITY_POOLS = {
     adultMain: ['Nightclub VIP table', 'Casino afterparty', 'Private cocktail party', 'Luxury yacht party', 'Exclusive lounge party'],
     adultImposter: ['Speakeasy party room', 'Hotel penthouse party', 'Late-night cabaret', 'Rooftop bottle service', 'Midnight beach party'],
   },
+  anime: {
+    regularMain: ['Naruto', 'One Piece', 'Dragon Ball Z', 'Attack on Titan', 'My Hero Academia', 'Demon Slayer', 'Death Note', 'Jujutsu Kaisen', 'Bleach', 'Tokyo Ghoul'],
+    regularImposter: ['Boruto', 'Fairy Tail', 'Dragon Ball Super', 'Fullmetal Alchemist', 'Black Clover', 'Chainsaw Man', 'Code Geass', 'Blue Exorcist', 'Hunter x Hunter', 'Parasyte'],
+    adultMain: ['Anime convention afterparty', 'Cosplay meetup', 'Manga cafe night', 'Late-night anime marathon', 'Arcade anime floor'],
+    adultImposter: ['Comic con panel room', 'Gaming convention hall', 'Fan meetup bar', 'Collector card market', 'Midnight merch queue'],
+  },
+  cartoons: {
+    regularMain: ['SpongeBob SquarePants', 'The Simpsons', 'Tom and Jerry', 'Scooby-Doo', 'Teen Titans', 'Avatar: The Last Airbender', 'Adventure Time', 'The Powerpuff Girls', 'Looney Tunes', 'Ben 10'],
+    regularImposter: ['The Fairly OddParents', 'Family Guy', 'Road Runner', 'Courage the Cowardly Dog', 'Teen Titans Go!', 'The Legend of Korra', 'Regular Show', 'Dexter\'s Laboratory', 'Merrie Melodies', 'Generator Rex'],
+    adultMain: ['Cartoon trivia night', 'Animation studio tour', 'Saturday rerun marathon', 'Family cartoon movie night', 'Theme park cartoon zone'],
+    adultImposter: ['Comic book movie marathon', 'Retro game arcade night', 'Streaming watch party', 'Cosplay photo booth', 'Late-night fan panel'],
+  },
+  'comic-books-manga': {
+    regularMain: ['Spider-Man', 'Batman', 'Superman', 'Iron Man', 'X-Men', 'Avengers', 'One Piece', 'Naruto', 'Attack on Titan', 'Demon Slayer'],
+    regularImposter: ['Miles Morales', 'Nightwing', 'Supergirl', 'War Machine', 'Fantastic Four', 'Guardians of the Galaxy', 'Bleach', 'Boruto', 'Tokyo Ghoul', 'Jujutsu Kaisen'],
+    adultMain: ['Comic book shop launch', 'Manga signing event', 'Collector issue auction', 'Superhero fan meetup', 'Graphic novel reading night'],
+    adultImposter: ['Card collector trade night', 'Movie premiere fan event', 'Cosplay rooftop party', 'Convention artist alley', 'Late-night merch drop'],
+  },
+  'historical-figures': {
+    regularMain: ['Cleopatra', 'Julius Caesar', 'Napoleon', 'Joan of Arc', 'Leonardo da Vinci', 'Albert Einstein', 'Isaac Newton', 'Mahatma Gandhi', 'Winston Churchill', 'Marie Curie'],
+    regularImposter: ['Nefertiti', 'Augustus', 'Alexander the Great', 'Queen Elizabeth I', 'Michelangelo', 'Nikola Tesla', 'Galileo', 'Nelson Mandela', 'Franklin D. Roosevelt', 'Rosalind Franklin'],
+    adultMain: ['Museum lecture night', 'Historical documentary screening', 'Castle guided tour', 'Ancient history exhibit', 'History book club'],
+    adultImposter: ['Art gallery talk', 'Science museum event', 'Political debate panel', 'Library archive tour', 'Cultural heritage fair'],
+  },
+  art: {
+    regularMain: ['Mona Lisa', 'Starry Night', 'The Scream', 'The Persistence of Memory', 'Girl with a Pearl Earring', 'The Last Supper', 'The Thinker', 'The Birth of Venus', 'American Gothic', 'Guernica'],
+    regularImposter: ['The Last Supper', 'Sunflowers', 'The Kiss', 'The Son of Man', 'The Night Watch', 'School of Athens', 'David', 'Primavera', 'Nighthawks', 'The Weeping Woman'],
+    adultMain: ['Art gallery opening', 'Modern art exhibit', 'Paint and sip night', 'Museum late hours', 'Street art tour'],
+    adultImposter: ['Photography gallery launch', 'Sculpture workshop night', 'Design showcase event', 'Fashion runway exhibit', 'Creative rooftop showcase'],
+  },
+  books: {
+    regularMain: ['Harry Potter', 'The Lord of the Rings', 'The Hobbit', 'The Hunger Games', 'Percy Jackson', 'The Chronicles of Narnia', 'Pride and Prejudice', '1984', 'The Great Gatsby', 'To Kill a Mockingbird'],
+    regularImposter: ['Fantastic Beasts', 'The Wheel of Time', 'Silmarillion', 'Divergent', 'Magnus Chase', 'His Dark Materials', 'Jane Eyre', 'Brave New World', 'Of Mice and Men', 'The Catcher in the Rye'],
+    adultMain: ['Book club night', 'Author signing event', 'Library reading room', 'Poetry open mic', 'Fantasy novel launch'],
+    adultImposter: ['Film adaptation screening', 'Comic reading circle', 'Writers workshop event', 'Storytelling cafe night', 'Literary festival panel'],
+  },
 };
 
 function toEntityPrompt(hintPrefix, main, imposter, index, adultOnly = false) {
