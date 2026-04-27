@@ -5,6 +5,7 @@ const { spawnSync } = require('child_process');
 
 const repoRoot = path.resolve(__dirname, '..');
 const picturePacksRoot = path.join(repoRoot, 'public', 'assets', 'graphic-packs', 'picture');
+const localApiKeysPath = path.join(__dirname, 'royaltyFreeApiKeys.local.json');
 
 function toSlug(value) {
   return String(value || '')
@@ -121,7 +122,17 @@ function parseArgs(argv) {
 function resolveApiKey(provider, cliKey) {
   if (cliKey) return cliKey;
   if (provider === 'pexels') return process.env.PEXELS_API_KEY || '';
-  if (provider === 'pixabay') return process.env.PIXABAY_API_KEY || '';
+  if (provider === 'pixabay') {
+    if (process.env.PIXABAY_API_KEY) return process.env.PIXABAY_API_KEY;
+    if (fs.existsSync(localApiKeysPath)) {
+      try {
+        const parsed = JSON.parse(fs.readFileSync(localApiKeysPath, 'utf8'));
+        const localKey = String(parsed?.pixabayApiKey || '').trim();
+        if (localKey) return localKey;
+      } catch {}
+    }
+    return '';
+  }
   return '';
 }
 
@@ -148,7 +159,7 @@ function readSpec(specPath) {
 }
 
 function validateAndNormalizeSpec(spec, options) {
-  const rawPackId = options.packId || spec.id;
+  const rawPackId = options.packId || spec.id || spec.packId;
   const packId = toSlug(rawPackId);
   if (!packId) {
     throw new Error('Pack id is required (via spec.id or --pack-id) and must be slug-safe');
