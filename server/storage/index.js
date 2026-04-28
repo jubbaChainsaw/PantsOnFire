@@ -1,5 +1,5 @@
 import { createClient } from 'redis';
-import { createInMemoryLobbyStore, createRedisLobbyStore } from './lobbyStore.js';
+import { createInMemoryLobbyStore, createRedisLobbyStore, toClientSnapshot } from './lobbyStore.js';
 
 function parseRedisUrl() {
   const raw = String(process.env.REDIS_URL || process.env.LOBBY_REDIS_URL || '').trim();
@@ -39,3 +39,5 @@ export async function createLobbyStore({
     close: store.shutdown,
   };
 }
+
+export { toClientSnapshot };
