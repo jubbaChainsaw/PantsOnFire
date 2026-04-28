@@ -9,9 +9,9 @@
   "entries": [
     {
       "entryId": "city-01",
-      "groupId": "city-scenes",
-      "groupName": "City Scenes",
-      "hint": "Picture Prompt • City Scenes 1",
+      "groupId": "city",
+      "groupName": "City",
+      "hint": "Picture Prompt • City 1",
       "main": "Times Square, New York",
       "imposter": "Shibuya Crossing, Tokyo",
       "mainMediaFile": "city-01-main.jpg",
@@ -38,9 +38,9 @@
     },
     {
       "entryId": "city-02",
-      "groupId": "city-scenes",
-      "groupName": "City Scenes",
-      "hint": "Picture Prompt • City Scenes 2",
+      "groupId": "city",
+      "groupName": "City",
+      "hint": "Picture Prompt • City 2",
       "main": "Golden Gate Bridge",
       "imposter": "Brooklyn Bridge",
       "mainMediaFile": "city-02-main.jpg",

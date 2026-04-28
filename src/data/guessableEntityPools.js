@@ -181,6 +181,12 @@ export const CATEGORY_GUESSABLE_ENTITY_POOLS = {
     adultMain: ['Paddock pass area', 'Team garage', 'Race strategy wall', 'Post-race interview', 'Night race grandstand'],
     adultImposter: ['Pit lane media zone', 'Engineering briefing room', 'Qualifying debrief', 'Podium ceremony area', 'Trackside hospitality suite'],
   },
+  'mixed-scenes': {
+    regularMain: ['City skyline', 'Historic street', 'Wildlife portrait', 'Restaurant plating', 'Harbor at night', 'Train station platform', 'Sports arena action', 'Market street scene', 'Bridge panorama', 'Travel interior'],
+    regularImposter: ['Canal skyline', 'Old town alley', 'Aquarium portrait', 'Dessert plating', 'Fireworks harbor', 'Airport terminal gate', 'Crowd celebration', 'Bazaar walkway', 'Suspension bridge', 'Hotel lobby interior'],
+    adultMain: ['Rooftop lounge skyline', 'Late-night city street', 'Cocktail table close-up', 'After-hours transport hub', 'Night market crowd'],
+    adultImposter: ['Harbor nightlife scene', 'Festival light show', 'Bar terrace setup', 'Hotel midnight hallway', 'Club district street'],
+  },
 };
 
 function toEntityPrompt(hintPrefix, main, imposter, index, adultOnly = false) {

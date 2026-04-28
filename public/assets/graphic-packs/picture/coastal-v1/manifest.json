@@ -9,9 +9,9 @@
   "entries": [
     {
       "entryId": "contrast-01",
-      "groupId": "contrast-scenes",
-      "groupName": "Contrast Scenes",
-      "hint": "Picture Prompt • Contrast Scenes 1",
+      "groupId": "mixed-scenes",
+      "groupName": "Mixed Scenes",
+      "hint": "Picture Prompt • Mixed Scenes 11",
       "main": "Grilled Beef Steak",
       "imposter": "Futuristic Monster Robot Artwork",
       "mainMediaFile": "sample-01-main.jpg",
