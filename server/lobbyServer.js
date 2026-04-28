@@ -2,6 +2,7 @@ import cors from 'cors';
 import express from 'express';
 import { createServer } from 'node:http';
 import { Server } from 'socket.io';
+import { AccessToken } from 'livekit-server-sdk';
 import { createLobbyStore, toClientSnapshot } from './storage/index.js';
 
 const PORT = Number(process.env.LOBBY_SERVER_PORT || process.env.PORT || 8787);
@@ -10,6 +11,10 @@ const CLIENT_ORIGINS_RAW = String(
 ).trim();
 const MIN_PLAYERS = 3;
 const SESSION_TOKEN_TTL_MS = Number(process.env.LOBBY_SESSION_TOKEN_TTL_MS || 1000 * 60 * 60 * 12);
+const LIVEKIT_URL = String(process.env.LIVEKIT_URL || '').trim();
+const LIVEKIT_API_KEY = String(process.env.LIVEKIT_API_KEY || '').trim();
+const LIVEKIT_API_SECRET = String(process.env.LIVEKIT_API_SECRET || '').trim();
+const LIVEKIT_ROOM_PREFIX = String(process.env.LIVEKIT_ROOM_PREFIX || 'pof-lobby').trim() || 'pof-lobby';
 
 function parseClientOrigins(rawValue) {
   const normalized = String(rawValue || '').trim();
@@ -46,6 +51,34 @@ function normalizeCode(raw = '') {
   return String(raw).trim().toUpperCase();
 }
 
+function isLiveKitConfigured() {
+  return Boolean(LIVEKIT_URL && LIVEKIT_API_KEY && LIVEKIT_API_SECRET);
+}
+
+function resolveVoiceRoomName(code) {
+  return `${LIVEKIT_ROOM_PREFIX}-${normalizeCode(code)}`;
+}
+
+function validateLobbyPlayerSession(lobby, playerId, sessionToken) {
+  if (!lobby) return { error: 'lobby-not-found' };
+  const normalizedPlayerId = String(playerId || '').trim();
+  const normalizedSessionToken = String(sessionToken || '').trim();
+  if (!normalizedPlayerId) return { error: 'player-id-required' };
+  if (!normalizedSessionToken) return { error: 'session-token-required' };
+  const player = Array.isArray(lobby.players)
+    ? lobby.players.find((entry) => String(entry?.id || '') === normalizedPlayerId)
+    : null;
+  if (!player) return { error: 'session-player-missing' };
+  const sessionEntry = lobby.playerSessions?.[normalizedPlayerId] || null;
+  if (!sessionEntry?.token || sessionEntry.token !== normalizedSessionToken) {
+    return { error: 'invalid-session-token' };
+  }
+  if (Number(sessionEntry.expiresAt) <= Date.now()) {
+    return { error: 'session-token-expired' };
+  }
+  return { player };
+}
+
 const { store, kind: storeKind, close: closeStore } = await createLobbyStore({
   sessionTokenTtlMs: SESSION_TOKEN_TTL_MS,
 });
@@ -68,7 +101,65 @@ function broadcastSnapshot(code, lobby) {
 }
 
 app.get('/health', (_req, res) => {
-  res.json({ ok: true, service: 'lobby-server', now: nowIso(), store: storeKind });
+  res.json({
+    ok: true,
+    service: 'lobby-server',
+    now: nowIso(),
+    store: storeKind,
+    voice: { enabled: isLiveKitConfigured() },
+  });
+});
+
+app.post('/api/lobbies/:code/voice/token', async (req, res) => {
+  if (!isLiveKitConfigured()) {
+    res.status(503).json({ error: 'voice-not-configured' });
+    return;
+  }
+  const code = normalizeCode(req.params.code);
+  const playerId = String(req.body?.playerId || '');
+  const sessionToken = String(req.body?.sessionToken || '');
+  const lobby = await store.getLobby(code);
+  if (!lobby) {
+    res.status(404).json({ error: 'lobby-not-found' });
+    return;
+  }
+  const validation = validateLobbyPlayerSession(lobby, playerId, sessionToken);
+  if (validation.error === 'player-id-required' || validation.error === 'session-token-required') {
+    res.status(400).json({ error: validation.error });
+    return;
+  }
+  if (validation.error === 'invalid-session-token' || validation.error === 'session-token-expired') {
+    res.status(401).json({ error: validation.error });
+    return;
+  }
+  if (validation.error === 'session-player-missing') {
+    res.status(410).json({ error: validation.error });
+    return;
+  }
+  const roomName = resolveVoiceRoomName(code);
+  try {
+    const accessToken = new AccessToken(LIVEKIT_API_KEY, LIVEKIT_API_SECRET, {
+      identity: playerId,
+      name: String(validation.player?.name || 'Player'),
+    });
+    accessToken.addGrant({
+      roomJoin: true,
+      room: roomName,
+      canPublish: true,
+      canSubscribe: true,
+      canPublishData: true,
+    });
+    const token = await accessToken.toJwt();
+    res.json({
+      token,
+      url: LIVEKIT_URL,
+      roomName,
+    });
+  } catch (error) {
+    // eslint-disable-next-line no-console
+    console.error('[lobby-server][voice] failed to issue token', error);
+    res.status(500).json({ error: 'livekit-token-failed' });
+  }
 });
 
 app.post('/api/lobbies', async (req, res) => {
