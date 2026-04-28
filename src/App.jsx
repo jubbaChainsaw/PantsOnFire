@@ -491,6 +491,34 @@ function applyPicturePackSelection(
   return weighted.length ? weighted : source;
 }
 
+function isPictureOnlyCategory(categoryId) {
+  return categoryId === 'pic-mix';
+}
+
+function categoriesAllowedForRoundType(categories, roundTypeId) {
+  if (!Array.isArray(categories)) return [];
+  const selectedType = String(roundTypeId || '');
+  if (selectedType === 'picture') return categories;
+  return categories.filter((category) => !isPictureOnlyCategory(category?.id));
+}
+
+function hasAllowedCategoriesForRoundType(categories, roundTypeId) {
+  return categoriesAllowedForRoundType(categories, roundTypeId).length > 0;
+}
+
+function getCompatibleRoundTypes(categories, { excludeRoundTypeId = null } = {}) {
+  return PASS_THE_PHONE_ROUND_TYPES
+    .filter((roundType) => roundType.id !== excludeRoundTypeId)
+    .filter((roundType) => hasAllowedCategoriesForRoundType(categories, roundType.id));
+}
+
+function pickCompatibleRoundTypeId(categories, { excludeRoundTypeId = null } = {}) {
+  const compatibleRoundTypes = getCompatibleRoundTypes(categories, { excludeRoundTypeId });
+  if (compatibleRoundTypes.length) return pickRandom(compatibleRoundTypes).id;
+  const fallbackRoundType = pickRandom(PASS_THE_PHONE_ROUND_TYPES);
+  return fallbackRoundType?.id || null;
+}
+
 function buildLocalRound(
   players,
   category,
@@ -4437,14 +4465,16 @@ export default function App() {
 
   function startGame(seedPlayers = null) {
     const basePlayers = seedPlayers && seedPlayers.length ? seedPlayers : players;
-    const options = shuffle(activeCategories).slice(0, Math.min(4, activeCategories.length));
+    const starterTypeId = pickCompatibleRoundTypeId(activeCategories);
+    const allowedCategories = categoriesAllowedForRoundType(activeCategories, starterTypeId);
+    const options = shuffle(allowedCategories).slice(0, Math.min(4, allowedCategories.length));
     if (!options.length) return;
     const resetPlayers = basePlayers.map((player) => ({ ...player, score: 0 }));
     setPlayers(resetPlayers);
     setRoundNumber(1);
     setCurrentRoundOwnerIndex(0);
     setPreviousRoundType(null);
-    setSelectedRoundType(null);
+    setSelectedRoundType(starterTypeId);
     setRoundTypeOptions([]);
     setCategoryOptions(options);
     setRound({ chooserId: resetPlayers[0]?.id, roundNumber: 1 });
@@ -4462,7 +4492,12 @@ export default function App() {
   function chooseCategory(categoryId) {
     const category = activeCategories.find((c) => c.id === categoryId);
     if (!category) return;
-    const selectedTypeForRound = roundNumber === 1 ? pickRandom(PASS_THE_PHONE_ROUND_TYPES).id : selectedRoundType;
+    if (roundNumber > 1 && !selectedRoundType) return;
+    const selectedTypeForRound = roundNumber === 1
+      ? (selectedRoundType || pickCompatibleRoundTypeId(activeCategories))
+      : selectedRoundType;
+    if (!selectedTypeForRound) return;
+    if (isPictureOnlyCategory(category.id) && selectedTypeForRound !== 'picture') return;
     const built = buildLocalRound(
       players,
       category,
@@ -4534,13 +4569,18 @@ export default function App() {
     }
     const next = roundNumber + 1;
     const nextOwner = (currentRoundOwnerIndex + 1) % players.length;
-    const eligibleRoundTypes = PASS_THE_PHONE_ROUND_TYPES.filter((type) => type.id !== previousRoundType);
-    const options = shuffle(eligibleRoundTypes).slice(0, Math.min(2, eligibleRoundTypes.length));
+    const compatibleRoundTypes = getCompatibleRoundTypes(activeCategories, { excludeRoundTypeId: previousRoundType });
+    const fallbackRoundTypes = compatibleRoundTypes.length
+      ? compatibleRoundTypes
+      : getCompatibleRoundTypes(activeCategories);
+    const options = shuffle(fallbackRoundTypes).slice(0, Math.min(2, fallbackRoundTypes.length));
+    const defaultRoundTypeId = options[0]?.id || PASS_THE_PHONE_ROUND_TYPES[0]?.id || 'prompt';
+    const allowedCategories = categoriesAllowedForRoundType(activeCategories, defaultRoundTypeId);
     setRoundNumber(next);
     setCurrentRoundOwnerIndex(nextOwner);
     setRoundTypeOptions(options);
     setSelectedRoundType(null);
-    setCategoryOptions(shuffle(activeCategories).slice(0, Math.min(4, activeCategories.length)));
+    setCategoryOptions(shuffle(allowedCategories).slice(0, Math.min(4, allowedCategories.length)));
     setRound({ chooserId: players[nextOwner]?.id, roundNumber: next });
     refreshCopy(['chooser']);
     setScreen('round-type-choice');
@@ -4857,7 +4897,10 @@ export default function App() {
                       type="button"
                       className={`relative h-full min-h-[20rem] w-full rounded-[1.8rem] border border-white/20 bg-black/20 p-4 text-center transition-transform duration-200 hover:scale-[1.01] hover:border-cyan-300/40 ${centeredOnSm ? 'sm:max-w-[20rem]' : ''}`}
                       onClick={() => {
+                        const allowedCategories = categoriesAllowedForRoundType(activeCategories, type.id);
+                        const nextCategoryOptions = shuffle(allowedCategories).slice(0, Math.min(4, allowedCategories.length));
                         setSelectedRoundType(type.id);
+                        setCategoryOptions(nextCategoryOptions);
                         setScreen('category-choice');
                       }}
                     >

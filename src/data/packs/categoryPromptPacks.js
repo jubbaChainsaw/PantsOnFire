@@ -281,9 +281,9 @@ const FestivalsHolidaysPromptRoundData = {
   ],
 };
 
-const MixedScenesPromptRoundData = {
-  id: 'mixed-scenes',
-  name: 'Mixed Scenes',
+const PicAndMixPromptRoundData = {
+  id: 'pic-mix',
+  name: 'Pic & Mix',
   emoji: '🧩',
   prompts: [
     { hint: 'Urban Landmark Scene', main: 'City bridge at sunset', imposter: 'Canal ride through old town' },
@@ -341,5 +341,5 @@ export const CATEGORY_PROMPT_PACKS = [
   BoardGamesPromptRoundData,
   SuperstitionsPromptRoundData,
   FestivalsHolidaysPromptRoundData,
-  MixedScenesPromptRoundData,
+  PicAndMixPromptRoundData,
 ];
