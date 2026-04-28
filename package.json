@@ -27,6 +27,8 @@
     "expo": "^55.0.17",
     "express": "^5.2.1",
     "framer-motion": "^11.3.19",
+    "livekit-client": "^2.18.7",
+    "livekit-server-sdk": "^2.15.2",
     "lucide-react": "^0.453.0",
     "react": "^19.2.5",
     "react-dom": "^19.2.5",

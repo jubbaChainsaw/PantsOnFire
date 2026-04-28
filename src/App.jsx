@@ -60,6 +60,7 @@ import {
   startLobbyOnServer,
   toGamePlayers,
 } from './online/lobbyTransport';
+import { createVoicePartyTransport } from './online/voicePartyTransport';
 
 const LOGO_SRC = '/assets/images/logo.png';
 const LOGO_18PLUS_SRC = '/assets/images/logo-18plus.png';
@@ -391,6 +392,9 @@ function mapLobbyErrorToMessage(error, fallback = 'Unable to complete online lob
   if (code === 'round-generation-failed') return 'Server could not generate a new round. Try again.';
   if (code === 'not-enough-players') return `Need at least ${MIN_PLAYERS} players before starting.`;
   if (code === 'player-id-required') return 'Unable to leave lobby: missing player identity.';
+  if (code === 'voice-not-configured') return 'Voice chat is not configured on the lobby server yet.';
+  if (code === 'livekit-token-failed') return 'Voice chat token generation failed. Try again in a moment.';
+  if (code === 'voice-token-invalid') return 'Voice chat token was invalid. Please rejoin the lobby.';
   return fallback;
 }
 function toClientRoundFromServer(round) {
@@ -3906,6 +3910,7 @@ export default function App() {
   const [onlinePhasePending, setOnlinePhasePending] = useState(false);
   const [onlineVoteSubmissionPending, setOnlineVoteSubmissionPending] = useState(false);
   const onlineTransportRef = useRef(null);
+  const onlineVoiceTransportRef = useRef(null);
   const onlineStartedRevisionHandledRef = useRef('');
   const onlineClientIdRef = useRef(getOrCreatePersistentClientId());
   const onlineSessionRef = useRef(getStoredOnlineSession());
@@ -3981,6 +3986,14 @@ export default function App() {
       audio.play().catch(() => {});
     } catch {}
   }, [audioSettings?.sfxEnabled]);
+  const disconnectOnlineVoiceTransport = useCallback(async () => {
+    const activeTransport = onlineVoiceTransportRef.current;
+    if (!activeTransport) return;
+    onlineVoiceTransportRef.current = null;
+    try {
+      await activeTransport.transport.disconnect();
+    } catch {}
+  }, []);
   const resolveBgmForScreen = useCallback((currentScreen) => {
     if (currentScreen === 'home') return INTRO_THEME_BGM_SRC;
     if (currentScreen === 'setup') return INTRO_THEME_BGM_SRC;
@@ -4035,6 +4048,72 @@ export default function App() {
     setOnlineVoiceEnabled(phaseAllowsVoice);
     if (!phaseAllowsVoice) setOnlineVoiceMuted(false);
   }, [onlineMode, screen]);
+  useEffect(() => {
+    if (!onlineMode || !onlineVoiceEnabled) {
+      void disconnectOnlineVoiceTransport();
+      return;
+    }
+    const sessionSnapshot = onlineSessionRef.current;
+    const effectiveLobbyCode = lobbyCode || String(sessionSnapshot?.lobbyCode || '').trim().toUpperCase();
+    const playerId = sessionSnapshot?.playerId || onlineJoinedPlayerId;
+    const sessionToken = sessionSnapshot?.sessionToken || '';
+    if (!effectiveLobbyCode || !playerId || !sessionToken) return;
+    const connectionKey = `${effectiveLobbyCode}::${playerId}`;
+    if (onlineVoiceTransportRef.current?.key === connectionKey) return;
+    let cancelled = false;
+    (async () => {
+      await disconnectOnlineVoiceTransport();
+      try {
+        const transport = await createVoicePartyTransport({
+          lobbyCode: effectiveLobbyCode,
+          playerId,
+          sessionToken,
+          onEvent: (event) => {
+            if (event?.type === 'media-devices-error') {
+              setOnlineLobbyError('Microphone access blocked. Allow mic permission in browser settings.');
+            }
+            if (event?.type === 'disconnected' && onlineMode && onlineVoiceEnabled) {
+              setOnlineLobbyError('Voice chat disconnected. Reconnecting when possible...');
+            }
+          },
+        });
+        if (cancelled) {
+          await transport.disconnect();
+          return;
+        }
+        onlineVoiceTransportRef.current = {
+          key: connectionKey,
+          transport,
+        };
+        await transport.setMuted(Boolean(onlineVoiceMuted) || !onlineVoiceEnabled);
+      } catch (error) {
+        if (cancelled) return;
+        setOnlineLobbyError(
+          mapLobbyErrorToMessage(error, 'Unable to connect party voice chat right now.')
+        );
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [
+    disconnectOnlineVoiceTransport,
+    lobbyCode,
+    onlineJoinedPlayerId,
+    onlineMode,
+    onlineVoiceEnabled,
+    onlineVoiceMuted,
+  ]);
+  useEffect(() => {
+    const activeTransport = onlineVoiceTransportRef.current?.transport;
+    if (!activeTransport) return;
+    activeTransport
+      .setMuted(!onlineVoiceEnabled || onlineVoiceMuted)
+      .catch(() => {});
+  }, [onlineVoiceEnabled, onlineVoiceMuted]);
+  useEffect(() => () => {
+    void disconnectOnlineVoiceTransport();
+  }, [disconnectOnlineVoiceTransport]);
   useEffect(() => {
     if (screen === 'online-join') {
       setOnlineLobbyError('');
@@ -4552,6 +4631,7 @@ export default function App() {
     setScreen('final');
   }
   async function leaveOnlineLobby({ nextScreen = 'home' } = {}) {
+    await disconnectOnlineVoiceTransport();
     const normalizedCode = lobbyCode?.trim().toUpperCase();
     if (normalizedCode) {
       try {
