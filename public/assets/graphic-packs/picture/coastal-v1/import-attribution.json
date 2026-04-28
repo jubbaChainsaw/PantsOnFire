@@ -3,14 +3,14 @@
   "provider": "pixabay",
   "specPath": ".tmp/bulk-picture-specs/coastal-v1.json",
   "packId": "coastal-v1",
-  "label": "Coastal Picture Prompt Pack",
+  "label": "Contrast Scenes Picture Pack",
   "entries": [
     {
-      "entryId": "sample-01",
-      "mainQuery": "Sample Main Prompt",
-      "imposterQuery": "Sample Imposter Prompt",
-      "selectedMainQuery": "Sample Main Prompt",
-      "selectedImposterQuery": "Sample Imposter Prompt",
+      "entryId": "contrast-01",
+      "mainQuery": "Grilled Beef Steak",
+      "imposterQuery": "Futuristic Monster Robot Artwork",
+      "selectedMainQuery": "Grilled Beef Steak",
+      "selectedImposterQuery": "Futuristic Monster Robot Artwork",
       "relaxedDedupMain": false,
       "relaxedDedupImposter": false,
       "sourceMain": {
