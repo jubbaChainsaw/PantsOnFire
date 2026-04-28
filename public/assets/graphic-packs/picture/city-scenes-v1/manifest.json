@@ -1,0 +1,69 @@
+{
+  "id": "city-scenes-v1",
+  "version": 1,
+  "label": "City Scenes Picture Pack",
+  "category": "picture",
+  "releaseChannel": "dlc",
+  "enabled": true,
+  "basePath": "/assets/graphic-packs/picture/city-scenes-v1/images",
+  "entries": [
+    {
+      "entryId": "city-01",
+      "groupId": "city",
+      "groupName": "City",
+      "hint": "Picture Prompt • City 1",
+      "main": "Times Square, New York",
+      "imposter": "Shibuya Crossing, Tokyo",
+      "mainMediaFile": "city-01-main.jpg",
+      "imposterMediaFile": "city-01-imposter.jpg",
+      "previewLabel": "Graphic pack clue from city prompts.",
+      "sourceMain": {
+        "provider": "pixabay",
+        "providerId": "1587558",
+        "contributor": "ahundt",
+        "contributorProfile": "https://pixabay.com/users/ahundt-663354/",
+        "sourcePageUrl": "https://pixabay.com/photos/new-york-sightseeing-traffic-jam-1587558/",
+        "license": "Pixabay Content License",
+        "licenseUrl": "https://pixabay.com/service/license-summary/"
+      },
+      "sourceImposter": {
+        "provider": "pixabay",
+        "providerId": "4807314",
+        "contributor": "binmassam",
+        "contributorProfile": "https://pixabay.com/users/binmassam-15041405/",
+        "sourcePageUrl": "https://pixabay.com/photos/umbrella-street-night-tokyo-4807314/",
+        "license": "Pixabay Content License",
+        "licenseUrl": "https://pixabay.com/service/license-summary/"
+      }
+    },
+    {
+      "entryId": "city-02",
+      "groupId": "city",
+      "groupName": "City",
+      "hint": "Picture Prompt • City 2",
+      "main": "Golden Gate Bridge",
+      "imposter": "Brooklyn Bridge",
+      "mainMediaFile": "city-02-main.jpg",
+      "imposterMediaFile": "city-02-imposter.jpg",
+      "previewLabel": "Graphic pack clue from city prompts.",
+      "sourceMain": {
+        "provider": "pixabay",
+        "providerId": "2154194",
+        "contributor": "12019",
+        "contributorProfile": "https://pixabay.com/users/12019-12019/",
+        "sourcePageUrl": "https://pixabay.com/photos/panorama-golden-gate-bridge-2154194/",
+        "license": "Pixabay Content License",
+        "licenseUrl": "https://pixabay.com/service/license-summary/"
+      },
+      "sourceImposter": {
+        "provider": "pixabay",
+        "providerId": "5043071",
+        "contributor": "schliff",
+        "contributorProfile": "https://pixabay.com/users/schliff-14384302/",
+        "sourcePageUrl": "https://pixabay.com/photos/usa-america-bridge-brooklyn-bridge-5043071/",
+        "license": "Pixabay Content License",
+        "licenseUrl": "https://pixabay.com/service/license-summary/"
+      }
+    }
+  ]
+}

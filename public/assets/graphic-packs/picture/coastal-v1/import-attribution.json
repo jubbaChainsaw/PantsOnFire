@@ -1,0 +1,36 @@
+{
+  "generatedAt": "2026-04-27T21:51:18.744Z",
+  "provider": "pixabay",
+  "specPath": ".tmp/bulk-picture-specs/coastal-v1.json",
+  "packId": "coastal-v1",
+  "label": "Coastal Picture Prompt Pack",
+  "entries": [
+    {
+      "entryId": "sample-01",
+      "mainQuery": "Sample Main Prompt",
+      "imposterQuery": "Sample Imposter Prompt",
+      "selectedMainQuery": "Sample Main Prompt",
+      "selectedImposterQuery": "Sample Imposter Prompt",
+      "relaxedDedupMain": false,
+      "relaxedDedupImposter": false,
+      "sourceMain": {
+        "provider": "pixabay",
+        "providerId": "3640560",
+        "contributor": "RitaE",
+        "contributorProfile": "https://pixabay.com/users/RitaE-19628/",
+        "sourcePageUrl": "https://pixabay.com/photos/steak-meat-beef-steak-food-beef-3640560/",
+        "license": "Pixabay Content License",
+        "licenseUrl": "https://pixabay.com/service/license-summary/"
+      },
+      "sourceImposter": {
+        "provider": "pixabay",
+        "providerId": "7783344",
+        "contributor": "Alexandra_Koch",
+        "contributorProfile": "https://pixabay.com/users/Alexandra_Koch-621802/",
+        "sourcePageUrl": "https://pixabay.com/photos/ai-generated-monster-robot-future-7783344/",
+        "license": "Pixabay Content License",
+        "licenseUrl": "https://pixabay.com/service/license-summary/"
+      }
+    }
+  ]
+}

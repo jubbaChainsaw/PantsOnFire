@@ -115,6 +115,72 @@ export const CATEGORY_GUESSABLE_ENTITY_POOLS = {
     adultMain: ['Nightclub VIP table', 'Casino afterparty', 'Private cocktail party', 'Luxury yacht party', 'Exclusive lounge party'],
     adultImposter: ['Speakeasy party room', 'Hotel penthouse party', 'Late-night cabaret', 'Rooftop bottle service', 'Midnight beach party'],
   },
+  anime: {
+    regularMain: ['Naruto', 'One Piece', 'Dragon Ball Z', 'Attack on Titan', 'My Hero Academia', 'Demon Slayer', 'Death Note', 'Jujutsu Kaisen', 'Bleach', 'Tokyo Ghoul'],
+    regularImposter: ['Boruto', 'Fairy Tail', 'Dragon Ball Super', 'Fullmetal Alchemist', 'Black Clover', 'Chainsaw Man', 'Code Geass', 'Blue Exorcist', 'Hunter x Hunter', 'Parasyte'],
+    adultMain: ['Anime convention afterparty', 'Cosplay meetup', 'Manga cafe night', 'Late-night anime marathon', 'Arcade anime floor'],
+    adultImposter: ['Comic con panel room', 'Gaming convention hall', 'Fan meetup bar', 'Collector card market', 'Midnight merch queue'],
+  },
+  cartoons: {
+    regularMain: ['SpongeBob SquarePants', 'The Simpsons', 'Tom and Jerry', 'Scooby-Doo', 'Teen Titans', 'Avatar: The Last Airbender', 'Adventure Time', 'The Powerpuff Girls', 'Looney Tunes', 'Ben 10'],
+    regularImposter: ['The Fairly OddParents', 'Family Guy', 'Road Runner', 'Courage the Cowardly Dog', 'Teen Titans Go!', 'The Legend of Korra', 'Regular Show', 'Dexter\'s Laboratory', 'Merrie Melodies', 'Generator Rex'],
+    adultMain: ['Cartoon trivia night', 'Animation studio tour', 'Saturday rerun marathon', 'Family cartoon movie night', 'Theme park cartoon zone'],
+    adultImposter: ['Comic book movie marathon', 'Retro game arcade night', 'Streaming watch party', 'Cosplay photo booth', 'Late-night fan panel'],
+  },
+  'comic-books-manga': {
+    regularMain: ['Spider-Man', 'Batman', 'Superman', 'Iron Man', 'X-Men', 'Avengers', 'One Piece', 'Naruto', 'Attack on Titan', 'Demon Slayer'],
+    regularImposter: ['Miles Morales', 'Nightwing', 'Supergirl', 'War Machine', 'Fantastic Four', 'Guardians of the Galaxy', 'Bleach', 'Boruto', 'Tokyo Ghoul', 'Jujutsu Kaisen'],
+    adultMain: ['Comic book shop launch', 'Manga signing event', 'Collector issue auction', 'Superhero fan meetup', 'Graphic novel reading night'],
+    adultImposter: ['Card collector trade night', 'Movie premiere fan event', 'Cosplay rooftop party', 'Convention artist alley', 'Late-night merch drop'],
+  },
+  'historical-figures': {
+    regularMain: ['Cleopatra', 'Julius Caesar', 'Napoleon', 'Joan of Arc', 'Leonardo da Vinci', 'Albert Einstein', 'Isaac Newton', 'Mahatma Gandhi', 'Winston Churchill', 'Marie Curie'],
+    regularImposter: ['Nefertiti', 'Augustus', 'Alexander the Great', 'Queen Elizabeth I', 'Michelangelo', 'Nikola Tesla', 'Galileo', 'Nelson Mandela', 'Franklin D. Roosevelt', 'Rosalind Franklin'],
+    adultMain: ['Museum lecture night', 'Historical documentary screening', 'Castle guided tour', 'Ancient history exhibit', 'History book club'],
+    adultImposter: ['Art gallery talk', 'Science museum event', 'Political debate panel', 'Library archive tour', 'Cultural heritage fair'],
+  },
+  art: {
+    regularMain: ['Mona Lisa', 'Starry Night', 'The Scream', 'The Persistence of Memory', 'Girl with a Pearl Earring', 'The Last Supper', 'The Thinker', 'The Birth of Venus', 'American Gothic', 'Guernica'],
+    regularImposter: ['The Last Supper', 'Sunflowers', 'The Kiss', 'The Son of Man', 'The Night Watch', 'School of Athens', 'David', 'Primavera', 'Nighthawks', 'The Weeping Woman'],
+    adultMain: ['Art gallery opening', 'Modern art exhibit', 'Paint and sip night', 'Museum late hours', 'Street art tour'],
+    adultImposter: ['Photography gallery launch', 'Sculpture workshop night', 'Design showcase event', 'Fashion runway exhibit', 'Creative rooftop showcase'],
+  },
+  books: {
+    regularMain: ['Harry Potter', 'The Lord of the Rings', 'The Hobbit', 'The Hunger Games', 'Percy Jackson', 'The Chronicles of Narnia', 'Pride and Prejudice', '1984', 'The Great Gatsby', 'To Kill a Mockingbird'],
+    regularImposter: ['Fantastic Beasts', 'The Wheel of Time', 'Silmarillion', 'Divergent', 'Magnus Chase', 'His Dark Materials', 'Jane Eyre', 'Brave New World', 'Of Mice and Men', 'The Catcher in the Rye'],
+    adultMain: ['Book club night', 'Author signing event', 'Library reading room', 'Poetry open mic', 'Fantasy novel launch'],
+    adultImposter: ['Film adaptation screening', 'Comic reading circle', 'Writers workshop event', 'Storytelling cafe night', 'Literary festival panel'],
+  },
+  'nerd-culture': {
+    regularMain: ['Comic-Con', 'Dungeons & Dragons', 'Magic: The Gathering', 'Pokémon cards', 'Star Wars', 'Marvel Cinematic Universe', 'PC gaming rig', 'Retro arcade', 'Anime convention', 'Board game café'],
+    regularImposter: ['Gamescom', 'Pathfinder', 'Yu-Gi-Oh! cards', 'Baseball cards', 'Star Trek', 'DC Extended Universe', 'Console gaming setup', 'Pinball hall', 'Manga expo', 'Tabletop club'],
+    adultMain: ['Midnight game launch queue', 'LAN party night', 'Collector figure swap', 'Cosplay afterparty', 'Trivia pub quiz'],
+    adultImposter: ['Esports watch party', 'Comic shop release night', 'Card draft event', 'Retro game tournament', 'Late-night modding meetup'],
+  },
+  toys: {
+    regularMain: ['LEGO set', 'Play-Doh', 'Hot Wheels', 'Barbie', 'Action figure', 'Rubik\'s Cube', 'Nerf blaster', 'Remote-control car', 'Stuffed teddy bear', 'Toy train set'],
+    regularImposter: ['Mega Bloks set', 'Kinetic sand', 'Matchbox cars', 'Bratz doll', 'Collectible figurine', 'Puzzle cube', 'Water blaster', 'Mini drone', 'Plush rabbit', 'Slot car set'],
+    adultMain: ['Toy collector fair', 'Vintage toy auction', 'Model kit hobby table', 'Retro toy store night', 'Arcade prize counter'],
+    adultImposter: ['Comic collector market', 'Memorabilia swap meet', 'Board game trade night', 'Pop culture flea market', 'Collector convention booth'],
+  },
+  wrestling: {
+    regularMain: ['WWE Raw', 'SmackDown', 'WrestleMania', 'Royal Rumble', 'Steel cage match', 'Tag team match', 'Suplex', 'Powerbomb', 'Entrance ramp', 'Championship belt'],
+    regularImposter: ['NXT', 'AEW Dynamite', 'SummerSlam', 'Survivor Series', 'Hell in a Cell', 'Triple threat match', 'DDT', 'Piledriver', 'Ring apron', 'Title contract'],
+    adultMain: ['Wrestling arena crowd', 'Backstage promo segment', 'Pay-per-view watch party', 'Gym wrestling drill', 'Merch table queue'],
+    adultImposter: ['Indie wrestling event', 'Press conference face-off', 'Fan meetup line', 'Post-show autograph table', 'Live podcast panel'],
+  },
+  ufc: {
+    regularMain: ['UFC octagon', 'Main event', 'Featherweight division', 'Welterweight division', 'Rear-naked choke', 'Armbar', 'Spinning back kick', 'Ground and pound', 'Fight camp', 'Cornerman advice'],
+    regularImposter: ['Bellator cage', 'Co-main event', 'Bantamweight division', 'Middleweight division', 'Guillotine choke', 'Kimura', 'Roundhouse kick', 'Clinch control', 'Sparring session', 'Coach instructions'],
+    adultMain: ['Fight night broadcast', 'Pre-fight weigh-in', 'Post-fight press conference', 'Gym pad session', 'Title fight promo'],
+    adultImposter: ['MMA media day', 'Prelim fight card', 'Gym grappling session', 'Bout contract signing', 'Commentary desk breakdown'],
+  },
+  motorsport: {
+    regularMain: ['Formula 1 car', 'NASCAR stock car', 'Rally stage', 'Pit stop', 'Checkered flag', 'Pole position', 'Safety car', 'Grand Prix circuit', 'Race helmet', 'Tire compound'],
+    regularImposter: ['IndyCar', 'Touring car', 'Drift course', 'Fuel stop', 'Green flag', 'Front row start', 'Pace car', 'Street circuit', 'Fireproof suit', 'Brake bias'],
+    adultMain: ['Paddock pass area', 'Team garage', 'Race strategy wall', 'Post-race interview', 'Night race grandstand'],
+    adultImposter: ['Pit lane media zone', 'Engineering briefing room', 'Qualifying debrief', 'Podium ceremony area', 'Trackside hospitality suite'],
+  },
 };
 
 function toEntityPrompt(hintPrefix, main, imposter, index, adultOnly = false) {

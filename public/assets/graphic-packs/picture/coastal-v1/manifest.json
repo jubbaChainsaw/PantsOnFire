@@ -14,9 +14,27 @@
       "hint": "Picture Prompt • Sample 1",
       "main": "Sample Main Prompt",
       "imposter": "Sample Imposter Prompt",
-      "mainMediaFile": "sample-01-main.png",
-      "imposterMediaFile": "sample-01-imposter.png",
-      "previewLabel": "Graphic pack clue from sample prompts."
+      "mainMediaFile": "sample-01-main.jpg",
+      "imposterMediaFile": "sample-01-imposter.jpg",
+      "previewLabel": "Graphic pack clue from sample prompts.",
+      "sourceMain": {
+        "provider": "pixabay",
+        "providerId": "3640560",
+        "contributor": "RitaE",
+        "contributorProfile": "https://pixabay.com/users/RitaE-19628/",
+        "sourcePageUrl": "https://pixabay.com/photos/steak-meat-beef-steak-food-beef-3640560/",
+        "license": "Pixabay Content License",
+        "licenseUrl": "https://pixabay.com/service/license-summary/"
+      },
+      "sourceImposter": {
+        "provider": "pixabay",
+        "providerId": "7783344",
+        "contributor": "Alexandra_Koch",
+        "contributorProfile": "https://pixabay.com/users/Alexandra_Koch-621802/",
+        "sourcePageUrl": "https://pixabay.com/photos/ai-generated-monster-robot-future-7783344/",
+        "license": "Pixabay Content License",
+        "licenseUrl": "https://pixabay.com/service/license-summary/"
+      }
     }
   ]
 }

@@ -14,6 +14,17 @@ import { HobbiesPromptRoundData } from './hobbies/promptRoundData';
 import { BrandsPromptRoundData } from './brands/promptRoundData';
 import { SciencePromptRoundData } from './science/promptRoundData';
 import { PartyPromptRoundData } from './party/promptRoundData';
+import { AnimePromptRoundData } from './anime/promptRoundData';
+import { CartoonsPromptRoundData } from './cartoons/promptRoundData';
+import { ComicBooksMangaPromptRoundData } from './comic-books-manga/promptRoundData';
+import { HistoricalFiguresPromptRoundData } from './historical-figures/promptRoundData';
+import { ArtPromptRoundData } from './art/promptRoundData';
+import { BooksPromptRoundData } from './books/promptRoundData';
+import { NerdCulturePromptRoundData } from './nerd-culture/promptRoundData';
+import { ToysPromptRoundData } from './toys/promptRoundData';
+import { WrestlingPromptRoundData } from './wrestling/promptRoundData';
+import { UfcPromptRoundData } from './ufc/promptRoundData';
+import { MotorsportPromptRoundData } from './motorsport/promptRoundData';
 
 const InternetSlangPromptRoundData = {
   id: 'internet-slang',
@@ -283,6 +294,17 @@ export const CATEGORY_PROMPT_PACKS = [
   CelebritiesPromptRoundData,
   TechPromptRoundData,
   TvPromptRoundData,
+  AnimePromptRoundData,
+  CartoonsPromptRoundData,
+  ComicBooksMangaPromptRoundData,
+  HistoricalFiguresPromptRoundData,
+  ArtPromptRoundData,
+  BooksPromptRoundData,
+  NerdCulturePromptRoundData,
+  ToysPromptRoundData,
+  WrestlingPromptRoundData,
+  UfcPromptRoundData,
+  MotorsportPromptRoundData,
   HobbiesPromptRoundData,
   BrandsPromptRoundData,
   SciencePromptRoundData,

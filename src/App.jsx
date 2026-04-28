@@ -3720,6 +3720,28 @@ function SettingsScreen({
 }) {
   const [effectsEnabled, setEffectsEnabled] = useState(true);
   const [largeText, setLargeText] = useState(false);
+  const creditItems = [
+    {
+      name: 'Pexels',
+      blurb: 'Royalty-free photo provider used by the picture-pack importer.',
+      url: 'https://www.pexels.com/',
+    },
+    {
+      name: 'Pixabay',
+      blurb: 'Royalty-free media provider used by the picture-pack importer.',
+      url: 'https://pixabay.com/',
+    },
+    {
+      name: 'OpenAI',
+      blurb: "AI services used for Grill 'Em response generation workflows.",
+      url: 'https://openai.com/',
+    },
+    {
+      name: 'Anthropic',
+      blurb: "AI services used for Grill 'Em response generation workflows.",
+      url: 'https://www.anthropic.com/',
+    },
+  ];
   return (
     <TopFrame theme={theme}>
       <div className="mx-auto max-w-4xl space-y-6">
@@ -3809,6 +3831,31 @@ function SettingsScreen({
                   </div>
                 );
               })}
+            </div>
+          </div>
+          <div className="rounded-[1.75rem] border border-emerald-400/25 bg-emerald-500/10 p-5">
+            <div className="font-black text-lg text-emerald-100">Credits &amp; Acknowledgements</div>
+            <div className="text-sm text-white/75 mt-1">
+              Thanks to these services and APIs that help power game content and tooling.
+            </div>
+            <div className="mt-4 grid gap-3">
+              {creditItems.map((item) => (
+                <a
+                  key={item.name}
+                  href={item.url}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="rounded-xl border border-white/10 bg-black/20 px-4 py-3 transition hover:border-emerald-300/40 hover:bg-black/30"
+                >
+                  <div className="flex items-center justify-between gap-3">
+                    <div>
+                      <div className="font-semibold text-emerald-100">{item.name}</div>
+                      <div className="text-xs text-white/60 mt-1">{item.blurb}</div>
+                    </div>
+                    <div className="text-xs uppercase tracking-[0.2em] text-cyan-200/90">Visit</div>
+                  </div>
+                </a>
+              ))}
             </div>
           </div>
         </GlassPanel>

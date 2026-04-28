@@ -1,1 +1,4 @@
 node_modules
+.local-secrets/
+scripts/royaltyFreeApiKeys.local.json
+.tmp/
