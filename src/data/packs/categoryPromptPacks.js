@@ -25,6 +25,13 @@ import { ToysPromptRoundData } from './toys/promptRoundData';
 import { WrestlingPromptRoundData } from './wrestling/promptRoundData';
 import { UfcPromptRoundData } from './ufc/promptRoundData';
 import { MotorsportPromptRoundData } from './motorsport/promptRoundData';
+import { TheatrePromptRoundData } from './theatre/promptRoundData';
+import { MusicalsPromptRoundData } from './musicals/promptRoundData';
+import { EurovisionPromptRoundData } from './eurovision/promptRoundData';
+import { GirlBandsVsBoyBandsPromptRoundData } from './girl-bands-vs-boy-bands/promptRoundData';
+import { ComedyPromptRoundData } from './comedy/promptRoundData';
+import { GameShowsPromptRoundData } from './game-shows/promptRoundData';
+import { HorrorPromptRoundData } from './horror/promptRoundData';
 
 const InternetSlangPromptRoundData = {
   id: 'internet-slang',
@@ -324,4 +331,11 @@ export const CATEGORY_PROMPT_PACKS = [
   BoardGamesPromptRoundData,
   SuperstitionsPromptRoundData,
   FestivalsHolidaysPromptRoundData,
+  TheatrePromptRoundData,
+  MusicalsPromptRoundData,
+  EurovisionPromptRoundData,
+  GirlBandsVsBoyBandsPromptRoundData,
+  ComedyPromptRoundData,
+  GameShowsPromptRoundData,
+  HorrorPromptRoundData,
 ];
