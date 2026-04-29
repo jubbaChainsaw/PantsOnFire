@@ -5192,7 +5192,6 @@ export default function App() {
         releaseChannelSummary={releaseChannelSummary}
       />
     )}
-    <BgmController screen={screen} audioSettings={audioSettings} />
     <AdminDialog open={adminOpen} onOpenChange={setAdminOpen} premiumEnabled={premiumEnabled} customCategories={customCategories} setCustomCategories={setCustomCategories} />
   </>;
 }
