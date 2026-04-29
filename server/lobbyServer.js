@@ -22,6 +22,12 @@ function parseClientOrigins(rawValue) {
   const parts = normalized
     .split(/[\s,;]+/)
     .map((part) => part.trim())
+    .map((part) => {
+      const withoutQuotes = part.replace(/^['"]+|['"]+$/g, '');
+      // Guard against accidental value formats like "LOBBY_CLIENT_ORIGINS=https://foo"
+      // that can happen when pasting env vars from docs/dashboards.
+      return withoutQuotes.replace(/^[A-Z0-9_]+\s*=\s*/i, '').trim();
+    })
     .filter(Boolean);
   return parts.length ? parts : ['*'];
 }
