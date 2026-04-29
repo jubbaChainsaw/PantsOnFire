@@ -1,6 +1,6 @@
 import { Room, RoomEvent } from 'livekit-client';
 
-const LOBBY_SERVER_URL = String(import.meta?.env?.VITE_LOBBY_SERVER_URL || '').trim();
+const LOBBY_SERVER_URL = String(import.meta?.env?.VITE_LOBBY_SERVER_URL || 'https://api.pantsonfire.app').trim();
 const LOBBY_API_BASE = `${LOBBY_SERVER_URL ? LOBBY_SERVER_URL.replace(/\/$/, '') : ''}/api`;
 
 function normalizeCode(rawCode = '') {

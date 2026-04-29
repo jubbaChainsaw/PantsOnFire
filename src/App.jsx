@@ -410,7 +410,7 @@ function normalizeStoredOnlineSession(raw) {
 function mapLobbyErrorToMessage(error, fallback = 'Unable to complete online lobby request.') {
   const code = error?.code || error?.payload?.error || '';
   if (code === 'lobby-server-url-missing') {
-    return 'Lobby server URL is not configured for this build. Set VITE_LOBBY_SERVER_URL and restart dev server.';
+    return 'Lobby server URL is not configured for this build.';
   }
   if (code === 'lobby-not-found') return 'Lobby not found. Ask the host to regenerate and share a fresh code.';
   if (code === 'lobby-already-started') return 'This lobby already started. Ask the host for a new code.';
