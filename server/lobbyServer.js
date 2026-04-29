@@ -29,10 +29,28 @@ function parseClientOrigins(rawValue) {
 const CLIENT_ORIGINS = parseClientOrigins(CLIENT_ORIGINS_RAW);
 const ALLOW_ALL_ORIGINS = CLIENT_ORIGINS.includes('*');
 
+function escapeRegex(rawValue = '') {
+  return String(rawValue).replace(/[|\\{}()[\]^$+?.]/g, '\\$&');
+}
+
+function originMatchesRule(origin, rule) {
+  const normalizedOrigin = String(origin || '').trim();
+  const normalizedRule = String(rule || '').trim();
+  if (!normalizedOrigin || !normalizedRule) return false;
+  if (normalizedRule === '*') return true;
+  if (!normalizedRule.includes('*')) return normalizedOrigin === normalizedRule;
+  const regexPattern = `^${escapeRegex(normalizedRule).replace(/\\\*/g, '.*')}$`;
+  try {
+    return new RegExp(regexPattern).test(normalizedOrigin);
+  } catch {
+    return false;
+  }
+}
+
 function isAllowedOrigin(origin) {
   if (ALLOW_ALL_ORIGINS) return true;
   if (!origin) return true;
-  return CLIENT_ORIGINS.includes(origin);
+  return CLIENT_ORIGINS.some((rule) => originMatchesRule(origin, rule));
 }
 
 function corsOriginHandler(origin, callback) {
