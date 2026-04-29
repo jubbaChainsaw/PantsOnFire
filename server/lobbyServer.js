@@ -45,7 +45,7 @@ function originMatchesRule(origin, rule) {
   if (!normalizedOrigin || !normalizedRule) return false;
   if (normalizedRule === '*') return true;
   if (!normalizedRule.includes('*')) return normalizedOrigin === normalizedRule;
-  const regexPattern = `^${escapeRegex(normalizedRule).replace(/\\\*/g, '.*')}$`;
+  const regexPattern = `^${normalizedRule.split('*').map(escapeRegex).join('.*')}$`;
   try {
     return new RegExp(regexPattern).test(normalizedOrigin);
   } catch {
