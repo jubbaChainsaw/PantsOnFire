@@ -16,6 +16,11 @@ function normalizeCode(lobbyCode) {
 }
 
 async function requestJson(path, { method = 'GET', body } = {}) {
+  if (!LOBBY_SERVER_URL) {
+    const error = new Error('lobby-server-url-missing');
+    error.code = 'lobby-server-url-missing';
+    throw error;
+  }
   const response = await fetch(`${LOBBY_API_BASE}${path}`, {
     method,
     headers: { 'Content-Type': 'application/json' },

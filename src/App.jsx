@@ -409,6 +409,9 @@ function normalizeStoredOnlineSession(raw) {
 }
 function mapLobbyErrorToMessage(error, fallback = 'Unable to complete online lobby request.') {
   const code = error?.code || error?.payload?.error || '';
+  if (code === 'lobby-server-url-missing') {
+    return 'Lobby server URL is not configured for this build. Set VITE_LOBBY_SERVER_URL and restart dev server.';
+  }
   if (code === 'lobby-not-found') return 'Lobby not found. Ask the host to regenerate and share a fresh code.';
   if (code === 'lobby-already-started') return 'This lobby already started. Ask the host for a new code.';
   if (code === 'session-token-required') return 'Session token missing. Rejoin the lobby from a fresh code.';
@@ -1859,6 +1862,7 @@ function OnlineLobbySetupScreen({
   themeOptions = [],
   onBack,
   onContinue,
+  setupError = '',
 }) {
   const selectableThemeOptions = themeOptions.length
     ? themeOptions.filter((themeOption) => themeOption?.isUnlocked !== false)
@@ -1956,6 +1960,11 @@ function OnlineLobbySetupScreen({
               Generate Lobby Code
             </Button>
           </div>
+          {setupError && (
+            <div className="mt-4 rounded-2xl border border-red-400/30 bg-red-500/10 p-3 text-sm text-red-100">
+              {setupError}
+            </div>
+          )}
         </GlassPanel>
       </div>
     </TopFrame>
@@ -5179,6 +5188,10 @@ export default function App() {
   async function createOnlineLobby() {
     const host = (onlineHostName || players[0]?.name || 'Host').trim();
     if (!host) return;
+    if (!String(import.meta?.env?.VITE_LOBBY_SERVER_URL || '').trim()) {
+      setOnlineLobbyError('Lobby server URL is missing in this build. Restart dev with VITE_LOBBY_SERVER_URL=https://api.pantsonfire.app');
+      return;
+    }
     const hostPlayer = createOnlinePlayer({ name: host, clientId: onlineClientId, isHost: true });
     let snapshot = null;
     let resolvedHostPlayer = hostPlayer;
@@ -5489,6 +5502,7 @@ export default function App() {
           setScreen('home');
         }}
         onContinue={createOnlineLobby}
+        setupError={onlineLobbyError}
       />
     )}
     {screen === 'online-join' && (
