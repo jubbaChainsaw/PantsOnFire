@@ -148,7 +148,7 @@ const UI_ICON_BADGE_LIAR_SRC = '/assets/images/ui-icons/badge-liar.png';
 const UI_ICON_MAGNIFIER_FIRE_SRC = '/assets/images/ui-icons/magnifier-fire.png';
 const MIN_PLAYERS = 3;
 const MAX_PLAYERS = 12;
-const WEB_JOIN_ONLY_MODE = String(import.meta?.env?.VITE_WEB_JOIN_ONLY ?? 'true').trim() !== 'false';
+const WEB_JOIN_ONLY_MODE = String(import.meta?.env?.VITE_WEB_JOIN_ONLY ?? 'false').trim() !== 'false';
 const ONLINE_VOICE_ACTIVE_SCREENS = new Set([
   'online-lobby-created',
   'online-lobby-waiting',
