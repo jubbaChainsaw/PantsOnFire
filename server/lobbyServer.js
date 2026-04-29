@@ -20,7 +20,7 @@ function parseClientOrigins(rawValue) {
   const normalized = String(rawValue || '').trim();
   if (!normalized) return ['*'];
   const parts = normalized
-    .split(',')
+    .split(/[\s,;]+/)
     .map((part) => part.trim())
     .filter(Boolean);
   return parts.length ? parts : ['*'];
@@ -54,11 +54,7 @@ function isAllowedOrigin(origin) {
 }
 
 function corsOriginHandler(origin, callback) {
-  if (isAllowedOrigin(origin)) {
-    callback(null, true);
-    return;
-  }
-  callback(new Error('origin-not-allowed'));
+  callback(null, isAllowedOrigin(origin));
 }
 
 function nowIso() {
