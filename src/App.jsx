@@ -5188,10 +5188,6 @@ export default function App() {
   async function createOnlineLobby() {
     const host = (onlineHostName || players[0]?.name || 'Host').trim();
     if (!host) return;
-    if (!String(import.meta?.env?.VITE_LOBBY_SERVER_URL || '').trim()) {
-      setOnlineLobbyError('Lobby server URL is missing in this build. Restart dev with VITE_LOBBY_SERVER_URL=https://api.pantsonfire.app');
-      return;
-    }
     const hostPlayer = createOnlinePlayer({ name: host, clientId: onlineClientId, isHost: true });
     let snapshot = null;
     let resolvedHostPlayer = hostPlayer;
