@@ -1,10 +1,10 @@
 import { io } from 'socket.io-client';
 
-const LOBBY_SERVER_URL = String(
-  import.meta?.env?.VITE_LOBBY_SERVER_URL
-  || 'https://api.pantsonfire.app'
-).trim();
-const LOBBY_API_BASE = `${LOBBY_SERVER_URL ? LOBBY_SERVER_URL.replace(/\/$/, '') : ''}/api`;
+const ENV_LOBBY_SERVER_URL = String(import.meta?.env?.VITE_LOBBY_SERVER_URL || '').trim();
+const LOBBY_SERVER_URL = ENV_LOBBY_SERVER_URL;
+const LOBBY_API_BASE = ENV_LOBBY_SERVER_URL
+  ? `${ENV_LOBBY_SERVER_URL.replace(/\/$/, '')}/api`
+  : '/api';
 
 function randomId(prefix = 'id') {
   return `${prefix}-${Math.random().toString(36).slice(2, 10)}-${Date.now().toString(36)}`;

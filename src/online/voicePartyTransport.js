@@ -1,7 +1,10 @@
 import { Room, RoomEvent } from 'livekit-client';
 
-const LOBBY_SERVER_URL = String(import.meta?.env?.VITE_LOBBY_SERVER_URL || 'https://api.pantsonfire.app').trim();
-const LOBBY_API_BASE = `${LOBBY_SERVER_URL ? LOBBY_SERVER_URL.replace(/\/$/, '') : ''}/api`;
+const RAW_LOBBY_SERVER_URL = String(import.meta?.env?.VITE_LOBBY_SERVER_URL || '').trim();
+const LOBBY_SERVER_URL = RAW_LOBBY_SERVER_URL;
+const LOBBY_API_BASE = RAW_LOBBY_SERVER_URL
+  ? `${RAW_LOBBY_SERVER_URL.replace(/\/$/, '')}/api`
+  : '/api';
 
 function normalizeCode(rawCode = '') {
   return String(rawCode || '').trim().toUpperCase();
