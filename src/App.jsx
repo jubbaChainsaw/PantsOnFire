@@ -55,6 +55,7 @@ import {
   submitRoundVotesOnServer,
   joinLobbyOnServer,
   leaveLobbyOnServer,
+  readLobbySnapshot,
   readPrivateRoundOnServer,
   resumeLobbySessionOnServer,
   startLobbyOnServer,
@@ -147,7 +148,15 @@ const UI_ICON_BADGE_LIAR_SRC = '/assets/images/ui-icons/badge-liar.png';
 const UI_ICON_MAGNIFIER_FIRE_SRC = '/assets/images/ui-icons/magnifier-fire.png';
 const MIN_PLAYERS = 3;
 const MAX_PLAYERS = 12;
-const ONLINE_VOICE_ACTIVE_SCREENS = new Set(['discussion', 'grill', 'round-type-choice', 'category-choice', 'results']);
+const WEB_JOIN_ONLY_MODE = String(import.meta?.env?.VITE_WEB_JOIN_ONLY ?? 'true').trim() !== 'false';
+const ONLINE_VOICE_ACTIVE_SCREENS = new Set([
+  'online-lobby-created',
+  'online-lobby-waiting',
+  'discussion',
+  'grill',
+  'voting',
+  'results',
+]);
 const ONLINE_CONNECTION_ACTIVE_SCREENS = new Set([
   'online-lobby-created',
   'online-lobby-waiting',
@@ -160,6 +169,32 @@ const ONLINE_CONNECTION_ACTIVE_SCREENS = new Set([
   'liar-reveal',
   'results',
   'final',
+]);
+const ONLINE_PARTY_CHAT_ACTIVE_SCREENS = new Set([
+  'online-lobby-created',
+  'online-lobby-waiting',
+  'game-intro',
+  'rules',
+  'host-intro',
+  'reveal',
+  'discussion',
+  'grill',
+  'voting',
+  'liar-reveal',
+  'results',
+  'final',
+]);
+
+const DESKTOP_LANDSCAPE_MIN_WIDTH = 1100;
+const DESKTOP_LANDSCAPE_MIN_HEIGHT = 700;
+const DESKTOP_LANDSCAPE_SCREENS = new Set([
+  'setup',
+  'category-choice',
+  'round-type-choice',
+  'online-setup',
+  'online-join',
+  'online-lobby-created',
+  'online-lobby-waiting',
 ]);
 
 function shuffle(arr) {
@@ -391,12 +426,37 @@ function mapLobbyErrorToMessage(error, fallback = 'Unable to complete online lob
   if (code === 'invalid-vote-target') return 'That vote target is invalid for this round.';
   if (code === 'round-generation-failed') return 'Server could not generate a new round. Try again.';
   if (code === 'not-enough-players') return `Need at least ${MIN_PLAYERS} players before starting.`;
+  if (code === 'lobby-full') {
+    const maxPlayers = Number(error?.payload?.maxPlayers || 0);
+    if (Number.isFinite(maxPlayers) && maxPlayers > 0) {
+      return `Lobby is full (${maxPlayers}/${maxPlayers}). Ask the host to raise the player limit or start a new lobby.`;
+    }
+    return 'Lobby is full. Ask the host to raise the player limit or start a new lobby.';
+  }
   if (code === 'player-id-required') return 'Unable to leave lobby: missing player identity.';
   if (code === 'voice-not-configured') return 'Voice chat is not configured on the lobby server yet.';
   if (code === 'livekit-token-failed') return 'Voice chat token generation failed. Try again in a moment.';
   if (code === 'voice-token-invalid') return 'Voice chat token was invalid. Please rejoin the lobby.';
   return fallback;
 }
+
+function shouldUseDesktopLandscapeLayout() {
+  if (typeof window === 'undefined') return false;
+  const viewportWidth = Number(window.innerWidth || 0);
+  const viewportHeight = Number(window.innerHeight || 0);
+  if (!viewportWidth || !viewportHeight) return false;
+  const hasTouchPoints = Number(window.navigator?.maxTouchPoints || 0) > 0;
+  const coarsePointer = typeof window.matchMedia === 'function'
+    ? window.matchMedia('(pointer: coarse)').matches
+    : false;
+  const supportsHover = typeof window.matchMedia === 'function'
+    ? window.matchMedia('(hover: hover)').matches
+    : false;
+  const likelyDesktop = viewportWidth >= 1100 && supportsHover && !hasTouchPoints && !coarsePointer;
+  const isLandscape = viewportWidth >= viewportHeight;
+  return likelyDesktop && isLandscape;
+}
+
 function toClientRoundFromServer(round) {
   if (!round || typeof round !== 'object') return null;
   return {
@@ -1622,7 +1682,7 @@ function RulesSplashScreen({ mode, onContinue, theme, isOnlineMode = false }) {
     </TopFrame>
   );
 }
-function HomeScreen({ onNavigate, homeLine, adultMode, fireFrameVideoSrc = FIRE_FRAME_VIDEO_SRC }) {
+function HomeScreen({ onNavigate, homeLine, adultMode, joinOnlyMode = false, fireFrameVideoSrc = FIRE_FRAME_VIDEO_SRC }) {
   const logoSrc = adultMode ? LOGO_18PLUS_SRC : LOGO_SRC;
   const bottomFlames = [
     { src: HOME_FLAME_SOURCES[0] || FLAME_SRC, left: '4%', size: 'h-24 w-20', delay: '0s', duration: '2.4s', drift: '3deg', rise: '-22px' },
@@ -1714,9 +1774,18 @@ function HomeScreen({ onNavigate, homeLine, adultMode, fireFrameVideoSrc = FIRE_
             <p className="mt-1 text-white/80 text-xs sm:text-sm">{homeLine}</p>
           </div>
           <div className="grid gap-2">
-            <Button className="h-14 rounded-[1.8rem] text-lg sm:text-xl bg-yellow-300 text-zinc-950 hover:bg-yellow-200 border-2 border-white" onClick={() => onNavigate('setup')}><Play className="mr-2 h-5 w-5" />Setup Game</Button>
-            <Button className="h-14 rounded-[1.8rem] text-lg sm:text-xl bg-cyan-500/20 text-white hover:bg-cyan-500/30 border border-cyan-300/40" onClick={() => onNavigate('online-setup')}><Wifi className="mr-2 h-5 w-5" />Create Online Lobby</Button>
+            {!joinOnlyMode && (
+              <Button className="h-14 rounded-[1.8rem] text-lg sm:text-xl bg-yellow-300 text-zinc-950 hover:bg-yellow-200 border-2 border-white" onClick={() => onNavigate('setup')}><Play className="mr-2 h-5 w-5" />Setup Game</Button>
+            )}
+            {!joinOnlyMode && (
+              <Button className="h-14 rounded-[1.8rem] text-lg sm:text-xl bg-cyan-500/20 text-white hover:bg-cyan-500/30 border border-cyan-300/40" onClick={() => onNavigate('online-setup')}><Wifi className="mr-2 h-5 w-5" />Create Online Lobby</Button>
+            )}
             <Button className="h-14 rounded-[1.8rem] text-lg sm:text-xl bg-indigo-500/15 text-white hover:bg-indigo-500/30 border border-indigo-300/30" onClick={() => onNavigate('online-join')}><KeyRound className="mr-2 h-5 w-5" />Join Online Lobby</Button>
+            {joinOnlyMode && (
+              <div className="rounded-2xl border border-cyan-300/25 bg-cyan-500/10 px-4 py-3 text-xs text-cyan-100">
+                Website mode supports joining lobbies only. Creating games and local play are available in the mobile app versions.
+              </div>
+            )}
             <Button className="h-14 rounded-[1.8rem] text-lg sm:text-xl bg-fuchsia-500/15 text-white hover:bg-fuchsia-500/25 border border-fuchsia-400/30" onClick={() => onNavigate('store')}><ShoppingBag className="mr-2 h-5 w-5" />Store</Button>
             <Button className="h-14 rounded-[1.8rem] text-lg sm:text-xl bg-cyan-500/15 text-white hover:bg-cyan-500/25 border border-cyan-400/30" onClick={() => onNavigate('settings')}><Settings className="mr-2 h-5 w-5" />Settings</Button>
           </div>
@@ -1768,7 +1837,32 @@ function DevelopmentProgressScreen({ onBack, onlineLobbyLine, theme = 'Default' 
     </TopFrame>
   );
 }
-function OnlineLobbySetupScreen({ hostName, setHostName, onBack, onContinue, nameTheme }) {
+function OnlineLobbySetupScreen({
+  hostName,
+  setHostName,
+  maxPlayers,
+  setMaxPlayers,
+  nameTheme,
+  setNameTheme,
+  mode,
+  setMode,
+  winCondition,
+  setWinCondition,
+  pointsToWin,
+  setPointsToWin,
+  roundsPerPlayer,
+  setRoundsPerPlayer,
+  adultMode,
+  setAdultMode,
+  grillSettings,
+  setGrillSettings,
+  themeOptions = [],
+  onBack,
+  onContinue,
+}) {
+  const selectableThemeOptions = themeOptions.length
+    ? themeOptions.filter((themeOption) => themeOption?.isUnlocked !== false)
+    : [{ name: 'Default', isDlc: false }];
   const canContinue = hostName.trim().length > 0;
   return (
     <TopFrame theme={nameTheme}>
@@ -1776,20 +1870,90 @@ function OnlineLobbySetupScreen({ hostName, setHostName, onBack, onContinue, nam
         <GlassPanel className="rounded-[2.5rem] p-8 border-cyan-400/20 bg-black/25">
           <div className="text-xs uppercase tracking-[0.35em] text-cyan-200/80">Online Host Setup</div>
           <h2 className="text-4xl font-black mt-3 text-yellow-300">Create your lobby</h2>
-          <p className="text-white/75 mt-2">Set your host name first, then configure full game rules and generate a lobby code.</p>
-          <div className="mt-6 space-y-2">
-            <Label className="text-white/80">Host display name</Label>
-            <div className="flex gap-2">
-              <Input value={hostName} onChange={(event) => setHostName(event.target.value)} className="rounded-2xl bg-white/5 border border-white/10 text-white" />
-              <Button className="rounded-2xl bg-cyan-500/15 border border-cyan-400/30 text-cyan-100 px-4" onClick={() => setHostName(randomNameFromTheme(nameTheme, []))}>
-                <Dice6 className="h-4 w-4" />
+          <p className="text-white/75 mt-2">Pick your game settings first, then generate lobby code.</p>
+          <div className="mt-6 grid gap-4">
+            <div>
+              <Label className="text-white/80">Host display name</Label>
+              <div className="mt-2 flex gap-2">
+                <Input value={hostName} onChange={(event) => setHostName(event.target.value)} className="rounded-2xl bg-white/5 border border-white/10 text-white" />
+                <Button className="rounded-2xl bg-cyan-500/15 border border-cyan-400/30 text-cyan-100 px-4" onClick={() => setHostName(randomNameFromTheme(nameTheme, []))}>
+                  <Dice6 className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+            <div>
+              <Label className="text-white/80">Theme</Label>
+              <select
+                value={nameTheme}
+                onChange={(event) => setNameTheme(event.target.value)}
+                className="mt-2 w-full rounded-2xl border border-white/10 bg-white/5 px-3 py-3 text-white"
+              >
+                {selectableThemeOptions.map((themeOption) => (
+                  <option key={themeOption.name} value={themeOption.name} className="text-black">
+                    {themeOption.name}{themeOption.isDlc ? ' 🔥' : ''}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <Label className="text-white/80">Max players in lobby</Label>
+              <Input
+                type="number"
+                min={MIN_PLAYERS}
+                max={MAX_PLAYERS}
+                value={maxPlayers}
+                onChange={(event) => {
+                  const next = Number(event.target.value);
+                  if (!Number.isFinite(next)) return;
+                  setMaxPlayers(Math.max(MIN_PLAYERS, Math.min(MAX_PLAYERS, Math.floor(next))));
+                }}
+                className="mt-2 rounded-2xl bg-white/5 border border-white/10 text-white"
+              />
+            </div>
+            <div>
+              <Label className="text-white/80">Mode</Label>
+              <div className="mt-2 grid grid-cols-2 gap-2">
+                <Button className={`rounded-2xl px-4 py-3 ${mode === 'classic' ? 'bg-yellow-300 text-zinc-950' : 'border border-white/10 bg-white/5 text-white'}`} onClick={() => setMode('classic')}>Classic</Button>
+                <Button className={`rounded-2xl px-4 py-3 ${mode === 'chaos' ? 'bg-fuchsia-500 text-white' : 'border border-white/10 bg-white/5 text-white'}`} onClick={() => setMode('chaos')}>Chaos</Button>
+              </div>
+            </div>
+            <div>
+              <Label className="text-white/80">Win condition</Label>
+              <div className="mt-2 grid grid-cols-2 gap-2">
+                <Button className={`rounded-2xl px-4 py-3 ${winCondition === 'points' ? 'bg-yellow-300 text-zinc-950' : 'border border-white/10 bg-white/5 text-white'}`} onClick={() => setWinCondition('points')}>Points</Button>
+                <Button className={`rounded-2xl px-4 py-3 ${winCondition === 'rounds' ? 'bg-fuchsia-500 text-white' : 'border border-white/10 bg-white/5 text-white'}`} onClick={() => setWinCondition('rounds')}>Rounds</Button>
+              </div>
+              {winCondition === 'points' ? (
+                <div className="mt-2 grid grid-cols-3 gap-2">
+                  {[10, 15, 20].map((value) => (
+                    <Button key={value} className={`rounded-2xl px-4 py-3 ${pointsToWin === value ? 'bg-yellow-300 text-zinc-950' : 'border border-white/10 bg-white/5 text-white'}`} onClick={() => setPointsToWin(value)}>
+                      {value}
+                    </Button>
+                  ))}
+                </div>
+              ) : (
+                <div className="mt-2 grid grid-cols-3 gap-2">
+                  {[1, 2, 3].map((value) => (
+                    <Button key={value} className={`rounded-2xl px-4 py-3 ${roundsPerPlayer === value ? 'bg-fuchsia-500 text-white' : 'border border-white/10 bg-white/5 text-white'}`} onClick={() => setRoundsPerPlayer(value)}>
+                      {value}
+                    </Button>
+                  ))}
+                </div>
+              )}
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <Button className={`rounded-2xl px-4 py-3 ${adultMode ? 'bg-red-500 text-white' : 'border border-white/10 bg-white/5 text-white'}`} onClick={() => setAdultMode(!adultMode)}>
+                {adultMode ? '18+ On' : '18+ Off'}
+              </Button>
+              <Button className={`rounded-2xl px-4 py-3 ${grillSettings.micEnabled ? 'bg-emerald-400 text-zinc-950' : 'border border-white/10 bg-white/5 text-white'}`} onClick={() => setGrillSettings((current) => ({ ...current, micEnabled: !current.micEnabled }))}>
+                Mic {grillSettings.micEnabled ? 'On' : 'Off'}
               </Button>
             </div>
           </div>
           <div className="mt-8 flex flex-wrap gap-3">
             <Button className="rounded-[1.4rem] bg-white/5 border border-white/10 px-4 py-2 text-white" onClick={onBack}>Back</Button>
             <Button className="rounded-[1.4rem] bg-yellow-300 text-zinc-950 border-2 border-white px-6 py-2" disabled={!canContinue} onClick={onContinue}>
-              Continue to game config
+              Generate Lobby Code
             </Button>
           </div>
         </GlassPanel>
@@ -1797,35 +1961,67 @@ function OnlineLobbySetupScreen({ hostName, setHostName, onBack, onContinue, nam
     </TopFrame>
   );
 }
-function OnlineJoinLobbyScreen({ joinCode, setJoinCode, playerName, setPlayerName, onBack, onJoin, joinError = '', nameTheme }) {
-  const canJoin = joinCode.trim().length >= 4 && playerName.trim().length > 0;
+function OnlineJoinLobbyScreen({
+  step = 'code',
+  joinCode,
+  setJoinCode,
+  playerName,
+  setPlayerName,
+  onBack,
+  onContinueCode,
+  onJoin,
+  onRandomizeName,
+  joinError = '',
+  nameTheme,
+  hostName = '',
+  playerCount = 0,
+  maxPlayers = MAX_PLAYERS,
+}) {
+  const canContinueCode = joinCode.trim().length >= 4;
+  const canJoin = playerName.trim().length > 0;
   return (
     <TopFrame theme={nameTheme}>
       <div className="mx-auto max-w-3xl space-y-6">
         <GlassPanel className="rounded-[2.5rem] p-8 border-indigo-400/25 bg-black/25">
           <div className="text-xs uppercase tracking-[0.35em] text-indigo-200/80">Join Online Lobby</div>
-          <h2 className="text-4xl font-black mt-3 text-yellow-300">Enter lobby code</h2>
+          <h2 className="text-4xl font-black mt-3 text-yellow-300">
+            {step === 'code' ? 'Enter lobby code' : 'Choose your player name'}
+          </h2>
           <p className="text-white/75 mt-2">Join from your own device. Prompts stay private to your screen.</p>
           <div className="mt-6 grid gap-4">
-            <div>
-              <Label className="text-white/80">Lobby code</Label>
-              <Input value={joinCode} onChange={(event) => setJoinCode(event.target.value.toUpperCase())} className="mt-2 rounded-2xl bg-white/5 border border-white/10 text-white uppercase tracking-[0.25em]" />
-            </div>
-            <div>
-              <Label className="text-white/80">Your player name</Label>
-              <div className="mt-2 flex gap-2">
-                <Input value={playerName} onChange={(event) => setPlayerName(event.target.value)} className="rounded-2xl bg-white/5 border border-white/10 text-white" />
-                <Button className="rounded-2xl bg-cyan-500/15 border border-cyan-400/30 text-cyan-100 px-4" onClick={() => setPlayerName(randomNameFromTheme(nameTheme, []))}>
-                  <Dice6 className="h-4 w-4" />
-                </Button>
+            {step === 'code' ? (
+              <div>
+                <Label className="text-white/80">Lobby code</Label>
+                <Input value={joinCode} onChange={(event) => setJoinCode(event.target.value.toUpperCase())} className="mt-2 rounded-2xl bg-white/5 border border-white/10 text-white uppercase tracking-[0.25em]" />
               </div>
-            </div>
+            ) : (
+              <>
+                <div className="rounded-2xl border border-cyan-300/25 bg-cyan-500/10 p-3 text-sm text-cyan-100">
+                  Host: <span className="font-black text-white">{hostName || 'Host'}</span> • Theme: <span className="font-black text-white">{nameTheme}</span> • Players: {playerCount}/{maxPlayers}
+                </div>
+                <div>
+                  <Label className="text-white/80">Your player name</Label>
+                  <div className="mt-2 flex gap-2">
+                    <Input value={playerName} onChange={(event) => setPlayerName(event.target.value)} className="rounded-2xl bg-white/5 border border-white/10 text-white" />
+                    <Button className="rounded-2xl bg-cyan-500/15 border border-cyan-400/30 text-cyan-100 px-4" onClick={onRandomizeName}>
+                      <Dice6 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              </>
+            )}
           </div>
           <div className="mt-8 flex flex-wrap gap-3">
             <Button className="rounded-[1.4rem] bg-white/5 border border-white/10 px-4 py-2 text-white" onClick={onBack}>Back</Button>
-            <Button className="rounded-[1.4rem] bg-yellow-300 text-zinc-950 border-2 border-white px-6 py-2" disabled={!canJoin} onClick={onJoin}>
-              Join lobby
-            </Button>
+            {step === 'code' ? (
+              <Button className="rounded-[1.4rem] bg-yellow-300 text-zinc-950 border-2 border-white px-6 py-2" disabled={!canContinueCode} onClick={onContinueCode}>
+                Continue
+              </Button>
+            ) : (
+              <Button className="rounded-[1.4rem] bg-yellow-300 text-zinc-950 border-2 border-white px-6 py-2" disabled={!canJoin} onClick={onJoin}>
+                Join Game
+              </Button>
+            )}
           </div>
           {joinError && (
             <div className="mt-4 rounded-2xl border border-red-400/30 bg-red-500/10 p-3 text-sm text-red-100">
@@ -1837,7 +2033,7 @@ function OnlineJoinLobbyScreen({ joinCode, setJoinCode, playerName, setPlayerNam
     </TopFrame>
   );
 }
-function OnlineLobbyCodeScreen({ lobbyCode, hostName, players, lobbyStatus, onlineStatusNote = '', onCopyCode, onBack, onStartMatch, nameTheme }) {
+function OnlineLobbyCodeScreen({ lobbyCode, hostName, players, lobbyStatus, onlineStatusNote = '', onCopyCode, onBack, onStartMatch, nameTheme, maxPlayers = MAX_PLAYERS }) {
   const canStart = players.length >= MIN_PLAYERS && lobbyStatus !== 'started';
   return (
     <TopFrame theme={nameTheme}>
@@ -1855,18 +2051,27 @@ function OnlineLobbyCodeScreen({ lobbyCode, hostName, players, lobbyStatus, onli
           </div>
           <div className="mt-6">
             <div className="text-xs uppercase tracking-[0.25em] text-white/60">
-              Connected players ({players.length})
+              Connected players ({players.length}/{maxPlayers})
             </div>
-            <div className="mt-3 flex flex-wrap gap-2">
-              {players.map((player) => (
-                <Badge key={player.id} className="rounded-full bg-white/10 border border-white/10 text-white">{player.name}</Badge>
+            <div className="mt-3 grid gap-2 sm:grid-cols-2">
+              {players.map((player, index) => (
+                <div key={player.id} className="rounded-2xl border border-white/10 bg-white/5 px-3 py-2 flex items-center gap-2">
+                  <PlayerPersonaAvatar
+                    player={player}
+                    fallbackIndex={index}
+                    themeName={nameTheme}
+                    sizeClass="h-8 w-8"
+                    initialsClass="text-xs"
+                  />
+                  <div className="text-white text-sm">{player.name}</div>
+                </div>
               ))}
             </div>
           </div>
           <div className="mt-8 flex flex-wrap gap-3">
             <Button className="rounded-[1.4rem] bg-white/5 border border-white/10 px-4 py-2 text-white" onClick={onBack}>Back to home</Button>
             <Button className="rounded-[1.4rem] bg-yellow-300 text-zinc-950 border-2 border-white px-6 py-2" disabled={!canStart} onClick={onStartMatch}>
-              {lobbyStatus === 'started' ? 'Match already started' : 'Start online match'}
+              {lobbyStatus === 'started' ? 'Match already started' : "Let's Start"}
             </Button>
           </div>
           {onlineStatusNote && (
@@ -1890,7 +2095,7 @@ function SetupScreen(props) {
     winCondition, setWinCondition, pointsToWin, setPointsToWin, roundsPerPlayer, setRoundsPerPlayer, enabledCategories, onToggleCategory,
     grillSettings, setGrillSettings, adultMode, categoryCount, onOpenAdmin, onStart, onBack, setupLine,
     personaOnlyMode, setPersonaOnlyMode,
-    themeOptions = [], startLabel = 'Start Match', requiredMinPlayers = MIN_PLAYERS,
+    themeOptions = [], startLabel = 'Start Match', requiredMinPlayers = MIN_PLAYERS, desktopLandscape = false,
   } = props;
   const canStart = players.length >= requiredMinPlayers && players.every((p) => p.name.trim().length > 0);
   const maxLiars = Math.max(1, Math.floor(players.length / 2));
@@ -1951,7 +2156,7 @@ function SetupScreen(props) {
     }];
   return (
     <TopFrame theme={nameTheme}>
-      <div className="mx-auto max-w-7xl space-y-5">
+      <div className={desktopLandscape ? 'mx-auto max-w-[1400px] space-y-5' : 'mx-auto max-w-7xl space-y-5'}>
         <div className="flex items-center justify-between gap-4">
           <Button className="rounded-[1.4rem] border border-white/10 bg-white/5 px-4 py-2 text-white" onClick={onBack}>Back</Button>
           <div className="text-center">
@@ -1970,7 +2175,7 @@ function SetupScreen(props) {
             <div className="mt-2 text-4xl sm:text-5xl font-black text-yellow-300">{liarCount}</div>
           </GlassPanel>
         </div>
-        <div className="grid gap-5 lg:grid-cols-[1.1fr_0.9fr]">
+        <div className={desktopLandscape ? 'grid gap-5 xl:grid-cols-[1.2fr_0.8fr]' : 'grid gap-5 lg:grid-cols-[1.1fr_0.9fr]'}>
           <GlassPanel className="rounded-[2.5rem] border-fuchsia-400/25 bg-black/25 p-5">
             <div className="mb-4 rounded-[1.7rem] border border-white/15 bg-black/25 p-4">
               <div className={`text-xs uppercase tracking-[0.3em] ${setupThemeLabelClass}`}>Game Theme</div>
@@ -3011,11 +3216,28 @@ function GrillEmScreen({ players, round, totalRounds, onContinue, theme, playSfx
     </TopFrame>
   );
 }
-function VoicePartyStatusStrip({ onlineVoiceEnabled, onlineVoiceMuted, setOnlineVoiceMuted, canTalk }) {
+function VoicePartyStatusStrip({
+  onlineVoiceEnabled,
+  onlineVoiceMuted,
+  setOnlineVoiceMuted,
+  canTalk,
+  talkingPlayers = {},
+  players = [],
+  localPlayerId = '',
+  onToggleChat = () => {},
+  themeName = 'Default',
+}) {
   if (!onlineVoiceEnabled) return null;
+  const resolvedThemeName = toCanonicalThemeName(themeName || 'Default');
+  const activeTalkerIds = Object.keys(talkingPlayers).filter((playerId) => Boolean(talkingPlayers[playerId]));
+  const activeTalkers = activeTalkerIds
+    .map((playerId) => players.find((player) => player.id === playerId))
+    .filter(Boolean)
+    .slice(0, 4);
+  const localTalking = Boolean(localPlayerId && talkingPlayers[localPlayerId]);
   return (
     <GlassPanel className="rounded-[1.4rem] p-3 border-cyan-400/20 bg-cyan-500/10">
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-col gap-3">
         <div className="text-sm">
           <div className="font-black text-cyan-100 flex items-center gap-2">
             <Radio className="h-4 w-4" />
@@ -3027,28 +3249,172 @@ function VoicePartyStatusStrip({ onlineVoiceEnabled, onlineVoiceMuted, setOnline
               : 'Muted automatically while instructions/prompts are on screen.'}
           </div>
         </div>
-        <Button
-          className={`rounded-2xl px-4 py-2 ${
-            onlineVoiceMuted
-              ? 'bg-red-500/25 border border-red-400/40 text-red-100'
-              : 'bg-emerald-500/20 border border-emerald-400/40 text-emerald-100'
-          }`}
-          disabled={!canTalk}
-          onClick={() => setOnlineVoiceMuted((cur) => !cur)}
-        >
-          {onlineVoiceMuted ? <MicOff className="mr-2 h-4 w-4" /> : <Mic className="mr-2 h-4 w-4" />}
-          {onlineVoiceMuted ? 'Unmute Me' : 'Mute Me'}
-        </Button>
+        {activeTalkers.length > 0 && (
+          <div className="flex flex-wrap gap-2">
+            {activeTalkers.map((player, index) => (
+              <div key={player.id} className="rounded-full border border-emerald-300/50 bg-emerald-400/15 px-2 py-1 flex items-center gap-2">
+                <PlayerPersonaAvatar
+                  player={player}
+                  fallbackIndex={index}
+                  sizeClass="h-6 w-6"
+                  initialsClass="text-[0.6rem]"
+                  themeName={resolvedThemeName}
+                />
+                <span className="text-xs text-emerald-100">{player.name} talking</span>
+              </div>
+            ))}
+          </div>
+        )}
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <Button
+            className={`rounded-2xl px-4 py-2 ${
+              onlineVoiceMuted
+                ? 'bg-red-500/25 border border-red-400/40 text-red-100'
+                : 'bg-emerald-500/20 border border-emerald-400/40 text-emerald-100'
+            }`}
+            disabled={!canTalk}
+            onClick={() => setOnlineVoiceMuted((cur) => !cur)}
+          >
+            {onlineVoiceMuted ? <MicOff className="mr-2 h-4 w-4" /> : <Mic className="mr-2 h-4 w-4" />}
+            {onlineVoiceMuted ? 'Unmute Me' : 'Mute Me'}
+          </Button>
+          <div className={`text-xs px-3 py-2 rounded-xl border ${
+            localTalking
+              ? 'border-emerald-300/60 bg-emerald-500/20 text-emerald-100'
+              : 'border-white/10 bg-white/5 text-white/70'
+          }`}>
+            {localTalking ? 'You are speaking' : 'Voice monitor idle'}
+          </div>
+          <Button className="rounded-2xl px-4 py-2 bg-fuchsia-500/15 border border-fuchsia-300/35 text-fuchsia-100" onClick={onToggleChat}>
+            Open Chat
+          </Button>
+        </div>
       </div>
     </GlassPanel>
   );
 }
 
-function DiscussionScreen({ players, round, totalRounds, onContinue, line, theme, onlineVoiceEnabled = false, onlineVoiceMuted = false, setOnlineVoiceMuted = () => {}, canTalk = true, submitPending = false }) {
-  const roundRule = getRoundRuleText(round.roundTypeId);
-  return <TopFrame theme={theme}><div className="mx-auto max-w-3xl space-y-6"><ScoreStrip players={players} roundNumber={round.roundNumber} totalRounds={totalRounds} themeName={theme} /><VoicePartyStatusStrip onlineVoiceEnabled={onlineVoiceEnabled} onlineVoiceMuted={onlineVoiceMuted} setOnlineVoiceMuted={setOnlineVoiceMuted} canTalk={canTalk} /><GlassPanel className="rounded-[2.5rem] p-8 text-center border-emerald-400/20 bg-black/25"><Badge className="rounded-full bg-emerald-500/20 border border-emerald-400/20 text-emerald-100 px-4 py-1.5">All prompts delivered</Badge><div className="text-xs uppercase tracking-[0.3em] text-white/50 mt-4">{round.roundTypeName}</div><h2 className="text-4xl font-black mt-3 text-yellow-300">{round.roundTypeTagline}</h2><p className="text-white/75 mt-3 max-w-2xl mx-auto">{line}</p><p className="text-cyan-200 mt-3 max-w-2xl mx-auto font-semibold">{roundRule}</p><div className="mt-8 flex justify-center"><Button className="rounded-[1.5rem] h-16 min-w-[16rem] px-8 bg-yellow-300 text-zinc-950 border-2 border-white" onClick={onContinue} disabled={submitPending}><SkipForward className="mr-2 h-5 w-5 inline" />{submitPending ? 'Syncing...' : 'Finish discussion and vote'}</Button></div></GlassPanel></div></TopFrame>;
+function PartyChatDrawer({
+  open,
+  onClose,
+  messages = [],
+  inputValue = '',
+  onInputChange = () => {},
+  onSend = () => {},
+}) {
+  if (!open) return null;
+  return (
+    <div className="fixed inset-0 z-[80] flex items-end justify-end p-4">
+      <button type="button" className="absolute inset-0 bg-black/60" onClick={onClose} aria-label="Close chat drawer" />
+      <GlassPanel className="relative w-full max-w-md rounded-[2rem] border-fuchsia-400/25 bg-black/70 p-4">
+        <div className="flex items-center justify-between">
+          <div className="text-sm uppercase tracking-[0.25em] text-fuchsia-200">Party Chat</div>
+          <Button className="rounded-xl bg-white/10 border border-white/15 text-white px-3 py-1" onClick={onClose}>Close</Button>
+        </div>
+        <div className="mt-3 h-64 overflow-y-auto space-y-2 pr-1">
+          {messages.length === 0 && (
+            <div className="rounded-xl border border-white/10 bg-white/5 p-3 text-xs text-white/70">
+              No chat messages yet.
+            </div>
+          )}
+          {messages.map((message) => (
+            <div key={message.id} className="rounded-xl border border-white/10 bg-white/5 p-2">
+              <div className="text-xs text-cyan-200 font-semibold">{message.playerName}</div>
+              <div className="text-sm text-white mt-1">{message.text}</div>
+            </div>
+          ))}
+        </div>
+        <div className="mt-3 flex gap-2">
+          <Input
+            value={inputValue}
+            onChange={(event) => onInputChange(event.target.value)}
+            className="rounded-xl bg-white/10 border border-white/15 text-white"
+            placeholder="Type a message..."
+            onKeyDown={(event) => {
+              if (event.key === 'Enter') {
+                event.preventDefault();
+                onSend();
+              }
+            }}
+          />
+          <Button
+            className="rounded-xl bg-yellow-300 text-zinc-950 border border-white"
+            onClick={onSend}
+            disabled={!String(inputValue || '').trim()}
+          >
+            Send
+          </Button>
+        </div>
+      </GlassPanel>
+    </div>
+  );
 }
-function VotingScreen({ players, round, totalRounds, votesByPlayerId, setVotesByPlayerId, onSubmitVotes, line, theme, onlineMode = false, onlinePlayerId = '', onlineVoiceEnabled = false, onlineVoiceMuted = false, setOnlineVoiceMuted = () => {}, canTalk = true, submitPending = false, playSfx = () => {} }) {
+
+function PartySpeakerOverlay({ onlineMode = false, talkingPlayers = {}, players = [], themeName = 'Default' }) {
+  if (!onlineMode) return null;
+  const activeTalkers = Object.keys(talkingPlayers || {})
+    .filter((playerId) => Boolean(talkingPlayers[playerId]))
+    .map((playerId) => players.find((player) => player.id === playerId))
+    .filter(Boolean)
+    .slice(0, 3);
+  if (!activeTalkers.length) return null;
+  return (
+    <div className="pointer-events-none fixed left-3 top-3 z-50 flex flex-col gap-2">
+      {activeTalkers.map((player, index) => (
+        <div key={player.id} className="flex items-center gap-2 rounded-full border border-emerald-300/70 bg-emerald-500/20 px-2 py-1 shadow-[0_0_18px_rgba(16,185,129,0.9)] animate-pulse">
+          <PlayerPersonaAvatar
+            player={player}
+            fallbackIndex={index}
+            themeName={themeName}
+            sizeClass="h-7 w-7"
+            initialsClass="text-[0.62rem]"
+          />
+          <span className="text-[0.65rem] uppercase tracking-[0.12em] text-emerald-50">Talking</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function DiscussionScreen({
+  players,
+  round,
+  totalRounds,
+  onContinue,
+  line,
+  theme,
+  onlineVoiceEnabled = false,
+  onlineVoiceMuted = false,
+  setOnlineVoiceMuted = () => {},
+  canTalk = true,
+  submitPending = false,
+  talkingPlayers = {},
+  localPlayerId = '',
+  onToggleChat = () => {},
+}) {
+  const roundRule = getRoundRuleText(round.roundTypeId);
+  return <TopFrame theme={theme}><div className="mx-auto max-w-3xl space-y-6"><ScoreStrip players={players} roundNumber={round.roundNumber} totalRounds={totalRounds} themeName={theme} /><VoicePartyStatusStrip onlineVoiceEnabled={onlineVoiceEnabled} onlineVoiceMuted={onlineVoiceMuted} setOnlineVoiceMuted={setOnlineVoiceMuted} canTalk={canTalk} talkingPlayers={talkingPlayers} players={players} localPlayerId={localPlayerId} onToggleChat={onToggleChat} themeName={theme} /><GlassPanel className="rounded-[2.5rem] p-8 text-center border-emerald-400/20 bg-black/25"><Badge className="rounded-full bg-emerald-500/20 border border-emerald-400/20 text-emerald-100 px-4 py-1.5">All prompts delivered</Badge><div className="text-xs uppercase tracking-[0.3em] text-white/50 mt-4">{round.roundTypeName}</div><h2 className="text-4xl font-black mt-3 text-yellow-300">{round.roundTypeTagline}</h2><p className="text-white/75 mt-3 max-w-2xl mx-auto">{line}</p><p className="text-cyan-200 mt-3 max-w-2xl mx-auto font-semibold">{roundRule}</p><div className="mt-8 flex justify-center"><Button className="rounded-[1.5rem] h-16 min-w-[16rem] px-8 bg-yellow-300 text-zinc-950 border-2 border-white" onClick={onContinue} disabled={submitPending}><SkipForward className="mr-2 h-5 w-5 inline" />{submitPending ? 'Syncing...' : 'Finish discussion and vote'}</Button></div></GlassPanel></div></TopFrame>;
+}
+function VotingScreen({
+  players,
+  round,
+  totalRounds,
+  votesByPlayerId,
+  setVotesByPlayerId,
+  onSubmitVotes,
+  line,
+  theme,
+  onlineMode = false,
+  onlinePlayerId = '',
+  onlineVoiceEnabled = false,
+  onlineVoiceMuted = false,
+  setOnlineVoiceMuted = () => {},
+  canTalk = true,
+  submitPending = false,
+  playSfx = () => {},
+  talkingPlayers = {},
+  onToggleChat = () => {},
+}) {
   const leader = players.find((p) => p.id === round.leaderId);
   const localVoters = useMemo(() => players.filter((player) => player.id), [players]);
   const activeLocalVoter = useMemo(
@@ -3095,6 +3461,11 @@ function VotingScreen({ players, round, totalRounds, votesByPlayerId, setVotesBy
             onlineVoiceMuted={onlineVoiceMuted}
             setOnlineVoiceMuted={setOnlineVoiceMuted}
             canTalk={canTalk}
+            talkingPlayers={talkingPlayers}
+            players={players}
+            localPlayerId={onlinePlayerId}
+            onToggleChat={onToggleChat}
+            themeName={theme}
           />
         )}
         <GlassPanel className="rounded-[2.5rem] p-8 border-fuchsia-400/20 bg-black/25">
@@ -3697,6 +4068,32 @@ function normalizeThemeSelection(themeName, themeOptions = []) {
   return fallback?.name || 'Default';
 }
 
+function cloneOnlineLobbySettingsTemplate({
+  themeName = 'Default',
+  mode = 'classic',
+  winCondition = 'rounds',
+  pointsToWin = 15,
+  roundsPerPlayer = 1,
+  grillSettings = { micEnabled: true, ttsEnabled: true },
+  adultMode = false,
+  maxPlayers = MAX_PLAYERS,
+} = {}) {
+  const normalizedThemeName = toCanonicalThemeName(themeName || 'Default');
+  return {
+    themeName: normalizedThemeName,
+    mode: mode === 'chaos' ? 'chaos' : 'classic',
+    winCondition: winCondition === 'points' ? 'points' : 'rounds',
+    pointsToWin: Number.isFinite(Number(pointsToWin)) ? Number(pointsToWin) : 15,
+    roundsPerPlayer: Number.isFinite(Number(roundsPerPlayer)) ? Number(roundsPerPlayer) : 1,
+    adultMode: Boolean(adultMode),
+    grillSettings: {
+      micEnabled: grillSettings?.micEnabled !== false,
+      ttsEnabled: grillSettings?.ttsEnabled !== false,
+    },
+    maxPlayers: Math.max(MIN_PLAYERS, Math.min(MAX_PLAYERS, Number(maxPlayers) || MAX_PLAYERS)),
+  };
+}
+
 function unlockThemePackIds(currentPackIds = [], packId = '') {
   const next = new Set(normalizeUnlockedThemePackIds(currentPackIds));
   if (packId) next.add(packId);
@@ -3905,6 +4302,7 @@ function AdminDialog({ open, onOpenChange, premiumEnabled, customCategories, set
 }
 export default function App() {
   const [screen, setScreen] = useState('home');
+  const [isDesktopLandscapeWeb, setIsDesktopLandscapeWeb] = useState(false);
     const [players, setPlayers] = useState(createPlayers(3, toCanonicalThemeName(getStored('imposter-theme-v3', 'Default'))));
   const [liarCount, setLiarCount] = useState(1);
   const [nameTheme, setNameTheme] = useState(
@@ -3933,6 +4331,13 @@ export default function App() {
   const [onlineLobbyStatus, setOnlineLobbyStatus] = useState('idle');
   const [onlineLobbyError, setOnlineLobbyError] = useState('');
   const [onlineJoinedPlayerId, setOnlineJoinedPlayerId] = useState('');
+  const [onlineLobbyMaxPlayers, setOnlineLobbyMaxPlayers] = useState(MAX_PLAYERS);
+  const [onlineJoinStep, setOnlineJoinStep] = useState('code');
+  const [onlineJoinPreview, setOnlineJoinPreview] = useState(null);
+  const [partyChatOpen, setPartyChatOpen] = useState(false);
+  const [partyChatInput, setPartyChatInput] = useState('');
+  const [partyChatMessages, setPartyChatMessages] = useState([]);
+  const [partyTalkingPlayers, setPartyTalkingPlayers] = useState({});
   const [onlinePrivatePrompt, setOnlinePrivatePrompt] = useState(null);
   const [onlinePrivatePromptError, setOnlinePrivatePromptError] = useState('');
   const [onlinePhasePending, setOnlinePhasePending] = useState(false);
@@ -4067,6 +4472,20 @@ export default function App() {
     if (nameTheme !== normalizedThemeName) setNameTheme(normalizedThemeName);
   }, [nameTheme, normalizedThemeName]);
   useEffect(() => {
+    if (typeof window === 'undefined') return undefined;
+    const evaluateLandscapeLayout = () => {
+      const width = Number(window.innerWidth || 0);
+      const height = Number(window.innerHeight || 0);
+      const isLandscape = width >= 1024 && width > height;
+      setIsDesktopLandscapeWeb(isLandscape);
+    };
+    evaluateLandscapeLayout();
+    window.addEventListener('resize', evaluateLandscapeLayout);
+    return () => {
+      window.removeEventListener('resize', evaluateLandscapeLayout);
+    };
+  }, []);
+  useEffect(() => {
     setEnabledPicturePacks((cur) => normalizeEnabledPicturePacks(cur, availablePicturePackManifests));
     setPicturePackWeights((cur) => normalizePackWeights(cur, availablePicturePackManifests));
     setEnabledPictureReleaseChannels((cur) => normalizeEnabledPictureReleaseChannels(cur, availablePicturePackManifests));
@@ -4074,7 +4493,10 @@ export default function App() {
   useEffect(() => {
     const phaseAllowsVoice = onlineMode && ONLINE_VOICE_ACTIVE_SCREENS.has(screen);
     setOnlineVoiceEnabled(phaseAllowsVoice);
-    if (!phaseAllowsVoice) setOnlineVoiceMuted(false);
+    if (!phaseAllowsVoice) {
+      setOnlineVoiceMuted(false);
+      setPartyTalkingPlayers({});
+    }
   }, [onlineMode, screen]);
   useEffect(() => {
     if (!onlineMode || !onlineVoiceEnabled) {
@@ -4102,6 +4524,19 @@ export default function App() {
             }
             if (event?.type === 'disconnected' && onlineMode && onlineVoiceEnabled) {
               setOnlineLobbyError('Voice chat disconnected. Reconnecting when possible...');
+            }
+            if (event?.type === 'local-speaking') {
+              const sessionForVoice = onlineSessionRef.current;
+              const activePlayerId = sessionForVoice?.playerId || playerId;
+              if (!activePlayerId) return;
+              setPartyTalkingPlayers((current) => ({
+                ...current,
+                [activePlayerId]: Boolean(event?.isTalking),
+              }));
+              onlineTransportRef.current?.setVoiceActivity({
+                playerId: activePlayerId,
+                isTalking: Boolean(event?.isTalking),
+              });
             }
           },
         });
@@ -4139,12 +4574,22 @@ export default function App() {
       .setMuted(!onlineVoiceEnabled || onlineVoiceMuted)
       .catch(() => {});
   }, [onlineVoiceEnabled, onlineVoiceMuted]);
+  useEffect(() => {
+    const transport = onlineTransportRef.current;
+    const sessionSnapshot = onlineSessionRef.current;
+    const playerId = sessionSnapshot?.playerId || onlineJoinedPlayerId;
+    const effectiveLobbyCode = lobbyCode || String(sessionSnapshot?.lobbyCode || '').trim().toUpperCase();
+    if (!transport?.setVoiceActivity || !playerId || !effectiveLobbyCode) return;
+    transport.setVoiceActivity({ playerId, isTalking: false });
+  }, [lobbyCode, onlineJoinedPlayerId, onlineVoiceMuted, onlineVoiceEnabled, onlineMode, screen]);
   useEffect(() => () => {
     void disconnectOnlineVoiceTransport();
   }, [disconnectOnlineVoiceTransport]);
   useEffect(() => {
     if (screen === 'online-join') {
       setOnlineLobbyError('');
+      setOnlineJoinStep('code');
+      setOnlineJoinPreview(null);
     }
   }, [screen]);
   useEffect(() => {
@@ -4169,7 +4614,7 @@ export default function App() {
           playerId: resolvedPlayer?.id || session.playerId,
           playerName: resolvedPlayer?.name || session.playerName || '',
           hostName: resumed.lobby.hostName || session.hostName || '',
-          sessionToken: resumed.resumeToken || session.sessionToken,
+          sessionToken: resumed.sessionToken || session.sessionToken,
         };
         onlineSessionRef.current = nextSession;
         setStoredOnlineSession(nextSession);
@@ -4208,6 +4653,8 @@ export default function App() {
     if (!shouldKeepTransportAlive || !effectiveLobbyCode) return undefined;
     const transport = createLobbyTransport({
       lobbyCode: effectiveLobbyCode,
+      playerId: session?.playerId || onlineJoinedPlayerId,
+      sessionToken: session?.sessionToken || '',
       onSnapshot: (snapshot) => {
         if (!snapshot) {
           setOnlineLobbyPlayers([]);
@@ -4244,6 +4691,7 @@ export default function App() {
           }
         }
         setOnlineLobbyPlayers(snapshotPlayers);
+        setOnlineLobbyMaxPlayers(Number(snapshot.maxPlayers || MAX_PLAYERS));
         setOnlineLobbyStatus(snapshot.status || 'waiting');
         setOnlineHostName(snapshot.hostName || 'Host');
         if (ONLINE_CONNECTION_ACTIVE_SCREENS.has(screen)) {
@@ -4273,7 +4721,23 @@ export default function App() {
           }
         }
       },
-      onEvent: () => {},
+      onEvent: (event) => {
+        if (event?.type === 'party-chat-message' && event?.message) {
+          setPartyChatMessages((current) => {
+            const next = [...current, event.message];
+            return next.slice(-120);
+          });
+        }
+        if (event?.type === 'party-voice-activity' && event?.payload) {
+          const payload = event.payload;
+          const talkingPlayerId = String(payload.playerId || '').trim();
+          if (!talkingPlayerId) return;
+          setPartyTalkingPlayers((current) => ({
+            ...current,
+            [talkingPlayerId]: Boolean(payload.isTalking),
+          }));
+        }
+      },
     });
     onlineTransportRef.current = transport;
     transport.syncSnapshot();
@@ -4704,6 +5168,12 @@ export default function App() {
       setOnlinePlayerName('');
       setJoinLobbyCodeInput('');
     }
+    setOnlineJoinPreview(null);
+    setOnlineJoinStep('code');
+    setPartyChatMessages([]);
+    setPartyTalkingPlayers({});
+    setPartyChatInput('');
+    setPartyChatOpen(false);
     setScreen(nextScreen);
   }
   async function createOnlineLobby() {
@@ -4714,7 +5184,20 @@ export default function App() {
     let resolvedHostPlayer = hostPlayer;
     let sessionToken = '';
     try {
-      const result = await createLobbyOnServer({ hostName: host, hostPlayer });
+      const result = await createLobbyOnServer({
+        hostName: host,
+        hostPlayer,
+        maxPlayers: onlineLobbyMaxPlayers,
+        settings: {
+          themeName: canonicalThemeName,
+          mode,
+          winCondition,
+          pointsToWin,
+          roundsPerPlayer,
+          adultMode,
+          grillSettings,
+        },
+      });
       snapshot = result?.lobby || null;
       resolvedHostPlayer = result?.player || hostPlayer;
       sessionToken = result?.sessionToken || '';
@@ -4734,8 +5217,29 @@ export default function App() {
     setLobbyCode(snapshot.code);
     setOnlineLobbyPlayers(snapshot.players || []);
     setOnlineLobbyStatus(snapshot.status || 'waiting');
+    setOnlineLobbyMaxPlayers(Number(snapshot.maxPlayers || onlineLobbyMaxPlayers || MAX_PLAYERS));
     setOnlineLobbyError('');
     setOnlineJoinedPlayerId(resolvedHostPlayer?.id || hostPlayer.id);
+    const lobbySettings = snapshot.settings && typeof snapshot.settings === 'object'
+      ? snapshot.settings
+      : null;
+    if (lobbySettings) {
+      setNameTheme(normalizeThemeSelection(lobbySettings.themeName || canonicalThemeName, themeOptions));
+      setMode(lobbySettings.mode === 'chaos' ? 'chaos' : 'classic');
+      setWinCondition(lobbySettings.winCondition === 'points' ? 'points' : 'rounds');
+      setPointsToWin(Number.isFinite(Number(lobbySettings.pointsToWin)) ? Number(lobbySettings.pointsToWin) : pointsToWin);
+      setRoundsPerPlayer(Number.isFinite(Number(lobbySettings.roundsPerPlayer)) ? Number(lobbySettings.roundsPerPlayer) : roundsPerPlayer);
+      setAdultMode(Boolean(lobbySettings.adultMode));
+      setGrillSettings({
+        micEnabled: lobbySettings.grillSettings?.micEnabled !== false,
+        ttsEnabled: lobbySettings.grillSettings?.ttsEnabled !== false,
+      });
+    }
+    setPartyChatMessages([]);
+    setPartyTalkingPlayers({});
+    setPartyChatOpen(false);
+    setOnlineJoinPreview(null);
+    setOnlineJoinStep('code');
     const session = {
       lobbyCode: snapshot.code,
       role: 'host',
@@ -4749,9 +5253,51 @@ export default function App() {
     setPlayers(toGamePlayers(snapshot.players || []));
     setScreen('online-lobby-created');
   }
-  async function joinOnlineLobby() {
-    if (!joinLobbyCodeInput.trim() || !onlinePlayerName.trim()) return;
+  async function runOnlineJoinCodeStep() {
+    if (!joinLobbyCodeInput.trim()) return;
     const normalizedCode = joinLobbyCodeInput.trim().toUpperCase();
+    let snapshot = null;
+    try {
+      snapshot = await readLobbySnapshot(normalizedCode);
+    } catch (error) {
+      setOnlineLobbyError(mapLobbyErrorToMessage(error, 'Unable to read lobby right now. Try again.'));
+      return;
+    }
+    if (!snapshot) {
+      setOnlineLobbyError('Lobby not found. Ask the host to regenerate and share a fresh code.');
+      return;
+    }
+    if (snapshot.status === 'started') {
+      setOnlineLobbyError('This lobby already started. Ask the host for a new code.');
+      return;
+    }
+    const snapshotMaxPlayers = Number(snapshot.maxPlayers || MAX_PLAYERS);
+    const snapshotPlayerCount = Array.isArray(snapshot.players) ? snapshot.players.length : 0;
+    if (snapshotPlayerCount >= snapshotMaxPlayers) {
+      setOnlineLobbyError('This lobby is already full. Ask the host for a new code.');
+      return;
+    }
+    const previewSettings = snapshot.settings && typeof snapshot.settings === 'object'
+      ? snapshot.settings
+      : {};
+    const previewTheme = normalizeThemeSelection(previewSettings.themeName || canonicalThemeName, themeOptions);
+    setOnlineJoinPreview({
+      code: normalizedCode,
+      hostName: snapshot.hostName || 'Host',
+      themeName: previewTheme,
+      maxPlayers: snapshotMaxPlayers,
+      playerCount: snapshotPlayerCount,
+      settings: previewSettings,
+    });
+    setNameTheme(previewTheme);
+    setOnlinePlayerName((current) => current.trim() || randomNameFromTheme(previewTheme, []));
+    setOnlineJoinStep('player');
+    setOnlineLobbyError('');
+  }
+  async function joinOnlineLobby() {
+    const activePreview = onlineJoinPreview;
+    if (!activePreview?.code || !onlinePlayerName.trim()) return;
+    const normalizedCode = activePreview.code;
     const joiner = createOnlinePlayer({ name: onlinePlayerName.trim(), clientId: onlineClientId });
     let nextSnapshot = null;
     let resolvedPlayer = joiner;
@@ -4785,8 +5331,27 @@ export default function App() {
     setOnlinePlayerName(resolvedPlayer.name);
     setOnlineLobbyPlayers(nextSnapshot.players || []);
     setOnlineLobbyStatus(nextSnapshot.status || 'waiting');
+    setOnlineLobbyMaxPlayers(Number(nextSnapshot.maxPlayers || activePreview.maxPlayers || MAX_PLAYERS));
     setOnlineLobbyError('');
     setOnlineJoinedPlayerId(resolvedPlayer.id);
+    setPartyChatMessages([]);
+    setPartyTalkingPlayers({});
+    setPartyChatOpen(false);
+    const nextSettings = nextSnapshot.settings && typeof nextSnapshot.settings === 'object'
+      ? nextSnapshot.settings
+      : activePreview.settings;
+    if (nextSettings) {
+      setNameTheme(normalizeThemeSelection(nextSettings.themeName || canonicalThemeName, themeOptions));
+      setMode(nextSettings.mode === 'chaos' ? 'chaos' : 'classic');
+      setWinCondition(nextSettings.winCondition === 'points' ? 'points' : 'rounds');
+      setPointsToWin(Number.isFinite(Number(nextSettings.pointsToWin)) ? Number(nextSettings.pointsToWin) : pointsToWin);
+      setRoundsPerPlayer(Number.isFinite(Number(nextSettings.roundsPerPlayer)) ? Number(nextSettings.roundsPerPlayer) : roundsPerPlayer);
+      setAdultMode(Boolean(nextSettings.adultMode));
+      setGrillSettings({
+        micEnabled: nextSettings.grillSettings?.micEnabled !== false,
+        ttsEnabled: nextSettings.grillSettings?.ttsEnabled !== false,
+      });
+    }
     const session = {
       lobbyCode: normalizedCode,
       role: 'player',
@@ -4808,6 +5373,10 @@ export default function App() {
       setOnlineLobbyError('Host session token missing. Please leave and recreate the lobby.');
       return;
     }
+    const confirmation = typeof window === 'undefined'
+      ? true
+      : window.confirm(`Start now with ${onlineLobbyPlayers.length} players? Only players currently in this lobby will be in this match.`);
+    if (!confirmation) return;
     let result = null;
     try {
       result = await startLobbyOnServer(lobbyCode, {
@@ -4849,19 +5418,40 @@ export default function App() {
   }
   function restartToHome() {
     setPlayers(createPlayers(3, 'Default')); setLiarCount(1); setNameTheme(normalizeThemeSelection('Default', themeOptions)); setPersonaOnlyMode(false); setMode('classic'); setWinCondition('rounds'); setPointsToWin(15); setRoundsPerPlayer(1); setGrillSettings({ micEnabled: true, ttsEnabled: true }); setRound(null); setRoundNumber(1); setCurrentRoundOwnerIndex(0); setPreviousRoundType(null); setRoundTypeOptions([]); setSelectedRoundType(null); setRevealIndex(0); setVotesByPlayerId({}); setTally({}); setRoundGains({}); setRoundBreakdown({}); setImposterCaught(false); setRecentPromptKeys([]); refreshCopy(['home', 'onlineLobby']);
+    setOnlineLobbyMaxPlayers(MAX_PLAYERS);
     setOnlinePhasePending(false);
     setOnlineVoteSubmissionPending(false);
     setOnlinePrivatePrompt(null);
     setOnlinePrivatePromptError('');
+    setPartyChatMessages([]);
+    setPartyTalkingPlayers({});
+    setPartyChatOpen(false);
+    setOnlineJoinPreview(null);
+    setOnlineJoinStep('code');
     if (onlineMode || lobbyCode) {
       void leaveOnlineLobby({ nextScreen: 'home' });
       return;
     }
     setScreen('home');
   }
+  const sendPartyChatMessage = () => {
+    const messageText = String(partyChatInput || '').trim();
+    if (!messageText) return;
+    const currentSession = onlineSessionRef.current;
+    if (!onlineMode || !currentSession?.playerId || !currentSession?.sessionToken) return;
+    onlineTransportRef.current?.sendPartyMessage({
+      playerId: currentSession.playerId,
+      sessionToken: currentSession.sessionToken,
+      text: messageText,
+    });
+    setPartyChatInput('');
+  };
+  const categoryChoiceGridClass = isDesktopLandscapeWeb
+    ? 'mt-8 grid grid-cols-4 gap-4 items-stretch'
+    : 'mt-8 grid grid-cols-2 gap-4 items-stretch';
 
   return <>
-    {screen === 'home' && <HomeScreen onNavigate={(to) => to === 'setup' ? (refreshCopy(['setup']), setScreen('setup')) : setScreen(to)} homeLine={copyState.home} adultMode={adultMode} />}
+    {screen === 'home' && <HomeScreen onNavigate={(to) => to === 'setup' ? (refreshCopy(['setup']), setScreen('setup')) : setScreen(to)} homeLine={copyState.home} adultMode={adultMode} joinOnlyMode={WEB_JOIN_ONLY_MODE} />}
     {screen === 'development-progress' && (
       <DevelopmentProgressScreen
         onBack={() => setScreen('home')}
@@ -4869,11 +5459,28 @@ export default function App() {
         theme={canonicalThemeName}
       />
     )}
-    {screen === 'setup' && <SetupScreen players={players} setPlayers={setPlayers} liarCount={liarCount} setLiarCount={setLiarCount} nameTheme={canonicalThemeName} setNameTheme={setNameTheme} mode={mode} setMode={setMode} winCondition={winCondition} setWinCondition={setWinCondition} pointsToWin={pointsToWin} setPointsToWin={setPointsToWin} roundsPerPlayer={roundsPerPlayer} setRoundsPerPlayer={setRoundsPerPlayer} grillSettings={grillSettings} setGrillSettings={setGrillSettings} adultMode={adultMode} enabledCategories={enabledCategories} onToggleCategory={(id) => setEnabledCategories((cur) => ({ ...cur, [id]: !cur[id] }))} premiumEnabled={premiumEnabled} setPremiumEnabled={setPremiumEnabled} categoryCount={activeCategories.length} onOpenAdmin={() => setAdminOpen(true)} onStart={startGame} onBack={() => setScreen('home')} setupLine={copyState.setup} themeOptions={themeOptions} personaOnlyMode={personaOnlyMode} setPersonaOnlyMode={setPersonaOnlyMode} />}
+    {screen === 'setup' && <SetupScreen players={players} setPlayers={setPlayers} liarCount={liarCount} setLiarCount={setLiarCount} nameTheme={canonicalThemeName} setNameTheme={setNameTheme} mode={mode} setMode={setMode} winCondition={winCondition} setWinCondition={setWinCondition} pointsToWin={pointsToWin} setPointsToWin={setPointsToWin} roundsPerPlayer={roundsPerPlayer} setRoundsPerPlayer={setRoundsPerPlayer} grillSettings={grillSettings} setGrillSettings={setGrillSettings} adultMode={adultMode} enabledCategories={enabledCategories} onToggleCategory={(id) => setEnabledCategories((cur) => ({ ...cur, [id]: !cur[id] }))} premiumEnabled={premiumEnabled} setPremiumEnabled={setPremiumEnabled} categoryCount={activeCategories.length} onOpenAdmin={() => setAdminOpen(true)} onStart={startGame} onBack={() => setScreen('home')} setupLine={copyState.setup} themeOptions={themeOptions} personaOnlyMode={personaOnlyMode} setPersonaOnlyMode={setPersonaOnlyMode} desktopLandscape={isDesktopLandscapeWeb} />}
     {screen === 'online-setup' && (
       <OnlineLobbySetupScreen
         hostName={onlineHostName}
         setHostName={setOnlineHostName}
+        maxPlayers={onlineLobbyMaxPlayers}
+        setMaxPlayers={setOnlineLobbyMaxPlayers}
+        nameTheme={canonicalThemeName}
+        setNameTheme={setNameTheme}
+        mode={mode}
+        setMode={setMode}
+        winCondition={winCondition}
+        setWinCondition={setWinCondition}
+        pointsToWin={pointsToWin}
+        setPointsToWin={setPointsToWin}
+        roundsPerPlayer={roundsPerPlayer}
+        setRoundsPerPlayer={setRoundsPerPlayer}
+        adultMode={adultMode}
+        setAdultMode={setAdultMode}
+        grillSettings={grillSettings}
+        setGrillSettings={setGrillSettings}
+        themeOptions={themeOptions}
         onBack={() => {
           if (onlineMode || lobbyCode) {
             void leaveOnlineLobby({ nextScreen: 'home' });
@@ -4882,24 +5489,35 @@ export default function App() {
           setScreen('home');
         }}
         onContinue={createOnlineLobby}
-        nameTheme={canonicalThemeName}
       />
     )}
     {screen === 'online-join' && (
       <OnlineJoinLobbyScreen
+        step={onlineJoinStep}
         playerName={onlinePlayerName}
         setPlayerName={setOnlinePlayerName}
         joinCode={joinLobbyCodeInput}
         setJoinCode={setJoinLobbyCodeInput}
-        nameTheme={canonicalThemeName}
+        nameTheme={onlineJoinPreview?.themeName || canonicalThemeName}
+        hostName={onlineJoinPreview?.hostName || ''}
+        playerCount={Number(onlineJoinPreview?.playerCount || 0)}
+        maxPlayers={Number(onlineJoinPreview?.maxPlayers || MAX_PLAYERS)}
         onBack={() => {
+          if (onlineJoinStep === 'player') {
+            setOnlineJoinStep('code');
+            setOnlineJoinPreview(null);
+            setOnlineLobbyError('');
+            return;
+          }
           if (onlineMode || lobbyCode) {
             void leaveOnlineLobby({ nextScreen: 'home' });
             return;
           }
           setScreen('home');
         }}
+        onContinueCode={runOnlineJoinCodeStep}
         onJoin={joinOnlineLobby}
+        onRandomizeName={() => setOnlinePlayerName(randomNameFromTheme(onlineJoinPreview?.themeName || canonicalThemeName, []))}
         joinError={onlineLobbyError}
       />
     )}
@@ -4909,6 +5527,7 @@ export default function App() {
         hostName={onlineHostName}
         players={onlineLobbyPlayers}
         lobbyStatus={onlineLobbyStatus}
+        maxPlayers={onlineLobbyMaxPlayers}
         onCopyCode={() => {
           if (typeof navigator !== 'undefined' && navigator.clipboard?.writeText) {
             navigator.clipboard.writeText(lobbyCode).catch(() => {});
@@ -4927,6 +5546,7 @@ export default function App() {
             <h2 className="text-4xl font-black mt-3 text-cyan-200">Code: {lobbyCode || '------'}</h2>
             <p className="text-white/75 mt-3">You are connected as <span className="font-black text-yellow-300">{onlinePlayerName}</span>.</p>
             <p className="text-white/65 mt-2">Host will start the match once everyone is in.</p>
+            <p className="text-xs text-cyan-100/80 mt-1">Lobby capacity: {onlineLobbyPlayers.length}/{onlineLobbyMaxPlayers}</p>
             <p className="text-xs text-cyan-100/80 mt-2">Reconnect-safe session active on this device.</p>
             {onlineLobbyError && (
               <div className="mt-3 rounded-2xl border border-cyan-400/30 bg-cyan-500/10 p-3 text-sm text-cyan-100">
@@ -4967,7 +5587,7 @@ export default function App() {
           <GlassPanel className="relative overflow-hidden rounded-[2.5rem] border-fuchsia-400/25 bg-black/25 p-8 text-center">
             <h2 className="mt-3 text-4xl font-black text-yellow-300">Choose your game mode</h2>
             <p className="mt-3 text-white/70">Pick one of two options. Previous round type is excluded.</p>
-            <div className="mt-8 grid grid-cols-2 gap-4 items-stretch">
+            <div className={categoryChoiceGridClass}>
               {roundTypeOptions.map((type, index) => {
                 const centeredOnSm = roundTypeOptions.length % 2 === 1 && index === roundTypeOptions.length - 1;
                 const isGrillRoundType = type.id === 'grill';
@@ -5018,7 +5638,7 @@ export default function App() {
             <div className="text-xs uppercase tracking-[0.3em] text-white/50">Round owner: {players[currentRoundOwnerIndex]?.name}</div>
             <h2 className="mt-3 text-4xl font-black text-yellow-300">Choose the next category</h2>
             <p className="mt-3 text-white/70">{copyState.chooser}</p>
-            <div className="mt-8 grid grid-cols-2 gap-4 items-stretch">
+            <div className={categoryChoiceGridClass}>
               {categoryOptions.map((category) => {
                 const categoryCardArtSrc = resolveCategoryChoiceCardArt(category, canonicalThemeName);
                 return (
@@ -5131,6 +5751,9 @@ export default function App() {
         setOnlineVoiceMuted={setOnlineVoiceMuted}
         canTalk={onlineVoiceEnabled}
         submitPending={onlinePhasePending}
+        talkingPlayers={partyTalkingPlayers}
+        localPlayerId={onlineJoinedPlayerId}
+        onToggleChat={() => setPartyChatOpen((current) => !current)}
       />
     )}
     {screen === 'voting' && round && (
@@ -5151,11 +5774,19 @@ export default function App() {
         canTalk={onlineVoiceEnabled}
         submitPending={onlineVoteSubmissionPending}
         playSfx={playSfx}
+        talkingPlayers={partyTalkingPlayers}
+        onToggleChat={() => setPartyChatOpen((current) => !current)}
       />
     )}
     {screen === 'liar-reveal' && round && <LiarRevealScreen players={players} round={round} onComplete={finishLiarReveal} theme={canonicalThemeName} playSfx={playSfx} />}
     {screen === 'results' && round && <ResultsScreen players={players} round={round} totalRounds={totalRounds} tally={tally} roundGains={roundGains} roundBreakdown={roundBreakdown} imposterCaught={imposterCaught} onNextRound={winCondition === 'rounds' && round.roundNumber >= totalRounds ? endGame : nextRound} onEndGame={endGame} resultLine={copyState.result} theme={canonicalThemeName} />}
     {screen === 'final' && <FinalScreen players={players} onRestart={restartToHome} line={copyState.winner} theme={canonicalThemeName} />}
+    <PartySpeakerOverlay
+      onlineMode={onlineMode}
+      talkingPlayers={partyTalkingPlayers}
+      players={players}
+      themeName={canonicalThemeName}
+    />
     {screen === 'store' && (
       <StoreScreen
         onBack={() => setScreen('home')}
@@ -5192,6 +5823,14 @@ export default function App() {
         releaseChannelSummary={releaseChannelSummary}
       />
     )}
+    <PartyChatDrawer
+      open={onlineMode && partyChatOpen}
+      onClose={() => setPartyChatOpen(false)}
+      messages={partyChatMessages}
+      inputValue={partyChatInput}
+      onInputChange={setPartyChatInput}
+      onSend={sendPartyChatMessage}
+    />
     <AdminDialog open={adminOpen} onOpenChange={setAdminOpen} premiumEnabled={premiumEnabled} customCategories={customCategories} setCustomCategories={setCustomCategories} />
   </>;
 }

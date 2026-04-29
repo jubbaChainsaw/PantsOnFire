@@ -45,13 +45,17 @@ export function createOnlinePlayer({ name, clientId, isHost = false }) {
     clientId: String(clientId || ''),
     isHost: Boolean(isHost),
     joinedAt: nowIso(),
+    color: '',
+    personaId: '',
+    personaBio: '',
+    personaImageSrc: '',
   };
 }
 
-export async function createLobbyOnServer({ hostName, hostPlayer }) {
+export async function createLobbyOnServer({ hostName, hostPlayer, maxPlayers, settings } = {}) {
   const payload = await requestJson('/lobbies', {
     method: 'POST',
-    body: { hostName, hostPlayer },
+    body: { hostName, hostPlayer, maxPlayers, settings },
   });
   return {
     lobby: payload?.lobby || null,
@@ -208,7 +212,13 @@ export function toGamePlayers(onlinePlayers = []) {
   });
 }
 
-export function createLobbyTransport({ lobbyCode, onSnapshot = () => {}, onEvent = () => {} }) {
+export function createLobbyTransport({
+  lobbyCode,
+  playerId = '',
+  sessionToken = '',
+  onSnapshot = () => {},
+  onEvent = () => {},
+}) {
   if (typeof window === 'undefined' || !lobbyCode) {
     return {
       getSnapshot: () => null,
@@ -265,12 +275,37 @@ export function createLobbyTransport({ lobbyCode, onSnapshot = () => {}, onEvent
     }
     pushSnapshot(snapshot, 'socket');
   });
+  socket.on('party-chat:message', (message) => {
+    if (closed || !message) return;
+    onEvent({ type: 'party-chat-message', message }, 'socket');
+  });
+  socket.on('party-voice:activity', (payload) => {
+    if (closed || !payload) return;
+    onEvent({ type: 'party-voice-activity', payload }, 'socket');
+  });
   socket.emit('lobby:subscribe', { code: normalizedCode });
   syncSnapshot().catch(() => {});
 
   return {
     getSnapshot: () => lastSnapshot,
     syncSnapshot,
+    sendPartyMessage: (payload = {}) => {
+      if (closed) return;
+      socket.emit('party-chat:message', {
+        code: normalizedCode,
+        playerId: String(playerId || '').trim(),
+        sessionToken: String(sessionToken || '').trim(),
+        ...payload,
+      });
+    },
+    setVoiceActivity: ({ playerId, isTalking } = {}) => {
+      if (closed) return;
+      socket.emit('party-voice:activity', {
+        code: normalizedCode,
+        playerId,
+        isTalking: Boolean(isTalking),
+      });
+    },
     close: () => {
       if (closed) return;
       closed = true;
@@ -278,6 +313,8 @@ export function createLobbyTransport({ lobbyCode, onSnapshot = () => {}, onEvent
       socket.off('connect');
       socket.off('connect_error');
       socket.off('lobby:snapshot');
+      socket.off('party-chat:message');
+      socket.off('party-voice:activity');
       socket.disconnect();
     },
   };
