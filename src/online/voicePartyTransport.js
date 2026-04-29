@@ -61,6 +61,13 @@ export async function createVoicePartyTransport({
 
   const room = new Room({ adaptiveStream: true, dynacast: true });
   let closed = false;
+  let speakingSampleRaf = null;
+  let localAnalyser = null;
+  let localDataArray = null;
+  let localMediaSource = null;
+  let localAudioContext = null;
+  let lastSpeakingState = false;
+  let speakingBroadcastAt = 0;
 
   room.on(RoomEvent.Connected, () => {
     if (closed) return;
@@ -86,14 +93,71 @@ export async function createVoicePartyTransport({
   await room.connect(livekitUrl, token);
   await room.localParticipant.setMicrophoneEnabled(true);
 
+  const startSpeakingSampler = () => {
+    const localPublication = room.localParticipant.getTrackPublication('microphone');
+    const mediaStreamTrack = localPublication?.track?.mediaStreamTrack;
+    if (!mediaStreamTrack || typeof window === 'undefined') return;
+    const AudioContextCtor = window.AudioContext || window.webkitAudioContext;
+    if (!AudioContextCtor) return;
+    try {
+      localAudioContext = new AudioContextCtor();
+      const mediaStream = new MediaStream([mediaStreamTrack]);
+      localMediaSource = localAudioContext.createMediaStreamSource(mediaStream);
+      localAnalyser = localAudioContext.createAnalyser();
+      localAnalyser.fftSize = 1024;
+      localDataArray = new Uint8Array(localAnalyser.frequencyBinCount);
+      localMediaSource.connect(localAnalyser);
+      const sampleLoop = () => {
+        if (closed || !localAnalyser || !localDataArray) return;
+        localAnalyser.getByteFrequencyData(localDataArray);
+        let sum = 0;
+        for (let i = 0; i < localDataArray.length; i += 1) {
+          sum += localDataArray[i];
+        }
+        const avg = sum / Math.max(1, localDataArray.length);
+        const speakingNow = avg >= 16;
+        const nowMs = Date.now();
+        if (speakingNow !== lastSpeakingState || (speakingNow && nowMs - speakingBroadcastAt > 1000)) {
+          lastSpeakingState = speakingNow;
+          speakingBroadcastAt = nowMs;
+          onEvent({ type: 'local-speaking', isTalking: speakingNow, roomName });
+        }
+        speakingSampleRaf = window.requestAnimationFrame(sampleLoop);
+      };
+      speakingSampleRaf = window.requestAnimationFrame(sampleLoop);
+    } catch {}
+  };
+  startSpeakingSampler();
+
   return {
     async setMuted(nextMuted = false) {
       if (closed) return;
       await room.localParticipant.setMicrophoneEnabled(!Boolean(nextMuted));
+      if (Boolean(nextMuted)) {
+        lastSpeakingState = false;
+        onEvent({ type: 'local-speaking', isTalking: false, roomName });
+      }
     },
     async disconnect() {
       if (closed) return;
       closed = true;
+      if (typeof window !== 'undefined' && speakingSampleRaf) {
+        window.cancelAnimationFrame(speakingSampleRaf);
+      }
+      speakingSampleRaf = null;
+      try {
+        localMediaSource?.disconnect();
+      } catch {}
+      try {
+        localAnalyser?.disconnect();
+      } catch {}
+      localMediaSource = null;
+      localAnalyser = null;
+      localDataArray = null;
+      try {
+        await localAudioContext?.close();
+      } catch {}
+      localAudioContext = null;
       room.disconnect();
     },
   };

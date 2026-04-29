@@ -165,7 +165,16 @@ app.post('/api/lobbies/:code/voice/token', async (req, res) => {
 app.post('/api/lobbies', async (req, res) => {
   const hostName = String(req.body?.hostName || '').trim() || 'Host';
   const hostPlayer = req.body?.hostPlayer || {};
-  const created = await store.createLobby({ hostPlayer, hostName });
+  const maxPlayers = Number(req.body?.maxPlayers);
+  const settings = req.body?.settings && typeof req.body.settings === 'object'
+    ? req.body.settings
+    : {};
+  const created = await store.createLobby({
+    hostPlayer,
+    hostName,
+    maxPlayers,
+    settings,
+  });
   broadcastSnapshot(created.lobby.code, created.lobby);
   res.status(201).json({
     lobby: toClientSnapshot(created.lobby),
@@ -194,6 +203,13 @@ app.post('/api/lobbies/:code/join', async (req, res) => {
   }
   if (joined.error === 'already-started') {
     res.status(409).json({ error: 'lobby-already-started' });
+    return;
+  }
+  if (joined.error === 'lobby-full') {
+    res.status(409).json({
+      error: 'lobby-full',
+      maxPlayers: Number(joined.maxPlayers || 0),
+    });
     return;
   }
   if (joined.error === 'lock-timeout') {
@@ -546,6 +562,43 @@ io.on('connection', (socket) => {
     socket.join(roomName(normalized));
     const lobby = await store.getLobby(normalized);
     socket.emit('lobby:snapshot', toClientSnapshot(lobby));
+  });
+
+  socket.on('party-chat:message', async ({ code, playerId, sessionToken, text }) => {
+    const normalizedCode = normalizeCode(code);
+    const normalizedPlayerId = String(playerId || '').trim();
+    const normalizedToken = String(sessionToken || '').trim();
+    const normalizedText = String(text || '').trim().slice(0, 280);
+    if (!normalizedCode || !normalizedPlayerId || !normalizedToken || !normalizedText) return;
+    const lobby = await store.getLobby(normalizedCode);
+    if (!lobby) return;
+    const sessionEntry = lobby.playerSessions?.[normalizedPlayerId] || null;
+    if (!sessionEntry?.token || sessionEntry.token !== normalizedToken) return;
+    if (Number(sessionEntry.expiresAt) <= Date.now()) return;
+    const player = Array.isArray(lobby.players)
+      ? lobby.players.find((entry) => String(entry?.id || '') === normalizedPlayerId)
+      : null;
+    if (!player) return;
+    io.to(roomName(normalizedCode)).emit('party-chat:message', {
+      id: `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+      lobbyCode: normalizedCode,
+      playerId: normalizedPlayerId,
+      playerName: String(player.name || 'Player'),
+      text: normalizedText,
+      createdAt: nowIso(),
+    });
+  });
+
+  socket.on('party-voice:activity', ({ code, playerId, isTalking }) => {
+    const normalizedCode = normalizeCode(code);
+    const normalizedPlayerId = String(playerId || '').trim();
+    if (!normalizedCode || !normalizedPlayerId) return;
+    io.to(roomName(normalizedCode)).emit('party-voice:activity', {
+      lobbyCode: normalizedCode,
+      playerId: normalizedPlayerId,
+      isTalking: Boolean(isTalking),
+      updatedAt: nowIso(),
+    });
   });
 
   socket.on('lobby:unsubscribe', ({ code }) => {

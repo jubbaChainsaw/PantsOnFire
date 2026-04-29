@@ -1,7 +1,20 @@
 const LOBBY_CODE_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 const LOBBY_CODE_LENGTH = 6;
 const MIN_PLAYERS = 3;
+const MAX_PLAYERS = 12;
 const MAX_RECENT_PROMPT_KEYS = 6;
+const DEFAULT_LOBBY_SETTINGS = {
+  themeName: 'Default',
+  mode: 'classic',
+  winCondition: 'rounds',
+  pointsToWin: 15,
+  roundsPerPlayer: 1,
+  adultMode: false,
+  grillSettings: {
+    micEnabled: true,
+    ttsEnabled: true,
+  },
+};
 
 const SERVER_PROMPT_CATEGORIES = [
   {
@@ -94,6 +107,43 @@ function sanitizePlayer(raw = {}, { fallbackName = 'Player', forceHost = false }
     isHost: forceHost ? true : Boolean(raw.isHost),
     joinedAt: raw.joinedAt || nowIso(),
     score: Number.isFinite(normalizedScore) ? Math.max(0, normalizedScore) : 0,
+    color: typeof raw.color === 'string' ? raw.color : '',
+    personaId: typeof raw.personaId === 'string' ? raw.personaId : '',
+    personaBio: typeof raw.personaBio === 'string' ? raw.personaBio : '',
+    personaImageSrc: typeof raw.personaImageSrc === 'string' ? raw.personaImageSrc : '',
+  };
+}
+
+function clampLobbyMaxPlayers(rawValue) {
+  const parsed = Number(rawValue);
+  if (!Number.isFinite(parsed)) return MAX_PLAYERS;
+  return Math.max(MIN_PLAYERS, Math.min(MAX_PLAYERS, Math.floor(parsed)));
+}
+
+function sanitizeLobbySettings(raw = {}) {
+  if (!raw || typeof raw !== 'object') return { ...DEFAULT_LOBBY_SETTINGS };
+  const mode = String(raw.mode || DEFAULT_LOBBY_SETTINGS.mode).trim();
+  const winCondition = String(raw.winCondition || DEFAULT_LOBBY_SETTINGS.winCondition).trim();
+  const pointsToWin = Number(raw.pointsToWin);
+  const roundsPerPlayer = Number(raw.roundsPerPlayer);
+  const grillSettings = raw.grillSettings && typeof raw.grillSettings === 'object'
+    ? raw.grillSettings
+    : {};
+  return {
+    themeName: String(raw.themeName || DEFAULT_LOBBY_SETTINGS.themeName).trim() || DEFAULT_LOBBY_SETTINGS.themeName,
+    mode: mode === 'chaos' ? 'chaos' : 'classic',
+    winCondition: winCondition === 'points' ? 'points' : 'rounds',
+    pointsToWin: Number.isFinite(pointsToWin)
+      ? Math.max(5, Math.min(50, Math.floor(pointsToWin)))
+      : DEFAULT_LOBBY_SETTINGS.pointsToWin,
+    roundsPerPlayer: Number.isFinite(roundsPerPlayer)
+      ? Math.max(1, Math.min(6, Math.floor(roundsPerPlayer)))
+      : DEFAULT_LOBBY_SETTINGS.roundsPerPlayer,
+    adultMode: Boolean(raw.adultMode),
+    grillSettings: {
+      micEnabled: grillSettings.micEnabled !== false,
+      ttsEnabled: grillSettings.ttsEnabled !== false,
+    },
   };
 }
 
@@ -342,6 +392,8 @@ function hydrateLobby(rawLobby) {
     updatedAt: rawLobby.updatedAt || createdAt,
     startedAt: rawLobby.startedAt || null,
     startedRevision: rawLobby.startedRevision || null,
+    maxPlayers: clampLobbyMaxPlayers(rawLobby.maxPlayers),
+    settings: sanitizeLobbySettings(rawLobby.settings),
     players,
     playerSessions,
     activeRound: hydrateRound(rawLobby.activeRound, players.length),
@@ -431,7 +483,7 @@ function buildStoreCore({
     return removeLobbyRaw(normalized);
   }
 
-  async function createLobby({ hostPlayer, hostName }) {
+  async function createLobby({ hostPlayer, hostName, maxPlayers, settings } = {}) {
     const code = await ensureUniqueCode();
     const createdAt = nowIso();
     const host = sanitizePlayer(hostPlayer, { fallbackName: hostName || 'Host', forceHost: true });
@@ -444,6 +496,8 @@ function buildStoreCore({
       updatedAt: createdAt,
       startedAt: null,
       startedRevision: null,
+      maxPlayers: clampLobbyMaxPlayers(maxPlayers),
+      settings: sanitizeLobbySettings(settings),
       players: [host],
       playerSessions: {},
       activeRound: null,
@@ -470,6 +524,9 @@ function buildStoreCore({
     const incoming = sanitizePlayer(playerInput);
     const existingByClient = lobby.players.find((player) => player.clientId && player.clientId === incoming.clientId);
     const existingById = existingByClient || lobby.players.find((player) => player.id === incoming.id);
+    if (!existingById && lobby.players.length >= clampLobbyMaxPlayers(lobby.maxPlayers)) {
+      return { error: 'lobby-full', maxPlayers: clampLobbyMaxPlayers(lobby.maxPlayers) };
+    }
     const playerId = existingById?.id || incoming.id;
     const merged = {
       ...incoming,
@@ -832,6 +889,8 @@ export function toClientSnapshot(lobby) {
     updatedAt: lobby.updatedAt,
     startedAt: lobby.startedAt || null,
     startedRevision: lobby.startedRevision || null,
+    maxPlayers: clampLobbyMaxPlayers(lobby.maxPlayers),
+    settings: sanitizeLobbySettings(lobby.settings),
     players: lobby.players,
     activeRound: toPublicRound(lobby.activeRound),
     activeRoundRevision: lobby.activeRound?.id || null,
