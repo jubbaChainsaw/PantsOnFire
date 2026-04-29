@@ -185,6 +185,18 @@ const ONLINE_PARTY_CHAT_ACTIVE_SCREENS = new Set([
   'final',
 ]);
 
+const DESKTOP_LANDSCAPE_MIN_WIDTH = 1100;
+const DESKTOP_LANDSCAPE_MIN_HEIGHT = 700;
+const DESKTOP_LANDSCAPE_SCREENS = new Set([
+  'setup',
+  'category-choice',
+  'round-type-choice',
+  'online-setup',
+  'online-join',
+  'online-lobby-created',
+  'online-lobby-waiting',
+]);
+
 function shuffle(arr) {
   const clone = [...arr];
   for (let i = clone.length - 1; i > 0; i -= 1) {
@@ -427,6 +439,24 @@ function mapLobbyErrorToMessage(error, fallback = 'Unable to complete online lob
   if (code === 'voice-token-invalid') return 'Voice chat token was invalid. Please rejoin the lobby.';
   return fallback;
 }
+
+function shouldUseDesktopLandscapeLayout() {
+  if (typeof window === 'undefined') return false;
+  const viewportWidth = Number(window.innerWidth || 0);
+  const viewportHeight = Number(window.innerHeight || 0);
+  if (!viewportWidth || !viewportHeight) return false;
+  const hasTouchPoints = Number(window.navigator?.maxTouchPoints || 0) > 0;
+  const coarsePointer = typeof window.matchMedia === 'function'
+    ? window.matchMedia('(pointer: coarse)').matches
+    : false;
+  const supportsHover = typeof window.matchMedia === 'function'
+    ? window.matchMedia('(hover: hover)').matches
+    : false;
+  const likelyDesktop = viewportWidth >= 1100 && supportsHover && !hasTouchPoints && !coarsePointer;
+  const isLandscape = viewportWidth >= viewportHeight;
+  return likelyDesktop && isLandscape;
+}
+
 function toClientRoundFromServer(round) {
   if (!round || typeof round !== 'object') return null;
   return {
@@ -2065,7 +2095,7 @@ function SetupScreen(props) {
     winCondition, setWinCondition, pointsToWin, setPointsToWin, roundsPerPlayer, setRoundsPerPlayer, enabledCategories, onToggleCategory,
     grillSettings, setGrillSettings, adultMode, categoryCount, onOpenAdmin, onStart, onBack, setupLine,
     personaOnlyMode, setPersonaOnlyMode,
-    themeOptions = [], startLabel = 'Start Match', requiredMinPlayers = MIN_PLAYERS,
+    themeOptions = [], startLabel = 'Start Match', requiredMinPlayers = MIN_PLAYERS, desktopLandscape = false,
   } = props;
   const canStart = players.length >= requiredMinPlayers && players.every((p) => p.name.trim().length > 0);
   const maxLiars = Math.max(1, Math.floor(players.length / 2));
@@ -2126,7 +2156,7 @@ function SetupScreen(props) {
     }];
   return (
     <TopFrame theme={nameTheme}>
-      <div className="mx-auto max-w-7xl space-y-5">
+      <div className={desktopLandscape ? 'mx-auto max-w-[1400px] space-y-5' : 'mx-auto max-w-7xl space-y-5'}>
         <div className="flex items-center justify-between gap-4">
           <Button className="rounded-[1.4rem] border border-white/10 bg-white/5 px-4 py-2 text-white" onClick={onBack}>Back</Button>
           <div className="text-center">
@@ -2145,7 +2175,7 @@ function SetupScreen(props) {
             <div className="mt-2 text-4xl sm:text-5xl font-black text-yellow-300">{liarCount}</div>
           </GlassPanel>
         </div>
-        <div className="grid gap-5 lg:grid-cols-[1.1fr_0.9fr]">
+        <div className={desktopLandscape ? 'grid gap-5 xl:grid-cols-[1.2fr_0.8fr]' : 'grid gap-5 lg:grid-cols-[1.1fr_0.9fr]'}>
           <GlassPanel className="rounded-[2.5rem] border-fuchsia-400/25 bg-black/25 p-5">
             <div className="mb-4 rounded-[1.7rem] border border-white/15 bg-black/25 p-4">
               <div className={`text-xs uppercase tracking-[0.3em] ${setupThemeLabelClass}`}>Game Theme</div>
@@ -4272,6 +4302,7 @@ function AdminDialog({ open, onOpenChange, premiumEnabled, customCategories, set
 }
 export default function App() {
   const [screen, setScreen] = useState('home');
+  const [isDesktopLandscapeWeb, setIsDesktopLandscapeWeb] = useState(false);
     const [players, setPlayers] = useState(createPlayers(3, toCanonicalThemeName(getStored('imposter-theme-v3', 'Default'))));
   const [liarCount, setLiarCount] = useState(1);
   const [nameTheme, setNameTheme] = useState(
@@ -4440,6 +4471,20 @@ export default function App() {
   useEffect(() => {
     if (nameTheme !== normalizedThemeName) setNameTheme(normalizedThemeName);
   }, [nameTheme, normalizedThemeName]);
+  useEffect(() => {
+    if (typeof window === 'undefined') return undefined;
+    const evaluateLandscapeLayout = () => {
+      const width = Number(window.innerWidth || 0);
+      const height = Number(window.innerHeight || 0);
+      const isLandscape = width >= 1024 && width > height;
+      setIsDesktopLandscapeWeb(isLandscape);
+    };
+    evaluateLandscapeLayout();
+    window.addEventListener('resize', evaluateLandscapeLayout);
+    return () => {
+      window.removeEventListener('resize', evaluateLandscapeLayout);
+    };
+  }, []);
   useEffect(() => {
     setEnabledPicturePacks((cur) => normalizeEnabledPicturePacks(cur, availablePicturePackManifests));
     setPicturePackWeights((cur) => normalizePackWeights(cur, availablePicturePackManifests));
@@ -5401,6 +5446,9 @@ export default function App() {
     });
     setPartyChatInput('');
   };
+  const categoryChoiceGridClass = isDesktopLandscapeWeb
+    ? 'mt-8 grid grid-cols-4 gap-4 items-stretch'
+    : 'mt-8 grid grid-cols-2 gap-4 items-stretch';
 
   return <>
     {screen === 'home' && <HomeScreen onNavigate={(to) => to === 'setup' ? (refreshCopy(['setup']), setScreen('setup')) : setScreen(to)} homeLine={copyState.home} adultMode={adultMode} joinOnlyMode={WEB_JOIN_ONLY_MODE} />}
@@ -5411,7 +5459,7 @@ export default function App() {
         theme={canonicalThemeName}
       />
     )}
-    {screen === 'setup' && <SetupScreen players={players} setPlayers={setPlayers} liarCount={liarCount} setLiarCount={setLiarCount} nameTheme={canonicalThemeName} setNameTheme={setNameTheme} mode={mode} setMode={setMode} winCondition={winCondition} setWinCondition={setWinCondition} pointsToWin={pointsToWin} setPointsToWin={setPointsToWin} roundsPerPlayer={roundsPerPlayer} setRoundsPerPlayer={setRoundsPerPlayer} grillSettings={grillSettings} setGrillSettings={setGrillSettings} adultMode={adultMode} enabledCategories={enabledCategories} onToggleCategory={(id) => setEnabledCategories((cur) => ({ ...cur, [id]: !cur[id] }))} premiumEnabled={premiumEnabled} setPremiumEnabled={setPremiumEnabled} categoryCount={activeCategories.length} onOpenAdmin={() => setAdminOpen(true)} onStart={startGame} onBack={() => setScreen('home')} setupLine={copyState.setup} themeOptions={themeOptions} personaOnlyMode={personaOnlyMode} setPersonaOnlyMode={setPersonaOnlyMode} />}
+    {screen === 'setup' && <SetupScreen players={players} setPlayers={setPlayers} liarCount={liarCount} setLiarCount={setLiarCount} nameTheme={canonicalThemeName} setNameTheme={setNameTheme} mode={mode} setMode={setMode} winCondition={winCondition} setWinCondition={setWinCondition} pointsToWin={pointsToWin} setPointsToWin={setPointsToWin} roundsPerPlayer={roundsPerPlayer} setRoundsPerPlayer={setRoundsPerPlayer} grillSettings={grillSettings} setGrillSettings={setGrillSettings} adultMode={adultMode} enabledCategories={enabledCategories} onToggleCategory={(id) => setEnabledCategories((cur) => ({ ...cur, [id]: !cur[id] }))} premiumEnabled={premiumEnabled} setPremiumEnabled={setPremiumEnabled} categoryCount={activeCategories.length} onOpenAdmin={() => setAdminOpen(true)} onStart={startGame} onBack={() => setScreen('home')} setupLine={copyState.setup} themeOptions={themeOptions} personaOnlyMode={personaOnlyMode} setPersonaOnlyMode={setPersonaOnlyMode} desktopLandscape={isDesktopLandscapeWeb} />}
     {screen === 'online-setup' && (
       <OnlineLobbySetupScreen
         hostName={onlineHostName}
@@ -5539,7 +5587,7 @@ export default function App() {
           <GlassPanel className="relative overflow-hidden rounded-[2.5rem] border-fuchsia-400/25 bg-black/25 p-8 text-center">
             <h2 className="mt-3 text-4xl font-black text-yellow-300">Choose your game mode</h2>
             <p className="mt-3 text-white/70">Pick one of two options. Previous round type is excluded.</p>
-            <div className="mt-8 grid grid-cols-2 gap-4 items-stretch">
+            <div className={categoryChoiceGridClass}>
               {roundTypeOptions.map((type, index) => {
                 const centeredOnSm = roundTypeOptions.length % 2 === 1 && index === roundTypeOptions.length - 1;
                 const isGrillRoundType = type.id === 'grill';
@@ -5590,7 +5638,7 @@ export default function App() {
             <div className="text-xs uppercase tracking-[0.3em] text-white/50">Round owner: {players[currentRoundOwnerIndex]?.name}</div>
             <h2 className="mt-3 text-4xl font-black text-yellow-300">Choose the next category</h2>
             <p className="mt-3 text-white/70">{copyState.chooser}</p>
-            <div className="mt-8 grid grid-cols-2 gap-4 items-stretch">
+            <div className={categoryChoiceGridClass}>
               {categoryOptions.map((category) => {
                 const categoryCardArtSrc = resolveCategoryChoiceCardArt(category, canonicalThemeName);
                 return (
