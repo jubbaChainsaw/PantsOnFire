@@ -235,6 +235,8 @@ export function createLobbyTransport({
   }
 
   const normalizedCode = normalizeCode(lobbyCode);
+  const normalizedPlayerId = String(playerId || '').trim();
+  let currentSessionToken = String(sessionToken || '').trim();
   let closed = false;
   let lastSnapshot = null;
   const socket = io(LOBBY_SERVER_URL || undefined, {
@@ -266,7 +268,11 @@ export function createLobbyTransport({
 
   socket.on('connect', () => {
     if (closed) return;
-    socket.emit('lobby:subscribe', { code: normalizedCode });
+    socket.emit('lobby:subscribe', {
+      code: normalizedCode,
+      playerId: normalizedPlayerId,
+      sessionToken: currentSessionToken,
+    });
     onEvent({ type: 'socket-connected', code: normalizedCode }, 'socket');
   });
   socket.on('connect_error', (error) => {
@@ -290,18 +296,25 @@ export function createLobbyTransport({
     if (closed || !payload) return;
     onEvent({ type: 'party-voice-activity', payload }, 'socket');
   });
-  socket.emit('lobby:subscribe', { code: normalizedCode });
+  socket.emit('lobby:subscribe', {
+    code: normalizedCode,
+    playerId: normalizedPlayerId,
+    sessionToken: currentSessionToken,
+  });
   syncSnapshot().catch(() => {});
 
   return {
     getSnapshot: () => lastSnapshot,
     syncSnapshot,
+    updateSessionToken: (nextToken = '') => {
+      currentSessionToken = String(nextToken || '').trim();
+    },
     sendPartyMessage: (payload = {}) => {
       if (closed) return;
       socket.emit('party-chat:message', {
         code: normalizedCode,
-        playerId: String(playerId || '').trim(),
-        sessionToken: String(sessionToken || '').trim(),
+        playerId: normalizedPlayerId,
+        sessionToken: currentSessionToken,
         ...payload,
       });
     },

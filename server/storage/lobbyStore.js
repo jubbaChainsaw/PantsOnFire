@@ -385,13 +385,20 @@ function hydrateLobby(rawLobby) {
   const roundCounterRaw = Number(rawLobby.roundCounter);
   return {
     code,
-    status: rawLobby.status === 'started' ? 'started' : 'waiting',
+    status: rawLobby.status === 'started'
+      ? 'started'
+      : (rawLobby.status === 'ended' ? 'ended' : 'waiting'),
     hostName: String(rawLobby.hostName || 'Host'),
     hostClientId: String(rawLobby.hostClientId || ''),
     createdAt,
     updatedAt: rawLobby.updatedAt || createdAt,
     startedAt: rawLobby.startedAt || null,
     startedRevision: rawLobby.startedRevision || null,
+    endedAt: rawLobby.endedAt || null,
+    endedReason: String(rawLobby.endedReason || ''),
+    endedWinnerId: String(rawLobby.endedWinnerId || ''),
+    endedWinnerName: String(rawLobby.endedWinnerName || ''),
+    endedWinnerScore: Math.max(0, Number(rawLobby.endedWinnerScore || 0)),
     maxPlayers: clampLobbyMaxPlayers(rawLobby.maxPlayers),
     settings: sanitizeLobbySettings(rawLobby.settings),
     players,
@@ -496,6 +503,11 @@ function buildStoreCore({
       updatedAt: createdAt,
       startedAt: null,
       startedRevision: null,
+      endedAt: null,
+      endedReason: '',
+      endedWinnerId: '',
+      endedWinnerName: '',
+      endedWinnerScore: 0,
       maxPlayers: clampLobbyMaxPlayers(maxPlayers),
       settings: sanitizeLobbySettings(settings),
       players: [host],
@@ -521,6 +533,7 @@ function buildStoreCore({
     const lobby = await getLobby(code);
     if (!lobby) return { error: 'not-found' };
     if (lobby.status === 'started') return { error: 'already-started' };
+    if (lobby.status === 'ended') return { error: 'lobby-ended' };
     const incoming = sanitizePlayer(playerInput);
     const existingByClient = lobby.players.find((player) => player.clientId && player.clientId === incoming.clientId);
     const existingById = existingByClient || lobby.players.find((player) => player.id === incoming.id);
@@ -593,6 +606,21 @@ function buildStoreCore({
         lobby.hostName = fallbackHost.name || lobby.hostName || 'Host';
       }
     }
+    if (lobby.status === 'started' && lobby.players.length < MIN_PLAYERS) {
+      const rankedPlayers = [...lobby.players].sort((a, b) => {
+        const scoreDiff = Number(b?.score || 0) - Number(a?.score || 0);
+        if (scoreDiff !== 0) return scoreDiff;
+        return String(a?.joinedAt || '').localeCompare(String(b?.joinedAt || ''));
+      });
+      const winner = rankedPlayers[0] || null;
+      lobby.status = 'ended';
+      lobby.endedAt = nowIso();
+      lobby.endedReason = 'insufficient-players';
+      lobby.endedWinnerId = String(winner?.id || '');
+      lobby.endedWinnerName = String(winner?.name || '');
+      lobby.endedWinnerScore = Math.max(0, Number(winner?.score || 0));
+      lobby.activeRound = null;
+    }
     await saveLobby(lobby);
     return { lobby };
   }
@@ -644,6 +672,7 @@ function buildStoreCore({
   async function startLobby(code, hostClientId, sessionToken = '') {
     const lobby = await getLobby(code);
     if (!lobby) return { error: 'not-found' };
+    if (lobby.status === 'ended') return { error: 'lobby-ended' };
     if (lobby.hostClientId !== hostClientId) return { error: 'host-only' };
     const hostPlayer = lobby.players.find((player) => player.isHost);
     if (!hostPlayer) return { error: 'host-only' };
@@ -660,6 +689,11 @@ function buildStoreCore({
       lobby.status = 'started';
       lobby.startedAt = nowIso();
       lobby.startedRevision = randomId('start');
+      lobby.endedAt = null;
+      lobby.endedReason = '';
+      lobby.endedWinnerId = '';
+      lobby.endedWinnerName = '';
+      lobby.endedWinnerScore = 0;
     }
     if (!lobby.activeRound) {
       const firstRound = buildAuthoritativeRound(lobby.players, 1, lobby.recentPromptKeys || []);
@@ -678,6 +712,7 @@ function buildStoreCore({
   async function createNextRound(code, hostClientId, sessionToken = '') {
     const lobby = await getLobby(code);
     if (!lobby) return { error: 'not-found' };
+    if (lobby.status === 'ended') return { error: 'lobby-ended' };
     if (lobby.status !== 'started') return { error: 'lobby-not-started' };
     if (lobby.hostClientId !== hostClientId) return { error: 'host-only' };
     const hostPlayer = lobby.players.find((player) => player.isHost);
@@ -715,6 +750,7 @@ function buildStoreCore({
   async function advanceRoundPhase(code, playerId, sessionToken = '') {
     const lobby = await getLobby(code);
     if (!lobby) return { error: 'not-found' };
+    if (lobby.status === 'ended') return { error: 'lobby-ended' };
     if (lobby.status !== 'started') return { error: 'lobby-not-started' };
     if (!lobby.activeRound) return { error: 'round-not-found' };
     const normalizedPlayerId = String(playerId || '').trim();
@@ -780,6 +816,7 @@ function buildStoreCore({
   async function submitRoundVote(code, playerId, targetPlayerId, sessionToken = '') {
     const lobby = await getLobby(code);
     if (!lobby) return { error: 'not-found' };
+    if (lobby.status === 'ended') return { error: 'lobby-ended' };
     if (lobby.status !== 'started') return { error: 'lobby-not-started' };
     if (!lobby.activeRound) return { error: 'round-not-found' };
     const normalizedPlayerId = String(playerId || '').trim();
@@ -831,6 +868,7 @@ function buildStoreCore({
   async function getCurrentRound(code) {
     const lobby = await getLobby(code);
     if (!lobby) return { error: 'not-found' };
+    if (lobby.status === 'ended') return { error: 'lobby-ended' };
     if (lobby.status !== 'started') return { error: 'lobby-not-started' };
     return {
       lobby,
@@ -841,6 +879,7 @@ function buildStoreCore({
   async function getPlayerRoundView(code, playerId, sessionToken) {
     const lobby = await getLobby(code);
     if (!lobby) return { error: 'not-found' };
+    if (lobby.status === 'ended') return { error: 'lobby-ended' };
     if (lobby.status !== 'started') return { error: 'lobby-not-started' };
     if (!lobby.activeRound) return { error: 'round-not-found' };
     const normalizedPlayerId = String(playerId || '').trim();
@@ -889,6 +928,11 @@ export function toClientSnapshot(lobby) {
     updatedAt: lobby.updatedAt,
     startedAt: lobby.startedAt || null,
     startedRevision: lobby.startedRevision || null,
+    endedAt: lobby.endedAt || null,
+    endedReason: String(lobby.endedReason || ''),
+    endedWinnerId: String(lobby.endedWinnerId || ''),
+    endedWinnerName: String(lobby.endedWinnerName || ''),
+    endedWinnerScore: Math.max(0, Number(lobby.endedWinnerScore || 0)),
     maxPlayers: clampLobbyMaxPlayers(lobby.maxPlayers),
     settings: sanitizeLobbySettings(lobby.settings),
     players: lobby.players,

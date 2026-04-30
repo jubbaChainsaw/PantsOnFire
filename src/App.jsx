@@ -170,6 +170,18 @@ const ONLINE_CONNECTION_ACTIVE_SCREENS = new Set([
   'results',
   'final',
 ]);
+const ONLINE_IN_SESSION_LEAVE_SCREENS = new Set([
+  'game-intro',
+  'rules',
+  'host-intro',
+  'reveal',
+  'discussion',
+  'grill',
+  'voting',
+  'liar-reveal',
+  'results',
+  'final',
+]);
 const ONLINE_PARTY_CHAT_ACTIVE_SCREENS = new Set([
   'online-lobby-created',
   'online-lobby-waiting',
@@ -359,6 +371,17 @@ function normalizePlayerRecord(player = {}) {
   if (typeof player?.personaImageSrc === 'string') next.personaImageSrc = player.personaImageSrc;
   return next;
 }
+function playersStateSignature(players = []) {
+  if (!Array.isArray(players) || !players.length) return '';
+  return players
+    .map((player) => {
+      const id = String(player?.id || '');
+      const name = String(player?.name || '');
+      const score = Math.max(0, Number(player?.score || 0));
+      return `${id}:${name}:${score}`;
+    })
+    .join('|');
+}
 function createPlayers(count = 3, themeName = 'Default') {
   return Array.from({ length: count }, (_, i) => ({
     id: `p-${Date.now()}-${i + 1}`,
@@ -440,6 +463,13 @@ function mapLobbyErrorToMessage(error, fallback = 'Unable to complete online lob
   if (code === 'voice-not-configured') return 'Voice chat is not configured on the lobby server yet.';
   if (code === 'livekit-token-failed') return 'Voice chat token generation failed. Try again in a moment.';
   if (code === 'voice-token-invalid') return 'Voice chat token was invalid. Please rejoin the lobby.';
+  if (code === 'lobby-ended') {
+    const endedWinnerName = String(error?.payload?.lobby?.endedWinnerName || '').trim();
+    if (endedWinnerName) {
+      return `Game ended due to insufficient players. Winner: ${endedWinnerName}.`;
+    }
+    return 'Game ended due to insufficient players. Rejoin with a fresh lobby code.';
+  }
   return fallback;
 }
 
@@ -4713,8 +4743,37 @@ export default function App() {
           const byClient = snapshotPlayers.find((player) => player.clientId === onlineClientId);
           return byClient?.id || current;
         });
-        if (snapshotPlayers.length && (screen === 'online-lobby-created' || screen === 'online-lobby-waiting')) {
-          setPlayers(toGamePlayers(snapshotPlayers));
+        if (snapshotPlayers.length) {
+          const nextOnlinePlayers = toGamePlayers(snapshotPlayers);
+          const nextSignature = playersStateSignature(nextOnlinePlayers);
+          setPlayers((current) => {
+            const currentSignature = playersStateSignature(current);
+            return currentSignature === nextSignature ? current : nextOnlinePlayers;
+          });
+        }
+        if (snapshot.status === 'ended') {
+          const winnerName = String(snapshot.endedWinnerName || '').trim();
+          const winnerScore = Math.max(0, Number(snapshot.endedWinnerScore || 0));
+          const endSummary = winnerName
+            ? `Game ended due to insufficient players. Winner: ${winnerName} (${winnerScore} pts).`
+            : 'Game ended due to insufficient players.';
+          setOnlineLobbyError(endSummary);
+          setRound(null);
+          setOnlinePrivatePrompt(null);
+          setOnlinePrivatePromptError('');
+          onlineSessionRef.current = null;
+          setStoredOnlineSession(null);
+          setOnlineMode(false);
+          setOnlineRole('offline');
+          setLobbyCode('');
+          setOnlineJoinedPlayerId('');
+          setOnlineLobbyStatus('ended');
+          setCopyState((current) => ({
+            ...current,
+            winner: endSummary,
+          }));
+          setScreen('final');
+          return;
         }
         if (snapshot.status === 'started' && snapshot.startedRevision) {
           if (onlineStartedRevisionHandledRef.current !== snapshot.startedRevision) {
@@ -4731,6 +4790,9 @@ export default function App() {
         }
       },
       onEvent: (event) => {
+        if (event?.type === 'connect-error') {
+          setOnlineLobbyError('Connection lost. Reconnecting for up to 60s...');
+        }
         if (event?.type === 'party-chat-message' && event?.message) {
           setPartyChatMessages((current) => {
             const next = [...current, event.message];
@@ -4756,7 +4818,7 @@ export default function App() {
         onlineTransportRef.current = null;
       }
     };
-  }, [onlineMode, lobbyCode, onlineClientId, screen, onlineRole]);
+  }, [onlineMode, lobbyCode, onlineClientId, screen, onlineRole, refreshCopy]);
   useEffect(() => setLiarCount((cur) => Math.max(1, Math.min(Math.max(1, Math.floor(players.length / 2)), cur))), [players.length]);
   const themedKey = (key) => {
     const overridesByTheme = THEME_STINGER_KEY_OVERRIDES[canonicalThemeName]
@@ -4764,7 +4826,6 @@ export default function App() {
       || {};
     return overridesByTheme[key] || key;
   };
-  const refreshCopy = (keys) => setCopyState((cur) => ({ ...cur, ...Object.fromEntries(keys.map((key) => [key, getLine(themedKey(key))])) }));
   const themedHostStingerLineByRoundTypeId = useMemo(
     () => Object.fromEntries(
       Object.values(ROUND_TYPES).map((roundType) => [
@@ -4891,6 +4952,7 @@ export default function App() {
         };
         onlineSessionRef.current = nextSession;
         setStoredOnlineSession(nextSession);
+        onlineTransportRef.current?.updateSessionToken(nextSession.sessionToken);
       }
       setOnlineLobbyError('');
       if (result?.lobby?.activeRound) {
@@ -4935,6 +4997,7 @@ export default function App() {
         };
         onlineSessionRef.current = nextSession;
         setStoredOnlineSession(nextSession);
+        onlineTransportRef.current?.updateSessionToken(nextSession.sessionToken);
       }
       setOnlineLobbyError('');
       if (result?.lobby?.activeRound) {
@@ -4982,6 +5045,7 @@ export default function App() {
         };
         onlineSessionRef.current = nextSession;
         setStoredOnlineSession(nextSession);
+        onlineTransportRef.current?.updateSessionToken(nextSession.sessionToken);
       }
       if (result?.lobby?.activeRound) {
         await syncOnlineRoundFromSnapshot(result.lobby, { openHostIntro });
@@ -5280,6 +5344,15 @@ export default function App() {
       setOnlineLobbyError('This lobby already started. Ask the host for a new code.');
       return;
     }
+    if (snapshot.status === 'ended') {
+      const endedWinnerName = String(snapshot.endedWinnerName || '').trim();
+      setOnlineLobbyError(
+        endedWinnerName
+          ? `Game ended due to insufficient players. Winner: ${endedWinnerName}.`
+          : 'This lobby already ended. Ask the host for a new code.'
+      );
+      return;
+    }
     const snapshotMaxPlayers = Number(snapshot.maxPlayers || MAX_PLAYERS);
     const snapshotPlayerCount = Array.isArray(snapshot.players) ? snapshot.players.length : 0;
     if (snapshotPlayerCount >= snapshotMaxPlayers) {
@@ -5323,6 +5396,10 @@ export default function App() {
       }
       if (error?.code === 'lobby-already-started') {
         setOnlineLobbyError('This lobby already started. Ask the host for a new code.');
+        return;
+      }
+      if (error?.code === 'lobby-ended') {
+        setOnlineLobbyError(mapLobbyErrorToMessage(error, 'This lobby already ended. Ask the host for a new code.'));
         return;
       }
       setOnlineLobbyError(mapLobbyErrorToMessage(error, 'Unable to join lobby right now. Try again in a moment.'));
@@ -5405,6 +5482,10 @@ export default function App() {
         setOnlineLobbyError('Lobby no longer exists. Create a new one.');
         return;
       }
+      if (error?.code === 'lobby-ended') {
+        setOnlineLobbyError(mapLobbyErrorToMessage(error, 'Lobby already ended due to insufficient players.'));
+        return;
+      }
       setOnlineLobbyError(mapLobbyErrorToMessage(error, 'Unable to start match. Please try again.'));
       return;
     }
@@ -5416,6 +5497,7 @@ export default function App() {
       };
       onlineSessionRef.current = nextSession;
       setStoredOnlineSession(nextSession);
+      onlineTransportRef.current?.updateSessionToken(nextSession.sessionToken);
     }
     setOnlinePrivatePrompt(null);
     setOnlinePrivatePromptError('');
@@ -5790,7 +5872,23 @@ export default function App() {
     )}
     {screen === 'liar-reveal' && round && <LiarRevealScreen players={players} round={round} onComplete={finishLiarReveal} theme={canonicalThemeName} playSfx={playSfx} />}
     {screen === 'results' && round && <ResultsScreen players={players} round={round} totalRounds={totalRounds} tally={tally} roundGains={roundGains} roundBreakdown={roundBreakdown} imposterCaught={imposterCaught} onNextRound={winCondition === 'rounds' && round.roundNumber >= totalRounds ? endGame : nextRound} onEndGame={endGame} resultLine={copyState.result} theme={canonicalThemeName} />}
-    {screen === 'final' && <FinalScreen players={players} onRestart={restartToHome} line={copyState.winner} theme={canonicalThemeName} />}
+    {screen === 'final' && (
+      <FinalScreen
+        players={players}
+        onRestart={restartToHome}
+        line={copyState.winner}
+        theme={canonicalThemeName}
+      />
+    )}
+    {onlineMode && ONLINE_IN_SESSION_LEAVE_SCREENS.has(screen) && (
+      <button
+        type="button"
+        className="fixed right-3 top-3 z-[120] rounded-full border border-red-300/40 bg-black/55 px-3 py-2 text-xs font-black uppercase tracking-[0.12em] text-red-100"
+        onClick={() => { void leaveOnlineLobby({ nextScreen: 'online-join' }); }}
+      >
+        Leave Session
+      </button>
+    )}
     <PartySpeakerOverlay
       onlineMode={onlineMode}
       talkingPlayers={partyTalkingPlayers}

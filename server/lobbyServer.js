@@ -11,6 +11,7 @@ const CLIENT_ORIGINS_RAW = String(
 ).trim();
 const MIN_PLAYERS = 3;
 const SESSION_TOKEN_TTL_MS = Number(process.env.LOBBY_SESSION_TOKEN_TTL_MS || 1000 * 60 * 60 * 12);
+const DISCONNECT_GRACE_MS = Math.max(5000, Number(process.env.LOBBY_DISCONNECT_GRACE_MS || 60_000) || 60_000);
 const LIVEKIT_URL = String(process.env.LIVEKIT_URL || '').trim();
 const LIVEKIT_API_KEY = String(process.env.LIVEKIT_API_KEY || '').trim();
 const LIVEKIT_API_SECRET = String(process.env.LIVEKIT_API_SECRET || '').trim();
@@ -120,6 +121,123 @@ function broadcastSnapshot(code, lobby) {
   io.to(roomName(code)).emit('lobby:snapshot', toClientSnapshot(lobby));
 }
 
+const disconnectTimersByLobbyCode = new Map();
+const activeSocketSubscriptionsByLobbyCode = new Map();
+
+function clearDisconnectGraceTimer(code, playerId) {
+  const normalizedCode = normalizeCode(code);
+  const normalizedPlayerId = String(playerId || '').trim();
+  if (!normalizedCode || !normalizedPlayerId) return;
+  const lobbyTimers = disconnectTimersByLobbyCode.get(normalizedCode);
+  if (!lobbyTimers) return;
+  const existingTimer = lobbyTimers.get(normalizedPlayerId);
+  if (existingTimer) {
+    clearTimeout(existingTimer);
+    lobbyTimers.delete(normalizedPlayerId);
+  }
+  if (!lobbyTimers.size) {
+    disconnectTimersByLobbyCode.delete(normalizedCode);
+  }
+}
+
+function registerActiveSocketSubscription(code, playerId, socketId) {
+  const normalizedCode = normalizeCode(code);
+  const normalizedPlayerId = String(playerId || '').trim();
+  const normalizedSocketId = String(socketId || '').trim();
+  if (!normalizedCode || !normalizedPlayerId || !normalizedSocketId) return;
+  let lobbySubscriptions = activeSocketSubscriptionsByLobbyCode.get(normalizedCode);
+  if (!lobbySubscriptions) {
+    lobbySubscriptions = new Map();
+    activeSocketSubscriptionsByLobbyCode.set(normalizedCode, lobbySubscriptions);
+  }
+  let playerSockets = lobbySubscriptions.get(normalizedPlayerId);
+  if (!playerSockets) {
+    playerSockets = new Set();
+    lobbySubscriptions.set(normalizedPlayerId, playerSockets);
+  }
+  playerSockets.add(normalizedSocketId);
+}
+
+function unregisterActiveSocketSubscription(code, playerId, socketId) {
+  const normalizedCode = normalizeCode(code);
+  const normalizedPlayerId = String(playerId || '').trim();
+  const normalizedSocketId = String(socketId || '').trim();
+  if (!normalizedCode || !normalizedPlayerId || !normalizedSocketId) return;
+  const lobbySubscriptions = activeSocketSubscriptionsByLobbyCode.get(normalizedCode);
+  if (!lobbySubscriptions) return;
+  const playerSockets = lobbySubscriptions.get(normalizedPlayerId);
+  if (!playerSockets) return;
+  playerSockets.delete(normalizedSocketId);
+  if (!playerSockets.size) {
+    lobbySubscriptions.delete(normalizedPlayerId);
+  }
+  if (!lobbySubscriptions.size) {
+    activeSocketSubscriptionsByLobbyCode.delete(normalizedCode);
+  }
+}
+
+function hasActiveSocketSubscription(code, playerId) {
+  const normalizedCode = normalizeCode(code);
+  const normalizedPlayerId = String(playerId || '').trim();
+  if (!normalizedCode || !normalizedPlayerId) return false;
+  const lobbySubscriptions = activeSocketSubscriptionsByLobbyCode.get(normalizedCode);
+  if (!lobbySubscriptions) return false;
+  const playerSockets = lobbySubscriptions.get(normalizedPlayerId);
+  return Boolean(playerSockets && playerSockets.size > 0);
+}
+
+function scheduleDisconnectGraceTimer(code, playerId) {
+  const normalizedCode = normalizeCode(code);
+  const normalizedPlayerId = String(playerId || '').trim();
+  if (!normalizedCode || !normalizedPlayerId) return;
+  clearDisconnectGraceTimer(normalizedCode, normalizedPlayerId);
+  let lobbyTimers = disconnectTimersByLobbyCode.get(normalizedCode);
+  if (!lobbyTimers) {
+    lobbyTimers = new Map();
+    disconnectTimersByLobbyCode.set(normalizedCode, lobbyTimers);
+  }
+  const timeoutRef = setTimeout(async () => {
+    try {
+      if (hasActiveSocketSubscription(normalizedCode, normalizedPlayerId)) {
+        clearDisconnectGraceTimer(normalizedCode, normalizedPlayerId);
+        return;
+      }
+      const lobby = await store.getLobby(normalizedCode);
+      if (!lobby) {
+        clearDisconnectGraceTimer(normalizedCode, normalizedPlayerId);
+        return;
+      }
+      const stillPresent = Array.isArray(lobby.players)
+        ? lobby.players.some((entry) => String(entry?.id || '') === normalizedPlayerId)
+        : false;
+      if (!stillPresent) {
+        clearDisconnectGraceTimer(normalizedCode, normalizedPlayerId);
+        return;
+      }
+      const removed = await store.removePlayer(normalizedCode, normalizedPlayerId);
+      if (removed?.error === 'not-found') {
+        clearDisconnectGraceTimer(normalizedCode, normalizedPlayerId);
+        return;
+      }
+      if (removed?.lobby) {
+        broadcastSnapshot(normalizedCode, removed.lobby);
+        return;
+      }
+      broadcastSnapshot(normalizedCode, null);
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error('[lobby-server] disconnect grace removal failed', {
+        code: normalizedCode,
+        playerId: normalizedPlayerId,
+        error,
+      });
+    } finally {
+      clearDisconnectGraceTimer(normalizedCode, normalizedPlayerId);
+    }
+  }, DISCONNECT_GRACE_MS);
+  lobbyTimers.set(normalizedPlayerId, timeoutRef);
+}
+
 app.get('/health', (_req, res) => {
   res.json({
     ok: true,
@@ -225,6 +343,10 @@ app.post('/api/lobbies/:code/join', async (req, res) => {
     res.status(409).json({ error: 'lobby-already-started' });
     return;
   }
+  if (joined.error === 'lobby-ended') {
+    res.status(409).json({ error: 'lobby-ended' });
+    return;
+  }
   if (joined.error === 'lobby-full') {
     res.status(409).json({
       error: 'lobby-full',
@@ -237,6 +359,9 @@ app.post('/api/lobbies/:code/join', async (req, res) => {
     return;
   }
   broadcastSnapshot(code, joined.lobby);
+  if (joined?.player?.id) {
+    clearDisconnectGraceTimer(code, joined.player.id);
+  }
   res.json({
     lobby: toClientSnapshot(joined.lobby),
     player: joined.player,
@@ -269,11 +394,21 @@ app.post('/api/lobbies/:code/resume', async (req, res) => {
     res.status(410).json({ error: 'lobby-session-expired' });
     return;
   }
+  if (result.error === 'lobby-ended') {
+    res.status(409).json({
+      error: 'lobby-ended',
+      lobby: toClientSnapshot(result.lobby || null),
+    });
+    return;
+  }
   if (result.error === 'lock-timeout') {
     res.status(503).json({ error: 'lobby-busy' });
     return;
   }
   broadcastSnapshot(code, result.lobby);
+  if (result?.player?.id) {
+    clearDisconnectGraceTimer(code, result.player.id);
+  }
   res.json({
     lobby: toClientSnapshot(result.lobby),
     player: result.player,
@@ -301,9 +436,11 @@ app.post('/api/lobbies/:code/leave', async (req, res) => {
   }
   if (!result.lobby) {
     broadcastSnapshot(code, null);
+    clearDisconnectGraceTimer(code, playerId);
     res.json({ lobby: null, removed: true });
     return;
   }
+  clearDisconnectGraceTimer(code, playerId);
   broadcastSnapshot(code, result.lobby);
   res.json({ lobby: toClientSnapshot(result.lobby) });
 });
@@ -323,6 +460,13 @@ app.post('/api/lobbies/:code/start', async (req, res) => {
   }
   if (result.error === 'not-enough-players') {
     res.status(409).json({ error: 'not-enough-players', minPlayers: MIN_PLAYERS });
+    return;
+  }
+  if (result.error === 'lobby-ended') {
+    res.status(409).json({
+      error: 'lobby-ended',
+      lobby: toClientSnapshot(result.lobby || null),
+    });
     return;
   }
   if (result.error === 'host-session-token-required') {
@@ -359,6 +503,13 @@ app.get('/api/lobbies/:code/round', async (req, res) => {
     res.status(409).json({ error: 'lobby-not-started' });
     return;
   }
+  if (result.error === 'lobby-ended') {
+    res.status(409).json({
+      error: 'lobby-ended',
+      lobby: toClientSnapshot(result.lobby || null),
+    });
+    return;
+  }
   if (result.error === 'round-not-found') {
     res.status(404).json({ error: 'round-not-found' });
     return;
@@ -380,6 +531,13 @@ app.get('/api/lobbies/:code/round/private', async (req, res) => {
   }
   if (result.error === 'lobby-not-started') {
     res.status(409).json({ error: 'lobby-not-started' });
+    return;
+  }
+  if (result.error === 'lobby-ended') {
+    res.status(409).json({
+      error: 'lobby-ended',
+      lobby: toClientSnapshot(result.lobby || null),
+    });
     return;
   }
   if (result.error === 'round-not-found') {
@@ -424,6 +582,13 @@ app.post('/api/lobbies/:code/rounds/next', async (req, res) => {
     res.status(409).json({ error: 'lobby-not-started' });
     return;
   }
+  if (result.error === 'lobby-ended') {
+    res.status(409).json({
+      error: 'lobby-ended',
+      lobby: toClientSnapshot(result.lobby || null),
+    });
+    return;
+  }
   if (result.error === 'host-only') {
     res.status(403).json({ error: 'host-only' });
     return;
@@ -463,6 +628,13 @@ app.post('/api/lobbies/:code/round/phase/advance', async (req, res) => {
   }
   if (result.error === 'lobby-not-started') {
     res.status(409).json({ error: 'lobby-not-started' });
+    return;
+  }
+  if (result.error === 'lobby-ended') {
+    res.status(409).json({
+      error: 'lobby-ended',
+      lobby: toClientSnapshot(result.lobby || null),
+    });
     return;
   }
   if (result.error === 'round-not-found') {
@@ -576,10 +748,26 @@ app.post('/api/lobbies/:code/round/votes', async (req, res) => {
 });
 
 io.on('connection', (socket) => {
-  socket.on('lobby:subscribe', async ({ code }) => {
+  const subscriptions = new Map();
+
+  socket.on('lobby:subscribe', async ({ code, playerId = '', sessionToken = '' }) => {
     const normalized = normalizeCode(code);
     if (!normalized) return;
     socket.join(roomName(normalized));
+    const normalizedPlayerId = String(playerId || '').trim();
+    const normalizedSessionToken = String(sessionToken || '').trim();
+    const previousSubscription = subscriptions.get(normalized);
+    if (previousSubscription?.playerId) {
+      unregisterActiveSocketSubscription(normalized, previousSubscription.playerId, socket.id);
+    }
+    if (normalizedPlayerId && normalizedSessionToken) {
+      subscriptions.set(normalized, {
+        playerId: normalizedPlayerId,
+        sessionToken: normalizedSessionToken,
+      });
+      registerActiveSocketSubscription(normalized, normalizedPlayerId, socket.id);
+      clearDisconnectGraceTimer(normalized, normalizedPlayerId);
+    }
     const lobby = await store.getLobby(normalized);
     socket.emit('lobby:snapshot', toClientSnapshot(lobby));
   });
@@ -625,6 +813,37 @@ io.on('connection', (socket) => {
     const normalized = normalizeCode(code);
     if (!normalized) return;
     socket.leave(roomName(normalized));
+    const existingSubscription = subscriptions.get(normalized);
+    if (existingSubscription?.playerId) {
+      unregisterActiveSocketSubscription(normalized, existingSubscription.playerId, socket.id);
+    }
+    subscriptions.delete(normalized);
+  });
+
+  socket.on('disconnect', async () => {
+    const entries = Array.from(subscriptions.entries());
+    subscriptions.clear();
+    for (const [code, subscription] of entries) {
+      const normalizedPlayerId = String(subscription?.playerId || '').trim();
+      const normalizedSessionToken = String(subscription?.sessionToken || '').trim();
+      if (!code || !normalizedPlayerId || !normalizedSessionToken) continue;
+      unregisterActiveSocketSubscription(code, normalizedPlayerId, socket.id);
+      if (hasActiveSocketSubscription(code, normalizedPlayerId)) continue;
+      try {
+        const lobby = await store.getLobby(code);
+        if (!lobby) continue;
+        const validation = validateLobbyPlayerSession(lobby, normalizedPlayerId, normalizedSessionToken);
+        if (validation.error) continue;
+        scheduleDisconnectGraceTimer(code, normalizedPlayerId);
+      } catch (error) {
+        // eslint-disable-next-line no-console
+        console.error('[lobby-server] disconnect handling failed', {
+          code,
+          playerId: normalizedPlayerId,
+          error,
+        });
+      }
+    }
   });
 });
 
