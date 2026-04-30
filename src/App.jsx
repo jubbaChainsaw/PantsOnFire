@@ -147,6 +147,30 @@ const UI_ICON_CROWN_GOLD_SRC = '/assets/images/ui-icons/crown-gold.png';
 const UI_ICON_BADGE_18_PLUS_SRC = '/assets/images/ui-icons/badge-18-plus.png';
 const UI_ICON_BADGE_LIAR_SRC = '/assets/images/ui-icons/badge-liar.png';
 const UI_ICON_MAGNIFIER_FIRE_SRC = '/assets/images/ui-icons/magnifier-fire.png';
+const NEW_UI_BASE = '/assets/new-ui';
+const NEW_UI_LOGO_MAIN_SRC = `${NEW_UI_BASE}/logos/main-logo.png`;
+const NEW_UI_LOGO_18PLUS_SRC = `${NEW_UI_BASE}/logos/logo-18plus.png`;
+const NEW_UI_WALLPAPER_HOME_SRC = `${NEW_UI_BASE}/wallpapers/home-page.png`;
+const NEW_UI_WALLPAPER_IN_GAME_SRC = `${NEW_UI_BASE}/wallpapers/in-game.png`;
+const NEW_UI_CARD_BASE = `${NEW_UI_BASE}/cards`;
+const NEW_UI_CATEGORY_ICON_BASE = `${NEW_UI_BASE}/categories`;
+const NEW_UI_ROUND_TYPE_ICON_BASE = `${NEW_UI_BASE}/game-modes`;
+const NEW_UI_PRIMARY_BUTTON_CLASS = 'h-16 rounded-[1.9rem] border-2 border-white bg-[#f500c8] text-white text-lg sm:text-xl font-black uppercase tracking-[0.02em] hover:bg-[#ff24d4] shadow-[0_10px_24px_rgba(0,0,0,0.45)]';
+const NEW_UI_CUSTOM_CATEGORY_META = [
+  { id: 'travel-disasters', name: 'Travel Disasters', iconSrc: `${NEW_UI_CATEGORY_ICON_BASE}/travel-disasters.png` },
+  { id: 'roommate-chaos', name: 'Roommate Chaos', iconSrc: `${NEW_UI_CATEGORY_ICON_BASE}/roommate-chaos.png` },
+  { id: 'mobile-apps', name: 'Mobile Apps', iconSrc: `${NEW_UI_CATEGORY_ICON_BASE}/mobile-apps.png` },
+  { id: 'school-uni', name: 'School / Uni Life', iconSrc: `${NEW_UI_CATEGORY_ICON_BASE}/school-uni.png` },
+  { id: 'mythical-creatures', name: 'Mythical Creatures', iconSrc: `${NEW_UI_CATEGORY_ICON_BASE}/mythical-creatures.png` },
+  { id: 'cars-motors', name: 'Cars & Motors', iconSrc: `${NEW_UI_CATEGORY_ICON_BASE}/cars-motors.png` },
+  { id: 'childhood-nostalgia', name: 'Childhood Nostalgia', iconSrc: `${NEW_UI_CATEGORY_ICON_BASE}/childhood-nostalgia.png` },
+  { id: 'conspiracy-lite', name: 'Conspiracy Lite', iconSrc: `${NEW_UI_CATEGORY_ICON_BASE}/conspiracy-lite.png` },
+  { id: 'dating-bios', name: 'Dating App Bios', iconSrc: `${NEW_UI_CATEGORY_ICON_BASE}/dating-bios.png` },
+  { id: 'board-game-lore', name: 'Board Games', iconSrc: `${NEW_UI_CATEGORY_ICON_BASE}/board-game-lore.png` },
+  { id: 'internet-slang', name: 'Internet Slang', iconSrc: `${NEW_UI_CATEGORY_ICON_BASE}/internet-slang.png` },
+  { id: 'memes-viral', name: 'Memes & Viral Moments', iconSrc: `${NEW_UI_CATEGORY_ICON_BASE}/memes-viral.png` },
+  { id: 'pic-mix', name: 'Pic & Mix', iconSrc: `${NEW_UI_CATEGORY_ICON_BASE}/pic-mix.png` },
+];
 const MIN_PLAYERS = 3;
 const MAX_PLAYERS = 12;
 const WEB_JOIN_ONLY_MODE = String(import.meta?.env?.VITE_WEB_JOIN_ONLY ?? 'false').trim() !== 'false';
@@ -1411,6 +1435,56 @@ function getRoundRuleText(roundTypeId = 'prompt') {
   }
   return 'Give one clue, blend in, and avoid revealing your exact prompt.';
 }
+function getCategoryIconSrc(categoryId = '') {
+  const normalizedId = String(categoryId || '').trim();
+  if (!normalizedId) return '';
+  return NEW_UI_CATEGORY_ICON_BY_ID[normalizedId] || '';
+}
+function getRoundTypeIconSrc(roundTypeId = 'prompt') {
+  const normalizedId = String(roundTypeId || 'prompt').trim().toLowerCase();
+  if (!normalizedId) return NEW_UI_GAME_MODE_ICON_BY_ID.prompt;
+  if (normalizedId === 'offtopic') return NEW_UI_GAME_MODE_ICON_BY_ID.prompt;
+  return NEW_UI_GAME_MODE_ICON_BY_ID[normalizedId] || NEW_UI_GAME_MODE_ICON_BY_ID.prompt;
+}
+function getRoundCardBackSrc(themeName = 'Default') {
+  const normalized = toCanonicalThemeName(themeName);
+  const exact = NEW_UI_CARD_BY_THEME[normalized];
+  if (exact?.back) return exact.back;
+  if (normalized === 'Ghosts & Ghouls' && NEW_UI_CARD_BY_THEME['Ghosts and Ghouls']?.back) {
+    return NEW_UI_CARD_BY_THEME['Ghosts and Ghouls'].back;
+  }
+  return NEW_UI_CARD_DEFAULT_BACK_SRC;
+}
+function getRoundCardFrontSrc(themeName = 'Default') {
+  const normalized = toCanonicalThemeName(themeName);
+  const exact = NEW_UI_CARD_BY_THEME[normalized];
+  if (exact?.front) return exact.front;
+  if (normalized === 'Ghosts & Ghouls' && NEW_UI_CARD_BY_THEME['Ghosts and Ghouls']?.front) {
+    return NEW_UI_CARD_BY_THEME['Ghosts and Ghouls'].front;
+  }
+  return NEW_UI_CARD_DEFAULT_FRONT_SRC;
+}
+function getImposterCardFrontSrc() {
+  return NEW_UI_CARD_LIAR_FRONT_SRC;
+}
+function getCustomCategoryMetaById() {
+  return Object.fromEntries(
+    NEW_UI_CUSTOM_CATEGORY_META.map((entry) => [entry.id, entry])
+  );
+}
+function applyNewUiCategoryMetaToList(list = []) {
+  const byId = getCustomCategoryMetaById();
+  return list.map((category) => {
+    const meta = byId[category?.id];
+    if (!meta) return category;
+    return {
+      ...category,
+      name: meta.name || category.name,
+      iconSrc: meta.iconSrc || category.iconSrc,
+      categoryBackCardSrc: meta.iconSrc || category.categoryBackCardSrc || category.iconSrc,
+    };
+  });
+}
 function getInstructionHostLines(roundTypeId = 'prompt') {
   if (roundTypeId === 'opinion') {
     return [
@@ -1717,121 +1791,41 @@ function RulesSplashScreen({ mode, onContinue, theme, isOnlineMode = false }) {
     </TopFrame>
   );
 }
-function HomeScreen({ onNavigate, homeLine, adultMode, joinOnlyMode = false, fireFrameVideoSrc = FIRE_FRAME_VIDEO_SRC }) {
-  const logoSrc = adultMode ? LOGO_18PLUS_SRC : LOGO_SRC;
-  const bottomFlames = [
-    { src: HOME_FLAME_SOURCES[0] || FLAME_SRC, left: '4%', size: 'h-24 w-20', delay: '0s', duration: '2.4s', drift: '3deg', rise: '-22px' },
-    { src: HOME_FLAME_SOURCES[1] || FLAME_SRC, left: '17%', size: 'h-28 w-24', delay: '0.15s', duration: '2.8s', drift: '-4deg', rise: '-28px' },
-    { src: HOME_FLAME_SOURCES[2] || FLAME_SRC, left: '31%', size: 'h-22 w-20', delay: '0.35s', duration: '2.2s', drift: '2deg', rise: '-20px' },
-    { src: HOME_FLAME_SOURCES[3] || FLAME_SRC, left: '47%', size: 'h-26 w-22', delay: '0.1s', duration: '2.95s', drift: '-3deg', rise: '-24px' },
-    { src: HOME_FLAME_SOURCES[4] || FLAME_SRC, left: '62%', size: 'h-24 w-20', delay: '0.25s', duration: '2.5s', drift: '4deg', rise: '-21px' },
-    { src: HOME_FLAME_SOURCES[5] || FLAME_SRC, left: '76%', size: 'h-27 w-24', delay: '0.4s', duration: '2.65s', drift: '-2deg', rise: '-26px' },
-    { src: HOME_FLAME_SOURCES[6] || FLAME_SRC, left: '90%', size: 'h-23 w-20', delay: '0.2s', duration: '2.3s', drift: '3deg', rise: '-19px' },
-  ];
-  const topFlames = [
-    { src: HOME_FLAME_SOURCES[6] || FLAME_SRC, right: '6%', size: 'h-18 w-16', delay: '0.05s', duration: '2.35s', drift: '-2deg', rise: '18px' },
-    { src: HOME_FLAME_SOURCES[5] || FLAME_SRC, right: '24%', size: 'h-20 w-18', delay: '0.2s', duration: '2.7s', drift: '3deg', rise: '22px' },
-    { src: HOME_FLAME_SOURCES[4] || FLAME_SRC, right: '43%', size: 'h-16 w-14', delay: '0.35s', duration: '2.25s', drift: '-3deg', rise: '16px' },
-    { src: HOME_FLAME_SOURCES[3] || FLAME_SRC, right: '62%', size: 'h-19 w-16', delay: '0.1s', duration: '2.5s', drift: '2deg', rise: '19px' },
-    { src: HOME_FLAME_SOURCES[2] || FLAME_SRC, right: '80%', size: 'h-17 w-15', delay: '0.3s', duration: '2.2s', drift: '-2deg', rise: '15px' },
-  ];
+function HomeScreen({ onNavigate, homeLine, adultMode, joinOnlyMode = false }) {
+  const logoSrc = adultMode ? NEW_UI_LOGO_18PLUS_SRC : NEW_UI_LOGO_MAIN_SRC;
   return (
     <TopFrame theme="Default" allowScroll={false}>
-      <div className="relative h-[calc(100dvh-2rem)] px-2 flex items-center justify-center overflow-hidden">
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-56 overflow-visible">
-          <MultiSourceVideo
-            className="absolute inset-x-0 bottom-0 h-56 w-full object-cover opacity-45 mix-blend-screen"
-            src={fireFrameVideoSrc}
-            autoPlay
-            loop
-            muted
-            playsInline
-            preload="auto"
-            ariaHidden
-          />
-          <div className="absolute inset-x-0 bottom-0 h-40 bg-[radial-gradient(circle_at_50%_100%,rgba(255,94,0,0.45)_0%,rgba(255,94,0,0.2)_35%,rgba(0,0,0,0)_74%)] animate-pulse" />
-          {bottomFlames.map((flame, index) => (
-            <img
-              key={`bottom-flame-${index}`}
-              src={flame.src}
-              alt=""
-              aria-hidden="true"
-              className={`absolute -bottom-9 ${flame.size} opacity-85 drop-shadow-[0_0_16px_rgba(255,98,0,0.98)]`}
-              style={{
-                left: flame.left,
-                animation: `home-flame-ripple ${flame.duration} ease-in-out ${flame.delay} infinite`,
-                '--home-flame-drift': flame.drift,
-                '--home-flame-rise': flame.rise,
-              }}
-            />
-          ))}
+      <div className="mx-auto max-w-[28rem] h-[calc(100dvh-2rem)] flex flex-col items-center px-4 pt-4 pb-6">
+        <div className="w-full flex justify-center">
+          <ThemeArt src={logoSrc} alt="Pants On Fire logo" className="w-[78%] max-w-[17rem] drop-shadow-[0_10px_22px_rgba(0,0,0,0.8)]" />
         </div>
-        <div className="pointer-events-none absolute inset-0 z-[1]">
-          <MultiSourceVideo
-            className="absolute inset-0 h-full w-full object-cover opacity-22 mix-blend-screen"
-            src={fireFrameVideoSrc}
-            autoPlay
-            loop
-            muted
-            playsInline
-            preload="auto"
-            ariaHidden
-          />
+        <p className="mt-2 text-center text-xs text-white/80">{homeLine}</p>
+        <div className="mt-6 w-full flex-1 flex flex-col justify-center gap-4">
+          {!joinOnlyMode && (
+            <Button className={NEW_UI_PRIMARY_BUTTON_CLASS} onClick={() => onNavigate('setup')}>
+              <Play className="mr-2 h-5 w-5" />Setup Game
+            </Button>
+          )}
+          {!joinOnlyMode && (
+            <Button className={NEW_UI_PRIMARY_BUTTON_CLASS} onClick={() => onNavigate('online-setup')}>
+              <Wifi className="mr-2 h-5 w-5" />Create Online Lobby
+            </Button>
+          )}
+          <Button className={NEW_UI_PRIMARY_BUTTON_CLASS} onClick={() => onNavigate('online-join')}>
+            <KeyRound className="mr-2 h-5 w-5" />Join Online Lobby
+          </Button>
+          <Button className={NEW_UI_PRIMARY_BUTTON_CLASS} onClick={() => onNavigate('store')}>
+            <ShoppingBag className="mr-2 h-5 w-5" />Store
+          </Button>
+          <Button className={NEW_UI_PRIMARY_BUTTON_CLASS} onClick={() => onNavigate('settings')}>
+            <Settings className="mr-2 h-5 w-5" />Settings
+          </Button>
         </div>
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-24 overflow-visible">
-          <div className="absolute inset-x-0 top-0 h-20 bg-[radial-gradient(circle_at_50%_0%,rgba(255,94,0,0.2)_0%,rgba(255,94,0,0.1)_32%,rgba(0,0,0,0)_75%)]" />
-          {topFlames.map((flame, index) => (
-            <img
-              key={`top-flame-${index}`}
-              src={flame.src}
-              alt=""
-              aria-hidden="true"
-              className={`absolute -top-6 ${flame.size} opacity-75 drop-shadow-[0_0_14px_rgba(255,98,0,0.9)]`}
-              style={{
-                right: flame.right,
-                transform: 'scaleY(-1)',
-                animation: `home-flame-ripple ${flame.duration} ease-in-out ${flame.delay} infinite`,
-                '--home-flame-drift': flame.drift,
-                '--home-flame-rise': flame.rise,
-              }}
-            />
-          ))}
-        </div>
-        <div className="relative z-10 w-full max-w-xl h-full max-h-[calc(100dvh-2.5rem)] text-center flex flex-col justify-between gap-2 py-1">
-          <div className="relative px-2 pt-0.5">
-            <img src={logoSrc} alt="Pants On Fire logo" className="mx-auto w-full max-w-xl object-contain drop-shadow-[0_10px_30px_rgba(0,0,0,0.7)]" />
-            {adultMode && (
-              <div className="mt-1 flex items-center justify-center gap-2 text-[0.7rem] sm:text-xs uppercase tracking-[0.2em] text-red-100">
-                <img src={UI_ICON_BADGE_18_PLUS_SRC} alt="" aria-hidden="true" className="h-5 w-5 object-contain" />
-                <span>18+ CONTENT ENABLED</span>
-              </div>
-            )}
-            <p className="mt-1 text-white/80 text-xs sm:text-sm">{homeLine}</p>
+        {joinOnlyMode && (
+          <div className="mt-2 w-full rounded-2xl border border-cyan-300/25 bg-cyan-500/10 px-4 py-3 text-xs text-cyan-100">
+            Website mode supports joining lobbies only. Creating games and local play are available in the mobile app versions.
           </div>
-          <div className="grid gap-2">
-            {!joinOnlyMode && (
-              <Button className="h-14 rounded-[1.8rem] text-lg sm:text-xl bg-yellow-300 text-zinc-950 hover:bg-yellow-200 border-2 border-white" onClick={() => onNavigate('setup')}><Play className="mr-2 h-5 w-5" />Setup Game</Button>
-            )}
-            {!joinOnlyMode && (
-              <Button className="h-14 rounded-[1.8rem] text-lg sm:text-xl bg-cyan-500/20 text-white hover:bg-cyan-500/30 border border-cyan-300/40" onClick={() => onNavigate('online-setup')}><Wifi className="mr-2 h-5 w-5" />Create Online Lobby</Button>
-            )}
-            <Button className="h-14 rounded-[1.8rem] text-lg sm:text-xl bg-indigo-500/15 text-white hover:bg-indigo-500/30 border border-indigo-300/30" onClick={() => onNavigate('online-join')}><KeyRound className="mr-2 h-5 w-5" />Join Online Lobby</Button>
-            {joinOnlyMode && (
-              <div className="rounded-2xl border border-cyan-300/25 bg-cyan-500/10 px-4 py-3 text-xs text-cyan-100">
-                Website mode supports joining lobbies only. Creating games and local play are available in the mobile app versions.
-              </div>
-            )}
-            <Button className="h-14 rounded-[1.8rem] text-lg sm:text-xl bg-fuchsia-500/15 text-white hover:bg-fuchsia-500/25 border border-fuchsia-400/30" onClick={() => onNavigate('store')}><ShoppingBag className="mr-2 h-5 w-5" />Store</Button>
-            <Button className="h-14 rounded-[1.8rem] text-lg sm:text-xl bg-cyan-500/15 text-white hover:bg-cyan-500/25 border border-cyan-400/30" onClick={() => onNavigate('settings')}><Settings className="mr-2 h-5 w-5" />Settings</Button>
-          </div>
-          <button
-            type="button"
-            className="mx-auto text-xs sm:text-sm text-cyan-200 underline underline-offset-4 hover:text-cyan-100 transition-colors"
-            onClick={() => onNavigate('development-progress')}
-          >
-            See Development Progress
-          </button>
-        </div>
+        )}
       </div>
     </TopFrame>
   );
@@ -2000,6 +1994,32 @@ function OnlineLobbySetupScreen({
         </GlassPanel>
       </div>
     </TopFrame>
+  );
+}
+function BrandedScreen({
+  children,
+  wallpaperSrc = NEW_UI_WALLPAPER_IN_GAME_SRC,
+  overlayClassName = 'bg-black/35',
+  frameClassName = '',
+  contentClassName = '',
+}) {
+  return (
+    <div className={`relative min-h-screen min-h-[100dvh] overflow-hidden text-white ${frameClassName}`}>
+      <div
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+        style={{ backgroundImage: `url(${wallpaperSrc})` }}
+      />
+      <div className={`absolute inset-0 ${overlayClassName}`} />
+      <div
+        className={`relative z-10 mx-auto flex min-h-screen min-h-[100dvh] w-full max-w-[460px] flex-col px-5 py-6 ${contentClassName}`}
+        style={{
+          paddingTop: 'max(1.25rem, env(safe-area-inset-top))',
+          paddingBottom: 'max(1.25rem, env(safe-area-inset-bottom))',
+        }}
+      >
+        {children}
+      </div>
+    </div>
   );
 }
 function OnlineJoinLobbyScreen({
@@ -2561,7 +2581,7 @@ function RevealScreen({ players, currentRevealIndex, round, totalRounds, onNext,
   const cardFrontSrc = useAdultCardArt
     ? (themeAssets.adultPromptCardFront || defaultPromptCards.adultPromptCardFront)
     : (defaultRoundTypeFront || themeAssets.promptCardFront || defaultPromptCards.promptCardFront);
-  const roundTypeLogoSrc = ROUND_TYPES[round.roundTypeId]?.logoSrc || null;
+  const roundTypeLogoSrc = getRoundTypeIconSrc(round.roundTypeId);
   const instructionLine = round.roundTypeId === 'picture'
     ? 'Keep this private. You will reveal a picture prompt.'
     : 'Keep this private. You will reveal your prompt.';
