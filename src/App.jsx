@@ -2239,6 +2239,7 @@ function SetupScreen(props) {
     winCondition, setWinCondition, pointsToWin, setPointsToWin, roundsPerPlayer, setRoundsPerPlayer, enabledCategories, onToggleCategory,
     grillSettings, setGrillSettings, adultMode, categoryCount, onOpenAdmin, onStart, onBack, setupLine,
     personaOnlyMode, setPersonaOnlyMode,
+    allCategories = [],
     themeOptions = [], startLabel = 'Start Match', requiredMinPlayers = MIN_PLAYERS, desktopLandscape = false,
   } = props;
   const canStart = players.length >= requiredMinPlayers && players.every((p) => p.name.trim().length > 0);
