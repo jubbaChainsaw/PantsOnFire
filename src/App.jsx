@@ -155,6 +155,32 @@ const NEW_UI_WALLPAPER_IN_GAME_SRC = `${NEW_UI_BASE}/wallpapers/in-game.png`;
 const NEW_UI_CARD_BASE = `${NEW_UI_BASE}/cards`;
 const NEW_UI_CATEGORY_ICON_BASE = `${NEW_UI_BASE}/categories`;
 const NEW_UI_ROUND_TYPE_ICON_BASE = `${NEW_UI_BASE}/game-modes`;
+const NEW_UI_CARD_DEFAULT_FRONT_SRC = `${NEW_UI_CARD_BASE}/default-front.png`;
+const NEW_UI_CARD_DEFAULT_BACK_SRC = `${NEW_UI_CARD_BASE}/default-back.png`;
+const NEW_UI_CARD_LIAR_FRONT_SRC = `${NEW_UI_CARD_BASE}/liar-front.png`;
+const NEW_UI_CARD_BY_THEME = Object.freeze({
+  Default: { front: NEW_UI_CARD_DEFAULT_FRONT_SRC, back: NEW_UI_CARD_DEFAULT_BACK_SRC },
+  Pirates: { front: `${NEW_UI_CARD_BASE}/pirates-front.png`, back: `${NEW_UI_CARD_BASE}/pirates-back.png` },
+  'Murder Mystery': { front: `${NEW_UI_CARD_BASE}/murder-mystery-front.png`, back: `${NEW_UI_CARD_BASE}/murder-mystery-back.png` },
+  'Cops and Robbers': { front: `${NEW_UI_CARD_BASE}/cops-and-robbers-front.png`, back: `${NEW_UI_CARD_BASE}/cops-and-robbers-back.png` },
+  'Ghosts and Ghouls': { front: `${NEW_UI_CARD_BASE}/ghosts-and-ghouls-front.png`, back: `${NEW_UI_CARD_BASE}/ghosts-and-ghouls-back.png` },
+});
+const NEW_UI_GAME_MODE_ICON_BY_ID = Object.freeze({
+  prompt: `${NEW_UI_ROUND_TYPE_ICON_BASE}/prompt.png`,
+  opinion: `${NEW_UI_ROUND_TYPE_ICON_BASE}/opinion.png`,
+  picture: `${NEW_UI_ROUND_TYPE_ICON_BASE}/picture.png`,
+  meme: `${NEW_UI_ROUND_TYPE_ICON_BASE}/meme.png`,
+  noise: `${NEW_UI_ROUND_TYPE_ICON_BASE}/noise.png`,
+  chain: `${NEW_UI_ROUND_TYPE_ICON_BASE}/chain.png`,
+  grill: `${NEW_UI_ROUND_TYPE_ICON_BASE}/grill.png`,
+  sound: `${NEW_UI_ROUND_TYPE_ICON_BASE}/sound.png`,
+  video: `${NEW_UI_ROUND_TYPE_ICON_BASE}/video.png`,
+});
+const NEW_UI_CATEGORY_ICON_BY_ID = Object.freeze(
+  Object.fromEntries(
+    DEFAULT_CATEGORIES.map((category) => [category.id, `${NEW_UI_CATEGORY_ICON_BASE}/${category.id}.png`])
+  )
+);
 const NEW_UI_PRIMARY_BUTTON_CLASS = 'h-16 rounded-[1.9rem] border-2 border-white bg-[#f500c8] text-white text-lg sm:text-xl font-black uppercase tracking-[0.02em] hover:bg-[#ff24d4] shadow-[0_10px_24px_rgba(0,0,0,0.45)]';
 const NEW_UI_CUSTOM_CATEGORY_META = [
   { id: 'travel-disasters', name: 'Travel Disasters', iconSrc: `${NEW_UI_CATEGORY_ICON_BASE}/travel-disasters.png` },
@@ -1794,7 +1820,7 @@ function RulesSplashScreen({ mode, onContinue, theme, isOnlineMode = false }) {
 function HomeScreen({ onNavigate, homeLine, adultMode, joinOnlyMode = false }) {
   const logoSrc = adultMode ? NEW_UI_LOGO_18PLUS_SRC : NEW_UI_LOGO_MAIN_SRC;
   return (
-    <TopFrame theme="Default" allowScroll={false}>
+    <BrandedScreen wallpaperSrc={NEW_UI_WALLPAPER_HOME_SRC} overlayClassName="bg-black/35">
       <div className="mx-auto max-w-[28rem] h-[calc(100dvh-2rem)] flex flex-col items-center px-4 pt-4 pb-6">
         <div className="w-full flex justify-center">
           <ThemeArt src={logoSrc} alt="Pants On Fire logo" className="w-[78%] max-w-[17rem] drop-shadow-[0_10px_22px_rgba(0,0,0,0.8)]" />
@@ -1827,8 +1853,21 @@ function HomeScreen({ onNavigate, homeLine, adultMode, joinOnlyMode = false }) {
           </div>
         )}
       </div>
-    </TopFrame>
+    </BrandedScreen>
   );
+}
+function NewUiCategoryBadge({ categoryId = '', fallbackEmoji = '🎲', fallbackName = '' }) {
+  const iconSrc = getCategoryIconSrc(categoryId);
+  if (iconSrc) {
+    return (
+      <ThemeArt
+        src={iconSrc}
+        alt={fallbackName || categoryId}
+        className="h-8 w-8 rounded-lg border border-white/20 bg-black/30 object-cover"
+      />
+    );
+  }
+  return <span className="text-lg">{fallbackEmoji}</span>;
 }
 function DevelopmentProgressScreen({ onBack, onlineLobbyLine, theme = 'Default' }) {
   return (
@@ -1895,7 +1934,7 @@ function OnlineLobbySetupScreen({
     : [{ name: 'Default', isDlc: false }];
   const canContinue = hostName.trim().length > 0;
   return (
-    <TopFrame theme={nameTheme}>
+    <BrandedScreen wallpaperSrc={NEW_UI_WALLPAPER_IN_GAME_SRC} overlayClassName="bg-black/45">
       <div className="mx-auto max-w-3xl space-y-6">
         <GlassPanel className="rounded-[2.5rem] p-8 border-cyan-400/20 bg-black/25">
           <div className="text-xs uppercase tracking-[0.35em] text-cyan-200/80">Online Host Setup</div>
@@ -1993,7 +2032,7 @@ function OnlineLobbySetupScreen({
           )}
         </GlassPanel>
       </div>
-    </TopFrame>
+    </BrandedScreen>
   );
 }
 function BrandedScreen({
@@ -2041,7 +2080,7 @@ function OnlineJoinLobbyScreen({
   const canContinueCode = joinCode.trim().length >= 4;
   const canJoin = playerName.trim().length > 0;
   return (
-    <TopFrame theme={nameTheme}>
+    <BrandedScreen wallpaperSrc={NEW_UI_WALLPAPER_IN_GAME_SRC} overlayClassName="bg-black/45">
       <div className="mx-auto max-w-3xl space-y-6">
         <GlassPanel className="rounded-[2.5rem] p-8 border-indigo-400/25 bg-black/25">
           <div className="text-xs uppercase tracking-[0.35em] text-indigo-200/80">Join Online Lobby</div>
@@ -2091,7 +2130,7 @@ function OnlineJoinLobbyScreen({
           )}
         </GlassPanel>
       </div>
-    </TopFrame>
+    </BrandedScreen>
   );
 }
 function OnlineLobbyCodeScreen({
@@ -2116,7 +2155,7 @@ function OnlineLobbyCodeScreen({
     .map((player) => String(player?.name || '').trim())
     .filter(Boolean);
   return (
-    <TopFrame theme={nameTheme}>
+    <BrandedScreen wallpaperSrc={NEW_UI_WALLPAPER_IN_GAME_SRC} overlayClassName="bg-black/45">
       <div className="mx-auto max-w-4xl space-y-6">
         <GlassPanel className="rounded-[2.5rem] p-8 border-cyan-400/25 bg-black/25">
           <div className="text-xs uppercase tracking-[0.35em] text-cyan-200/80">Lobby Generated</div>
@@ -2191,7 +2230,7 @@ function OnlineLobbyCodeScreen({
           )}
         </GlassPanel>
       </div>
-    </TopFrame>
+    </BrandedScreen>
   );
 }
 function SetupScreen(props) {
@@ -2260,7 +2299,11 @@ function SetupScreen(props) {
       packId: null,
     }];
   return (
-    <TopFrame theme={nameTheme}>
+    <BrandedScreen
+      wallpaperSrc={NEW_UI_WALLPAPER_IN_GAME_SRC}
+      overlayClassName="bg-black/45"
+      contentClassName={desktopLandscape ? 'max-w-[1320px]' : 'max-w-[1120px]'}
+    >
       <div className={desktopLandscape ? 'mx-auto max-w-[1400px] space-y-5' : 'mx-auto max-w-7xl space-y-5'}>
         <div className="flex items-center justify-between gap-4">
           <Button className="rounded-[1.4rem] border border-white/10 bg-white/5 px-4 py-2 text-white" onClick={onBack}>Back</Button>
@@ -2523,7 +2566,8 @@ function SetupScreen(props) {
           <div className="mt-4 grid gap-3 sm:grid-cols-2">
             {Object.keys(enabledCategories).map((id) => {
               const enabled = enabledCategories[id];
-              const category = DEFAULT_CATEGORIES.find((item) => item.id === id) || { name: id, emoji: '🎲' };
+              const category = allCategories.find((item) => item.id === id) || { name: id, emoji: '🎲', iconSrc: '' };
+              const categoryIconSrc = category.iconSrc || getCategoryIconSrc(id);
               return (
                 <button
                   key={id}
@@ -2533,7 +2577,16 @@ function SetupScreen(props) {
                     : 'rounded-[1.5rem] border border-white/10 bg-white/5 p-4 text-center opacity-45'}
                 >
                   <div className="flex flex-col items-center gap-2">
-                    <div className="text-lg font-black">{category.emoji} {category.name}</div>
+                    {categoryIconSrc ? (
+                      <ThemeArt
+                        src={categoryIconSrc}
+                        alt={category.name}
+                        className="h-14 w-14 rounded-xl border border-white/20 bg-black/30 object-cover"
+                      />
+                    ) : (
+                      <div className="text-lg">{category.emoji || '🎲'}</div>
+                    )}
+                    <div className="text-lg font-black">{category.name}</div>
                     <div className="text-xs text-white/60">{enabled ? 'Enabled' : 'Disabled'}</div>
                     {enabled ? <CheckCircle2 className="h-5 w-5 text-cyan-300" /> : <XCircle className="h-5 w-5 text-white/45" />}
                   </div>
@@ -2546,7 +2599,7 @@ function SetupScreen(props) {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </TopFrame>
+    </BrandedScreen>
   );
 }
 function RevealScreen({ players, currentRevealIndex, round, totalRounds, onNext, passLine, normalLine, liarLine, theme, onlineMode = false, localPlayerName = '', onlinePrivatePrompt = null, onlinePrivatePromptError = '', privatePromptLoading = false, playSfx = () => {} }) {
@@ -4476,6 +4529,18 @@ export default function App() {
   const [recentPromptKeys, setRecentPromptKeys] = useState([]);
   const getLine = useMemo(() => createCopyPicker(COPY_BANK), []);
   const [copyState, setCopyState] = useState({ home: COPY_BANK.home[0], setup: COPY_BANK.setup[0], chooser: COPY_BANK.chooser[0], passPhone: COPY_BANK.passPhone[0], revealNormal: COPY_BANK.revealNormal[0], revealLiar: COPY_BANK.revealLiar[0], discussion: COPY_BANK.discussion[0], voting: COPY_BANK.voting[0], result: COPY_BANK.caught[0], winner: COPY_BANK.winner[0], onlineLobby: COPY_BANK.onlineLobby[0], hostStinger: COPY_BANK.hostStingerPrompt[0] });
+  const refreshCopy = useCallback((keys = []) => {
+    const targetKeys = Array.isArray(keys) ? keys : [keys];
+    if (!targetKeys.length) return;
+    setCopyState((current) => {
+      const next = { ...current };
+      targetKeys.forEach((key) => {
+        if (!key || !COPY_BANK[key]?.length) return;
+        next[key] = getLine(key);
+      });
+      return next;
+    });
+  }, [getLine]);
   const themeOptions = useMemo(
     () => getThemeOptions(unlockedThemePackIds),
     [unlockedThemePackIds]
@@ -4502,7 +4567,10 @@ export default function App() {
     }, {}),
     [availablePicturePackManifests]
   );
-  const allCategories = useMemo(() => getCombinedCategories(customCategories), [customCategories]);
+  const allCategories = useMemo(
+    () => applyNewUiCategoryMetaToList(getCombinedCategories(customCategories)),
+    [customCategories]
+  );
   const activeCategories = useMemo(() => allCategories.filter((cat) => enabledCategories[cat.id] !== false), [allCategories, enabledCategories]);
   useEffect(() => setStored('imposter-enabled-categories-v2', enabledCategories), [enabledCategories]);
   useEffect(() => setStored('imposter-custom-categories-v2', customCategories), [customCategories]);
