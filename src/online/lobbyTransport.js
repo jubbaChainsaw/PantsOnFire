@@ -131,6 +131,22 @@ export async function startLobbyOnServer(lobbyCode, { hostClientId, sessionToken
   };
 }
 
+export async function setLobbyReadyOnServer(lobbyCode, { playerId, sessionToken, ready } = {}) {
+  const normalizedCode = normalizeCode(lobbyCode);
+  const payload = await requestJson(`/lobbies/${encodeURIComponent(normalizedCode)}/ready`, {
+    method: 'POST',
+    body: { playerId, sessionToken, ready: Boolean(ready) },
+  });
+  return {
+    lobby: payload?.lobby || null,
+    playerId: payload?.playerId || '',
+    isReady: Boolean(payload?.playerReadyState),
+    rotatedSessionToken: payload?.rotatedSessionToken || '',
+    readyCount: Number(payload?.readyCount || 0),
+    totalCount: Number(payload?.totalCount || 0),
+  };
+}
+
 export async function readCurrentRoundOnServer(lobbyCode) {
   const normalizedCode = normalizeCode(lobbyCode);
   const payload = await requestJson(`/lobbies/${encodeURIComponent(normalizedCode)}/round`);

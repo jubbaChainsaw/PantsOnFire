@@ -462,6 +462,18 @@ app.post('/api/lobbies/:code/start', async (req, res) => {
     res.status(409).json({ error: 'not-enough-players', minPlayers: MIN_PLAYERS });
     return;
   }
+  if (result.error === 'not-enough-ready-players') {
+    res.status(409).json({
+      error: 'not-enough-ready-players',
+      minPlayers: MIN_PLAYERS,
+      readyCount: Number(result.readyCount || 0),
+    });
+    return;
+  }
+  if (result.error === 'host-not-ready') {
+    res.status(409).json({ error: 'host-not-ready' });
+    return;
+  }
   if (result.error === 'lobby-ended') {
     res.status(409).json({
       error: 'lobby-ended',
@@ -489,6 +501,56 @@ app.post('/api/lobbies/:code/start', async (req, res) => {
   res.json({
     lobby: toClientSnapshot(result.lobby),
     rotatedSessionToken: result.sessionToken || '',
+  });
+});
+
+app.post('/api/lobbies/:code/ready', async (req, res) => {
+  const code = normalizeCode(req.params.code);
+  const playerId = String(req.body?.playerId || '');
+  const sessionToken = String(req.body?.sessionToken || '');
+  const isReady = req.body?.ready !== false;
+  const result = await store.setPlayerReady(code, playerId, sessionToken, isReady);
+  if (result.error === 'not-found') {
+    res.status(404).json({ error: 'lobby-not-found' });
+    return;
+  }
+  if (result.error === 'lobby-already-started') {
+    res.status(409).json({ error: 'lobby-already-started' });
+    return;
+  }
+  if (result.error === 'lobby-ended') {
+    res.status(409).json({ error: 'lobby-ended', lobby: toClientSnapshot(result.lobby || null) });
+    return;
+  }
+  if (result.error === 'player-id-required' || result.error === 'session-token-required') {
+    res.status(400).json({ error: result.error });
+    return;
+  }
+  if (result.error === 'invalid-session-token') {
+    res.status(401).json({ error: 'invalid-session-token' });
+    return;
+  }
+  if (result.error === 'session-token-expired') {
+    res.status(401).json({ error: 'session-token-expired' });
+    return;
+  }
+  if (result.error === 'session-player-missing') {
+    res.status(410).json({ error: 'session-player-missing' });
+    return;
+  }
+  if (result.error === 'lock-timeout') {
+    res.status(503).json({ error: 'lobby-busy' });
+    return;
+  }
+  broadcastSnapshot(code, result.lobby);
+  res.json({
+    lobby: toClientSnapshot(result.lobby),
+    playerId: result.player?.id || '',
+    playerReadyState: Boolean(result.player?.isReady),
+    allPlayersReady: Boolean(result.allPlayersReady),
+    rotatedSessionToken: result.sessionToken || '',
+    readyCount: Number(result.readyCount || 0),
+    totalCount: Number(result.totalCount || 0),
   });
 });
 
