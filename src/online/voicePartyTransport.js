@@ -96,6 +96,39 @@ export async function createVoicePartyTransport({
     if (closed) return;
     onEvent({ type: 'media-devices-error', error, roomName });
   });
+  room.on(RoomEvent.TrackSubscribed, (track, publication, participant) => {
+    if (closed || !track) return;
+    const isAudioTrack = String(publication?.kind || track?.kind || '').toLowerCase() === 'audio';
+    if (!isAudioTrack || typeof track.attach !== 'function') return;
+    try {
+      const element = track.attach();
+      if (element) {
+        element.autoplay = true;
+        element.muted = false;
+        element.playsInline = true;
+      }
+    } catch {}
+    onEvent({
+      type: 'remote-audio-subscribed',
+      participantId: String(participant?.identity || ''),
+      roomName,
+    });
+  });
+  room.on(RoomEvent.TrackUnsubscribed, (track) => {
+    if (!track || typeof track.detach !== 'function') return;
+    try {
+      const elements = track.detach();
+      if (Array.isArray(elements)) {
+        elements.forEach((element) => {
+          try {
+            element?.remove?.();
+          } catch {}
+        });
+      } else {
+        elements?.remove?.();
+      }
+    } catch {}
+  });
 
   await room.connect(livekitUrl, token);
   await room.localParticipant.setMicrophoneEnabled(true);
@@ -165,6 +198,19 @@ export async function createVoicePartyTransport({
         await localAudioContext?.close();
       } catch {}
       localAudioContext = null;
+      try {
+        room.remoteParticipants.forEach((participant) => {
+          participant.trackPublications.forEach((publication) => {
+            const subscribedTrack = publication.track;
+            if (subscribedTrack && typeof subscribedTrack.detach === 'function') {
+              try {
+                const detached = subscribedTrack.detach();
+                if (Array.isArray(detached)) detached.forEach((element) => element?.remove?.());
+              } catch {}
+            }
+          });
+        });
+      } catch {}
       room.disconnect();
     },
   };
