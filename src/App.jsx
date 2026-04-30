@@ -1616,24 +1616,9 @@ function getHostExamplePrompts(roundTypeId = 'prompt') {
   };
 }
 function resolveCategoryChoiceCardArt(category, themeName = 'Default') {
-  const themeAssets = getThemeAssets(themeName);
-  const defaultThemeAssets = getThemeAssets('Default');
-  const categoryBackCardSrc =
-    category?.categoryBackCardSrc
-    || category?.categoryCardBackSrc
-    || category?.cardBackSrc
-    || category?.assets?.categoryBackCardSrc
-    || category?.assets?.cardBackSrc
-    || null;
-
-  return (
-    categoryBackCardSrc
-    || defaultThemeAssets.promptCardFront
-    || themeAssets.promptCardFront
-    || defaultThemeAssets.promptCardBack
-    || themeAssets.promptCardBack
-    || null
-  );
+  const categoryIconSrc = category?.iconSrc || getCategoryIconSrc(category?.id);
+  if (categoryIconSrc) return categoryIconSrc;
+  return getRoundCardBackSrc(themeName);
 }
 function HostIntroScreen({ round, stingerLine, onContinue, theme }) {
   const hostSizeConfig = useMemo(() => getHostSizeConfig(theme), [theme]);
@@ -2043,12 +2028,12 @@ function BrandedScreen({
   contentClassName = '',
 }) {
   return (
-    <div className={`relative min-h-screen min-h-[100dvh] overflow-hidden text-white ${frameClassName}`}>
+    <div className={`relative min-h-screen min-h-[100dvh] overflow-hidden bg-black text-white ${frameClassName}`}>
       <div
-        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+        className="fixed inset-0 bg-cover bg-center bg-no-repeat"
         style={{ backgroundImage: `url(${wallpaperSrc})` }}
       />
-      <div className={`absolute inset-0 ${overlayClassName}`} />
+      <div className={`fixed inset-0 ${overlayClassName}`} />
       <div
         className={`relative z-10 mx-auto flex min-h-screen min-h-[100dvh] w-full max-w-[460px] flex-col px-5 py-6 ${contentClassName}`}
         style={{
@@ -5898,8 +5883,8 @@ export default function App() {
     )}
     {screen === 'rules' && <RulesSplashScreen mode={mode} onContinue={() => setScreen('category-choice')} theme={canonicalThemeName} isOnlineMode={onlineMode} />}
     {screen === 'round-type-choice' && round && (
-      <TopFrame theme={canonicalThemeName} allowScroll={false}>
-        <div className="mx-auto max-w-3xl space-y-6">
+      <BrandedScreen wallpaperSrc={NEW_UI_WALLPAPER_IN_GAME_SRC} overlayClassName="bg-black/45">
+        <div className="mx-auto max-w-4xl space-y-6">
           <GlassPanel className="relative overflow-hidden rounded-[2.5rem] border-fuchsia-400/25 bg-black/25 p-8 text-center">
             <h2 className="mt-3 text-4xl font-black text-yellow-300">Choose your game mode</h2>
             <p className="mt-3 text-white/70">Pick one of two options. Previous round type is excluded.</p>
@@ -5907,6 +5892,8 @@ export default function App() {
               {roundTypeOptions.map((type, index) => {
                 const centeredOnSm = roundTypeOptions.length % 2 === 1 && index === roundTypeOptions.length - 1;
                 const isGrillRoundType = type.id === 'grill';
+                const roundTypeLogoSrc = getRoundTypeIconSrc(type.id);
+                const roundTypeCardBackSrc = getRoundCardBackSrc(canonicalThemeName);
                 return (
                   <div key={type.id} className={centeredOnSm ? 'sm:col-span-2 sm:flex sm:justify-center' : ''}>
                     <button
@@ -5930,11 +5917,20 @@ export default function App() {
                           </div>
                         </>
                       )}
-                      <ThemeArt
-                        src="/assets/themes/default/cards/prompt-back.png"
-                        alt={`${type.name} round card back`}
-                        className="mx-auto h-40 w-auto rounded-[1.2rem] border border-white/20 bg-black/25 p-1"
-                      />
+                      <div className="relative mx-auto h-40 w-auto">
+                        <ThemeArt
+                          src={roundTypeCardBackSrc}
+                          alt={`${type.name} round card back`}
+                          className="mx-auto h-40 w-auto rounded-[1.2rem] border border-white/20 bg-black/25 p-1"
+                        />
+                        {roundTypeLogoSrc && (
+                          <ThemeArt
+                            src={roundTypeLogoSrc}
+                            alt={`${type.name} mode icon`}
+                            className="pointer-events-none absolute left-1/2 top-1/2 h-14 w-14 -translate-x-1/2 -translate-y-1/2 rounded-xl border border-white/20 bg-black/40 p-1"
+                          />
+                        )}
+                      </div>
                       <div className="mt-4 text-xl sm:text-2xl font-black uppercase tracking-[0.05em] text-white leading-tight min-h-[3.2rem] flex items-center justify-center">
                         {type.name}
                       </div>
@@ -5945,11 +5941,11 @@ export default function App() {
             </div>
           </GlassPanel>
         </div>
-      </TopFrame>
+      </BrandedScreen>
     )}
     {screen === 'category-choice' && round && (
-      <TopFrame theme={canonicalThemeName}>
-        <div className="mx-auto max-w-3xl space-y-6">
+      <BrandedScreen wallpaperSrc={NEW_UI_WALLPAPER_IN_GAME_SRC} overlayClassName="bg-black/45">
+        <div className="mx-auto max-w-4xl space-y-6">
           <GlassPanel className="relative overflow-hidden rounded-[2.5rem] border-fuchsia-400/25 bg-black/25 p-8 text-center">
             <div className="text-xs uppercase tracking-[0.3em] text-white/50">Round owner: {players[currentRoundOwnerIndex]?.name}</div>
             <h2 className="mt-3 text-4xl font-black text-yellow-300">Choose the next category</h2>
@@ -5957,6 +5953,7 @@ export default function App() {
             <div className={categoryChoiceGridClass}>
               {categoryOptions.map((category) => {
                 const categoryCardArtSrc = resolveCategoryChoiceCardArt(category, canonicalThemeName);
+                const categoryIconSrc = category?.iconSrc || getCategoryIconSrc(category.id);
                 return (
                   <div key={category.id} className="flex">
                     <button
@@ -5969,6 +5966,13 @@ export default function App() {
                         alt={`${category.name} category card`}
                         className="mx-auto h-40 w-auto rounded-[1.2rem] border border-white/20 bg-black/25 p-1"
                       />
+                      {categoryIconSrc && (
+                        <ThemeArt
+                          src={categoryIconSrc}
+                          alt={`${category.name} icon`}
+                          className="mx-auto -mt-6 h-12 w-12 rounded-xl border border-white/20 bg-black/40 p-1"
+                        />
+                      )}
                       <div className="mt-4 text-lg sm:text-xl font-black uppercase tracking-[0.04em] text-white leading-tight min-h-[2.6rem] flex items-center justify-center">
                         {category.name}
                       </div>
@@ -5979,7 +5983,7 @@ export default function App() {
             </div>
           </GlassPanel>
         </div>
-      </TopFrame>
+      </BrandedScreen>
     )}
     {screen === 'host-intro' && round && (
       <HostIntroScreen
