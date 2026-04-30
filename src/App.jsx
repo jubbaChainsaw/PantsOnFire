@@ -58,6 +58,7 @@ import {
   readLobbySnapshot,
   readPrivateRoundOnServer,
   resumeLobbySessionOnServer,
+  setLobbyReadyOnServer,
   startLobbyOnServer,
   toGamePlayers,
 } from './online/lobbyTransport';
@@ -2073,8 +2074,27 @@ function OnlineJoinLobbyScreen({
     </TopFrame>
   );
 }
-function OnlineLobbyCodeScreen({ lobbyCode, hostName, players, lobbyStatus, onlineStatusNote = '', onCopyCode, onBack, onStartMatch, nameTheme, maxPlayers = MAX_PLAYERS }) {
-  const canStart = players.length >= MIN_PLAYERS;
+function OnlineLobbyCodeScreen({
+  lobbyCode,
+  hostName,
+  players,
+  lobbyStatus,
+  onlineStatusNote = '',
+  onCopyCode,
+  onBack,
+  onStartMatch,
+  onToggleReady,
+  nameTheme,
+  maxPlayers = MAX_PLAYERS,
+  onlineJoinedPlayerId = '',
+}) {
+  const readyCount = players.filter((player) => Boolean(player?.isReady)).length;
+  const canStart = players.length >= MIN_PLAYERS && readyCount >= MIN_PLAYERS;
+  const localPlayerReady = players.find((player) => player.id === onlineJoinedPlayerId)?.isReady === true;
+  const pendingReadyNames = players
+    .filter((player) => !player?.isReady)
+    .map((player) => String(player?.name || '').trim())
+    .filter(Boolean);
   return (
     <TopFrame theme={nameTheme}>
       <div className="mx-auto max-w-4xl space-y-6">
@@ -2104,16 +2124,41 @@ function OnlineLobbyCodeScreen({ lobbyCode, hostName, players, lobbyStatus, onli
                     initialsClass="text-xs"
                   />
                   <div className="text-white text-sm">{player.name}</div>
+                  {player?.isReady ? (
+                    <span className="ml-auto inline-flex items-center gap-1 rounded-full border border-emerald-300/35 bg-emerald-500/20 px-2 py-0.5 text-[0.62rem] font-black uppercase tracking-[0.08em] text-emerald-100">
+                      <CheckCircle2 className="h-3.5 w-3.5" />
+                      Ready
+                    </span>
+                  ) : (
+                    <span className="ml-auto inline-flex items-center gap-1 rounded-full border border-white/20 bg-white/10 px-2 py-0.5 text-[0.62rem] font-black uppercase tracking-[0.08em] text-white/70">
+                      Pending
+                    </span>
+                  )}
                 </div>
               ))}
+            </div>
+            <div className="mt-2 text-xs text-cyan-100/80">
+              Ready players: {readyCount}/{players.length}
             </div>
           </div>
           <div className="mt-8 flex flex-wrap gap-3">
             <Button className="rounded-[1.4rem] bg-white/5 border border-white/10 px-4 py-2 text-white" onClick={onBack}>Back to home</Button>
+            <Button
+              className="rounded-[1.4rem] bg-emerald-400 text-zinc-950 border-2 border-white px-6 py-2"
+              onClick={onToggleReady}
+              disabled={!onlineJoinedPlayerId}
+            >
+              {localPlayerReady ? 'Ready ✓' : "I'm Ready"}
+            </Button>
             <Button className="rounded-[1.4rem] bg-yellow-300 text-zinc-950 border-2 border-white px-6 py-2" disabled={!canStart} onClick={onStartMatch}>
               {lobbyStatus === 'started' ? 'Resume Match' : "Let's Start"}
             </Button>
           </div>
+          {pendingReadyNames.length > 0 && (
+            <div className="mt-3 rounded-2xl border border-amber-300/30 bg-amber-500/10 p-3 text-xs text-amber-100">
+              Waiting for ready: {pendingReadyNames.join(', ')}
+            </div>
+          )}
           {onlineStatusNote && (
             <div className="mt-3 rounded-2xl border border-cyan-400/30 bg-cyan-500/10 p-3 text-xs text-cyan-100">
               {onlineStatusNote}
@@ -2121,7 +2166,7 @@ function OnlineLobbyCodeScreen({ lobbyCode, hostName, players, lobbyStatus, onli
           )}
           {!canStart && (
             <div className="mt-3 text-xs text-white/60">
-              Need at least {MIN_PLAYERS} players to start.
+              Need at least {MIN_PLAYERS} ready players to start.
             </div>
           )}
         </GlassPanel>
@@ -4776,18 +4821,22 @@ export default function App() {
           setScreen('final');
           return;
         }
-        if (snapshot.status === 'started' && snapshot.startedRevision) {
-          if (onlineStartedRevisionHandledRef.current !== snapshot.startedRevision) {
+        if (
+          snapshot.status === 'started'
+          && snapshot.activeRound
+          && (screen === 'online-lobby-created' || screen === 'online-lobby-waiting')
+        ) {
+          if (snapshot.startedRevision && onlineStartedRevisionHandledRef.current !== snapshot.startedRevision) {
             onlineStartedRevisionHandledRef.current = snapshot.startedRevision;
-            void syncOnlineRoundFromSnapshot(
-              {
-                ...snapshot,
-                players: snapshotPlayers,
-                code: snapshot.code || effectiveLobbyCode,
-              },
-              { openHostIntro: true }
-            );
           }
+          void syncOnlineRoundFromSnapshot(
+            {
+              ...snapshot,
+              players: snapshotPlayers,
+              code: snapshot.code || effectiveLobbyCode,
+            },
+            { openHostIntro: true }
+          );
         }
       },
       onEvent: (event) => {
@@ -5452,6 +5501,42 @@ export default function App() {
     setPlayers(toGamePlayers(nextSnapshot.players || []));
     setScreen('online-lobby-waiting');
   }
+  async function toggleOnlineReady() {
+    if (!onlineMode || !lobbyCode) return;
+    const sessionSnapshot = onlineSessionRef.current;
+    const playerId = sessionSnapshot?.playerId || onlineJoinedPlayerId;
+    const sessionToken = sessionSnapshot?.sessionToken || '';
+    if (!playerId || !sessionToken) {
+      setOnlineLobbyError('Session expired. Rejoin lobby to continue.');
+      return;
+    }
+    const currentPlayer = onlineLobbyPlayers.find((player) => player.id === playerId) || null;
+    const nextReadyState = !(currentPlayer?.isReady === true);
+    try {
+      const response = await setLobbyReadyOnServer(lobbyCode, {
+        playerId,
+        sessionToken,
+        ready: nextReadyState,
+      });
+      if (response?.rotatedSessionToken && response.rotatedSessionToken !== sessionToken) {
+        const nextSession = {
+          ...(sessionSnapshot || {}),
+          sessionToken: response.rotatedSessionToken,
+        };
+        onlineSessionRef.current = nextSession;
+        setStoredOnlineSession(nextSession);
+        onlineTransportRef.current?.updateSessionToken(nextSession.sessionToken);
+      }
+      if (response?.lobby) {
+        const nextPlayers = Array.isArray(response.lobby.players) ? response.lobby.players : [];
+        setOnlineLobbyPlayers(nextPlayers);
+        setOnlineLobbyStatus(response.lobby.status || 'waiting');
+      }
+      setOnlineLobbyError('');
+    } catch (error) {
+      setOnlineLobbyError(mapLobbyErrorToMessage(error, 'Unable to update ready state right now.'));
+    }
+  }
   async function startOnlineMatch() {
     if (onlineRole !== 'host' || !lobbyCode) return;
     const currentSession = onlineSessionRef.current;
@@ -5471,8 +5556,12 @@ export default function App() {
         sessionToken: hostSessionToken,
       });
     } catch (error) {
-      if (error?.code === 'not-enough-players') {
-        setOnlineLobbyError(`Need at least ${MIN_PLAYERS} players before starting.`);
+      if (error?.code === 'not-enough-players' || error?.code === 'not-enough-ready-players') {
+        setOnlineLobbyError(`Need at least ${MIN_PLAYERS} ready players before starting.`);
+        return;
+      }
+      if (error?.code === 'host-not-ready') {
+        setOnlineLobbyError('Host must ready up before starting.');
         return;
       }
       if (error?.code === 'host-only') {
@@ -5647,6 +5736,7 @@ export default function App() {
         hostName={onlineHostName}
         players={onlineLobbyPlayers}
         lobbyStatus={onlineLobbyStatus}
+        onlineStatusNote={onlineLobbyError}
         maxPlayers={onlineLobbyMaxPlayers}
         onCopyCode={() => {
           if (typeof navigator !== 'undefined' && navigator.clipboard?.writeText) {
@@ -5655,6 +5745,8 @@ export default function App() {
         }}
         onBack={() => { void leaveOnlineLobby({ nextScreen: 'online-setup' }); }}
         onStartMatch={startOnlineMatch}
+        onToggleReady={toggleOnlineReady}
+        onlineJoinedPlayerId={onlineJoinedPlayerId}
         nameTheme={canonicalThemeName}
       />
     )}
@@ -5676,8 +5768,23 @@ export default function App() {
             <div className="mt-5 text-xs uppercase tracking-[0.22em] text-white/55">Connected players ({onlineLobbyPlayers.length})</div>
             <div className="mt-3 flex flex-wrap justify-center gap-2">
               {onlineLobbyPlayers.map((player) => (
-                <Badge key={player.id} className="rounded-full bg-white/10 border border-white/10 text-white">{player.name}</Badge>
+                <Badge key={player.id} className="rounded-full bg-white/10 border border-white/10 text-white">
+                  <span>{player.name}</span>
+                  {player?.isReady && <CheckCircle2 className="ml-1 h-3.5 w-3.5 text-emerald-300" />}
+                </Badge>
               ))}
+            </div>
+            <div className="mt-2 text-xs text-cyan-100/80">
+              Ready players: {onlineLobbyPlayers.filter((player) => Boolean(player?.isReady)).length}/{onlineLobbyPlayers.length}
+            </div>
+            <div className="mt-3 flex justify-center">
+              <Button
+                className="rounded-[1.4rem] bg-emerald-400 text-zinc-950 border-2 border-white px-6 py-2"
+                onClick={toggleOnlineReady}
+                disabled={!onlineJoinedPlayerId || onlineLobbyStatus === 'started'}
+              >
+                {onlineLobbyPlayers.find((player) => player.id === onlineJoinedPlayerId)?.isReady ? 'Ready ✓' : "I'm Ready"}
+              </Button>
             </div>
             {onlineLobbyStatus === 'started' && (
               <div className="mt-4 rounded-2xl border border-cyan-400/30 bg-cyan-500/10 p-3 text-sm text-cyan-100">

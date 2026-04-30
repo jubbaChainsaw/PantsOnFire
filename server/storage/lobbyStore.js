@@ -105,6 +105,7 @@ function sanitizePlayer(raw = {}, { fallbackName = 'Player', forceHost = false }
     name: String(raw.name || fallbackName).trim() || fallbackName,
     clientId: String(raw.clientId || ''),
     isHost: forceHost ? true : Boolean(raw.isHost),
+    isReady: Boolean(raw.isReady),
     joinedAt: raw.joinedAt || nowIso(),
     score: Number.isFinite(normalizedScore) ? Math.max(0, normalizedScore) : 0,
     color: typeof raw.color === 'string' ? raw.color : '',
@@ -545,6 +546,7 @@ function buildStoreCore({
       ...incoming,
       id: playerId,
       isHost: existingById?.isHost || Boolean(incoming.isHost),
+      isReady: typeof existingById?.isReady === 'boolean' ? existingById.isReady : Boolean(incoming.isReady),
       joinedAt: existingById?.joinedAt || incoming.joinedAt || nowIso(),
       score: Number.isFinite(Number(existingById?.score))
         ? Math.max(0, Number(existingById.score))
@@ -555,6 +557,40 @@ function buildStoreCore({
     const sessionToken = helpers.issueOrReuseSessionToken(lobby, merged.id);
     await saveLobby(lobby);
     return { lobby, player: merged, sessionToken };
+  }
+
+  async function setPlayerReady(code, playerId, sessionToken = '', isReady = true) {
+    const lobby = await getLobby(code);
+    if (!lobby) return { error: 'not-found' };
+    if (lobby.status === 'started') return { error: 'lobby-already-started', lobby };
+    if (lobby.status === 'ended') return { error: 'lobby-ended', lobby };
+    const normalizedPlayerId = String(playerId || '').trim();
+    if (!normalizedPlayerId) return { error: 'player-id-required' };
+    const validation = validatePlayerSession(lobby, sessionToken, normalizedPlayerId);
+    if (validation.error === 'session-token-expired') {
+      await saveLobby(lobby);
+      return { error: 'session-token-expired' };
+    }
+    if (validation.error) return { error: validation.error };
+    const targetPlayer = Array.isArray(lobby.players)
+      ? lobby.players.find((entry) => String(entry?.id || '') === normalizedPlayerId)
+      : null;
+    if (!targetPlayer) return { error: 'session-player-missing' };
+    targetPlayer.isReady = Boolean(isReady);
+    const rotatedSessionToken = helpers.rotateSessionTokenForPlayer(lobby, normalizedPlayerId);
+    const totalCount = Array.isArray(lobby.players) ? lobby.players.length : 0;
+    const readyCount = Array.isArray(lobby.players)
+      ? lobby.players.filter((entry) => entry?.isReady === true).length
+      : 0;
+    await saveLobby(lobby);
+    return {
+      lobby,
+      player: targetPlayer,
+      sessionToken: rotatedSessionToken,
+      totalCount,
+      readyCount,
+      allPlayersReady: totalCount > 0 && readyCount >= totalCount,
+    };
   }
 
   async function removePlayer(code, playerId) {
@@ -685,6 +721,26 @@ function buildStoreCore({
     }
     if (hostValidation.error) return { error: hostValidation.error };
     if (lobby.players.length < MIN_PLAYERS) return { error: 'not-enough-players' };
+    if (hostPlayer.isReady !== true) return { error: 'host-not-ready' };
+    const readyPlayers = Array.isArray(lobby.players)
+      ? lobby.players.filter((player) => player?.isReady === true)
+      : [];
+    if (readyPlayers.length < MIN_PLAYERS) {
+      return {
+        error: 'not-enough-ready-players',
+        readyCount: readyPlayers.length,
+        minPlayers: MIN_PLAYERS,
+      };
+    }
+    if (readyPlayers.length !== lobby.players.length) {
+      const readyPlayerIds = new Set(readyPlayers.map((player) => player.id));
+      lobby.players = readyPlayers;
+      if (lobby.playerSessions && typeof lobby.playerSessions === 'object') {
+        lobby.playerSessions = Object.fromEntries(
+          Object.entries(lobby.playerSessions).filter(([playerId]) => readyPlayerIds.has(playerId))
+        );
+      }
+    }
     if (lobby.status !== 'started') {
       lobby.status = 'started';
       lobby.startedAt = nowIso();
@@ -903,6 +959,7 @@ function buildStoreCore({
     getLobby,
     createLobby,
     upsertPlayer,
+    setPlayerReady,
     removePlayer,
     resumePlayer,
     startLobby,
