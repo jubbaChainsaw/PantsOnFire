@@ -1314,6 +1314,10 @@ function fitTextToBubble(textElement, containerElement, {
     nextSize -= 1;
     textElement.style.fontSize = `${nextSize}px`;
   }
+  if (!fits()) {
+    textElement.style.wordBreak = 'break-word';
+    textElement.style.overflowWrap = 'anywhere';
+  }
   return nextSize;
 }
 const HOST_DIALOGUE_TIMINGS = {
@@ -1374,7 +1378,7 @@ function GameIntroScreen({ theme, onContinue, isOnlineMode = false, totalRounds 
     setLineIndex((current) => Math.min(current + 1, introLines.length - 1));
   }
   return (
-    <TopFrame theme={theme} allowScroll={false}>
+    <BrandedScreen wallpaperSrc={NEW_UI_WALLPAPER_IN_GAME_SRC} overlayClassName="bg-black/45">
       <div className="mx-auto flex h-[calc(100dvh-2rem)] w-full max-w-5xl flex-col justify-center">
         <GlassPanel className="rounded-[2.5rem] border-cyan-400/20 bg-black/25 p-6 sm:p-8">
           <div className="text-center">
@@ -1437,7 +1441,7 @@ function GameIntroScreen({ theme, onContinue, isOnlineMode = false, totalRounds 
           </div>
         </GlassPanel>
       </div>
-    </TopFrame>
+    </BrandedScreen>
   );
 }
 function getRoundRuleText(roundTypeId = 'prompt') {
@@ -1673,7 +1677,7 @@ function HostIntroScreen({ round, stingerLine, onContinue, theme }) {
     setSpeechIndex((current) => Math.min(current + 1, speechSentences.length - 1));
   }
   return (
-    <TopFrame theme={theme} allowScroll={false}>
+    <BrandedScreen wallpaperSrc={NEW_UI_WALLPAPER_IN_GAME_SRC} overlayClassName="bg-black/45">
       <div className="mx-auto flex h-[calc(100dvh-2rem)] w-full max-w-3xl flex-col justify-center">
         <GlassPanel className="relative overflow-hidden rounded-[2.5rem] border-cyan-400/20 bg-black/25 p-6 sm:p-8 text-center">
           <div className="text-xs uppercase tracking-[0.35em] text-white/50">Host enters</div>
@@ -1721,16 +1725,16 @@ function HostIntroScreen({ round, stingerLine, onContinue, theme }) {
               transition={{ duration: 0.28, ease: 'easeOut' }}
               className={`${hostSizeConfig.hostIntroBubbleMargin} h-full p-1 text-white`}
             >
-              <div ref={speechBubbleFitRef} className="relative mx-auto flex h-full max-w-xl items-center justify-center overflow-hidden rounded-[2rem] border-2 border-cyan-200/80 bg-[#1d2376] px-4 py-4 shadow-[0_12px_24px_rgba(0,0,0,0.35)]">
+              <div ref={speechBubbleFitRef} className="relative mx-auto flex h-full max-w-xl items-center justify-center overflow-hidden rounded-[2rem] border-2 border-cyan-200/80 bg-[#1d2376] px-3 py-3 shadow-[0_12px_24px_rgba(0,0,0,0.35)]">
                 <div className="absolute -left-3 top-[58%] h-6 w-6 -translate-y-1/2 rotate-45 border-b-2 border-l-2 border-cyan-200/80 bg-[#1d2376]" />
                 <p
                   ref={speechBubbleTextRef}
-                  className="text-white/95"
+                  className="w-full text-white/95 text-center leading-tight"
                   style={{
                     fontSize: `${speechBubbleFontSize}px`,
-                    lineHeight: 1.16,
-                    wordBreak: 'normal',
-                    overflowWrap: 'normal',
+                    lineHeight: 1.08,
+                    wordBreak: 'break-word',
+                    overflowWrap: 'anywhere',
                     whiteSpace: 'normal',
                     hyphens: 'manual',
                     WebkitHyphens: 'manual',
@@ -1766,7 +1770,7 @@ function HostIntroScreen({ round, stingerLine, onContinue, theme }) {
           </div>
         </GlassPanel>
       </div>
-    </TopFrame>
+    </BrandedScreen>
   );
 }
 function RulesSplashScreen({ mode, onContinue, theme, isOnlineMode = false }) {
@@ -2612,14 +2616,14 @@ function RevealScreen({ players, currentRevealIndex, round, totalRounds, onNext,
   const defaultPromptCards = getThemeAssets('Default');
   const useAdultCardArt = Boolean(round.isAdultPrompt);
   const cardBackSrc = useAdultCardArt
-    ? (themeAssets.adultPromptCardBack || defaultPromptCards.adultPromptCardBack)
-    : (themeAssets.promptCardBack || defaultPromptCards.promptCardBack);
+    ? (themeAssets.adultPromptCardBack || defaultPromptCards.adultPromptCardBack || getRoundCardBackSrc(theme))
+    : (getRoundCardBackSrc(theme) || themeAssets.promptCardBack || defaultPromptCards.promptCardBack);
   const defaultRoundTypeFront = theme === 'Default'
     ? (ROUND_TYPES[round.roundTypeId]?.defaultCardFrontSrc || null)
     : null;
   const cardFrontSrc = useAdultCardArt
-    ? (themeAssets.adultPromptCardFront || defaultPromptCards.adultPromptCardFront)
-    : (defaultRoundTypeFront || themeAssets.promptCardFront || defaultPromptCards.promptCardFront);
+    ? (themeAssets.adultPromptCardFront || defaultPromptCards.adultPromptCardFront || getRoundCardFrontSrc(theme))
+    : (getRoundCardFrontSrc(theme) || defaultRoundTypeFront || themeAssets.promptCardFront || defaultPromptCards.promptCardFront);
   const roundTypeLogoSrc = getRoundTypeIconSrc(round.roundTypeId);
   const instructionLine = round.roundTypeId === 'picture'
     ? 'Keep this private. You will reveal a picture prompt.'
@@ -5873,13 +5877,15 @@ export default function App() {
       </TopFrame>
     )}
     {screen === 'game-intro' && (
-      <GameIntroScreen
-        theme={canonicalThemeName}
-        isOnlineMode={onlineMode}
-        totalRounds={totalRounds}
-        playerCount={players.length}
-        onContinue={() => setScreen('rules')}
-      />
+      <BrandedScreen wallpaperSrc={NEW_UI_WALLPAPER_IN_GAME_SRC} overlayClassName="bg-black/45">
+        <GameIntroScreen
+          theme={canonicalThemeName}
+          isOnlineMode={onlineMode}
+          totalRounds={totalRounds}
+          playerCount={players.length}
+          onContinue={() => setScreen('rules')}
+        />
+      </BrandedScreen>
     )}
     {screen === 'rules' && <RulesSplashScreen mode={mode} onContinue={() => setScreen('category-choice')} theme={canonicalThemeName} isOnlineMode={onlineMode} />}
     {screen === 'round-type-choice' && round && (
@@ -5986,37 +5992,41 @@ export default function App() {
       </BrandedScreen>
     )}
     {screen === 'host-intro' && round && (
-      <HostIntroScreen
-        round={round}
-        stingerLine={copyState.hostStinger}
-        onContinue={() => {
-          if (onlineMode) {
-            void runOnlinePhaseAdvance();
-            return;
-          }
-          setScreen('reveal');
-        }}
-        theme={canonicalThemeName}
-      />
+      <BrandedScreen wallpaperSrc={NEW_UI_WALLPAPER_IN_GAME_SRC} overlayClassName="bg-black/45">
+        <HostIntroScreen
+          round={round}
+          stingerLine={copyState.hostStinger}
+          onContinue={() => {
+            if (onlineMode) {
+              void runOnlinePhaseAdvance();
+              return;
+            }
+            setScreen('reveal');
+          }}
+          theme={canonicalThemeName}
+        />
+      </BrandedScreen>
     )}
     {screen === 'reveal' && round && (
-      <RevealScreen
-        key={`${round.promptKey || round.id || 'online-round'}-${revealIndex}-${onlinePrivatePrompt?.roundId || 'local'}`}
-        players={players}
-        currentRevealIndex={revealIndex}
-        round={round}
-        totalRounds={totalRounds}
-        onNext={handleAdvanceReveal}
-        passLine={copyState.passPhone}
-        normalLine={copyState.revealNormal}
-        liarLine={copyState.revealLiar}
-        theme={canonicalThemeName}
-        onlineMode={onlineMode}
-        localPlayerName={onlinePlayerName}
-        onlinePrivatePrompt={onlinePrivatePrompt}
-        onlinePrivatePromptError={onlinePrivatePromptError}
-        playSfx={playSfx}
-      />
+      <BrandedScreen wallpaperSrc={NEW_UI_WALLPAPER_IN_GAME_SRC} overlayClassName="bg-black/45">
+        <RevealScreen
+          key={`${round.promptKey || round.id || 'online-round'}-${revealIndex}-${onlinePrivatePrompt?.roundId || 'local'}`}
+          players={players}
+          currentRevealIndex={revealIndex}
+          round={round}
+          totalRounds={totalRounds}
+          onNext={handleAdvanceReveal}
+          passLine={copyState.passPhone}
+          normalLine={copyState.revealNormal}
+          liarLine={copyState.revealLiar}
+          theme={canonicalThemeName}
+          onlineMode={onlineMode}
+          localPlayerName={onlinePlayerName}
+          onlinePrivatePrompt={onlinePrivatePrompt}
+          onlinePrivatePromptError={onlinePrivatePromptError}
+          playSfx={playSfx}
+        />
+      </BrandedScreen>
     )}
     {screen === 'grill' && round && (
       <GrillEmScreen
