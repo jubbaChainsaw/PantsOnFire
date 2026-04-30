@@ -2726,7 +2726,9 @@ function RevealScreen({ players, currentRevealIndex, round, totalRounds, onNext,
           <h2 className="text-2xl sm:text-3xl font-black mt-2.5 text-yellow-300 leading-tight">
             {onlineMode ? `Reveal for ${localPlayerName || player.name}` : `Pass the phone to ${player.name}`}
           </h2>
-          <p className="text-cyan-200/90 mt-1.5 text-sm sm:text-base font-medium leading-tight">{passLine}</p>
+          <div className="mt-2 rounded-[1.5rem] border border-fuchsia-200/40 bg-fuchsia-500/35 px-4 py-3 text-sm sm:text-base font-semibold text-white/95 shadow-[0_8px_20px_rgba(0,0,0,0.28)]">
+            {passLine}
+          </div>
           {onlineMode && onlinePrivatePromptError && (
             <div className="mt-4 rounded-2xl border border-red-300/30 bg-red-500/10 p-3 text-sm text-red-100">
               {onlinePrivatePromptError}
@@ -2750,7 +2752,7 @@ function RevealScreen({ players, currentRevealIndex, round, totalRounds, onNext,
                   />
                   <div className="text-xs uppercase tracking-[0.3em] text-cyan-200/95">{round.roundTypeName}</div>
                   <div className="mt-2 text-sm font-semibold text-white/90">Round {round.roundNumber}</div>
-                  <div className="mt-5 rounded-xl border border-cyan-200/30 bg-black/45 px-3 py-2 shadow-[0_0_16px_rgba(34,211,238,0.28)]">
+                  <div className="mt-5 rounded-xl border border-fuchsia-200/40 bg-fuchsia-500/35 px-3 py-2 shadow-[0_8px_20px_rgba(0,0,0,0.28)]">
                     <div className="text-sm text-white/95">
                       {instructionLine}
                     </div>
@@ -2807,7 +2809,7 @@ function RevealScreen({ players, currentRevealIndex, round, totalRounds, onNext,
                     alt={`${round.roundTypeName} logo`}
                     className="mt-3 h-14 w-auto mx-auto"
                   />
-                  <div className={`mt-3 inline-flex items-center justify-center gap-2 text-xs font-semibold uppercase tracking-[0.2em] ${isImposter ? 'text-orange-100' : 'text-cyan-200'}`}>
+                  <div className={`mt-3 inline-flex items-center justify-center gap-2 rounded-xl border border-fuchsia-200/40 bg-fuchsia-500/35 px-3 py-2 text-xs font-semibold uppercase tracking-[0.2em] ${isImposter ? 'text-orange-100' : 'text-cyan-100'}`}>
                     <img
                       src={isImposter ? UI_ICON_BADGE_LIAR_SRC : UI_ICON_MAGNIFIER_FIRE_SRC}
                       alt=""
@@ -2844,11 +2846,11 @@ function RevealScreen({ players, currentRevealIndex, round, totalRounds, onNext,
                       Loading your private prompt...
                     </div>
                   )}
-                  <div className={`mt-3 text-sm font-semibold ${isImposter ? 'text-orange-200' : 'text-cyan-200'}`}>
+                  <div className={`mt-3 rounded-xl border border-fuchsia-200/40 bg-fuchsia-500/35 px-3 py-2 text-sm font-semibold ${isImposter ? 'text-orange-100' : 'text-white/95'}`}>
                     {isImposter ? `🔥 ${liarLine} 🔥` : normalLine}
                   </div>
                   {round.mode === 'chaos' && round.bannedWords.length > 0 && (
-                    <div className="mt-4">
+                    <div className="mt-4 rounded-xl border border-fuchsia-200/40 bg-fuchsia-500/35 px-3 py-2">
                       <div className="text-xs uppercase tracking-[0.2em] text-red-300">Banned Words</div>
                       <div className="mt-1 text-xs text-red-200">{round.bannedWords.join(' • ')}</div>
                     </div>
