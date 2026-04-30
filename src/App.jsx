@@ -2091,6 +2091,10 @@ function OnlineLobbyCodeScreen({
   const readyCount = players.filter((player) => Boolean(player?.isReady)).length;
   const canStart = players.length >= MIN_PLAYERS && readyCount >= MIN_PLAYERS;
   const localPlayerReady = players.find((player) => player.id === onlineJoinedPlayerId)?.isReady === true;
+  const pendingReadyNames = players
+    .filter((player) => !player?.isReady)
+    .map((player) => String(player?.name || '').trim())
+    .filter(Boolean);
   return (
     <TopFrame theme={nameTheme}>
       <div className="mx-auto max-w-4xl space-y-6">
@@ -2150,6 +2154,11 @@ function OnlineLobbyCodeScreen({
               {lobbyStatus === 'started' ? 'Resume Match' : "Let's Start"}
             </Button>
           </div>
+          {pendingReadyNames.length > 0 && (
+            <div className="mt-3 rounded-2xl border border-amber-300/30 bg-amber-500/10 p-3 text-xs text-amber-100">
+              Waiting for ready: {pendingReadyNames.join(', ')}
+            </div>
+          )}
           {onlineStatusNote && (
             <div className="mt-3 rounded-2xl border border-cyan-400/30 bg-cyan-500/10 p-3 text-xs text-cyan-100">
               {onlineStatusNote}
