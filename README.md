@@ -174,6 +174,42 @@ Importer output:
 - Keep attribution metadata (`attribution.json`) for legal/audit tracking.
 - Check source site terms before shipping; provider terms may change over time.
 
+## Default host voice-over pack (line-synced playback)
+
+You can install a generated voice-over ZIP for the **Default** host so intro/stinger
+text plays in sync with corresponding MP3 lines.
+
+### 1) Place your ZIP in exports
+
+Put the voice pack ZIP in:
+
+- `exports/`
+
+The installer supports nested folders inside the ZIP and finds files by MP3 name.
+
+### 2) Install into public assets
+
+```bash
+npm run host:install-default-voice-pack -- --zip exports/default-host-tts.zip
+```
+
+If `--zip` is omitted, it auto-selects the newest ZIP in `exports/`.
+
+Installer output location:
+
+- `public/assets/audio/host/default/tts/`
+
+### 3) Optional: regenerate SSML source CSV
+
+```bash
+npm run export:default-host-ssml
+```
+
+This writes:
+
+- `exports/default-host-voice-lines-ssml.csv`
+- `exports/default-host-voice-lines-ssml-polly-safe.csv`
+
 ## Global Online Lobbies (App Store / Play Store ready)
 
 To support players in different homes/countries, you must run the lobby server on a

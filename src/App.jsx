@@ -33,6 +33,7 @@ import {
 } from './data/themeCatalog';
 import { getThemePackRedeemOffer } from './data/dlc/themeRedeemCodes';
 import { COPY_BANK, createCopyPicker, THEME_STINGER_KEY_OVERRIDES } from './data/gameTextContent';
+import { getDefaultHostVoiceSrcForLine } from './data/defaultHostVoiceLineMap';
 import {
   DEFAULT_CATEGORIES,
   CHAIN_REACTION_ROUNDS,
@@ -266,6 +267,57 @@ function speakHostLine(text = '') {
   } catch {
     // Ignore speech synthesis failures on unsupported browsers.
   }
+}
+function normalizeHostVoiceLine(text = '') {
+  return String(text || '')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+function useDefaultHostVoicePlayback({
+  enabled = false,
+  line = '',
+  fallbackDurationMs = 6000,
+} = {}) {
+  const [isPlaying, setIsPlaying] = useState(false);
+  const audioRef = useRef(null);
+  useEffect(() => {
+    const normalized = normalizeHostVoiceLine(line);
+    if (!enabled || !normalized) {
+      setIsPlaying(false);
+      if (audioRef.current) {
+        try {
+          audioRef.current.pause();
+        } catch {}
+        audioRef.current = null;
+      }
+      return undefined;
+    }
+    const mappedSrc = getDefaultHostVoiceAudioSrc(normalized);
+    if (!mappedSrc) {
+      setIsPlaying(true);
+      const timer = setTimeout(() => setIsPlaying(false), Math.max(600, Number(fallbackDurationMs) || 6000));
+      return () => clearTimeout(timer);
+    }
+    const audio = new Audio(mappedSrc);
+    audioRef.current = audio;
+    setIsPlaying(true);
+    const stopPlayback = () => setIsPlaying(false);
+    audio.addEventListener('ended', stopPlayback);
+    audio.addEventListener('error', stopPlayback);
+    audio.play().catch(() => setIsPlaying(false));
+    return () => {
+      audio.removeEventListener('ended', stopPlayback);
+      audio.removeEventListener('error', stopPlayback);
+      try {
+        audio.pause();
+        audio.currentTime = 0;
+      } catch {}
+      if (audioRef.current === audio) {
+        audioRef.current = null;
+      }
+    };
+  }, [enabled, line, fallbackDurationMs]);
+  return isPlaying;
 }
 const VOTING_STINGER_BY_ROUND_TYPE = {
   prompt: [
@@ -1125,18 +1177,27 @@ function GameIntroScreen({ theme, onContinue, isOnlineMode = false, totalRounds 
   const introSpeechTextRef = useRef(null);
   const introSpeechBubbleRef = useRef(null);
   const [introLineFontSize, setIntroLineFontSize] = useState(30);
-  const isTalking = lineIndex < introLines.length - 1;
+  const currentIntroLine = introLines[lineIndex] || '';
+  const defaultHostVoicePlaying = useDefaultHostVoicePlayback({
+    enabled: theme === 'Default',
+    line: currentIntroLine,
+    fallbackDurationMs: HOST_DIALOGUE_TIMINGS.gameIntroAdvanceMs,
+  });
+  const isTalking = theme === 'Default'
+    ? defaultHostVoicePlaying
+    : lineIndex < introLines.length - 1;
   const animatedHostSrc = useTalkingAnimation({ enabled: isTalking, themeName: theme });
   useEffect(() => {
     setLineIndex(0);
   }, [theme, isOnlineMode]);
   useEffect(() => {
     if (lineIndex >= introLines.length - 1) return undefined;
+    if (theme === 'Default' && defaultHostVoicePlaying) return undefined;
     const timer = setTimeout(() => {
       setLineIndex((current) => Math.min(current + 1, introLines.length - 1));
-    }, HOST_DIALOGUE_TIMINGS.gameIntroAdvanceMs);
+    }, theme === 'Default' ? 220 : HOST_DIALOGUE_TIMINGS.gameIntroAdvanceMs);
     return () => clearTimeout(timer);
-  }, [lineIndex, introLines.length]);
+  }, [lineIndex, introLines.length, theme, defaultHostVoicePlaying]);
   useLayoutEffect(() => {
     const nextSize = fitTextToBubble(introSpeechTextRef.current, introSpeechBubbleRef.current, {
       maxSize: 32,
@@ -1386,8 +1447,16 @@ function HostIntroScreen({ round, stingerLine, onContinue, theme }) {
   const speechBubbleTextRef = useRef(null);
   const speechBubbleFitRef = useRef(null);
   const [speechBubbleFontSize, setSpeechBubbleFontSize] = useState(28);
+  const currentSpeechLine = speechSentences[speechIndex] || '';
+  const defaultHostVoicePlaying = useDefaultHostVoicePlayback({
+    enabled: theme === 'Default',
+    line: currentSpeechLine,
+    fallbackDurationMs: HOST_DIALOGUE_TIMINGS.roundIntroAdvanceMs,
+  });
   const canContinue = speechIndex >= speechSentences.length - 1;
-  const isTalking = speechIndex < speechSentences.length - 1;
+  const isTalking = theme === 'Default'
+    ? defaultHostVoicePlaying
+    : speechIndex < speechSentences.length - 1;
   const animatedHostSrc = useTalkingAnimation({ enabled: isTalking, themeName: theme });
   const introLine = round.roundTypeId === 'grill'
     ? `${themedHostPersona.name} is live. Mic up and question the AI.`
@@ -1397,11 +1466,12 @@ function HostIntroScreen({ round, stingerLine, onContinue, theme }) {
   }, [round.id, round.roundNumber, round.roundTypeId]);
   useEffect(() => {
     if (speechIndex >= speechSentences.length - 1) return undefined;
+    if (theme === 'Default' && defaultHostVoicePlaying) return undefined;
     const timer = setTimeout(() => {
       setSpeechIndex((current) => Math.min(current + 1, speechSentences.length - 1));
-    }, HOST_DIALOGUE_TIMINGS.roundIntroAdvanceMs);
+    }, theme === 'Default' ? 220 : HOST_DIALOGUE_TIMINGS.roundIntroAdvanceMs);
     return () => clearTimeout(timer);
-  }, [speechIndex, speechSentences.length]);
+  }, [speechIndex, speechSentences.length, theme, defaultHostVoicePlaying]);
   useLayoutEffect(() => {
     const nextSize = fitTextToBubble(speechBubbleTextRef.current, speechBubbleFitRef.current, {
       maxSize: 28,
