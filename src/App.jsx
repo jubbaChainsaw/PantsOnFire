@@ -442,6 +442,7 @@ function mapLobbyErrorToMessage(error, fallback = 'Unable to complete online lob
   if (code === 'session-token-expired') return 'Session expired due to inactivity. Rejoin the lobby from a fresh code.';
   if (code === 'resume-token-missing') return 'Session restore token missing. Rejoin the lobby from a fresh code.';
   if (code === 'lobby-session-expired' || code === 'session-player-missing') return 'Session expired because this player left the lobby.';
+  if (code === 'token-rotation-required') return 'Match state already advanced on server. Tap Resume Match to sync.';
   if (code === 'host-only') return 'Only the host can start this lobby.';
   if (code === 'lobby-not-started') return 'Lobby has not started yet.';
   if (code === 'round-not-found') return 'Round data is not ready yet.';
@@ -2073,7 +2074,7 @@ function OnlineJoinLobbyScreen({
   );
 }
 function OnlineLobbyCodeScreen({ lobbyCode, hostName, players, lobbyStatus, onlineStatusNote = '', onCopyCode, onBack, onStartMatch, nameTheme, maxPlayers = MAX_PLAYERS }) {
-  const canStart = players.length >= MIN_PLAYERS && lobbyStatus !== 'started';
+  const canStart = players.length >= MIN_PLAYERS;
   return (
     <TopFrame theme={nameTheme}>
       <div className="mx-auto max-w-4xl space-y-6">
@@ -2110,7 +2111,7 @@ function OnlineLobbyCodeScreen({ lobbyCode, hostName, players, lobbyStatus, onli
           <div className="mt-8 flex flex-wrap gap-3">
             <Button className="rounded-[1.4rem] bg-white/5 border border-white/10 px-4 py-2 text-white" onClick={onBack}>Back to home</Button>
             <Button className="rounded-[1.4rem] bg-yellow-300 text-zinc-950 border-2 border-white px-6 py-2" disabled={!canStart} onClick={onStartMatch}>
-              {lobbyStatus === 'started' ? 'Match already started' : "Let's Start"}
+              {lobbyStatus === 'started' ? 'Resume Match' : "Let's Start"}
             </Button>
           </div>
           {onlineStatusNote && (
@@ -2118,7 +2119,7 @@ function OnlineLobbyCodeScreen({ lobbyCode, hostName, players, lobbyStatus, onli
               {onlineStatusNote}
             </div>
           )}
-          {!canStart && lobbyStatus !== 'started' && (
+          {!canStart && (
             <div className="mt-3 text-xs text-white/60">
               Need at least {MIN_PLAYERS} players to start.
             </div>
@@ -5501,11 +5502,38 @@ export default function App() {
     }
     setOnlinePrivatePrompt(null);
     setOnlinePrivatePromptError('');
+    const startedLobby = result?.lobby || null;
+    if (startedLobby) {
+      const startedPlayers = Array.isArray(startedLobby.players) ? startedLobby.players : [];
+      setOnlineLobbyPlayers(startedPlayers);
+      setOnlineLobbyStatus(startedLobby.status || 'started');
+      if (startedPlayers.length) {
+        setPlayers(toGamePlayers(startedPlayers));
+      }
+      if (startedLobby.startedRevision) {
+        onlineStartedRevisionHandledRef.current = String(startedLobby.startedRevision);
+      }
+      if (startedLobby.activeRound) {
+        await syncOnlineRoundFromSnapshot(
+          {
+            ...startedLobby,
+            code: startedLobby.code || lobbyCode,
+            players: startedPlayers,
+          },
+          { openHostIntro: true }
+        );
+        return;
+      }
+    }
     const synced = await onlineTransportRef.current?.syncSnapshot();
     if (synced?.activeRound) {
-      await syncOnlineRoundFromSnapshot(synced, { openHostIntro: false });
-      setScreen('game-intro');
+      if (synced.startedRevision) {
+        onlineStartedRevisionHandledRef.current = String(synced.startedRevision);
+      }
+      await syncOnlineRoundFromSnapshot(synced, { openHostIntro: true });
+      return;
     }
+    setOnlineLobbyError('Match started but round sync is still loading. Tap Resume Match in a moment.');
   }
   function restartToHome() {
     setPlayers(createPlayers(3, 'Default')); setLiarCount(1); setNameTheme(normalizeThemeSelection('Default', themeOptions)); setPersonaOnlyMode(false); setMode('classic'); setWinCondition('rounds'); setPointsToWin(15); setRoundsPerPlayer(1); setGrillSettings({ micEnabled: true, ttsEnabled: true }); setRound(null); setRoundNumber(1); setCurrentRoundOwnerIndex(0); setPreviousRoundType(null); setRoundTypeOptions([]); setSelectedRoundType(null); setRevealIndex(0); setVotesByPlayerId({}); setTally({}); setRoundGains({}); setRoundBreakdown({}); setImposterCaught(false); setRecentPromptKeys([]); refreshCopy(['home', 'onlineLobby']);
