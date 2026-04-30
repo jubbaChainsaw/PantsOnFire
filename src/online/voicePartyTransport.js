@@ -1,9 +1,11 @@
 import { Room, RoomEvent } from 'livekit-client';
 
 const RAW_LOBBY_SERVER_URL = String(import.meta?.env?.VITE_LOBBY_SERVER_URL || '').trim();
-const LOBBY_SERVER_URL = RAW_LOBBY_SERVER_URL;
-const LOBBY_API_BASE = RAW_LOBBY_SERVER_URL
-  ? `${RAW_LOBBY_SERVER_URL.replace(/\/$/, '')}/api`
+const IS_GITHUB_DEV_HOST = typeof window !== 'undefined' && /\.github\.dev$/i.test(String(window.location?.hostname || ''));
+const FALLBACK_LOBBY_SERVER_URL = IS_GITHUB_DEV_HOST ? 'https://api.pantsonfire.app' : '';
+const LOBBY_SERVER_URL = RAW_LOBBY_SERVER_URL || FALLBACK_LOBBY_SERVER_URL;
+const LOBBY_API_BASE = LOBBY_SERVER_URL
+  ? `${LOBBY_SERVER_URL.replace(/\/$/, '')}/api`
   : '/api';
 
 function normalizeCode(rawCode = '') {
