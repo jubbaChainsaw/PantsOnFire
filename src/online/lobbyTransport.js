@@ -1,8 +1,10 @@
 import { io } from 'socket.io-client';
 
 const ENV_LOBBY_SERVER_URL = String(import.meta?.env?.VITE_LOBBY_SERVER_URL || '').trim();
-const IS_GITHUB_DEV_HOST = typeof window !== 'undefined' && /\.github\.dev$/i.test(String(window.location?.hostname || ''));
-const FALLBACK_LOBBY_SERVER_URL = IS_GITHUB_DEV_HOST ? 'https://api.pantsonfire.app' : '';
+const RAILWAY_API_FALLBACK = 'https://api.pantsonfire.app';
+const RUNTIME_HOSTNAME = typeof window !== 'undefined' ? String(window.location?.hostname || '').toLowerCase() : '';
+const IS_LOCAL_WEB_HOST = RUNTIME_HOSTNAME === 'localhost' || RUNTIME_HOSTNAME === '127.0.0.1';
+const FALLBACK_LOBBY_SERVER_URL = IS_LOCAL_WEB_HOST ? '' : RAILWAY_API_FALLBACK;
 const LOBBY_SERVER_URL = ENV_LOBBY_SERVER_URL || FALLBACK_LOBBY_SERVER_URL;
 const LOBBY_API_BASE = LOBBY_SERVER_URL
   ? `${LOBBY_SERVER_URL.replace(/\/$/, '')}/api`
