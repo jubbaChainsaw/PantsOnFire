@@ -4818,7 +4818,7 @@ export default function App() {
         onlineTransportRef.current = null;
       }
     };
-  }, [onlineMode, lobbyCode, onlineClientId, screen, onlineRole, refreshCopy]);
+  }, [onlineMode, lobbyCode, onlineClientId, screen, onlineRole]);
   useEffect(() => setLiarCount((cur) => Math.max(1, Math.min(Math.max(1, Math.floor(players.length / 2)), cur))), [players.length]);
   const themedKey = (key) => {
     const overridesByTheme = THEME_STINGER_KEY_OVERRIDES[canonicalThemeName]
