@@ -259,6 +259,14 @@ function buildHostTalkingVideoSrc(themeName = 'Default') {
   return `/assets/videos/hosts/${toThemeSlug(themeName)}/talking-placeholder.mp4`;
 }
 
+function buildNewUiHostFrame(themeName = 'Default', frameNumber = 1) {
+  return `/assets/new-ui/hosts/${toThemeSlug(themeName)}/talk-${String(frameNumber).padStart(2, '0')}.png`;
+}
+
+function buildNewUiHostFrames(themeName = 'Default', frameCount = 6) {
+  return Array.from({ length: frameCount }, (_, index) => buildNewUiHostFrame(themeName, index + 1));
+}
+
 export const ROUND_TYPE_CARD_FRONT_BY_ID = {
   prompt: '/assets/themes/default/cards/prompt-front-prompt.svg',
   opinion: '/assets/themes/default/cards/prompt-front-opinion.svg',
@@ -328,17 +336,41 @@ export function getThemeHostAssets(themeName = 'Default') {
   const selectedTalkingFrames = selectedFrames.length
     ? selectedFrames
     : [selectedIdle].filter(Boolean);
+  const themedFallbackFrameMap = {
+    Default: buildNewUiHostFrames('Default', 9),
+    Pirates: buildNewUiHostFrames('Pirates', 6),
+    'Murder Mystery': buildNewUiHostFrames('Murder Mystery', 6),
+    'Cops and Robbers': buildNewUiHostFrames('Cops and Robbers', 6),
+    'Ghosts and Ghouls': buildNewUiHostFrames('Ghosts and Ghouls', 6),
+  };
+  const themedFallbackFrames = themedFallbackFrameMap[canonicalThemeName] || [];
+  const themedFallbackIdle = themedFallbackFrames[0] || '';
+
+  const resolvedIdle = themedFallbackFrames.length
+    ? themedFallbackIdle
+    : (
+      isDefaultTheme
+        ? (selectedIdle || fallbackIdle || null)
+        : (selectedIdle || null)
+    );
+  const resolvedTalkingFrames = themedFallbackFrames.length
+    ? themedFallbackFrames
+    : (
+      isDefaultTheme
+        ? (
+          selectedTalkingFrames.length
+            ? selectedTalkingFrames
+            : (fallbackFrames.length ? fallbackFrames : [selectedEntry.characterCard || fallback.characterCard].filter(Boolean))
+        )
+        : selectedTalkingFrames
+    );
 
   return {
     // For non-default themes, never fall back to default host assets.
-    idle: isDefaultTheme ? (selectedIdle || fallbackIdle || null) : selectedIdle,
-    talkingFrames: isDefaultTheme
-      ? (
-        selectedTalkingFrames.length
-          ? selectedTalkingFrames
-          : (fallbackFrames.length ? fallbackFrames : [selectedEntry.characterCard || fallback.characterCard].filter(Boolean))
-      )
-      : selectedTalkingFrames,
-    talkingVideo: buildHostTalkingVideoSrc(canonicalThemeName),
+    idle: resolvedIdle,
+    talkingFrames: resolvedTalkingFrames.length
+      ? resolvedTalkingFrames
+      : [resolvedIdle].filter(Boolean),
+    talkingVideo: themedFallbackFrames.length ? '' : buildHostTalkingVideoSrc(canonicalThemeName),
   };
 }
