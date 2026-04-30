@@ -6,6 +6,7 @@ const vm = require('vm');
 const repoRoot = path.resolve(__dirname, '..');
 const outDir = path.join(repoRoot, 'exports');
 const outPath = path.join(outDir, 'default-host-voice-lines-ssml.csv');
+const outPollySafePath = path.join(outDir, 'default-host-voice-lines-ssml-polly-safe.csv');
 
 function readFile(filePath) {
   return fs.readFileSync(filePath, 'utf8');
@@ -52,6 +53,7 @@ function loadCopyBank() {
 
 function esc(text) {
   return String(text)
+    .replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g, ' ')
     .replaceAll('&', '&amp;')
     .replaceAll('<', '&lt;')
     .replaceAll('>', '&gt;')
@@ -59,7 +61,7 @@ function esc(text) {
 }
 
 function toSsml(line, pauseMs) {
-  return `<speak>${esc(line)}<break time="${pauseMs}ms"/></speak>`;
+  return `<speak>${esc(line)}<break time='${pauseMs}ms'/></speak>`;
 }
 
 function csvEscape(value) {
@@ -154,7 +156,9 @@ function main() {
   if (!fs.existsSync(outDir)) fs.mkdirSync(outDir, { recursive: true });
   const csv = ['filename,ssml', ...rows.map((row) => `${csvEscape(row.filename)},${csvEscape(row.ssml)}`)].join('\n') + '\n';
   fs.writeFileSync(outPath, csv, 'utf8');
+  fs.writeFileSync(outPollySafePath, csv, 'utf8');
   console.log(`[exportDefaultHostSsmlCsv] Wrote ${rows.length} rows -> ${outPath}`);
+  console.log(`[exportDefaultHostSsmlCsv] Wrote ${rows.length} rows -> ${outPollySafePath}`);
 }
 
 main();
