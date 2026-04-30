@@ -930,15 +930,13 @@ function TopFrame({ children, theme = 'Default', allowScroll = false }) {
   const uiGlowClass = themeMeta.uiGlowClass || THEME_META.Default.uiGlowClass || 'bg-fuchsia-500/25';
   const uiBoltClass = themeMeta.uiBoltClass || THEME_META.Default.uiBoltClass || 'text-yellow-300';
   return (
-    <div className={`min-h-screen min-h-[100dvh] overflow-x-hidden ${allowScroll ? 'overflow-y-auto' : 'overflow-y-hidden'} text-white relative bg-[linear-gradient(135deg,#14043a_8%,#2d126f_45%,#1d0a51_100%)]`}>
+    <div className={`relative min-h-screen min-h-[100dvh] overflow-x-hidden ${allowScroll ? 'overflow-y-auto' : 'overflow-y-hidden'} bg-black text-white`}>
       <div
-        className="absolute inset-0 opacity-[0.75] bg-repeat"
-        style={{
-          backgroundImage: "url('/assets/images/backgrounds/game-tile-pattern.png')",
-          backgroundSize: '512px 512px',
-        }}
+        className="fixed inset-0 bg-cover bg-center bg-no-repeat"
+        style={{ backgroundImage: `url(${NEW_UI_WALLPAPER_IN_GAME_SRC})` }}
       />
-      <div className={`absolute inset-0 opacity-20 bg-gradient-to-br ${gradient}`} />
+      <div className="fixed inset-0 bg-black/45" />
+      <div className={`fixed inset-0 opacity-20 bg-gradient-to-br ${gradient}`} />
       <ZanyAccentBurst className="left-5 top-12" glowClass={uiGlowClass} />
       <ZanyAccentBurst className="right-5 bottom-20 scale-125" glowClass={uiGlowClass} />
       <LightningBolt className="left-8 bottom-28" boltClass={uiBoltClass} />
