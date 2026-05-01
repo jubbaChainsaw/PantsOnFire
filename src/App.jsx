@@ -5955,42 +5955,38 @@ export default function App() {
     {screen === 'category-choice' && round && (
       <BrandedScreen wallpaperSrc={NEW_UI_WALLPAPER_IN_GAME_SRC} overlayClassName="bg-black/45">
         <div className="mx-auto max-w-4xl space-y-6">
-          <GlassPanel className="relative overflow-hidden rounded-[2.5rem] border-fuchsia-400/25 bg-black/25 p-8 text-center">
-            <div className="text-xs uppercase tracking-[0.3em] text-white/50">Round owner: {players[currentRoundOwnerIndex]?.name}</div>
-            <h2 className="mt-3 text-4xl font-black text-yellow-300">Choose the next category</h2>
-            <p className="mt-3 text-white/70">{copyState.chooser}</p>
+          <div className="px-1 pt-1 text-center">
+            <div className="text-xs uppercase tracking-[0.3em] text-white/70">Round owner: {players[currentRoundOwnerIndex]?.name}</div>
+            <h2 className="mt-3 text-4xl font-black text-yellow-300 [text-shadow:0_4px_16px_rgba(0,0,0,0.65)]">Choose the next category</h2>
+            <RoundTypeLogo
+              src={getRoundTypeIconSrc(round.roundTypeId)}
+              alt={`${round.roundTypeName} mode icon`}
+              className="mx-auto mt-4 h-16 w-16 sm:h-20 sm:w-20 object-contain drop-shadow-[0_8px_20px_rgba(0,0,0,0.7)]"
+            />
             <div className={categoryChoiceGridClass}>
               {categoryOptions.map((category) => {
-                const categoryCardArtSrc = resolveCategoryChoiceCardArt(category, canonicalThemeName);
-                const categoryIconSrc = category?.iconSrc || getCategoryIconSrc(category.id);
+                const categoryIconSrc = category?.iconSrc || getCategoryIconSrc(category.id) || resolveCategoryChoiceCardArt(category, canonicalThemeName);
                 return (
                   <div key={category.id} className="flex">
                     <button
                       type="button"
-                      className="flex h-full w-full flex-col rounded-[1.8rem] border border-white/20 bg-black/20 p-4 text-center transition-transform duration-200 hover:scale-[1.01] hover:border-cyan-300/40"
+                      className="w-full transition-transform duration-200 hover:scale-[1.03]"
                       onClick={() => chooseCategory(category.id)}
+                      aria-label={`Choose ${category.name}`}
                     >
-                      <ThemeArt
-                        src={categoryCardArtSrc}
-                        alt={`${category.name} category card`}
-                        className="mx-auto h-40 w-auto rounded-[1.2rem] border border-white/20 bg-black/25 p-1"
-                      />
-                      {categoryIconSrc && (
+                      <div className="mx-auto aspect-square w-full max-w-[11.5rem] sm:max-w-[13rem]">
                         <ThemeArt
                           src={categoryIconSrc}
-                          alt={`${category.name} icon`}
-                          className="mx-auto -mt-6 h-12 w-12 rounded-xl border border-white/20 bg-black/40 p-1"
+                          alt={`${category.name} category icon`}
+                          className="h-full w-full object-contain drop-shadow-[0_12px_22px_rgba(0,0,0,0.72)]"
                         />
-                      )}
-                      <div className="mt-4 text-lg sm:text-xl font-black uppercase tracking-[0.04em] text-white leading-tight min-h-[2.6rem] flex items-center justify-center">
-                        {category.name}
                       </div>
                     </button>
                   </div>
                 );
               })}
             </div>
-          </GlassPanel>
+          </div>
         </div>
       </BrandedScreen>
     )}
