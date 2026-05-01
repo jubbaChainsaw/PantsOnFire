@@ -2301,16 +2301,6 @@ function SetupScreen(props) {
           </div>
           <div className="w-[72px]" />
         </div>
-        <div className="grid grid-cols-2 gap-3">
-          <GlassPanel className="aspect-square rounded-[1.6rem] border-cyan-400/20 bg-black/25 p-4 flex flex-col items-center justify-center">
-            <div className="text-xs uppercase tracking-[0.3em] text-white/50">Players</div>
-            <div className="mt-2 text-4xl sm:text-5xl font-black text-yellow-300">{players.length}</div>
-          </GlassPanel>
-          <GlassPanel className="aspect-square rounded-[1.6rem] border-orange-400/20 bg-black/25 p-4 flex flex-col items-center justify-center">
-            <div className="text-xs uppercase tracking-[0.3em] text-white/50">Liars</div>
-            <div className="mt-2 text-4xl sm:text-5xl font-black text-yellow-300">{liarCount}</div>
-          </GlassPanel>
-        </div>
         <div className={desktopLandscape ? 'grid gap-5 xl:grid-cols-[1.2fr_0.8fr]' : 'grid gap-5 lg:grid-cols-[1.1fr_0.9fr]'}>
           <GlassPanel className="rounded-[2.5rem] border-fuchsia-400/25 bg-black/25 p-5">
             <div className="mb-4 rounded-[1.7rem] border border-white/15 bg-black/25 p-4">
@@ -2370,6 +2360,14 @@ function SetupScreen(props) {
             <div className="mb-4 flex items-center justify-center gap-2">
               <Users className={`h-5 w-5 ${setupPlayerIconClass}`} />
               <h2 className="text-xl font-black">Player Setup</h2>
+            </div>
+            <div className="mb-4 flex flex-wrap items-center justify-center gap-2">
+              <Badge className="rounded-full border border-cyan-300/35 bg-cyan-500/15 px-3 py-1 text-cyan-100">
+                Players: {players.length}
+              </Badge>
+              <Badge className="rounded-full border border-orange-300/35 bg-orange-500/15 px-3 py-1 text-orange-100">
+                Liars: {liarCount}
+              </Badge>
             </div>
             <div className="grid gap-3">
               {players.map((player, index) => (
@@ -2626,9 +2624,6 @@ function RevealScreen({ players, currentRevealIndex, round, totalRounds, onNext,
     ? getImposterCardFrontSrc()
     : themedCardFrontSrc;
   const roundTypeLogoSrc = getRoundTypeIconSrc(round.roundTypeId);
-  const instructionLine = round.roundTypeId === 'picture'
-    ? 'Keep this private. You will reveal a picture prompt.'
-    : 'Keep this private. You will reveal your prompt.';
 
   useEffect(() => {
     if (!isCountingDown) return undefined;
@@ -2721,10 +2716,7 @@ function RevealScreen({ players, currentRevealIndex, round, totalRounds, onNext,
     <TopFrame theme={theme} allowScroll={false}>
       <div className="mx-auto flex h-[calc(100dvh-2rem)] w-full max-w-3xl flex-col">
         <div className="flex-1 px-3 py-3 sm:px-4 sm:py-4 text-center">
-          <Badge className="rounded-full bg-white/10 border border-white/10 px-4 py-1.5 text-white">
-            Secret reveal {currentRevealIndex + 1} / {players.length}
-          </Badge>
-          <h2 className="text-2xl sm:text-3xl font-black mt-2.5 text-yellow-300 leading-tight">
+          <h2 className="text-2xl sm:text-3xl font-black mt-1 text-yellow-300 leading-tight">
             {onlineMode ? `Reveal for ${localPlayerName || player.name}` : `Pass the phone to ${player.name}`}
           </h2>
           <div className="mt-2 rounded-[1.5rem] border border-fuchsia-200/40 bg-fuchsia-500/35 px-4 py-3 text-sm sm:text-base font-semibold text-white/95 shadow-[0_8px_20px_rgba(0,0,0,0.28)]">
@@ -2736,7 +2728,7 @@ function RevealScreen({ players, currentRevealIndex, round, totalRounds, onNext,
             </div>
           )}
 
-          <div className="mt-3 mx-auto w-full max-w-[20.5rem] sm:max-w-[22.5rem] [perspective:1200px]">
+          <div className="mt-3 mx-auto w-full max-w-[22.75rem] sm:max-w-[24.5rem] [perspective:1200px]">
             <motion.div
               animate={{ rotateY: cardFace === 'front' ? 180 : 0 }}
               transition={{ duration: 0.75, ease: 'easeInOut' }}
@@ -2745,28 +2737,12 @@ function RevealScreen({ players, currentRevealIndex, round, totalRounds, onNext,
               <div className="absolute inset-0 overflow-hidden rounded-[1.7rem] border-2 border-white/25 [backface-visibility:hidden]">
                 {cardBackSrc && <img src={cardBackSrc} alt="Prompt card back" className="absolute inset-0 h-full w-full object-contain bg-black/30" />}
                 <div className="absolute inset-0 bg-black/20" />
-                <div className="relative z-10 flex h-full flex-col items-center p-6 text-center text-white [text-shadow:0_2px_8px_rgba(0,0,0,0.85)]">
+                <div className="relative z-10 flex h-full flex-col items-center justify-center px-4 py-6 text-center text-white [text-shadow:0_2px_8px_rgba(0,0,0,0.85)]">
                   <RoundTypeLogo
                     src={roundTypeLogoSrc}
                     alt={`${round.roundTypeName} logo`}
-                    className="mx-auto h-20 w-auto"
+                    className="mx-auto h-24 w-auto sm:h-28"
                   />
-                  <div className="text-xs uppercase tracking-[0.3em] text-cyan-200/95">{round.roundTypeName}</div>
-                  <div className="mt-2 text-sm font-semibold text-white/90">Round {round.roundNumber}</div>
-                  <div className="mt-5 rounded-xl border border-fuchsia-200/40 bg-fuchsia-500/35 px-3 py-2 shadow-[0_8px_20px_rgba(0,0,0,0.28)]">
-                    <div className="text-sm text-white/95">
-                      {instructionLine}
-                    </div>
-                    <div className="mt-2 text-xs text-white/90">{round.roundTypeTagline}</div>
-                  </div>
-                  <div className="mt-auto pb-4 text-center">
-                    <div className="text-3xl font-black uppercase tracking-[0.18em] text-yellow-200">Get Ready</div>
-                    <div className="mt-2 text-xs uppercase tracking-[0.2em] text-cyan-100/95">
-                      {isCountingDown && typeof countdownValue === 'number' && countdownValue > 0
-                        ? `Flipping in ${countdownValue}`
-                        : (readyToReveal ? 'Card flip incoming' : 'Tap I\'m Ready first')}
-                    </div>
-                  </div>
                 </div>
                 {isCountingDown && typeof countdownValue === 'number' && countdownValue > 0 && (
                   <div className="absolute inset-0 z-20 grid place-items-center">
@@ -2805,7 +2781,7 @@ function RevealScreen({ players, currentRevealIndex, round, totalRounds, onNext,
                   <RoundTypeLogo
                     src={roundTypeLogoSrc}
                     alt={`${round.roundTypeName} logo`}
-                    className="mt-1 h-20 w-auto mx-auto"
+                    className="mt-1 h-24 w-auto mx-auto"
                   />
                   <div className={`mt-3 inline-flex items-center justify-center gap-2 rounded-xl border border-fuchsia-200/40 bg-fuchsia-500/35 px-3 py-2 text-xs font-semibold uppercase tracking-[0.2em] ${isImposter ? 'text-orange-100' : 'text-cyan-100'}`}>
                     <img
@@ -3540,8 +3516,41 @@ function DiscussionScreen({
   localPlayerId = '',
   onToggleChat = () => {},
 }) {
-  const roundRule = getRoundRuleText(round.roundTypeId);
-  return <TopFrame theme={theme}><div className="mx-auto max-w-3xl space-y-6"><ScoreStrip players={players} roundNumber={round.roundNumber} totalRounds={totalRounds} themeName={theme} /><VoicePartyStatusStrip onlineVoiceEnabled={onlineVoiceEnabled} onlineVoiceMuted={onlineVoiceMuted} setOnlineVoiceMuted={setOnlineVoiceMuted} canTalk={canTalk} talkingPlayers={talkingPlayers} players={players} localPlayerId={localPlayerId} onToggleChat={onToggleChat} themeName={theme} /><GlassPanel className="rounded-[2.5rem] p-8 text-center border-emerald-400/20 bg-black/25"><Badge className="rounded-full bg-emerald-500/20 border border-emerald-400/20 text-emerald-100 px-4 py-1.5">All prompts delivered</Badge><div className="text-xs uppercase tracking-[0.3em] text-white/50 mt-4">{round.roundTypeName}</div><h2 className="text-4xl font-black mt-3 text-yellow-300">{round.roundTypeTagline}</h2><p className="text-white/75 mt-3 max-w-2xl mx-auto">{line}</p><p className="text-cyan-200 mt-3 max-w-2xl mx-auto font-semibold">{roundRule}</p><div className="mt-8 flex justify-center"><Button className="rounded-[1.5rem] h-16 min-w-[16rem] px-8 bg-yellow-300 text-zinc-950 border-2 border-white" onClick={onContinue} disabled={submitPending}><SkipForward className="mr-2 h-5 w-5 inline" />{submitPending ? 'Syncing...' : 'Finish discussion and vote'}</Button></div></GlassPanel></div></TopFrame>;
+  return (
+    <TopFrame theme={theme}>
+      <div className="mx-auto max-w-3xl space-y-6">
+        <ScoreStrip players={players} roundNumber={round.roundNumber} totalRounds={totalRounds} themeName={theme} />
+        <VoicePartyStatusStrip
+          onlineVoiceEnabled={onlineVoiceEnabled}
+          onlineVoiceMuted={onlineVoiceMuted}
+          setOnlineVoiceMuted={setOnlineVoiceMuted}
+          canTalk={canTalk}
+          talkingPlayers={talkingPlayers}
+          players={players}
+          localPlayerId={localPlayerId}
+          onToggleChat={onToggleChat}
+          themeName={theme}
+        />
+        <GlassPanel className="rounded-[2.5rem] border-emerald-400/20 bg-black/25 p-8 text-center">
+          <Badge className="rounded-full border border-emerald-400/20 bg-emerald-500/20 px-4 py-1.5 text-emerald-100">
+            All prompts delivered
+          </Badge>
+          <div className="mt-4 text-xs uppercase tracking-[0.3em] text-white/50">{round.roundTypeName}</div>
+          <h2 className="mt-3 text-4xl font-black text-yellow-300">Discussion</h2>
+          <div className="mt-8 flex justify-center">
+            <Button
+              className="h-16 min-w-[16rem] rounded-[1.5rem] border-2 border-white bg-yellow-300 px-8 text-zinc-950"
+              onClick={onContinue}
+              disabled={submitPending}
+            >
+              <SkipForward className="mr-2 inline h-5 w-5" />
+              {submitPending ? 'Syncing...' : 'Finish discussion and vote'}
+            </Button>
+          </div>
+        </GlassPanel>
+      </div>
+    </TopFrame>
+  );
 }
 function VotingScreen({
   players,
@@ -3587,17 +3596,6 @@ function VotingScreen({
     : players.every((player) => votesByPlayerId[player.id]);
   const canRevealResults = !onlineMode && allComplete;
   const canSubmitOnlineVote = onlineMode && onlineVoteReady;
-  const voteInstruction = round.roundTypeId === 'grill'
-    ? "Vote for who sounded like they already knew the AI's hidden prompt."
-    : (round.roundTypeId === 'chain'
-      ? 'Vote for who sounded like they described the broken link.'
-      : (round.roundTypeId === 'meme'
-        ? 'Vote for who looked like they were faking meme culture.'
-        : (round.roundTypeId === 'noise'
-          ? 'Vote for whose sound felt most off-topic.'
-          : (round.roundTypeId === 'offtopic'
-            ? 'Vote for who defended the wrong scenario.'
-            : 'Vote for who sounded most suspicious.'))));
   const progressValue = Math.max(0, Math.min(100, (completeCount / voteTargetCount) * 100));
   return (
     <TopFrame theme={theme}>
@@ -3620,16 +3618,14 @@ function VotingScreen({
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
               <div className="text-xs uppercase tracking-[0.3em] text-white/50">{round.roundTypeName}</div>
-              <h2 className="text-4xl font-black mt-3 text-yellow-300">{round.roundTypeTagline}</h2>
+              <h2 className="text-4xl font-black mt-3 text-yellow-300">Vote now</h2>
               <p className="text-white/70 mt-2">
                 {onlineMode
                   ? 'Vote from your own device. Pick one suspect and submit.'
                   : activeLocalVoter
                     ? <>Pass the phone to <span className="font-semibold text-cyan-300">{activeLocalVoter.name}</span>. </>
                     : <>All votes are in. Get ready to reveal the results. </>}
-                {line}
               </p>
-              <p className="text-cyan-200 mt-2 font-semibold">{voteInstruction}</p>
             </div>
             <GlassPanel className="rounded-[1.75rem] p-4 min-w-[220px] border-cyan-400/20 bg-black/20">
               <div className="text-sm text-white/70">Votes completed</div>
@@ -3834,24 +3830,7 @@ function LiarRevealScreen({ players, round, onComplete, theme, playSfx = () => {
 function ResultsScreen({ players, round, totalRounds, tally, roundGains, roundBreakdown, imposterCaught, onNextRound, onEndGame, resultLine, theme }) {
   const [resultsStage, setResultsStage] = useState('summary');
   const lastRound = round.roundNumber >= totalRounds;
-  const promptByPlayerId = round.promptsByPlayerId || {};
   const rankedPlayers = [...players].sort((a, b) => b.score - a.score);
-  const roundInfoTitle = round.roundTypeId === 'grill'
-    ? 'AI Hidden Prompt'
-    : ((round.roundTypeId === 'chain')
-      ? 'Broken Link Topic'
-      : ((round.roundTypeId === 'meme')
-        ? 'Wrong Meme Scenario'
-        : ((round.roundTypeId === 'noise')
-          ? 'Off-Note Sound Prompt'
-          : ((round.roundTypeId === 'offtopic')
-            ? 'Irrelevant Scenario'
-            : 'Liar Prompt'))));
-  const roundInfoValue = round.roundTypeId === 'opinion'
-    ? 'Truth or Twisted uses one shared scenario for everyone.'
-    : (round.roundTypeId === 'chain'
-      ? (round.imposterPrompt || 'N/A')
-      : (round.imposterPrompt || round.aiPrompt || 'N/A'));
   const sortedVoteRows = [...players].sort((a, b) => (tally?.[b.id] || 0) - (tally?.[a.id] || 0));
   const ctaLabel = resultsStage === 'summary'
     ? 'Show round details'
@@ -3920,9 +3899,6 @@ function ResultsScreen({ players, round, totalRounds, tally, roundGains, roundBr
                       <div className={`text-xl sm:text-2xl font-black leading-tight ${isLiar ? 'text-[#ffc0ab]' : 'text-white'}`}>
                         {player.name}
                       </div>
-                      <div className="mt-1 text-sm font-black uppercase leading-tight text-white/70">
-                        {promptByPlayerId[player.id] || '—'}
-                      </div>
                       <div className="mt-2 text-lg font-black uppercase leading-none text-cyan-200">
                         {`${roundGain >= 0 ? '+' : ''}${roundGain} THIS ROUND`}
                       </div>
@@ -3940,20 +3916,7 @@ function ResultsScreen({ players, round, totalRounds, tally, roundGains, roundBr
               </div>
             </div>
           ) : (resultsStage === 'details' ? (
-            <div className="grid h-full grid-cols-1 gap-2 sm:grid-cols-2">
-              <GlassPanel className="rounded-[1.2rem] border border-white/10 bg-black/25 p-3 text-center">
-                <div className="text-xs font-black uppercase tracking-[0.14em] text-white/55">Hint / Subcategory</div>
-                <div className="mt-1 text-xl sm:text-2xl font-black uppercase leading-tight text-white">{round.hint}</div>
-                <div className="mx-auto mt-2 max-w-3xl text-sm font-black uppercase leading-tight text-cyan-200/95">{round.roundTypeTagline}</div>
-              </GlassPanel>
-
-              <GlassPanel className="rounded-[1.2rem] border border-white/10 bg-black/25 p-3 text-center">
-                <div className="text-xs font-black uppercase tracking-[0.14em] text-white/55">{roundInfoTitle}</div>
-                <div className="mx-auto mt-1 max-w-3xl text-base sm:text-lg font-black uppercase leading-tight text-[#ffb866]">
-                  {roundInfoValue}
-                </div>
-              </GlassPanel>
-
+            <div className="grid h-full grid-cols-1 gap-2">
               <GlassPanel className="rounded-[1.2rem] border border-white/10 bg-black/25 p-3 text-center">
                 <div className="text-xs font-black uppercase tracking-[0.14em] text-white/55">Scoring Rules</div>
                 <div className="mx-auto mt-1 max-w-3xl text-sm font-black uppercase leading-tight text-cyan-100">
@@ -5891,20 +5854,17 @@ export default function App() {
     {screen === 'round-type-choice' && round && (
       <BrandedScreen wallpaperSrc={NEW_UI_WALLPAPER_IN_GAME_SRC} overlayClassName="bg-black/45">
         <div className="mx-auto max-w-4xl space-y-6">
-          <GlassPanel className="relative overflow-hidden rounded-[2.5rem] border-fuchsia-400/25 bg-black/25 p-8 text-center">
-            <h2 className="mt-3 text-4xl font-black text-yellow-300">Choose your game mode</h2>
-            <p className="mt-3 text-white/70">Pick one of two options. Previous round type is excluded.</p>
+          <div className="px-1 pt-1 text-center">
+            <h2 className="mt-3 text-4xl font-black text-yellow-300 [text-shadow:0_4px_16px_rgba(0,0,0,0.65)]">Choose the game mode</h2>
             <div className={categoryChoiceGridClass}>
               {roundTypeOptions.map((type, index) => {
                 const centeredOnSm = roundTypeOptions.length % 2 === 1 && index === roundTypeOptions.length - 1;
-                const isGrillRoundType = type.id === 'grill';
                 const roundTypeLogoSrc = getRoundTypeIconSrc(type.id);
-                const roundTypeCardBackSrc = getRoundCardBackSrc(canonicalThemeName);
                 return (
                   <div key={type.id} className={centeredOnSm ? 'sm:col-span-2 sm:flex sm:justify-center' : ''}>
                     <button
                       type="button"
-                      className={`relative h-full min-h-[20rem] w-full rounded-[1.8rem] border border-white/20 bg-black/20 p-4 text-center transition-transform duration-200 hover:scale-[1.01] hover:border-cyan-300/40 ${centeredOnSm ? 'sm:max-w-[20rem]' : ''}`}
+                      className={`w-full transition-transform duration-200 hover:scale-[1.03] ${centeredOnSm ? 'sm:max-w-[20rem]' : ''}`}
                       onClick={() => {
                         const allowedCategories = categoriesAllowedForRoundType(activeCategories, type.id);
                         const nextCategoryOptions = shuffle(allowedCategories).slice(0, Math.min(4, allowedCategories.length));
@@ -5912,40 +5872,21 @@ export default function App() {
                         setCategoryOptions(nextCategoryOptions);
                         setScreen('category-choice');
                       }}
+                      aria-label={`Choose ${type.name}`}
                     >
-                      {isGrillRoundType && (
-                        <>
-                          <Badge className="absolute -top-3 right-6 rounded-full border-2 border-red-300/40 bg-red-500/10 px-3 py-1 text-[0.6rem] font-black uppercase tracking-[0.1em] text-white">
-                            With Special Guest Host
-                          </Badge>
-                          <div className="absolute -top-1.5 left-4 text-sm font-semibold text-yellow-200 drop-shadow-[0_0_8px_rgba(251,146,60,0.75)]">
-                            {pickThemeGuestHostName(canonicalThemeName, type.id)}
-                          </div>
-                        </>
-                      )}
-                      <div className="relative mx-auto h-40 w-auto">
+                      <div className="mx-auto aspect-square w-full max-w-[11.5rem] sm:max-w-[13rem]">
                         <ThemeArt
-                          src={roundTypeCardBackSrc}
-                          alt={`${type.name} round card back`}
-                          className="mx-auto h-40 w-auto rounded-[1.2rem] border border-white/20 bg-black/25 p-1"
+                          src={roundTypeLogoSrc}
+                          alt={`${type.name} mode icon`}
+                          className="h-full w-full object-contain drop-shadow-[0_12px_22px_rgba(0,0,0,0.72)]"
                         />
-                        {roundTypeLogoSrc && (
-                          <ThemeArt
-                            src={roundTypeLogoSrc}
-                            alt={`${type.name} mode icon`}
-                            className="pointer-events-none absolute left-1/2 top-1/2 h-14 w-14 -translate-x-1/2 -translate-y-1/2 rounded-xl border border-white/20 bg-black/40 p-1"
-                          />
-                        )}
-                      </div>
-                      <div className="mt-4 text-xl sm:text-2xl font-black uppercase tracking-[0.05em] text-white leading-tight min-h-[3.2rem] flex items-center justify-center">
-                        {type.name}
                       </div>
                     </button>
                   </div>
                 );
               })}
             </div>
-          </GlassPanel>
+          </div>
         </div>
       </BrandedScreen>
     )}
@@ -5958,7 +5899,7 @@ export default function App() {
             <RoundTypeLogo
               src={getRoundTypeIconSrc(round.roundTypeId)}
               alt={`${round.roundTypeName} mode icon`}
-              className="mx-auto mt-4 h-16 w-16 sm:h-20 sm:w-20 object-contain drop-shadow-[0_8px_20px_rgba(0,0,0,0.7)]"
+              className="mx-auto mt-4 h-24 w-24 sm:h-28 sm:w-28 object-contain drop-shadow-[0_8px_20px_rgba(0,0,0,0.7)]"
             />
             <div className={categoryChoiceGridClass}>
               {categoryOptions.map((category) => {
