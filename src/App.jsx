@@ -4382,7 +4382,7 @@ function RevealScreen({
             </div>
           )}
 
-          <div className="mt-3 mx-auto w-full max-w-[22.75rem] sm:max-w-[24.5rem] [perspective:1200px]">
+          <div className="mt-3 mx-auto w-full max-w-[23.5rem] sm:max-w-[25.25rem] [perspective:1200px]">
             <motion.div
               animate={{ rotateY: cardFace === "front" ? 180 : 0 }}
               transition={{ duration: 0.75, ease: "easeInOut" }}
@@ -4393,7 +4393,7 @@ function RevealScreen({
                   <img
                     src={cardBackSrc}
                     alt="Prompt card back"
-                    className="absolute inset-0 h-full w-full object-contain bg-black/30"
+                    className="absolute inset-0 h-full w-full object-cover bg-black/30"
                   />
                 )}
                 <div className="absolute inset-0 bg-black/20" />
@@ -4401,7 +4401,7 @@ function RevealScreen({
                   <RoundTypeLogo
                     src={roundTypeLogoSrc}
                     alt={`${round.roundTypeName} logo`}
-                    className="mx-auto h-24 w-auto sm:h-28"
+                    className="mx-auto h-28 w-auto sm:h-32"
                   />
                 </div>
                 {isCountingDown &&
@@ -4422,7 +4422,7 @@ function RevealScreen({
                   <img
                     src={cardFrontSrc}
                     alt="Prompt card front"
-                    className="absolute inset-0 h-full w-full object-contain bg-black/30"
+                    className="absolute inset-0 h-full w-full object-cover bg-black/30"
                   />
                 )}
                 <div
@@ -4436,25 +4436,25 @@ function RevealScreen({
                       src={CARD_FIRE_FLAME_SOURCES[0] || FLAME_SRC}
                       alt=""
                       aria-hidden="true"
-                      className="pointer-events-none absolute -top-5 -left-3 h-14 w-14 opacity-95 animate-pulse drop-shadow-[0_0_12px_rgba(255,98,0,0.95)]"
+                      className="pointer-events-none absolute -top-4 -left-2 h-14 w-14 opacity-95 animate-pulse drop-shadow-[0_0_12px_rgba(255,98,0,0.95)]"
                     />
                     <img
                       src={CARD_FIRE_FLAME_SOURCES[1] || FLAME_SRC}
                       alt=""
                       aria-hidden="true"
-                      className="pointer-events-none absolute -top-6 right-1 h-16 w-16 opacity-95 animate-pulse drop-shadow-[0_0_12px_rgba(255,98,0,0.95)]"
+                      className="pointer-events-none absolute -top-4 -right-2 h-14 w-14 opacity-95 animate-pulse drop-shadow-[0_0_12px_rgba(255,98,0,0.95)]"
                     />
                     <img
                       src={CARD_FIRE_FLAME_SOURCES[2] || FLAME_SRC}
                       alt=""
                       aria-hidden="true"
-                      className="pointer-events-none absolute bottom-1 -right-3 h-14 w-14 opacity-90 animate-pulse drop-shadow-[0_0_12px_rgba(255,98,0,0.95)]"
+                      className="pointer-events-none absolute -bottom-3 -right-2 h-14 w-14 opacity-90 animate-pulse drop-shadow-[0_0_12px_rgba(255,98,0,0.95)]"
                     />
                     <img
                       src={CARD_FIRE_FLAME_SOURCES[3] || FLAME_SRC}
                       alt=""
                       aria-hidden="true"
-                      className="pointer-events-none absolute bottom-0 -left-2 h-12 w-12 opacity-85 animate-pulse drop-shadow-[0_0_12px_rgba(255,98,0,0.95)]"
+                      className="pointer-events-none absolute -bottom-3 -left-2 h-14 w-14 opacity-90 animate-pulse drop-shadow-[0_0_12px_rgba(255,98,0,0.95)]"
                     />
                     {imposterEmberParticles.map((particle) => (
                       <span
@@ -4475,7 +4475,7 @@ function RevealScreen({
                   <RoundTypeLogo
                     src={roundTypeLogoSrc}
                     alt={`${round.roundTypeName} logo`}
-                    className="mt-1 h-24 w-auto mx-auto"
+                    className="mt-1 h-28 w-auto mx-auto"
                   />
                   <div
                     className={`mt-3 inline-flex items-center justify-center gap-2 rounded-xl border border-fuchsia-200/40 bg-fuchsia-500/35 px-3 py-2 text-xs font-semibold uppercase tracking-[0.2em] ${isImposter ? "text-orange-100" : "text-cyan-100"}`}
@@ -6038,7 +6038,7 @@ function ResultsScreen({
                   {resultLine}
                 </p>
               </div>
-              <div className="mt-4 grid flex-1 auto-rows-fr gap-2 sm:grid-cols-2 lg:grid-cols-3">
+              <div className="mt-4 grid gap-2 content-start sm:grid-cols-2 lg:grid-cols-3">
                 {players.map((player, index) => {
                   const isLiar = (round.imposterIds || []).includes(player.id);
                   const breakdown = roundBreakdown?.[player.id] || {
@@ -6066,15 +6066,23 @@ function ResultsScreen({
                           🔥 The Liar
                         </div>
                       )}
-                      <div
-                        className={`text-xl sm:text-2xl font-black leading-tight ${isLiar ? "text-[#ffc0ab]" : "text-white"}`}
-                      >
-                        {player.name}
+                      <div className="flex items-center justify-center gap-2">
+                        <PlayerPersonaAvatar
+                          player={player}
+                          fallbackIndex={index}
+                          sizeClass="h-8 w-8"
+                          initialsClass="text-[0.58rem]"
+                        />
+                        <div
+                          className={`text-lg sm:text-xl font-black leading-tight ${isLiar ? "text-[#ffc0ab]" : "text-white"}`}
+                        >
+                          {player.name}
+                        </div>
                       </div>
-                      <div className="mt-2 text-lg font-black uppercase leading-none text-cyan-200">
+                      <div className="mt-1.5 text-base sm:text-lg font-black uppercase leading-none text-cyan-200">
                         {`${roundGain >= 0 ? "+" : ""}${roundGain} THIS ROUND`}
                       </div>
-                      <div className="mt-1 text-[0.65rem] font-bold uppercase leading-tight text-white/65">
+                      <div className="mt-1 text-[0.62rem] font-bold uppercase leading-tight text-white/65">
                         {`VOTE HIT +${breakdown.voteHit} • LIAR SURVIVED +${breakdown.liarSurvived}`}
                       </div>
                       {round.roundTypeId === "grill" && (
@@ -6088,32 +6096,42 @@ function ResultsScreen({
               </div>
             </div>
           ) : resultsStage === "details" ? (
-            <div className="grid h-full grid-cols-1 gap-2">
-              <GlassPanel className="rounded-[1.2rem] border border-white/10 bg-black/25 p-3 text-center">
+            <div className="grid h-full content-start grid-cols-1 gap-2">
+              <GlassPanel className="rounded-[1.2rem] border border-white/10 bg-black/25 p-2.5 text-center">
                 <div className="text-xs font-black uppercase tracking-[0.14em] text-white/55">
                   Scoring Rules
                 </div>
-                <div className="mx-auto mt-1 max-w-3xl text-sm font-black uppercase leading-tight text-cyan-100">
+                <div className="mx-auto mt-1 max-w-3xl text-[0.82rem] sm:text-sm font-black uppercase leading-tight text-cyan-100">
                   Correct liar vote: +1 point. Liar survives: +2 points to that
                   liar.
                 </div>
               </GlassPanel>
 
-              <GlassPanel className="rounded-[1.2rem] border border-white/10 bg-black/25 p-3">
+              <GlassPanel className="rounded-[1.2rem] border border-white/10 bg-black/25 p-2.5">
                 <div className="text-center text-sm font-black uppercase tracking-[0.14em] text-white/65">
                   Vote Tally
                 </div>
-                <div className="mt-2 space-y-1.5">
+                <div className="mt-1.5 space-y-1.5">
                   {sortedVoteRows.map((player) => {
                     const votes = tally?.[player.id] || 0;
                     const voteLabel = `${votes} ${votes === 1 ? "VOTE" : "VOTES"}`;
                     return (
                       <div
                         key={player.id}
-                        className="flex items-center justify-between rounded-[0.9rem] border border-white/10 bg-white/5 px-3 py-2"
+                        className="flex items-center justify-between rounded-[0.9rem] border border-white/10 bg-white/5 px-3 py-1.5"
                       >
-                        <div className="text-sm font-black uppercase text-white">
-                          {player.name}
+                        <div className="flex items-center gap-2">
+                          <PlayerPersonaAvatar
+                            player={player}
+                            fallbackIndex={players.findIndex(
+                              (entry) => entry.id === player.id,
+                            )}
+                            sizeClass="h-7 w-7"
+                            initialsClass="text-[0.5rem]"
+                          />
+                          <div className="text-sm font-black uppercase text-white">
+                            {player.name}
+                          </div>
                         </div>
                         <div className="rounded-full border border-white/15 bg-white/15 px-3 py-1 text-xs font-black uppercase text-white/90">
                           {voteLabel}
