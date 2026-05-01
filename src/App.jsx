@@ -2619,9 +2619,12 @@ function RevealScreen({ players, currentRevealIndex, round, totalRounds, onNext,
   const defaultRoundTypeFront = theme === 'Default'
     ? (ROUND_TYPES[round.roundTypeId]?.defaultCardFrontSrc || null)
     : null;
-  const cardFrontSrc = useAdultCardArt
+  const themedCardFrontSrc = useAdultCardArt
     ? (themeAssets.adultPromptCardFront || defaultPromptCards.adultPromptCardFront || getRoundCardFrontSrc(theme))
     : (getRoundCardFrontSrc(theme) || defaultRoundTypeFront || themeAssets.promptCardFront || defaultPromptCards.promptCardFront);
+  const cardFrontSrc = isImposter
+    ? getImposterCardFrontSrc()
+    : themedCardFrontSrc;
   const roundTypeLogoSrc = getRoundTypeIconSrc(round.roundTypeId);
   const instructionLine = round.roundTypeId === 'picture'
     ? 'Keep this private. You will reveal a picture prompt.'
