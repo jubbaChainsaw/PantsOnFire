@@ -2801,7 +2801,7 @@ function RevealScreen({ players, currentRevealIndex, round, totalRounds, onNext,
                     ))}
                   </>
                 )}
-                <div className="relative z-10 flex h-full flex-col p-6 text-center text-white [text-shadow:0_2px_8px_rgba(0,0,0,0.85)]">
+                <div className="relative z-10 flex h-full flex-col p-5 text-center text-white [text-shadow:0_2px_8px_rgba(0,0,0,0.85)]">
                   <RoundTypeLogo
                     src={roundTypeLogoSrc}
                     alt={`${round.roundTypeName} logo`}
@@ -2817,12 +2817,12 @@ function RevealScreen({ players, currentRevealIndex, round, totalRounds, onNext,
                     <span>{isImposter ? 'IMPOSTER CARD' : round.hint}</span>
                   </div>
                   {round.mediaPreviewLabel && (
-                    <div className="mt-3 text-sm text-white/85">{round.mediaPreviewLabel}</div>
+                    <div className="mt-2 text-sm text-white/85">{round.mediaPreviewLabel}</div>
                   )}
                   {mediaSrc && (
-                    <img src={mediaSrc} alt={`${round.hint} visual clue`} className="mt-3 w-full rounded-2xl" />
+                    <img src={mediaSrc} alt={`${round.hint} visual clue`} className="mt-2 w-full rounded-2xl" />
                   )}
-                  <div ref={promptFitContainerRef} className="mt-4 max-h-[12.5rem] overflow-hidden px-1">
+                  <div ref={promptFitContainerRef} className="mt-2 max-h-[14.25rem] overflow-hidden px-1">
                     <div
                       ref={promptTextRef}
                       className={`font-black ${isImposter ? 'text-yellow-300' : 'text-white'}`}
@@ -2833,7 +2833,7 @@ function RevealScreen({ players, currentRevealIndex, round, totalRounds, onNext,
                         whiteSpace: 'normal',
                         hyphens: 'manual',
                         WebkitHyphens: 'manual',
-                        lineHeight: 1.1,
+                        lineHeight: 1.06,
                       }}
                     >
                       {prompt}
@@ -2844,7 +2844,7 @@ function RevealScreen({ players, currentRevealIndex, round, totalRounds, onNext,
                       Loading your private prompt...
                     </div>
                   )}
-                  <div className={`mt-3 rounded-xl border border-fuchsia-200/40 bg-fuchsia-500/35 px-3 py-2 text-sm font-semibold ${isImposter ? 'text-orange-100' : 'text-white/95'}`}>
+                  <div className={`mt-2 rounded-xl border border-fuchsia-200/40 bg-fuchsia-500/35 px-3 py-2 text-sm font-semibold ${isImposter ? 'text-orange-100' : 'text-white/95'}`}>
                     {isImposter ? `🔥 ${liarLine} 🔥` : normalLine}
                   </div>
                   {round.mode === 'chaos' && round.bannedWords.length > 0 && (
