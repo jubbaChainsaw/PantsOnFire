@@ -2720,7 +2720,7 @@ function RevealScreen({ players, currentRevealIndex, round, totalRounds, onNext,
   return (
     <TopFrame theme={theme} allowScroll={false}>
       <div className="mx-auto flex h-[calc(100dvh-2rem)] w-full max-w-3xl flex-col">
-        <GlassPanel className="flex-1 rounded-[2.5rem] border-white/15 bg-black/25 px-4 py-4 sm:px-5 sm:py-5 text-center overflow-hidden">
+        <div className="flex-1 px-3 py-3 sm:px-4 sm:py-4 text-center">
           <Badge className="rounded-full bg-white/10 border border-white/10 px-4 py-1.5 text-white">
             Secret reveal {currentRevealIndex + 1} / {players.length}
           </Badge>
@@ -2736,7 +2736,7 @@ function RevealScreen({ players, currentRevealIndex, round, totalRounds, onNext,
             </div>
           )}
 
-          <div className="mt-3 mx-auto w-full max-w-[16.75rem] sm:max-w-[18.5rem] [perspective:1200px]">
+          <div className="mt-3 mx-auto w-full max-w-[20.5rem] sm:max-w-[22.5rem] [perspective:1200px]">
             <motion.div
               animate={{ rotateY: cardFace === 'front' ? 180 : 0 }}
               transition={{ duration: 0.75, ease: 'easeInOut' }}
@@ -2749,7 +2749,7 @@ function RevealScreen({ players, currentRevealIndex, round, totalRounds, onNext,
                   <RoundTypeLogo
                     src={roundTypeLogoSrc}
                     alt={`${round.roundTypeName} logo`}
-                    className="mx-auto h-16 w-auto"
+                    className="mx-auto h-20 w-auto"
                   />
                   <div className="text-xs uppercase tracking-[0.3em] text-cyan-200/95">{round.roundTypeName}</div>
                   <div className="mt-2 text-sm font-semibold text-white/90">Round {round.roundNumber}</div>
@@ -2802,13 +2802,10 @@ function RevealScreen({ players, currentRevealIndex, round, totalRounds, onNext,
                   </>
                 )}
                 <div className="relative z-10 flex h-full flex-col p-6 text-center text-white [text-shadow:0_2px_8px_rgba(0,0,0,0.85)]">
-                  <div className="text-xs uppercase tracking-[0.3em] text-white/75">
-                    {round.roundTypeName} • {round.categoryEmoji} {round.categoryLabel}
-                  </div>
                   <RoundTypeLogo
                     src={roundTypeLogoSrc}
                     alt={`${round.roundTypeName} logo`}
-                    className="mt-3 h-14 w-auto mx-auto"
+                    className="mt-1 h-20 w-auto mx-auto"
                   />
                   <div className={`mt-3 inline-flex items-center justify-center gap-2 rounded-xl border border-fuchsia-200/40 bg-fuchsia-500/35 px-3 py-2 text-xs font-semibold uppercase tracking-[0.2em] ${isImposter ? 'text-orange-100' : 'text-cyan-100'}`}>
                     <img
@@ -2878,7 +2875,7 @@ function RevealScreen({ players, currentRevealIndex, round, totalRounds, onNext,
                 : (isLast ? 'Start discussion' : `Hide & pass to ${players[currentRevealIndex + 1].name}`)}
             </Button>
           )}
-        </GlassPanel>
+        </div>
       </div>
     </TopFrame>
   );
