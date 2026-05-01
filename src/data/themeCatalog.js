@@ -1,8 +1,8 @@
-import { THEME_META } from './themes';
-import { WORST_LIARS_IN_HISTORY_THEME_PACK } from './dlc/themePacks/worst-liars-in-history/themePack';
-import { HIGH_STAKES_CASES_THEME_PACK } from './dlc/themePacks/high-stakes-cases/themePack';
-import { FUTURE_AND_FANTASY_THEME_PACK } from './dlc/themePacks/future-and-fantasy/themePack';
-import { STAGE_AND_SPECTACLE_THEME_PACK } from './dlc/themePacks/stage-and-spectacle/themePack';
+import { THEME_META } from './themes.js';
+import { WORST_LIARS_IN_HISTORY_THEME_PACK } from './dlc/themePacks/worst-liars-in-history/themePack.js';
+import { HIGH_STAKES_CASES_THEME_PACK } from './dlc/themePacks/high-stakes-cases/themePack.js';
+import { FUTURE_AND_FANTASY_THEME_PACK } from './dlc/themePacks/future-and-fantasy/themePack.js';
+import { STAGE_AND_SPECTACLE_THEME_PACK } from './dlc/themePacks/stage-and-spectacle/themePack.js';
 
 export const CORE_THEME_NAMES = [
   'Default',
