@@ -2606,7 +2606,7 @@ function RevealScreen({ players, currentRevealIndex, round, totalRounds, onNext,
   const [countdownValue, setCountdownValue] = useState(null);
   const [isCountingDown, setIsCountingDown] = useState(false);
   const [readyToReveal, setReadyToReveal] = useState(false);
-  const [promptFontSize, setPromptFontSize] = useState(54);
+  const [promptFontSize, setPromptFontSize] = useState(50);
   const fireAudioRef = useRef(null);
   const promptTextRef = useRef(null);
   const promptFitContainerRef = useRef(null);
@@ -2668,14 +2668,14 @@ function RevealScreen({ players, currentRevealIndex, round, totalRounds, onNext,
 
   useLayoutEffect(() => {
     if (cardFace !== 'front') {
-      setPromptFontSize((current) => (current === 54 ? current : 54));
+      setPromptFontSize((current) => (current === 50 ? current : 50));
       return;
     }
     const promptElement = promptTextRef.current;
     const fitContainer = promptFitContainerRef.current;
     if (!promptElement || !fitContainer) return;
 
-    const maxSize = 54;
+    const maxSize = 50;
     const minSize = 10;
     let nextSize = maxSize;
     promptElement.style.fontSize = `${nextSize}px`;
