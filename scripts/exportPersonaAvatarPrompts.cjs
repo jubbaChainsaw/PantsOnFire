@@ -6,9 +6,12 @@ const { pathToFileURL } = require('url');
 const repoRoot = path.resolve(__dirname, '..');
 const outputDir = path.join(repoRoot, 'exports');
 
+const STYLE_REFERENCE_URL = 'https://media.craiyon.com/2025-08-06/Kx1Iy3b-RCSGhKhPYW3Aog.webp';
+
 const STYLE_GUIDE_NOTES = [
-  'Match the style guide vibe: high-contrast neon stage lighting, saturated purples/cyans/oranges, glossy comic-book polish.',
-  'Use bold linework, cinematic rim lighting, and expressive but clean facial detail suitable for a party game host/persona card.',
+  `Use this style reference: ${STYLE_REFERENCE_URL}.`,
+  'Match that look with polished digital illustration, clean comic-influenced linework, soft studio-style lighting, and rich but balanced color.',
+  'Aim for expressive faces, strong silhouette readability, and smooth cel-shaded rendering suitable for party game persona cards.',
   'Keep it original artwork (no logos, no text, no recognizable real person likeness).',
 ].join(' ');
 
