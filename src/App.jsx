@@ -292,7 +292,7 @@ function useDefaultHostVoicePlayback({
       }
       return undefined;
     }
-    const mappedSrc = getDefaultHostVoiceAudioSrc(normalized);
+    const mappedSrc = getDefaultHostVoiceSrcForLine(normalized);
     if (!mappedSrc) {
       setIsPlaying(true);
       const timer = setTimeout(() => setIsPlaying(false), Math.max(600, Number(fallbackDurationMs) || 6000));
