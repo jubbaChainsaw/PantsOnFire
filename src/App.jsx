@@ -1051,9 +1051,18 @@ function ThemeIconStrip({ src, alt }) {
 }
 function IntroVideoScreen({ onDone }) {
   const [canSkip, setCanSkip] = useState(false);
+  const hasAdvancedRef = useRef(false);
+  const handleDone = useCallback(() => {
+    if (hasAdvancedRef.current) return;
+    hasAdvancedRef.current = true;
+    onDone();
+  }, [onDone]);
   useEffect(() => {
     const timer = setTimeout(() => setCanSkip(true), 850);
     return () => clearTimeout(timer);
+  }, []);
+  useEffect(() => () => {
+    hasAdvancedRef.current = false;
   }, []);
   return (
     <TopFrame theme="Default" allowScroll={false}>
@@ -1065,13 +1074,14 @@ function IntroVideoScreen({ onDone }) {
           muted
           playsInline
           preload="auto"
-          onEnded={onDone}
+          onEnded={handleDone}
+          onError={handleDone}
         />
         <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/45 via-transparent to-black/30" />
         <div className="absolute inset-x-0 bottom-6 flex justify-center">
           <Button
             className="rounded-[1.2rem] border border-white/30 bg-black/35 px-5 py-2 text-white backdrop-blur-sm"
-            onClick={onDone}
+            onClick={handleDone}
             disabled={!canSkip}
           >
             {canSkip ? 'Skip intro' : 'Loading intro...'}
