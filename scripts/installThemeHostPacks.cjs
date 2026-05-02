@@ -242,57 +242,24 @@ function detectThemeForPath(filePath) {
   return '';
 }
 
-function getImageDimensions(imagePath) {
-  const output = runCommand(
-    'ffprobe',
-    [
-      '-v',
-      'error',
-      '-select_streams',
-      'v:0',
-      '-show_entries',
-      'stream=width,height',
-      '-of',
-      'csv=p=0:s=x',
-      imagePath,
-    ],
-    { silent: true }
-  ).trim();
-  const [widthRaw, heightRaw] = output.split('x');
-  const width = Number(widthRaw);
-  const height = Number(heightRaw);
-  if (!Number.isFinite(width) || !Number.isFinite(height) || width <= 0 || height <= 0) {
-    throw new Error(`Unable to determine dimensions for ${imagePath}`);
-  }
-  return { width, height };
-}
-
 function generateTalkingFrames(sourcePath, hostDir, talkPrefix, frameCount) {
-  const { width, height } = getImageDimensions(sourcePath);
   for (let frameIndex = 0; frameIndex < frameCount; frameIndex += 1) {
     const motion = TALKING_FRAME_MOTION[frameIndex % TALKING_FRAME_MOTION.length];
-    const scaledWidth = Math.max(4, Math.round(width * motion.sx));
-    const scaledHeight = Math.max(4, Math.round(height * motion.sy));
-    const offsetX = Math.round((width - scaledWidth) / 2);
-    const offsetY = Math.round((height - scaledHeight) / 2) + Math.round(motion.y || 0);
     const outputPath = path.join(hostDir, `${talkPrefix}-${String(frameIndex + 1).padStart(2, '0')}.png`);
     runCommand('ffmpeg', [
       '-y',
       '-loglevel',
       'error',
-      '-f',
-      'lavfi',
-      '-i',
-      `color=color=black@0.0:size=${width}x${height},format=rgba`,
       '-i',
       sourcePath,
-      '-filter_complex',
+      '-vf',
       [
-        `[1:v]format=rgba,scale=${scaledWidth}:${scaledHeight}:flags=lanczos[scaled]`,
-        `[0:v][scaled]overlay=${offsetX}:${offsetY}:format=auto,eq=brightness=${Number(motion.brightness || 0).toFixed(3)}:saturation=1.02[out]`,
-      ].join(';'),
-      '-map',
-      '[out]',
+        'format=rgba',
+        `scale=iw*${Number(motion.sx || 1).toFixed(3)}:ih*${Number(motion.sy || 1).toFixed(3)}:flags=lanczos`,
+        'pad=iw*1.06:ih*1.06:(ow-iw)/2:(oh-ih)/2:color=black@0.0',
+        `crop=in_w/1.06:in_h/1.06:(in_w-out_w)/2:(in_h-out_h)/2+${Math.round(motion.y || 0)}`,
+        `eq=brightness=${Number(motion.brightness || 0).toFixed(3)}:saturation=1.02`,
+      ].join(','),
       '-frames:v',
       '1',
       outputPath,
