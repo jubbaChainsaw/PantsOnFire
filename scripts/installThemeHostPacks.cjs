@@ -243,28 +243,44 @@ function detectThemeForPath(filePath) {
 }
 
 function generateTalkingFrames(sourcePath, hostDir, talkPrefix, frameCount) {
+  const generatedOutputs = [];
+  const fallbackOutputs = [];
+  let transformFailed = false;
   for (let frameIndex = 0; frameIndex < frameCount; frameIndex += 1) {
     const motion = TALKING_FRAME_MOTION[frameIndex % TALKING_FRAME_MOTION.length];
     const outputPath = path.join(hostDir, `${talkPrefix}-${String(frameIndex + 1).padStart(2, '0')}.png`);
-    runCommand('ffmpeg', [
-      '-y',
-      '-loglevel',
-      'error',
-      '-i',
-      sourcePath,
-      '-vf',
-      [
-        'format=rgba',
-        `scale=iw*${Number(motion.sx || 1).toFixed(3)}:ih*${Number(motion.sy || 1).toFixed(3)}:flags=lanczos`,
-        'pad=iw*1.06:ih*1.06:(ow-iw)/2:(oh-ih)/2:color=black@0.0',
-        `crop=in_w/1.06:in_h/1.06:(in_w-out_w)/2:(in_h-out_h)/2+${Math.round(motion.y || 0)}`,
-        `eq=brightness=${Number(motion.brightness || 0).toFixed(3)}:saturation=1.02`,
-      ].join(','),
-      '-frames:v',
-      '1',
-      outputPath,
-    ]);
+    if (transformFailed) {
+      fs.copyFileSync(sourcePath, outputPath);
+      fallbackOutputs.push(outputPath);
+      continue;
+    }
+    try {
+      runCommand('ffmpeg', [
+        '-y',
+        '-loglevel',
+        'error',
+        '-i',
+        sourcePath,
+        '-vf',
+        [
+          'format=rgba',
+          `scale=iw*${Number(motion.sx || 1).toFixed(3)}:ih*${Number(motion.sy || 1).toFixed(3)}:flags=lanczos`,
+          'pad=iw*1.06:ih*1.06:(ow-iw)/2:(oh-ih)/2:color=black@0.0',
+          `crop=in_w/1.06:in_h/1.06:(in_w-out_w)/2:(in_h-out_h)/2+${Math.round(motion.y || 0)}`,
+          `eq=brightness=${Number(motion.brightness || 0).toFixed(3)}:saturation=1.02`,
+        ].join(','),
+        '-frames:v',
+        '1',
+        outputPath,
+      ]);
+      generatedOutputs.push(outputPath);
+    } catch {
+      transformFailed = true;
+      fs.copyFileSync(sourcePath, outputPath);
+      fallbackOutputs.push(outputPath);
+    }
   }
+  return { generatedOutputs, fallbackOutputs, usedFallback: fallbackOutputs.length > 0 };
 }
 
 function buildAssignments(hostPngPaths = [], themeOrder = []) {
