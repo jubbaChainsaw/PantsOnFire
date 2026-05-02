@@ -376,20 +376,25 @@ function generateOverlayVariants({ overlayPath, overlayOutputName = 'host-overla
       return;
     }
     ensureDir(hostDir);
-    runCommand('ffmpeg', [
-      '-y',
-      '-loglevel',
-      'error',
-      '-i',
-      resolvedOverlay,
-      '-vf',
-      `format=rgba,hue=h=${variant.hue}:s=${variant.saturation.toFixed(3)},eq=brightness=${variant.brightness.toFixed(3)}:contrast=1.030`,
-      '-frames:v',
-      '1',
-      '-update',
-      '1',
-      outputPath,
-    ]);
+    try {
+      runCommand('ffmpeg', [
+        '-y',
+        '-loglevel',
+        'error',
+        '-i',
+        resolvedOverlay,
+        '-vf',
+        `format=rgba,hue=h=${variant.hue}:s=${variant.saturation.toFixed(3)},eq=brightness=${variant.brightness.toFixed(3)}:contrast=1.030`,
+        '-frames:v',
+        '1',
+        '-update',
+        '1',
+        outputPath,
+      ]);
+    } catch {
+      // Fallback: still write an overlay so installer never blocks runtime integration.
+      fs.copyFileSync(resolvedOverlay, outputPath);
+    }
     copied += 1;
   });
   return { copied };
