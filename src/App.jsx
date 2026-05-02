@@ -1051,6 +1051,7 @@ function ThemeIconStrip({ src, alt }) {
 }
 function IntroVideoScreen({ onDone }) {
   const [canSkip, setCanSkip] = useState(false);
+  const [videoReady, setVideoReady] = useState(false);
   const hasAdvancedRef = useRef(false);
   const handleDone = useCallback(() => {
     if (hasAdvancedRef.current) return;
@@ -1061,6 +1062,12 @@ function IntroVideoScreen({ onDone }) {
     const timer = setTimeout(() => setCanSkip(true), 850);
     return () => clearTimeout(timer);
   }, []);
+  useEffect(() => {
+    const failSafeTimer = setTimeout(() => {
+      if (!videoReady) handleDone();
+    }, 2200);
+    return () => clearTimeout(failSafeTimer);
+  }, [videoReady, handleDone]);
   useEffect(() => () => {
     hasAdvancedRef.current = false;
   }, []);
@@ -1074,6 +1081,8 @@ function IntroVideoScreen({ onDone }) {
           muted
           playsInline
           preload="auto"
+          onCanPlay={() => setVideoReady(true)}
+          onPlaying={() => setVideoReady(true)}
           onEnded={handleDone}
           onError={handleDone}
         />
