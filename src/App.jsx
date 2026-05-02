@@ -33,7 +33,7 @@ import {
 } from './data/themeCatalog';
 import { getThemePackRedeemOffer } from './data/dlc/themeRedeemCodes';
 import { COPY_BANK, createCopyPicker, THEME_STINGER_KEY_OVERRIDES } from './data/gameTextContent';
-import { getDefaultHostVoiceSrcForLine } from './data/defaultHostVoiceLineMap';
+import { getDefaultHostVoiceSrcCandidatesForLine } from './data/defaultHostVoiceLineMap';
 import {
   DEFAULT_CATEGORIES,
   CHAIN_REACTION_ROUNDS,
@@ -280,9 +280,17 @@ function useDefaultHostVoicePlayback({
 } = {}) {
   const [isPlaying, setIsPlaying] = useState(false);
   const audioRef = useRef(null);
+  const fallbackTimerRef = useRef(null);
   useEffect(() => {
+    const clearFallbackTimer = () => {
+      if (!fallbackTimerRef.current) return;
+      clearTimeout(fallbackTimerRef.current);
+      fallbackTimerRef.current = null;
+    };
+    const fallbackMs = Math.max(600, Number(fallbackDurationMs) || 6000);
     const normalized = normalizeHostVoiceLine(line);
     if (!enabled || !normalized) {
+      clearFallbackTimer();
       setIsPlaying(false);
       if (audioRef.current) {
         try {
@@ -292,22 +300,55 @@ function useDefaultHostVoicePlayback({
       }
       return undefined;
     }
-    const mappedSrc = getDefaultHostVoiceSrcForLine(normalized);
-    if (!mappedSrc) {
+    const mappedSrcCandidates = getDefaultHostVoiceSrcCandidatesForLine(normalized);
+    if (!mappedSrcCandidates.length) {
       setIsPlaying(true);
-      const timer = setTimeout(() => setIsPlaying(false), Math.max(600, Number(fallbackDurationMs) || 6000));
-      return () => clearTimeout(timer);
+      clearFallbackTimer();
+      fallbackTimerRef.current = setTimeout(() => {
+        fallbackTimerRef.current = null;
+        setIsPlaying(false);
+      }, fallbackMs);
+      return () => {
+        clearFallbackTimer();
+      };
     }
-    const audio = new Audio(mappedSrc);
+    const audio = new Audio(mappedSrcCandidates[0]);
+    audio.preload = 'auto';
     audioRef.current = audio;
     setIsPlaying(true);
-    const stopPlayback = () => setIsPlaying(false);
+    const stopPlayback = () => {
+      clearFallbackTimer();
+      setIsPlaying(false);
+    };
+    const fallbackStopPlayback = () => {
+      clearFallbackTimer();
+      fallbackTimerRef.current = setTimeout(() => {
+        fallbackTimerRef.current = null;
+        setIsPlaying(false);
+      }, fallbackMs);
+    };
+    let activeCandidateIndex = 0;
+    const tryPlayAtIndex = (index) => {
+      activeCandidateIndex = index;
+      audio.src = mappedSrcCandidates[index];
+      audio.load();
+      return audio.play();
+    };
+    const tryNextCandidateOrFallback = () => {
+      const nextIndex = activeCandidateIndex + 1;
+      if (nextIndex < mappedSrcCandidates.length) {
+        tryPlayAtIndex(nextIndex).catch(() => tryNextCandidateOrFallback());
+        return;
+      }
+      fallbackStopPlayback();
+    };
     audio.addEventListener('ended', stopPlayback);
-    audio.addEventListener('error', stopPlayback);
-    audio.play().catch(() => setIsPlaying(false));
+    audio.addEventListener('error', tryNextCandidateOrFallback);
+    tryPlayAtIndex(0).catch(() => tryNextCandidateOrFallback());
     return () => {
       audio.removeEventListener('ended', stopPlayback);
-      audio.removeEventListener('error', stopPlayback);
+      audio.removeEventListener('error', tryNextCandidateOrFallback);
+      clearFallbackTimer();
       try {
         audio.pause();
         audio.currentTime = 0;

@@ -5,7 +5,8 @@ const { spawnSync } = require('child_process');
 
 const repoRoot = path.resolve(__dirname, '..');
 const exportsDir = path.join(repoRoot, 'exports');
-const destDir = path.join(repoRoot, 'public', 'assets', 'audio', 'host', 'default');
+const destRootDir = path.join(repoRoot, 'public', 'assets', 'audio', 'host', 'default');
+const destDir = path.join(destRootDir, 'tts');
 
 function listZipCandidates() {
   if (!fs.existsSync(exportsDir)) return [];
@@ -67,6 +68,7 @@ function normalizeFilename(filePath) {
 
 function install(zipPath) {
   ensureDir(destDir);
+  // Keep the canonical "tts" install location clean before extraction.
   clearDirectory(destDir);
   unzip(zipPath, destDir);
 

@@ -44,7 +44,6 @@ const DEFAULT_THEME_ORDER = [
 ];
 
 const THEME_MATCH_RULES = [
-  { theme: 'Default', patterns: ['default', 'host-default', 'main-host', 'ian'] },
   { theme: 'Murder Mystery', patterns: ['murder', 'victorian'] },
   { theme: 'Pirates', patterns: ['pirate'] },
   { theme: 'Cops and Robbers', patterns: ['cops', 'robber', 'gangster', 'spy', 'cowboy'] },
@@ -67,6 +66,8 @@ const THEME_MATCH_RULES = [
   { theme: 'Wizards & Witches', patterns: ['wizard', 'witch'] },
   { theme: 'Time Travelers', patterns: ['time-travel', 'time travel', 'chrono'] },
   { theme: 'Gladiators', patterns: ['gladiator'] },
+  // Keep default last so broad labels don't steal explicit themed files.
+  { theme: 'Default', patterns: ['default', 'host-default', 'main-host', 'ian-poster', 'ian poster'] },
 ];
 
 const TALKING_FRAME_MOTION = [
@@ -91,7 +92,8 @@ function parseArgs(argv = []) {
     talkPrefix: 'persona-host-talk',
     frameCount: 10,
     overlayOutputName: 'host-overlay.png',
-    themeOrder: [...DEFAULT_THEME_ORDER],
+    themeOrder: [],
+    fallbackUnmatchedToThemeOrder: false,
     listUnmatched: false,
     dryRun: false,
   };
@@ -124,9 +126,14 @@ function parseArgs(argv = []) {
         .split(',')
         .map((name) => name.trim())
         .filter(Boolean);
+      options.fallbackUnmatchedToThemeOrder = true;
       i += 1;
     } else if (arg === '--all-themes-order') {
       options.themeOrder = Object.keys(THEME_HOST_SLUGS);
+      options.fallbackUnmatchedToThemeOrder = true;
+    } else if (arg === '--default-theme-order') {
+      options.themeOrder = [...DEFAULT_THEME_ORDER];
+      options.fallbackUnmatchedToThemeOrder = true;
     } else if (arg === '--list-unmatched') {
       options.listUnmatched = true;
     } else if (arg === '--dry-run') {
@@ -153,8 +160,9 @@ function usage() {
   console.log('  --talk-prefix <name>           Output talking filename prefix (default: persona-host-talk)');
   console.log('  --frame-count <number>         Talking frame count (default: 10)');
   console.log('  --overlay-output-name <name>   Overlay filename (default: host-overlay.png)');
-  console.log('  --theme-order "<a,b,c>"        Assign unlabeled source files by this theme order');
-  console.log('  --all-themes-order             Use all themes when assigning unlabeled source files');
+  console.log('  --theme-order "<a,b,c>"        Assign unmatched source files by this explicit theme order');
+  console.log('  --default-theme-order          Assign unmatched source files by default core theme order');
+  console.log('  --all-themes-order             Assign unmatched source files by all theme names');
   console.log('  --list-unmatched               Print unmatched source files');
   console.log('  --dry-run                      Print planned output only');
 }
@@ -283,7 +291,7 @@ function generateTalkingFrames(sourcePath, hostDir, talkPrefix, frameCount) {
   return { generatedOutputs, fallbackOutputs, usedFallback: fallbackOutputs.length > 0 };
 }
 
-function buildAssignments(hostPngPaths = [], themeOrder = []) {
+function buildAssignments(hostPngPaths = [], themeOrder = [], { allowThemeOrderFallback = false } = {}) {
   const directAssignments = [];
   const unmatched = [];
   const usedThemes = new Set();
@@ -299,7 +307,9 @@ function buildAssignments(hostPngPaths = [], themeOrder = []) {
     unmatched.push(sourcePath);
   }
 
-  const fallbackOrder = (themeOrder || []).filter((themeName) => THEME_HOST_SLUGS[themeName] && !usedThemes.has(themeName));
+  const fallbackOrder = allowThemeOrderFallback
+    ? (themeOrder || []).filter((themeName) => THEME_HOST_SLUGS[themeName] && !usedThemes.has(themeName))
+    : [];
   const fallbackAssignments = [];
   unmatched.forEach((sourcePath, index) => {
     const themeName = fallbackOrder[index] || '';
@@ -312,6 +322,8 @@ function buildAssignments(hostPngPaths = [], themeOrder = []) {
   return {
     assignments: [...directAssignments, ...fallbackAssignments],
     unmatched: trulyUnmatched,
+    directAssignmentCount: directAssignments.length,
+    fallbackAssignmentCount: fallbackAssignments.length,
   };
 }
 
@@ -509,7 +521,11 @@ function main() {
     throw new Error(`No PNG files found in host ZIP: ${hostZipPath}`);
   }
 
-  const { assignments, unmatched } = buildAssignments(hostPngPaths, options.themeOrder);
+  const { assignments, unmatched, directAssignmentCount, fallbackAssignmentCount } = buildAssignments(
+    hostPngPaths,
+    options.themeOrder,
+    { allowThemeOrderFallback: options.fallbackUnmatchedToThemeOrder }
+  );
   const installedThemes = installHosts({
     assignments,
     frameCount: options.frameCount,
@@ -548,6 +564,10 @@ function main() {
   console.log('[installThemeHostPacks] Installed host packs summary:');
   console.log(`- Host source ZIP: ${hostZipPath}`);
   console.log(`- Host assignments: ${assignments.length}/${hostPngPaths.length}`);
+  console.log(`  - Via filename match: ${directAssignmentCount}`);
+  if (options.fallbackUnmatchedToThemeOrder) {
+    console.log(`  - Via explicit theme order: ${fallbackAssignmentCount}`);
+  }
   console.log(`- Themes installed: ${installedThemes.size}/${orderedThemes.length}`);
   console.log(`- Talking frames per theme: ${options.frameCount}`);
   if (options.overlay) {
@@ -558,6 +578,9 @@ function main() {
   }
   if (unmatched.length) {
     console.log(`- Unmatched host PNG files: ${unmatched.length}`);
+    if (!options.fallbackUnmatchedToThemeOrder) {
+      console.log('  Tip: use --theme-order "<theme A,theme B,...>" to assign unmatched files explicitly.');
+    }
   }
   if (themeOverlayResult.unmatched.length) {
     console.log(`- Unmatched overlay PNG files: ${themeOverlayResult.unmatched.length}`);

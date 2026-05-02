@@ -3,6 +3,7 @@ import { ROUND_TYPES } from './roundTypes';
 import { THEME_HOST_PERSONAS } from './themeHosts';
 
 export const DEFAULT_HOST_TTS_BASE_PATH = '/assets/audio/host/default/tts';
+export const DEFAULT_HOST_LEGACY_BASE_PATH = '/assets/audio/host/default';
 
 const DEFAULT_HOST = THEME_HOST_PERSONAS.Default || {};
 const DEFAULT_HOST_NAME_LINE = `${DEFAULT_HOST.name || 'Ian Poster'} here, your ${DEFAULT_HOST.role || 'professional suspicion stylist'}.`;
@@ -133,6 +134,15 @@ export function getDefaultHostVoiceSrcForLine(line = '') {
   const filename = getDefaultHostVoiceFilenameForLine(line);
   if (!filename) return '';
   return `${DEFAULT_HOST_TTS_BASE_PATH}/${filename}`;
+}
+
+export function getDefaultHostVoiceSrcCandidatesForLine(line = '') {
+  const filename = getDefaultHostVoiceFilenameForLine(line);
+  if (!filename) return [];
+  return [
+    `${DEFAULT_HOST_TTS_BASE_PATH}/${filename}`,
+    `${DEFAULT_HOST_LEGACY_BASE_PATH}/${filename}`,
+  ];
 }
 
 // Backward-compatible alias for call sites that prefer explicit "Audio" naming.
