@@ -1091,6 +1091,10 @@ function getThemeHostFrameSources(themeName = 'Default', state = 'idle') {
   if (!talkingFrames.length) return [idleFrame].filter(Boolean);
   return talkingFrames;
 }
+function getThemeHostOverlaySrc(themeName = 'Default') {
+  const hostAssets = getThemeHostAssets(themeName);
+  return String(hostAssets?.overlay || '').trim();
+}
 function useTalkingAnimation({ enabled = false, themeName = 'Default' } = {}) {
   const [talkIndex, setTalkIndex] = useState(0);
   const idleFrames = useMemo(
@@ -1183,6 +1187,7 @@ function GameIntroScreen({ theme, onContinue, isOnlineMode = false, totalRounds 
     line: currentIntroLine,
     fallbackDurationMs: HOST_DIALOGUE_TIMINGS.gameIntroAdvanceMs,
   });
+  const hostOverlaySrc = useMemo(() => getThemeHostOverlaySrc(theme), [theme]);
   const isTalking = theme === 'Default'
     ? defaultHostVoicePlaying
     : lineIndex < introLines.length - 1;
@@ -1222,11 +1227,20 @@ function GameIntroScreen({ theme, onContinue, isOnlineMode = false, totalRounds 
             </p>
           </div>
           <div className="relative mx-auto mt-6 w-full max-w-3xl min-h-[240px] sm:min-h-[300px]">
-            <ThemeArt
-              src={animatedHostSrc}
-              alt={`${theme} host ${themedHostPersona.name}`}
-              className={`pointer-events-none absolute bottom-0 left-0 ${hostSizeConfig.intro}`}
-            />
+            <div className={`pointer-events-none absolute bottom-0 left-0 ${hostSizeConfig.intro}`}>
+              <ThemeArt
+                src={animatedHostSrc}
+                alt={`${theme} host ${themedHostPersona.name}`}
+                className="h-full w-full object-contain"
+              />
+              {hostOverlaySrc && (
+                <ThemeArt
+                  src={hostOverlaySrc}
+                  alt=""
+                  className="pointer-events-none absolute inset-0 h-full w-full object-contain"
+                />
+              )}
+            </div>
             <motion.div
               key={`intro-line-${lineIndex}`}
               initial={{ opacity: 0, y: 10 }}
@@ -1453,6 +1467,7 @@ function HostIntroScreen({ round, stingerLine, onContinue, theme }) {
     line: currentSpeechLine,
     fallbackDurationMs: HOST_DIALOGUE_TIMINGS.roundIntroAdvanceMs,
   });
+  const hostOverlaySrc = useMemo(() => getThemeHostOverlaySrc(theme), [theme]);
   const canContinue = speechIndex >= speechSentences.length - 1;
   const isTalking = theme === 'Default'
     ? defaultHostVoicePlaying
@@ -1519,11 +1534,20 @@ function HostIntroScreen({ round, stingerLine, onContinue, theme }) {
             </div>
           </div>
           <div className="relative mx-auto mt-2 w-full max-w-2xl h-[11.5rem] sm:h-[12.5rem]">
-            <ThemeArt
-              src={animatedHostSrc}
-              alt={`${theme} presenter`}
-              className={`pointer-events-none absolute bottom-0 left-0 ${hostSizeConfig.hostIntro}`}
-            />
+            <div className={`pointer-events-none absolute bottom-0 left-0 ${hostSizeConfig.hostIntro}`}>
+              <ThemeArt
+                src={animatedHostSrc}
+                alt={`${theme} presenter`}
+                className="h-full w-full object-contain"
+              />
+              {hostOverlaySrc && (
+                <ThemeArt
+                  src={hostOverlaySrc}
+                  alt=""
+                  className="absolute inset-0 h-full w-full object-contain pointer-events-none"
+                />
+              )}
+            </div>
             <motion.div
               key={`${round.id || round.roundNumber}-${speechIndex}`}
               initial={{ opacity: 0, y: 12 }}
@@ -3190,6 +3214,7 @@ function LiarRevealScreen({ players, round, onComplete, theme, playSfx = () => {
     'Hearts pounding. Friendships wobbling. Truth incoming.',
   ];
   const isTalking = announcementIndex < announcementLines.length - 1;
+  const hostOverlaySrc = useMemo(() => getThemeHostOverlaySrc(theme), [theme]);
   const animatedHostSrc = useTalkingAnimation({ enabled: isTalking, themeName: theme });
   const finishReveal = useCallback(() => {
     if (hasCompletedRef.current) return;
@@ -3244,11 +3269,20 @@ function LiarRevealScreen({ players, round, onComplete, theme, playSfx = () => {
           <div className="relative z-10">
             <div className="text-xs uppercase tracking-[0.35em] text-white/50">Final accusation</div>
             <div className="relative mx-auto mt-4 w-full max-w-3xl min-h-[230px] sm:min-h-[280px]">
-              <ThemeArt
-                src={animatedHostSrc}
-                alt={`${theme} presenter`}
-                className={`pointer-events-none absolute bottom-0 left-0 ${hostSizeConfig.liarReveal}`}
-              />
+              <div className={`pointer-events-none absolute bottom-0 left-0 ${hostSizeConfig.liarReveal}`}>
+                <ThemeArt
+                  src={animatedHostSrc}
+                  alt={`${theme} presenter`}
+                  className="h-full w-full object-contain"
+                />
+                {hostOverlaySrc && (
+                  <ThemeArt
+                    src={hostOverlaySrc}
+                    alt=""
+                    className="absolute inset-0 h-full w-full object-contain"
+                  />
+                )}
+              </div>
               <motion.div
                 key={`liar-announce-${announcementIndex}`}
                 initial={{ opacity: 0, y: 12 }}

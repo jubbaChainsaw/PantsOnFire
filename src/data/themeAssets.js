@@ -1,4 +1,5 @@
 import { toCanonicalThemeName } from './themeAliases';
+import { THEME_GENERATED_HOST_MEDIA } from './generatedHostMedia';
 
 export const THEME_ASSETS = {
   Default: {
@@ -248,6 +249,15 @@ export const THEME_ASSETS = {
   },
 };
 
+function getGeneratedThemeHostMedia(themeName = 'Default') {
+  const canonicalThemeName = toCanonicalThemeName(themeName);
+  return (
+    THEME_GENERATED_HOST_MEDIA[themeName]
+    || THEME_GENERATED_HOST_MEDIA[canonicalThemeName]
+    || {}
+  );
+}
+
 export const ROUND_TYPE_CARD_FRONT_BY_ID = {
   prompt: '/assets/themes/default/cards/prompt-front-prompt.svg',
   opinion: '/assets/themes/default/cards/prompt-front-opinion.svg',
@@ -261,19 +271,22 @@ export const ROUND_TYPE_CARD_FRONT_BY_ID = {
 export function getThemeAssets(themeName = 'Default') {
   const canonicalThemeName = toCanonicalThemeName(themeName);
   const selected = THEME_ASSETS[canonicalThemeName] || THEME_ASSETS.Default;
+  const generated = getGeneratedThemeHostMedia(canonicalThemeName);
   return {
     ...THEME_ASSETS.Default,
     ...selected,
+    ...generated,
   };
 }
 
 export function getThemeHostAssets(themeName = 'Default') {
   const canonicalThemeName = toCanonicalThemeName(themeName);
-  const selected = THEME_ASSETS[canonicalThemeName] || THEME_ASSETS.Default;
-  const fallback = THEME_ASSETS.Default || {};
+  const selected = getThemeAssets(canonicalThemeName);
+  const fallback = getThemeAssets('Default');
   const isDefaultTheme = canonicalThemeName === 'Default';
   const unique = (list = []) => list.filter(Boolean).filter((value, index, arr) => arr.indexOf(value) === index);
   const getPersonaTalkFrames = (assetEntry = {}) => unique([
+    ...(Array.isArray(assetEntry.personaHostTalkingFrames) ? assetEntry.personaHostTalkingFrames : []),
     assetEntry.personaHostTalk1,
     assetEntry.personaHostTalk2,
     assetEntry.personaHostTalk3,
@@ -306,6 +319,8 @@ export function getThemeHostAssets(themeName = 'Default') {
   const fallbackHostFrames = getHostTalkFrames(fallback);
   const fallbackFrames = fallbackPersonaFrames.length ? fallbackPersonaFrames : fallbackHostFrames;
   const fallbackIdle = fallback.personaHostIdle || fallback.hostIdle || fallback.characterCard || null;
+  const selectedOverlay = selected.hostOverlay || null;
+  const fallbackOverlay = fallback.hostOverlay || null;
   const selectedTalkingFrames = selectedFrames.length
     ? selectedFrames
     : [selectedIdle].filter(Boolean);
@@ -320,5 +335,6 @@ export function getThemeHostAssets(themeName = 'Default') {
           : (fallbackFrames.length ? fallbackFrames : [selected.characterCard || fallback.characterCard].filter(Boolean))
       )
       : selectedTalkingFrames,
+    overlay: isDefaultTheme ? (selectedOverlay || fallbackOverlay || null) : selectedOverlay,
   };
 }
