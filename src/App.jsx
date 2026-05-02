@@ -385,26 +385,60 @@ function createPlayers(count = 3, themeName = 'Default') {
     color: normalizePlayerColor('', i, themeName),
   }));
 }
-function getStored(key, fallback) {
-  if (typeof window === 'undefined') return fallback;
-  try { return JSON.parse(window.localStorage.getItem(key) || JSON.stringify(fallback)); } catch { return fallback; }
+function getBrowserStorage() {
+  if (typeof window === 'undefined') return null;
+  try {
+    return window.localStorage;
+  } catch {
+    return null;
+  }
 }
-function setStored(key, value) { if (typeof window !== 'undefined') window.localStorage.setItem(key, JSON.stringify(value)); }
+function getStored(key, fallback) {
+  const storage = getBrowserStorage();
+  if (!storage) return fallback;
+  try {
+    return JSON.parse(storage.getItem(key) || JSON.stringify(fallback));
+  } catch {
+    return fallback;
+  }
+}
+function setStored(key, value) {
+  const storage = getBrowserStorage();
+  if (!storage) return;
+  try {
+    storage.setItem(key, JSON.stringify(value));
+  } catch {
+    // Ignore storage write failures in restricted browser contexts.
+  }
+}
 function getOrCreatePersistentClientId() {
   if (typeof window === 'undefined') return `ocl-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
   const storageKey = 'imposter-online-client-id-v1';
-  const existing = String(window.localStorage.getItem(storageKey) || '').trim();
+  const storage = getBrowserStorage();
+  if (!storage) return `ocl-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+  const existing = String(storage.getItem(storageKey) || '').trim();
   if (existing) return existing;
   const created = `ocl-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
-  window.localStorage.setItem(storageKey, created);
+  try {
+    storage.setItem(storageKey, created);
+  } catch {
+    // Ignore storage write failures; ephemeral ID still works for session.
+  }
   return created;
 }
 function getStoredOnlineSession() {
   return getStored('imposter-online-session-v1', null);
 }
 function setStoredOnlineSession(session) {
+  const storage = getBrowserStorage();
   if (!session) {
-    if (typeof window !== 'undefined') window.localStorage.removeItem('imposter-online-session-v1');
+    if (storage) {
+      try {
+        storage.removeItem('imposter-online-session-v1');
+      } catch {
+        // Ignore storage removal failures in restricted browser contexts.
+      }
+    }
     return;
   }
   setStored('imposter-online-session-v1', session);
