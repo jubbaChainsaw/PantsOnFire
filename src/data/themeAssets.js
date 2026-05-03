@@ -1,4 +1,5 @@
 import { toCanonicalThemeName } from './themeAliases';
+import { THEME_GENERATED_HOST_MEDIA } from './generatedHostMedia';
 
 export const THEME_ASSETS = {
   Default: {
@@ -280,20 +281,26 @@ export const ROUND_TYPE_CARD_FRONT_BY_ID = {
 export function getThemeAssets(themeName = 'Default') {
   const canonicalThemeName = toCanonicalThemeName(themeName);
   const selected = THEME_ASSETS[canonicalThemeName] || THEME_ASSETS.Default;
+  const generated = (
+    THEME_GENERATED_HOST_MEDIA[themeName]
+    || THEME_GENERATED_HOST_MEDIA[canonicalThemeName]
+    || {}
+  );
   return {
     ...THEME_ASSETS.Default,
     ...selected,
+    ...generated,
   };
 }
 
 export function getThemeHostAssets(themeName = 'Default') {
   const canonicalThemeName = toCanonicalThemeName(themeName);
-  const selected = THEME_ASSETS[canonicalThemeName];
-  const fallback = THEME_ASSETS.Default || {};
+  const selected = getThemeAssets(canonicalThemeName);
+  const fallback = getThemeAssets('Default');
   const isDefaultTheme = canonicalThemeName === 'Default';
-  const hasThemeConfig = Boolean(selected);
   const unique = (list = []) => list.filter(Boolean).filter((value, index, arr) => arr.indexOf(value) === index);
   const getPersonaTalkFrames = (assetEntry = {}) => unique([
+    ...(Array.isArray(assetEntry.personaHostTalkingFrames) ? assetEntry.personaHostTalkingFrames : []),
     assetEntry.personaHostTalk1,
     assetEntry.personaHostTalk2,
     assetEntry.personaHostTalk3,
@@ -308,31 +315,26 @@ export function getThemeHostAssets(themeName = 'Default') {
     ]);
   };
 
-  const selectedEntry = hasThemeConfig ? selected : fallback;
   // Critical: never mix persona host frames with generic host frames.
-  // Non-default themes are strictly persona-host only (no default host fallback).
-  const selectedPersonaFrames = getPersonaTalkFrames(selectedEntry);
-  const selectedHostFrames = getHostTalkFrames(selectedEntry);
+  // If persona frames are available for a theme, only use that persona set.
+  const selectedPersonaFrames = getPersonaTalkFrames(selected);
+  const selectedHostFrames = getHostTalkFrames(selected);
   const hasPersonaHostConfig = Boolean(
-    selectedEntry.personaHostIdle
-    || selectedEntry.personaHostTalk1
-    || selectedEntry.personaHostTalk2
-    || selectedEntry.personaHostTalk3
+    selected.personaHostIdle
+    || selected.personaHostTalk1
+    || selected.personaHostTalk2
+    || selected.personaHostTalk3
   );
-  const selectedFrames = isDefaultTheme
-    ? (selectedPersonaFrames.length ? selectedPersonaFrames : selectedHostFrames)
-    : selectedPersonaFrames;
-  const selectedIdle = isDefaultTheme
-    ? (
-      hasPersonaHostConfig
-        ? (selectedEntry.personaHostIdle || null)
-        : (selectedEntry.hostIdle || selectedEntry.characterCard || null)
-    )
-    : (selectedEntry.personaHostIdle || null);
+  const selectedFrames = selectedPersonaFrames.length ? selectedPersonaFrames : selectedHostFrames;
+  const selectedIdle = hasPersonaHostConfig
+    ? (selected.personaHostIdle || null)
+    : (selected.hostIdle || selected.characterCard || null);
   const fallbackPersonaFrames = getPersonaTalkFrames(fallback);
   const fallbackHostFrames = getHostTalkFrames(fallback);
   const fallbackFrames = fallbackPersonaFrames.length ? fallbackPersonaFrames : fallbackHostFrames;
   const fallbackIdle = fallback.personaHostIdle || fallback.hostIdle || fallback.characterCard || null;
+  const selectedOverlay = selected.hostOverlay || null;
+  const fallbackOverlay = fallback.hostOverlay || null;
   const selectedTalkingFrames = selectedFrames.length
     ? selectedFrames
     : [selectedIdle].filter(Boolean);
@@ -343,7 +345,9 @@ export function getThemeHostAssets(themeName = 'Default') {
     'Cops and Robbers': buildNewUiHostFrames('Cops and Robbers', 6),
     'Ghosts and Ghouls': buildNewUiHostFrames('Ghosts and Ghouls', 6),
   };
-  const themedFallbackFrames = themedFallbackFrameMap[canonicalThemeName] || [];
+  const themedFallbackFrames = selectedFrames.length
+    ? []
+    : (themedFallbackFrameMap[canonicalThemeName] || []);
   const themedFallbackIdle = themedFallbackFrames[0] || '';
 
   const resolvedIdle = themedFallbackFrames.length
@@ -351,7 +355,7 @@ export function getThemeHostAssets(themeName = 'Default') {
     : (
       isDefaultTheme
         ? (selectedIdle || fallbackIdle || null)
-        : (selectedIdle || null)
+        : selectedIdle
     );
   const resolvedTalkingFrames = themedFallbackFrames.length
     ? themedFallbackFrames
@@ -360,7 +364,7 @@ export function getThemeHostAssets(themeName = 'Default') {
         ? (
           selectedTalkingFrames.length
             ? selectedTalkingFrames
-            : (fallbackFrames.length ? fallbackFrames : [selectedEntry.characterCard || fallback.characterCard].filter(Boolean))
+            : (fallbackFrames.length ? fallbackFrames : [selected.characterCard || fallback.characterCard].filter(Boolean))
         )
         : selectedTalkingFrames
     );
@@ -371,6 +375,7 @@ export function getThemeHostAssets(themeName = 'Default') {
     talkingFrames: resolvedTalkingFrames.length
       ? resolvedTalkingFrames
       : [resolvedIdle].filter(Boolean),
+    overlay: isDefaultTheme ? (selectedOverlay || fallbackOverlay || null) : selectedOverlay,
     talkingVideo: themedFallbackFrames.length ? '' : buildHostTalkingVideoSrc(canonicalThemeName),
   };
 }

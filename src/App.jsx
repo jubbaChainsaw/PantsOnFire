@@ -87,6 +87,7 @@ import {
   createCopyPicker,
   THEME_STINGER_KEY_OVERRIDES,
 } from "./data/gameTextContent";
+import { getDefaultHostVoiceSrcCandidatesForLine } from "./data/defaultHostVoiceLineMap";
 import {
   DEFAULT_CATEGORIES,
   CHAIN_REACTION_ROUNDS,
@@ -611,20 +612,97 @@ function buildRandomizedPlayerIdentity(
     personaImageSrc: "",
   };
 }
-function speakHostLine(text = "") {
-  if (typeof window === "undefined") return;
-  if (!window.speechSynthesis || !window.SpeechSynthesisUtterance) return;
-  const trimmed = String(text || "").trim();
-  if (!trimmed) return;
-  try {
-    const utterance = new window.SpeechSynthesisUtterance(trimmed);
-    utterance.rate = 0.96;
-    utterance.pitch = 1.02;
-    window.speechSynthesis.cancel();
-    window.speechSynthesis.speak(utterance);
-  } catch {
-    // Ignore speech synthesis failures on unsupported browsers.
-  }
+function normalizeHostVoiceLine(text = "") {
+  return String(text || "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+function useDefaultHostVoicePlayback({
+  enabled = false,
+  line = "",
+  fallbackDurationMs = 6000,
+} = {}) {
+  const [isPlaying, setIsPlaying] = useState(false);
+  const audioRef = useRef(null);
+  const fallbackTimerRef = useRef(null);
+  useEffect(() => {
+    const clearFallbackTimer = () => {
+      if (!fallbackTimerRef.current) return;
+      clearTimeout(fallbackTimerRef.current);
+      fallbackTimerRef.current = null;
+    };
+    const fallbackMs = Math.max(600, Number(fallbackDurationMs) || 6000);
+    const normalized = normalizeHostVoiceLine(line);
+    if (!enabled || !normalized) {
+      clearFallbackTimer();
+      setIsPlaying(false);
+      if (audioRef.current) {
+        try {
+          audioRef.current.pause();
+        } catch {}
+        audioRef.current = null;
+      }
+      return undefined;
+    }
+    const mappedSrcCandidates = getDefaultHostVoiceSrcCandidatesForLine(normalized);
+    if (!mappedSrcCandidates.length) {
+      setIsPlaying(true);
+      clearFallbackTimer();
+      fallbackTimerRef.current = setTimeout(() => {
+        fallbackTimerRef.current = null;
+        setIsPlaying(false);
+      }, fallbackMs);
+      return () => {
+        clearFallbackTimer();
+      };
+    }
+    const audio = new Audio(mappedSrcCandidates[0]);
+    audio.preload = "auto";
+    audioRef.current = audio;
+    setIsPlaying(true);
+    const stopPlayback = () => {
+      clearFallbackTimer();
+      setIsPlaying(false);
+    };
+    const fallbackStopPlayback = () => {
+      clearFallbackTimer();
+      fallbackTimerRef.current = setTimeout(() => {
+        fallbackTimerRef.current = null;
+        setIsPlaying(false);
+      }, fallbackMs);
+    };
+    let activeCandidateIndex = 0;
+    const tryPlayAtIndex = (index) => {
+      activeCandidateIndex = index;
+      audio.src = mappedSrcCandidates[index];
+      audio.load();
+      return audio.play();
+    };
+    const tryNextCandidateOrFallback = () => {
+      const nextIndex = activeCandidateIndex + 1;
+      if (nextIndex < mappedSrcCandidates.length) {
+        tryPlayAtIndex(nextIndex).catch(() => tryNextCandidateOrFallback());
+        return;
+      }
+      fallbackStopPlayback();
+    };
+    audio.addEventListener("ended", stopPlayback);
+    audio.addEventListener("error", tryNextCandidateOrFallback);
+    tryPlayAtIndex(0).catch(() => tryNextCandidateOrFallback());
+    return () => {
+      audio.removeEventListener("ended", stopPlayback);
+      audio.removeEventListener("error", tryNextCandidateOrFallback);
+      clearFallbackTimer();
+      try {
+        audio.pause();
+        audio.currentTime = 0;
+      } catch {}
+      if (audioRef.current === audio) {
+        audioRef.current = null;
+      }
+    };
+  }, [enabled, line, fallbackDurationMs]);
+  return isPlaying;
 }
 const VOTING_STINGER_BY_ROUND_TYPE = {
   prompt: [
@@ -1712,6 +1790,7 @@ function ThemeHostVisual({
     themeName,
   });
   const talkingVideoSrc = hostAssets?.talkingVideo || "";
+  const overlaySrc = String(hostAssets?.overlay || "").trim();
   const [videoBroken, setVideoBroken] = useState(false);
 
   useEffect(() => {
@@ -1720,22 +1799,42 @@ function ThemeHostVisual({
 
   if (talkingVideoSrc && !videoBroken) {
     return (
-      <MultiSourceVideo
-        src={talkingVideoSrc}
-        className={className}
-        autoPlay={isTalking}
-        loop={isTalking}
-        muted
-        playsInline
-        preload="metadata"
-        poster={animatedHostSrc || undefined}
-        ariaHidden
-        onError={() => setVideoBroken(true)}
-      />
+      <div className={className}>
+        <MultiSourceVideo
+          src={talkingVideoSrc}
+          className="h-full w-full object-contain"
+          autoPlay={isTalking}
+          loop={isTalking}
+          muted
+          playsInline
+          preload="metadata"
+          poster={animatedHostSrc || undefined}
+          ariaHidden
+          onError={() => setVideoBroken(true)}
+        />
+        {overlaySrc && (
+          <ThemeArt
+            src={overlaySrc}
+            alt=""
+            className="pointer-events-none absolute inset-0 h-full w-full object-contain"
+          />
+        )}
+      </div>
     );
   }
 
-  return <ThemeArt src={animatedHostSrc} alt={alt} className={className} />;
+  return (
+    <div className={className}>
+      <ThemeArt src={animatedHostSrc} alt={alt} className="h-full w-full object-contain" />
+      {overlaySrc && (
+        <ThemeArt
+          src={overlaySrc}
+          alt=""
+          className="pointer-events-none absolute inset-0 h-full w-full object-contain"
+        />
+      )}
+    </div>
+  );
 }
 function RoundTypeLogo({ src, alt, className = "" }) {
   if (!src) return null;
@@ -1909,17 +2008,27 @@ function GameIntroScreen({
   const introSpeechTextRef = useRef(null);
   const introSpeechBubbleRef = useRef(null);
   const [introLineFontSize, setIntroLineFontSize] = useState(30);
-  const isTalking = lineIndex < introLines.length - 1;
+  const currentIntroLine = introLines[lineIndex] || "";
+  const defaultHostVoicePlaying = useDefaultHostVoicePlayback({
+    enabled: theme === "Default",
+    line: currentIntroLine,
+    fallbackDurationMs: HOST_DIALOGUE_TIMINGS.gameIntroAdvanceMs,
+  });
+  const isTalking =
+    theme === "Default"
+      ? defaultHostVoicePlaying
+      : lineIndex < introLines.length - 1;
   useEffect(() => {
     setLineIndex(0);
   }, [theme, isOnlineMode]);
   useEffect(() => {
     if (lineIndex >= introLines.length - 1) return undefined;
+    if (theme === "Default" && defaultHostVoicePlaying) return undefined;
     const timer = setTimeout(() => {
       setLineIndex((current) => Math.min(current + 1, introLines.length - 1));
     }, HOST_DIALOGUE_TIMINGS.gameIntroAdvanceMs);
     return () => clearTimeout(timer);
-  }, [lineIndex, introLines.length]);
+  }, [lineIndex, introLines.length, theme, defaultHostVoicePlaying]);
   useLayoutEffect(() => {
     const nextSize = fitTextToBubble(
       introSpeechTextRef.current,
@@ -2242,8 +2351,17 @@ function HostIntroScreen({ round, stingerLine, onContinue, theme }) {
   const speechBubbleTextRef = useRef(null);
   const speechBubbleFitRef = useRef(null);
   const [speechBubbleFontSize, setSpeechBubbleFontSize] = useState(28);
+  const currentSpeechLine = speechSentences[speechIndex] || "";
+  const defaultHostVoicePlaying = useDefaultHostVoicePlayback({
+    enabled: theme === "Default",
+    line: currentSpeechLine,
+    fallbackDurationMs: HOST_DIALOGUE_TIMINGS.roundIntroAdvanceMs,
+  });
   const canContinue = speechIndex >= speechSentences.length - 1;
-  const isTalking = speechIndex < speechSentences.length - 1;
+  const isTalking =
+    theme === "Default"
+      ? defaultHostVoicePlaying
+      : speechIndex < speechSentences.length - 1;
   const introLine =
     round.roundTypeId === "grill"
       ? `${themedHostPersona.name} is live. Mic up and question the AI.`
@@ -2253,13 +2371,14 @@ function HostIntroScreen({ round, stingerLine, onContinue, theme }) {
   }, [round.id, round.roundNumber, round.roundTypeId]);
   useEffect(() => {
     if (speechIndex >= speechSentences.length - 1) return undefined;
+    if (theme === "Default" && defaultHostVoicePlaying) return undefined;
     const timer = setTimeout(() => {
       setSpeechIndex((current) =>
         Math.min(current + 1, speechSentences.length - 1),
       );
     }, HOST_DIALOGUE_TIMINGS.roundIntroAdvanceMs);
     return () => clearTimeout(timer);
-  }, [speechIndex, speechSentences.length]);
+  }, [speechIndex, speechSentences.length, theme, defaultHostVoicePlaying]);
   useLayoutEffect(() => {
     const nextSize = fitTextToBubble(
       speechBubbleTextRef.current,

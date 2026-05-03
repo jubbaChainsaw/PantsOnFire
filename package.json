@@ -20,7 +20,13 @@
     "expo:start": "expo start",
     "expo:android": "expo run:android",
     "expo:ios": "expo run:ios",
-    "expo:web": "expo start --web"
+    "expo:web": "expo start --web",
+    "host:export-default-ssml": "node scripts/exportDefaultHostSsmlCsv.cjs",
+    "host:install-default-voice-pack": "node scripts/installDefaultHostVoicePack.cjs",
+    "host:install-theme-host-packs": "node scripts/installThemeHostPacks.cjs",
+    "export:default-host-ssml": "node scripts/exportDefaultHostSsmlCsv.cjs",
+    "persona:export-avatar-prompts": "node scripts/exportPersonaAvatarPrompts.cjs",
+    "persona:generate-avatars": "node scripts/generatePersonaAvatars.cjs"
   },
   "dependencies": {
     "cors": "^2.8.6",
