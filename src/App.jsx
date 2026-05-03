@@ -2084,6 +2084,51 @@ function getRoundCardFrontSrc(themeName = "Default") {
 function getImposterCardFrontSrc() {
   return NEW_UI_CARD_LIAR_FRONT_SRC;
 }
+function preloadImageSources(sources = []) {
+  if (typeof window === "undefined" || typeof window.Image === "undefined")
+    return;
+  const sourceList = Array.isArray(sources) ? sources : [sources];
+  const seenCache = (window.__pofPreloadedImageSources =
+    window.__pofPreloadedImageSources || new Set());
+  sourceList
+    .map((source) => String(source || "").trim())
+    .filter(Boolean)
+    .forEach((source) => {
+      if (seenCache.has(source)) return;
+      seenCache.add(source);
+      const image = new window.Image();
+      image.decoding = "async";
+      image.src = source;
+    });
+}
+function useCategoryAndModeIconPreload({
+  screen = "",
+  roundTypeOptions = [],
+  categoryOptions = [],
+  canonicalThemeName = "Default",
+} = {}) {
+  useEffect(() => {
+    if (screen !== "round-type-choice" && screen !== "category-choice") return;
+    const roundTypeIconSources = (Array.isArray(roundTypeOptions)
+      ? roundTypeOptions
+      : []
+    )
+      .map((type) => getRoundTypeIconSrc(type?.id))
+      .filter(Boolean);
+    const categoryIconSources = (Array.isArray(categoryOptions)
+      ? categoryOptions
+      : []
+    )
+      .map(
+        (category) =>
+          category?.iconSrc ||
+          getCategoryIconSrc(category?.id) ||
+          resolveCategoryChoiceCardArt(category, canonicalThemeName),
+      )
+      .filter(Boolean);
+    preloadImageSources([...roundTypeIconSources, ...categoryIconSources]);
+  }, [screen, roundTypeOptions, categoryOptions, canonicalThemeName]);
+}
 function getCustomCategoryMetaById() {
   return Object.fromEntries(
     NEW_UI_CUSTOM_CATEGORY_META.map((entry) => [entry.id, entry]),
@@ -2307,7 +2352,7 @@ function HostIntroScreen({ round, stingerLine, onContinue, theme }) {
                       src={exampleCardSrc}
                       alt=""
                       aria-hidden="true"
-                      className="absolute inset-0 h-full w-full object-contain"
+                      className="absolute inset-0 h-full w-full scale-[1.08] object-cover"
                     />
                   )}
                   <div className="absolute inset-0 bg-black/25" />
@@ -2326,7 +2371,7 @@ function HostIntroScreen({ round, stingerLine, onContinue, theme }) {
                       src={exampleCardSrc}
                       alt=""
                       aria-hidden="true"
-                      className="absolute inset-0 h-full w-full object-contain"
+                      className="absolute inset-0 h-full w-full scale-[1.08] object-cover"
                     />
                   )}
                   <div className="absolute inset-0 bg-red-900/30" />
@@ -4393,7 +4438,7 @@ function RevealScreen({
                   <img
                     src={cardBackSrc}
                     alt="Prompt card back"
-                    className="absolute inset-0 h-full w-full object-cover bg-black/30"
+                    className="absolute inset-0 h-full w-full scale-[1.07] object-cover bg-black/30"
                   />
                 )}
                 <div className="absolute inset-0 bg-black/20" />
@@ -4422,7 +4467,7 @@ function RevealScreen({
                   <img
                     src={cardFrontSrc}
                     alt="Prompt card front"
-                    className="absolute inset-0 h-full w-full object-cover bg-black/30"
+                    className="absolute inset-0 h-full w-full scale-[1.07] object-cover bg-black/30"
                   />
                 )}
                 <div
@@ -9052,6 +9097,12 @@ export default function App() {
   const categoryChoiceGridClass = isDesktopLandscapeWeb
     ? "mt-8 grid grid-cols-4 gap-4 items-stretch"
     : "mt-8 grid grid-cols-2 gap-4 items-stretch";
+  useCategoryAndModeIconPreload({
+    screen,
+    roundTypeOptions,
+    categoryOptions,
+    canonicalThemeName,
+  });
 
   return (
     <>
