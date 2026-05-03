@@ -65,7 +65,6 @@ import { THEME_META } from "./data/themes";
 import {
   getThemeAssets,
   getThemeHostAssets,
-  ROUND_TYPE_CARD_FRONT_BY_ID,
 } from "./data/themeAssets";
 import { NAME_POOLS, randomNameFromTheme } from "./data/names";
 import { toCanonicalThemeName } from "./data/themeAliases";
@@ -213,12 +212,6 @@ const NEW_UI_ROUND_TYPE_ICON_BASE = `${NEW_UI_BASE}/game-modes`;
 const NEW_UI_CARD_DEFAULT_FRONT_SRC = `${NEW_UI_CARD_BASE}/default-front.png`;
 const NEW_UI_CARD_DEFAULT_BACK_SRC = `${NEW_UI_CARD_BASE}/default-back.png`;
 const NEW_UI_CARD_LIAR_FRONT_SRC = `${NEW_UI_CARD_BASE}/liar-front.png`;
-const NEW_UI_CARD_BY_THEME = Object.freeze({
-  Default: {
-    front: NEW_UI_CARD_DEFAULT_FRONT_SRC,
-    back: NEW_UI_CARD_DEFAULT_BACK_SRC,
-  },
-});
 const NEW_UI_GAME_MODE_ICON_BY_ID = Object.freeze({
   prompt: `${NEW_UI_ROUND_TYPE_ICON_BASE}/prompt.png`,
   opinion: `${NEW_UI_ROUND_TYPE_ICON_BASE}/opinion.png`,
@@ -2041,10 +2034,10 @@ function getRoundTypeIconSrc(roundTypeId = "prompt") {
     NEW_UI_GAME_MODE_ICON_BY_ID.prompt
   );
 }
-function getRoundCardBackSrc(themeName = "Default") {
+function getRoundCardBackSrc() {
   return NEW_UI_CARD_DEFAULT_BACK_SRC;
 }
-function getRoundCardFrontSrc(themeName = "Default") {
+function getRoundCardFrontSrc() {
   return NEW_UI_CARD_DEFAULT_FRONT_SRC;
 }
 function getImposterCardFrontSrc() {
@@ -2074,18 +2067,19 @@ function useCategoryAndModeIconPreload({
   canonicalThemeName = "Default",
 } = {}) {
   useEffect(() => {
-    if (screen !== "round-type-choice" && screen !== "category-choice") return;
     const allRoundTypeIconSources = Object.values(NEW_UI_GAME_MODE_ICON_BY_ID)
       .map((source) => String(source || "").trim())
       .filter(Boolean);
-    const roundTypeIconSources = [
-      ...allRoundTypeIconSources,
-      ...(Array.isArray(roundTypeOptions)
-        ? roundTypeOptions
-            .map((type) => getRoundTypeIconSrc(type?.id))
-            .filter(Boolean)
-        : []),
-    ];
+    preloadImageSources(allRoundTypeIconSources);
+  }, []);
+  useEffect(() => {
+    if (screen !== "round-type-choice" && screen !== "category-choice") return;
+    const roundTypeIconSources = (Array.isArray(roundTypeOptions)
+      ? roundTypeOptions
+      : []
+    )
+      .map((type) => getRoundTypeIconSrc(type?.id))
+      .filter(Boolean);
     const categoryIconSources = (Array.isArray(categoryOptions)
       ? categoryOptions
       : []
@@ -2226,24 +2220,12 @@ function getHostExamplePrompts(roundTypeId = "prompt") {
 function resolveCategoryChoiceCardArt(category, themeName = "Default") {
   const categoryIconSrc = category?.iconSrc || getCategoryIconSrc(category?.id);
   if (categoryIconSrc) return categoryIconSrc;
-  return getRoundCardBackSrc(themeName);
+  return getRoundCardBackSrc();
 }
 function HostIntroScreen({ round, stingerLine, onContinue, theme }) {
   const hostSizeConfig = useMemo(() => getHostSizeConfig(theme), [theme]);
   const themedHostPersona = useMemo(() => getThemeHostPersona(theme), [theme]);
-  const themeAssets = getThemeAssets(
-    round.roundTypeId === "grill" ? "GrillEm" : theme,
-  );
-  const defaultThemeAssets = getThemeAssets("Default");
-  const useAdultCardArt = Boolean(round.isAdultPrompt);
-  const defaultTypeCardFront =
-    ROUND_TYPE_CARD_FRONT_BY_ID[round.roundTypeId] || null;
-  const exampleCardSrc = useAdultCardArt
-    ? themeAssets.adultPromptCardFront ||
-      defaultThemeAssets.adultPromptCardFront
-    : defaultTypeCardFront ||
-      themeAssets.promptCardFront ||
-      defaultThemeAssets.promptCardFront;
+  const exampleCardSrc = getRoundCardFrontSrc();
   const examplePrompts = getHostExamplePrompts(round.roundTypeId);
   const normalExamplePrompt = examplePrompts.normal;
   const liarExamplePrompt = examplePrompts.liar;
@@ -4265,28 +4247,8 @@ function RevealScreen({
   const fireAudioRef = useRef(null);
   const promptTextRef = useRef(null);
   const promptFitContainerRef = useRef(null);
-  const themeAssets = getThemeAssets(theme);
-  const defaultPromptCards = getThemeAssets("Default");
-  const useAdultCardArt = Boolean(round.isAdultPrompt);
-  const cardBackSrc = useAdultCardArt
-    ? themeAssets.adultPromptCardBack ||
-      defaultPromptCards.adultPromptCardBack ||
-      getRoundCardBackSrc(theme)
-    : getRoundCardBackSrc(theme) ||
-      themeAssets.promptCardBack ||
-      defaultPromptCards.promptCardBack;
-  const defaultRoundTypeFront =
-    theme === "Default"
-      ? ROUND_TYPES[round.roundTypeId]?.defaultCardFrontSrc || null
-      : null;
-  const themedCardFrontSrc = useAdultCardArt
-    ? themeAssets.adultPromptCardFront ||
-      defaultPromptCards.adultPromptCardFront ||
-      getRoundCardFrontSrc(theme)
-    : getRoundCardFrontSrc(theme) ||
-      defaultRoundTypeFront ||
-      themeAssets.promptCardFront ||
-      defaultPromptCards.promptCardFront;
+  const cardBackSrc = getRoundCardBackSrc();
+  const themedCardFrontSrc = getRoundCardFrontSrc();
   const cardFrontSrc = isImposter
     ? getImposterCardFrontSrc()
     : themedCardFrontSrc;
@@ -4413,11 +4375,11 @@ function RevealScreen({
                   />
                 )}
                 <div className="absolute inset-0 bg-black/20" />
-                <div className="relative z-10 flex h-full flex-col items-center justify-center px-4 py-6 text-center text-white [text-shadow:0_2px_8px_rgba(0,0,0,0.85)]">
+                <div className="relative z-10 flex h-full flex-col items-center justify-start px-4 pt-6 pb-6 text-center text-white [text-shadow:0_2px_8px_rgba(0,0,0,0.85)]">
                   <RoundTypeLogo
                     src={roundTypeLogoSrc}
                     alt={`${round.roundTypeName} logo`}
-                    className="mx-auto h-20 w-auto sm:h-24"
+                    className="mx-auto h-16 w-auto sm:h-20"
                   />
                 </div>
                 {isCountingDown &&
