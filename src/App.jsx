@@ -65,6 +65,7 @@ import { THEME_META } from "./data/themes";
 import {
   getThemeAssets,
   getThemeHostAssets,
+  THEME_ASSETS,
 } from "./data/themeAssets";
 import { NAME_POOLS, randomNameFromTheme } from "./data/names";
 import { toCanonicalThemeName } from "./data/themeAliases";
@@ -2093,6 +2094,39 @@ function useCategoryAndModeIconPreload({
       .filter(Boolean);
     preloadImageSources([...roundTypeIconSources, ...categoryIconSources]);
   }, [screen, roundTypeOptions, categoryOptions, canonicalThemeName]);
+}
+function useGlobalGraphicsPreload() {
+  useEffect(() => {
+    const coreUiSources = [
+      NEW_UI_LOGO_MAIN_SRC,
+      NEW_UI_LOGO_18PLUS_SRC,
+      NEW_UI_WALLPAPER_HOME_SRC,
+      NEW_UI_WALLPAPER_IN_GAME_SRC,
+      NEW_UI_CARD_DEFAULT_FRONT_SRC,
+      NEW_UI_CARD_DEFAULT_BACK_SRC,
+      NEW_UI_CARD_LIAR_FRONT_SRC,
+      ...Object.values(NEW_UI_GAME_MODE_ICON_BY_ID),
+      ...Object.values(NEW_UI_CATEGORY_ICON_BY_ID),
+      ...NEW_UI_CUSTOM_CATEGORY_META.map((entry) => entry?.iconSrc),
+      ...CARD_FIRE_FLAME_SOURCES,
+      UI_ICON_BOXERS_RED_SRC,
+      UI_ICON_BOXERS_GREEN_SRC,
+      UI_ICON_FLAME_RED_SRC,
+      UI_ICON_FLAME_GREEN_SRC,
+      UI_ICON_CROWN_GOLD_SRC,
+      UI_ICON_BADGE_18_PLUS_SRC,
+      UI_ICON_BADGE_LIAR_SRC,
+      UI_ICON_MAGNIFIER_FIRE_SRC,
+    ]
+      .map((source) => String(source || "").trim())
+      .filter(Boolean);
+    const themeSources = Object.values(THEME_ASSETS || {})
+      .flatMap((entry) =>
+        Object.values(entry || {}).map((source) => String(source || "").trim()),
+      )
+      .filter(Boolean);
+    preloadImageSources([...coreUiSources, ...themeSources]);
+  }, []);
 }
 function getCustomCategoryMetaById() {
   return Object.fromEntries(
@@ -4360,18 +4394,18 @@ function RevealScreen({
             </div>
           )}
 
-          <div className="mt-3 mx-auto w-full max-w-[23.5rem] sm:max-w-[25.25rem] [perspective:1200px]">
+          <div className="mt-3 mx-auto w-full max-w-[24.25rem] sm:max-w-[26rem] [perspective:1200px]">
             <motion.div
               animate={{ rotateY: cardFace === "front" ? 180 : 0 }}
               transition={{ duration: 0.75, ease: "easeInOut" }}
               className="relative w-full aspect-[2/3] [transform-style:preserve-3d]"
             >
-              <div className="absolute inset-0 overflow-hidden rounded-[1.7rem] border-2 border-white/25 [backface-visibility:hidden]">
+              <div className="absolute inset-0 overflow-hidden rounded-[1.7rem] [backface-visibility:hidden]">
                 {cardBackSrc && (
                   <img
                     src={cardBackSrc}
                     alt="Prompt card back"
-                    className="absolute inset-0 h-full w-full scale-[1.07] object-cover bg-black/30"
+                    className="absolute inset-0 h-full w-full object-fill bg-black/30"
                   />
                 )}
                 <div className="absolute inset-0 bg-black/20" />
@@ -4394,13 +4428,13 @@ function RevealScreen({
               </div>
 
               <div
-                className={`absolute inset-0 overflow-hidden rounded-[1.7rem] border-2 [backface-visibility:hidden] [transform:rotateY(180deg)] ${isImposter ? "border-orange-300/90 shadow-[0_0_42px_rgba(255,94,0,0.62)]" : "border-cyan-300/60"}`}
+                className={`absolute inset-0 overflow-hidden rounded-[1.7rem] [backface-visibility:hidden] [transform:rotateY(180deg)] ${isImposter ? "shadow-[0_0_42px_rgba(255,94,0,0.62)]" : ""}`}
               >
                 {cardFrontSrc && (
                   <img
                     src={cardFrontSrc}
                     alt="Prompt card front"
-                    className="absolute inset-0 h-full w-full scale-[1.07] object-cover bg-black/30"
+                    className="absolute inset-0 h-full w-full object-fill bg-black/30"
                   />
                 )}
                 <div
@@ -9030,6 +9064,7 @@ export default function App() {
   const categoryChoiceGridClass = isDesktopLandscapeWeb
     ? "mt-8 grid grid-cols-4 gap-4 items-stretch"
     : "mt-8 grid grid-cols-2 gap-4 items-stretch";
+  useGlobalGraphicsPreload();
   useCategoryAndModeIconPreload({
     screen,
     roundTypeOptions,
