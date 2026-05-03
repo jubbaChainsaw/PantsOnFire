@@ -6982,12 +6982,19 @@ function AdminDialog({
 export default function App() {
   const [screen, setScreen] = useState("home");
   const [isDesktopLandscapeWeb, setIsDesktopLandscapeWeb] = useState(false);
-  const [players, setPlayers] = useState(
-    createPlayers(
-      3,
-      toCanonicalThemeName(getStored("imposter-theme-v3", "Default")),
-    ),
-  );
+  const [players, setPlayers] = useState(() => {
+    const initialThemeName = toCanonicalThemeName(
+      getStored("imposter-theme-v3", "Default"),
+    );
+    const storedPersonaProfile = normalizePersonaProfile(
+      getStored(PERSONA_PROFILE_STORAGE_KEY, DEFAULT_PERSONA_PROFILE),
+    );
+    return createPlayers(3, initialThemeName).map((player, index) =>
+      index === 0
+        ? applyPersonaProfileToPlayer(player, storedPersonaProfile)
+        : player,
+    );
+  });
   const [liarCount, setLiarCount] = useState(1);
   const [nameTheme, setNameTheme] = useState(
     toCanonicalThemeName(getStored("imposter-theme-v3", "Default")),
@@ -8982,7 +8989,11 @@ export default function App() {
     );
   }
   function restartToHome() {
-    setPlayers(createPlayers(3, "Default"));
+    setPlayers(() =>
+      createPlayers(3, "Default").map((player, index) =>
+        index === 0 ? applyPersonaProfileToPlayer(player, personaProfile) : player,
+      ),
+    );
     setLiarCount(1);
     setNameTheme(normalizeThemeSelection("Default", themeOptions));
     setPersonaOnlyMode(false);
