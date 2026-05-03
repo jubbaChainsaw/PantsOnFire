@@ -20,14 +20,20 @@
     "expo:start": "expo start",
     "expo:android": "expo run:android",
     "expo:ios": "expo run:ios",
-    "expo:web": "expo start --web"
+    "expo:web": "expo start --web",
+    "host:export-default-ssml": "node scripts/exportDefaultHostSsmlCsv.cjs",
+    "host:install-default-voice-pack": "node scripts/installDefaultHostVoicePack.cjs",
+    "host:install-theme-host-packs": "node scripts/installThemeHostPacks.cjs",
+    "export:default-host-ssml": "node scripts/exportDefaultHostSsmlCsv.cjs",
+    "persona:export-avatar-prompts": "node scripts/exportPersonaAvatarPrompts.cjs",
+    "persona:generate-avatars": "node scripts/generatePersonaAvatars.cjs"
   },
   "dependencies": {
     "cors": "^2.8.6",
     "expo": "^55.0.17",
     "express": "^5.2.1",
     "framer-motion": "^11.3.19",
-    "livekit-client": "^2.18.7",
+    "livekit-client": "^2.18.8",
     "livekit-server-sdk": "^2.15.2",
     "lucide-react": "^0.453.0",
     "react": "^19.2.5",
@@ -35,6 +41,7 @@
     "react-native": "^0.85.2",
     "react-native-webview": "^13.16.1",
     "redis": "^5.12.1",
+    "sharp": "^0.34.5",
     "socket.io": "^4.8.3",
     "socket.io-client": "^4.8.3"
   },

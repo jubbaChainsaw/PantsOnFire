@@ -10,6 +10,8 @@ const DEFAULT_LOBBY_SETTINGS = {
   pointsToWin: 15,
   roundsPerPlayer: 1,
   adultMode: false,
+  allowFriendsJoinLobby: false,
+  inviteUsernames: [],
   grillSettings: {
     micEnabled: true,
     ttsEnabled: true,
@@ -130,6 +132,12 @@ function sanitizeLobbySettings(raw = {}) {
   const grillSettings = raw.grillSettings && typeof raw.grillSettings === 'object'
     ? raw.grillSettings
     : {};
+  const inviteUsernames = Array.isArray(raw.inviteUsernames)
+    ? raw.inviteUsernames
+      .map((value) => String(value || '').trim())
+      .filter(Boolean)
+      .slice(0, 64)
+    : [];
   return {
     themeName: String(raw.themeName || DEFAULT_LOBBY_SETTINGS.themeName).trim() || DEFAULT_LOBBY_SETTINGS.themeName,
     mode: mode === 'chaos' ? 'chaos' : 'classic',
@@ -141,6 +149,8 @@ function sanitizeLobbySettings(raw = {}) {
       ? Math.max(1, Math.min(6, Math.floor(roundsPerPlayer)))
       : DEFAULT_LOBBY_SETTINGS.roundsPerPlayer,
     adultMode: Boolean(raw.adultMode),
+    allowFriendsJoinLobby: Boolean(raw.allowFriendsJoinLobby),
+    inviteUsernames,
     grillSettings: {
       micEnabled: grillSettings.micEnabled !== false,
       ttsEnabled: grillSettings.ttsEnabled !== false,
