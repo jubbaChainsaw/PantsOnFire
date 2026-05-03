@@ -218,22 +218,6 @@ const NEW_UI_CARD_BY_THEME = Object.freeze({
     front: NEW_UI_CARD_DEFAULT_FRONT_SRC,
     back: NEW_UI_CARD_DEFAULT_BACK_SRC,
   },
-  Pirates: {
-    front: `${NEW_UI_CARD_BASE}/pirates-front.png`,
-    back: `${NEW_UI_CARD_BASE}/pirates-back.png`,
-  },
-  "Murder Mystery": {
-    front: `${NEW_UI_CARD_BASE}/murder-mystery-front.png`,
-    back: `${NEW_UI_CARD_BASE}/murder-mystery-back.png`,
-  },
-  "Cops and Robbers": {
-    front: `${NEW_UI_CARD_BASE}/cops-and-robbers-front.png`,
-    back: `${NEW_UI_CARD_BASE}/cops-and-robbers-back.png`,
-  },
-  "Ghosts and Ghouls": {
-    front: `${NEW_UI_CARD_BASE}/ghosts-and-ghouls-front.png`,
-    back: `${NEW_UI_CARD_BASE}/ghosts-and-ghouls-back.png`,
-  },
 });
 const NEW_UI_GAME_MODE_ICON_BY_ID = Object.freeze({
   prompt: `${NEW_UI_ROUND_TYPE_ICON_BASE}/prompt.png`,
@@ -2058,27 +2042,9 @@ function getRoundTypeIconSrc(roundTypeId = "prompt") {
   );
 }
 function getRoundCardBackSrc(themeName = "Default") {
-  const normalized = toCanonicalThemeName(themeName);
-  const exact = NEW_UI_CARD_BY_THEME[normalized];
-  if (exact?.back) return exact.back;
-  if (
-    normalized === "Ghosts & Ghouls" &&
-    NEW_UI_CARD_BY_THEME["Ghosts and Ghouls"]?.back
-  ) {
-    return NEW_UI_CARD_BY_THEME["Ghosts and Ghouls"].back;
-  }
   return NEW_UI_CARD_DEFAULT_BACK_SRC;
 }
 function getRoundCardFrontSrc(themeName = "Default") {
-  const normalized = toCanonicalThemeName(themeName);
-  const exact = NEW_UI_CARD_BY_THEME[normalized];
-  if (exact?.front) return exact.front;
-  if (
-    normalized === "Ghosts & Ghouls" &&
-    NEW_UI_CARD_BY_THEME["Ghosts and Ghouls"]?.front
-  ) {
-    return NEW_UI_CARD_BY_THEME["Ghosts and Ghouls"].front;
-  }
   return NEW_UI_CARD_DEFAULT_FRONT_SRC;
 }
 function getImposterCardFrontSrc() {
@@ -2109,12 +2075,17 @@ function useCategoryAndModeIconPreload({
 } = {}) {
   useEffect(() => {
     if (screen !== "round-type-choice" && screen !== "category-choice") return;
-    const roundTypeIconSources = (Array.isArray(roundTypeOptions)
-      ? roundTypeOptions
-      : []
-    )
-      .map((type) => getRoundTypeIconSrc(type?.id))
+    const allRoundTypeIconSources = Object.values(NEW_UI_GAME_MODE_ICON_BY_ID)
+      .map((source) => String(source || "").trim())
       .filter(Boolean);
+    const roundTypeIconSources = [
+      ...allRoundTypeIconSources,
+      ...(Array.isArray(roundTypeOptions)
+        ? roundTypeOptions
+            .map((type) => getRoundTypeIconSrc(type?.id))
+            .filter(Boolean)
+        : []),
+    ];
     const categoryIconSources = (Array.isArray(categoryOptions)
       ? categoryOptions
       : []
@@ -4446,7 +4417,7 @@ function RevealScreen({
                   <RoundTypeLogo
                     src={roundTypeLogoSrc}
                     alt={`${round.roundTypeName} logo`}
-                    className="mx-auto h-28 w-auto sm:h-32"
+                    className="mx-auto h-20 w-auto sm:h-24"
                   />
                 </div>
                 {isCountingDown &&
@@ -4520,7 +4491,7 @@ function RevealScreen({
                   <RoundTypeLogo
                     src={roundTypeLogoSrc}
                     alt={`${round.roundTypeName} logo`}
-                    className="mt-1 h-28 w-auto mx-auto"
+                    className="mt-1 h-20 w-auto mx-auto sm:h-24"
                   />
                   <div
                     className={`mt-3 inline-flex items-center justify-center gap-2 rounded-xl border border-fuchsia-200/40 bg-fuchsia-500/35 px-3 py-2 text-xs font-semibold uppercase tracking-[0.2em] ${isImposter ? "text-orange-100" : "text-cyan-100"}`}
