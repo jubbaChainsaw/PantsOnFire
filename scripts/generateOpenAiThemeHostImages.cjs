@@ -11,9 +11,11 @@
  *
  * Usage:
  *   export OPENAI_API_KEY=sk-...
+ *   npm run host:generate-openai-theme-stills:defaults
+ *   # or explicit paths:
  *   node scripts/generateOpenAiThemeHostImages.cjs \
- *     --face ./refs/me.jpg \
- *     --style ./refs/style-reference.png \
+ *     --face ./public/assets/host-generation/host-face-reference.jpg \
+ *     --style ./public/assets/host-generation/host-style-reference.png \
  *     --out-dir ./exports/generated-host-stills
  *
  * Options: --model, --size, --quality, --input-fidelity, --only-theme, --delay-ms, --dry-run, --overwrite, --api-key
@@ -285,6 +287,9 @@ function parseArgs(argv) {
 
 function usage() {
   console.log(`Usage: node scripts/generateOpenAiThemeHostImages.cjs --face <path> --style <path> [options]
+
+Quick path (after adding files under public/assets/host-generation/):
+  npm run host:generate-openai-theme-stills:defaults
 
 Required:
   --face <path>     Reference photo of you (jpeg/png/webp)
