@@ -19,57 +19,58 @@ const DEFAULT_STYLE_NOTES = [
 ].join(', ');
 
 const MUSIC_ENTRIES = [
-  { entryId: 'music-01', main: "Sgt. Pepper's Lonely Hearts Club Band - The Beatles", imposter: 'Pet Sounds - The Beach Boys' },
-  { entryId: 'music-02', main: 'Pet Sounds - The Beach Boys', imposter: "Sgt. Pepper's Lonely Hearts Club Band - The Beatles" },
-  { entryId: 'music-03', main: 'Thriller - Michael Jackson', imposter: 'Purple Rain - Prince' },
-  { entryId: 'music-04', main: 'Purple Rain - Prince', imposter: 'Thriller - Michael Jackson' },
-  { entryId: 'music-05', main: 'Rumours - Fleetwood Mac', imposter: 'Tapestry - Carole King' },
-  { entryId: 'music-06', main: 'Tapestry - Carole King', imposter: 'Blue - Joni Mitchell' },
-  { entryId: 'music-07', main: 'Abbey Road - The Beatles', imposter: 'Exile on Main St. - The Rolling Stones' },
-  { entryId: 'music-08', main: 'Exile on Main St. - The Rolling Stones', imposter: 'London Calling - The Clash' },
-  { entryId: 'music-09', main: 'Born to Run - Bruce Springsteen', imposter: 'Born in the U.S.A. - Bruce Springsteen' },
-  { entryId: 'music-10', main: 'Highway 61 Revisited - Bob Dylan', imposter: 'Blood on the Tracks - Bob Dylan' },
-  { entryId: 'music-11', main: 'The Dark Side of the Moon - Pink Floyd', imposter: 'Led Zeppelin IV - Led Zeppelin' },
-  { entryId: 'music-12', main: 'Led Zeppelin IV - Led Zeppelin', imposter: 'Back in Black - AC/DC' },
-  { entryId: 'music-13', main: 'Nevermind - Nirvana', imposter: 'The Bends - Radiohead' },
-  { entryId: 'music-14', main: 'OK Computer - Radiohead', imposter: 'Disintegration - The Cure' },
-  { entryId: 'music-15', main: "What's Going On - Marvin Gaye", imposter: 'Songs in the Key of Life - Stevie Wonder' },
-  { entryId: 'music-16', main: 'Songs in the Key of Life - Stevie Wonder', imposter: "What's Going On - Marvin Gaye" },
-  { entryId: 'music-17', main: 'Hounds of Love - Kate Bush', imposter: 'The Kick Inside - Kate Bush' },
-  { entryId: 'music-18', main: 'Blue - Joni Mitchell', imposter: 'Tapestry - Carole King' },
-  { entryId: 'music-19', main: 'Back in Black - AC/DC', imposter: "Appetite for Destruction - Guns N' Roses" },
-  { entryId: 'music-20', main: 'A Night at the Opera - Queen', imposter: 'Goodbye Yellow Brick Road - Elton John' },
-  { entryId: 'music-21', main: 'Graceland - Paul Simon', imposter: 'Bridge Over Troubled Water - Simon & Garfunkel' },
-  { entryId: 'music-22', main: 'The Joshua Tree - U2', imposter: 'Brothers in Arms - Dire Straits' },
-  { entryId: 'music-23', main: 'The Queen Is Dead - The Smiths', imposter: 'The Stone Roses - The Stone Roses' },
-  { entryId: 'music-24', main: 'Like a Prayer - Madonna', imposter: 'Faith - George Michael' },
-  { entryId: 'music-25', main: 'Born in the U.S.A. - Bruce Springsteen', imposter: 'Born to Run - Bruce Springsteen' },
-  { entryId: 'music-26', main: 'Parallel Lines - Blondie', imposter: 'Rio - Duran Duran' },
-  { entryId: 'music-27', main: 'The Rise and Fall of Ziggy Stardust and the Spiders from Mars - David Bowie', imposter: 'Hunky Dory - David Bowie' },
-  { entryId: 'music-28', main: 'Automatic for the People - R.E.M.', imposter: 'The Bends - Radiohead' },
-  { entryId: 'music-29', main: 'Jagged Little Pill - Alanis Morissette', imposter: '21 - Adele' },
-  { entryId: 'music-30', main: "Never Mind the Bollocks, Here's the Sex Pistols - Sex Pistols", imposter: 'London Calling - The Clash' },
-  { entryId: 'music-31', main: 'The Bends - Radiohead', imposter: 'OK Computer - Radiohead' },
+  { entryId: 'music-01', main: "The Beatles - Sgt. Pepper's Lonely Hearts Club Band", imposter: 'The Beach Boys - Pet Sounds' },
+  { entryId: 'music-02', main: 'The Beach Boys - Pet Sounds', imposter: "The Beatles - Sgt. Pepper's Lonely Hearts Club Band" },
+  { entryId: 'music-03', main: 'Michael Jackson - Thriller', imposter: 'Prince - Purple Rain' },
+  { entryId: 'music-04', main: 'Prince - Purple Rain', imposter: 'Michael Jackson - Thriller' },
+  { entryId: 'music-05', main: 'Fleetwood Mac - Rumours', imposter: 'Carole King - Tapestry' },
+  { entryId: 'music-06', main: 'Carole King - Tapestry', imposter: 'Joni Mitchell - Blue' },
+  { entryId: 'music-07', main: 'The Beatles - Abbey Road', imposter: 'The Rolling Stones - Exile on Main St.' },
+  { entryId: 'music-08', main: 'The Rolling Stones - Exile on Main St.', imposter: 'The Clash - London Calling' },
+  { entryId: 'music-09', main: 'Bruce Springsteen - Born to Run', imposter: 'Bruce Springsteen - Born in the U.S.A.' },
+  { entryId: 'music-10', main: 'Bob Dylan - Highway 61 Revisited', imposter: 'Bob Dylan - Blood on the Tracks' },
+  { entryId: 'music-11', main: 'Pink Floyd - The Dark Side of the Moon', imposter: 'Led Zeppelin - Led Zeppelin IV' },
+  { entryId: 'music-12', main: 'Led Zeppelin - Led Zeppelin IV', imposter: 'AC/DC - Back in Black' },
+  { entryId: 'music-13', main: 'Nirvana - Nevermind', imposter: 'Radiohead - The Bends' },
+  { entryId: 'music-14', main: 'Radiohead - OK Computer', imposter: 'The Cure - Disintegration' },
+  { entryId: 'music-15', main: "Marvin Gaye - What's Going On", imposter: 'Stevie Wonder - Songs in the Key of Life' },
+  { entryId: 'music-16', main: 'Stevie Wonder - Songs in the Key of Life', imposter: "Marvin Gaye - What's Going On" },
+  { entryId: 'music-17', main: 'Kate Bush - Hounds of Love', imposter: 'Kate Bush - The Kick Inside' },
+  { entryId: 'music-18', main: 'Joni Mitchell - Blue', imposter: 'Carole King - Tapestry' },
+  { entryId: 'music-19', main: 'AC/DC - Back in Black', imposter: "Guns N' Roses - Appetite for Destruction" },
+  { entryId: 'music-20', main: 'Queen - A Night at the Opera', imposter: 'Elton John - Goodbye Yellow Brick Road' },
+  { entryId: 'music-21', main: 'Paul Simon - Graceland', imposter: 'Simon & Garfunkel - Bridge Over Troubled Water' },
+  { entryId: 'music-22', main: 'U2 - The Joshua Tree', imposter: 'Dire Straits - Brothers in Arms' },
+  { entryId: 'music-23', main: 'The Smiths - The Queen Is Dead', imposter: 'The Stone Roses - The Stone Roses' },
+  { entryId: 'music-24', main: 'Madonna - Like a Prayer', imposter: 'George Michael - Faith' },
+  { entryId: 'music-25', main: 'Bruce Springsteen - Born in the U.S.A.', imposter: 'Bruce Springsteen - Born to Run' },
+  { entryId: 'music-26', main: 'Blondie - Parallel Lines', imposter: 'Duran Duran - Rio' },
+  { entryId: 'music-27', main: 'David Bowie - The Rise and Fall of Ziggy Stardust and the Spiders from Mars', imposter: 'David Bowie - Hunky Dory' },
+  { entryId: 'music-28', main: 'R.E.M. - Automatic for the People', imposter: 'Radiohead - The Bends' },
+  { entryId: 'music-29', main: 'Alanis Morissette - Jagged Little Pill', imposter: 'Adele - 21' },
+  { entryId: 'music-30', main: "Sex Pistols - Never Mind the Bollocks, Here's the Sex Pistols", imposter: 'The Clash - London Calling' },
+  { entryId: 'music-31', main: 'Radiohead - The Bends', imposter: 'Radiohead - OK Computer' },
   { entryId: 'music-32', main: 'The Velvet Underground & Nico - The Velvet Underground & Nico', imposter: 'The Stone Roses - The Stone Roses' },
-  { entryId: 'music-33', main: 'Blood on the Tracks - Bob Dylan', imposter: 'Highway 61 Revisited - Bob Dylan' },
-  { entryId: 'music-34', main: 'Off the Wall - Michael Jackson', imposter: 'Thriller - Michael Jackson' },
-  { entryId: 'music-35', main: 'Disintegration - The Cure', imposter: 'The Queen Is Dead - The Smiths' },
-  { entryId: 'music-36', main: 'Hunky Dory - David Bowie', imposter: 'The Rise and Fall of Ziggy Stardust and the Spiders from Mars - David Bowie' },
-  { entryId: 'music-37', main: 'The Stone Roses - The Stone Roses', imposter: 'The Queen Is Dead - The Smiths' },
-  { entryId: 'music-38', main: 'Bridge Over Troubled Water - Simon & Garfunkel', imposter: 'Graceland - Paul Simon' },
-  { entryId: 'music-39', main: 'Hotel California - Eagles', imposter: 'Brothers in Arms - Dire Straits' },
-  { entryId: 'music-40', main: 'Goodbye Yellow Brick Road - Elton John', imposter: 'A Night at the Opera - Queen' },
-  { entryId: 'music-41', main: "Appetite for Destruction - Guns N' Roses", imposter: 'Back in Black - AC/DC' },
-  { entryId: 'music-42', main: 'Back to Black - Amy Winehouse', imposter: '21 - Adele' },
-  { entryId: 'music-43', main: 'Synchronicity - The Police', imposter: 'Rio - Duran Duran' },
-  { entryId: 'music-44', main: 'Brothers in Arms - Dire Straits', imposter: 'The Joshua Tree - U2' },
-  { entryId: 'music-45', main: 'Rio - Duran Duran', imposter: 'Parallel Lines - Blondie' },
-  { entryId: 'music-46', main: 'The Kick Inside - Kate Bush', imposter: 'Hounds of Love - Kate Bush' },
-  { entryId: 'music-47', main: '21 - Adele', imposter: 'Jagged Little Pill - Alanis Morissette' },
-  { entryId: 'music-48', main: 'Faith - George Michael', imposter: 'Like a Prayer - Madonna' },
-  { entryId: 'music-49', main: 'The Stranger - Billy Joel', imposter: 'Tapestry - Carole King' },
-  { entryId: 'music-50', main: 'London Calling - The Clash', imposter: "Never Mind the Bollocks, Here's the Sex Pistols - Sex Pistols" },
+  { entryId: 'music-33', main: 'Bob Dylan - Blood on the Tracks', imposter: 'Bob Dylan - Highway 61 Revisited' },
+  { entryId: 'music-34', main: 'Michael Jackson - Off the Wall', imposter: 'Michael Jackson - Thriller' },
+  { entryId: 'music-35', main: 'The Cure - Disintegration', imposter: 'The Smiths - The Queen Is Dead' },
+  { entryId: 'music-36', main: 'David Bowie - Hunky Dory', imposter: 'David Bowie - The Rise and Fall of Ziggy Stardust and the Spiders from Mars' },
+  { entryId: 'music-37', main: 'The Stone Roses - The Stone Roses', imposter: 'The Smiths - The Queen Is Dead' },
+  { entryId: 'music-38', main: 'Simon & Garfunkel - Bridge Over Troubled Water', imposter: 'Paul Simon - Graceland' },
+  { entryId: 'music-39', main: 'Eagles - Hotel California', imposter: 'Dire Straits - Brothers in Arms' },
+  { entryId: 'music-40', main: 'Elton John - Goodbye Yellow Brick Road', imposter: 'Queen - A Night at the Opera' },
+  { entryId: 'music-41', main: "Guns N' Roses - Appetite for Destruction", imposter: 'AC/DC - Back in Black' },
+  { entryId: 'music-42', main: 'Amy Winehouse - Back to Black', imposter: 'Adele - 21' },
+  { entryId: 'music-43', main: 'The Police - Synchronicity', imposter: 'Duran Duran - Rio' },
+  { entryId: 'music-44', main: 'Dire Straits - Brothers in Arms', imposter: 'U2 - The Joshua Tree' },
+  { entryId: 'music-45', main: 'Duran Duran - Rio', imposter: 'Blondie - Parallel Lines' },
+  { entryId: 'music-46', main: 'Kate Bush - The Kick Inside', imposter: 'Kate Bush - Hounds of Love' },
+  { entryId: 'music-47', main: 'Adele - 21', imposter: 'Alanis Morissette - Jagged Little Pill' },
+  { entryId: 'music-48', main: 'George Michael - Faith', imposter: 'Madonna - Like a Prayer' },
+  { entryId: 'music-49', main: 'Billy Joel - The Stranger', imposter: 'Carole King - Tapestry' },
+  { entryId: 'music-50', main: 'The Clash - London Calling', imposter: "Sex Pistols - Never Mind the Bollocks, Here's the Sex Pistols" },
 ];
+
 const SCREEN_ENTRIES = [
   { entryId: 'screen-01', main: 'Citizen Kane', imposter: 'Sunset Boulevard' },
   { entryId: 'screen-02', main: 'Casablanca', imposter: 'Titanic' },
@@ -449,14 +450,14 @@ function buildFallbackPromptForSubject(pack, subject, options, compositionMode) 
   if (!brief) return '';
   if (pack.categoryId === 'music') {
     return [
-      'Create a single square original parody portrait of a transformed music artist or band archetype.',
+      'Create a single square original spoof album-cover image built from a transformed pop-or-rock album concept.',
       `Subject brief: ${brief}.`,
       `Composition mode: ${compositionMode}.`,
       `Style direction: ${options.styleNotes}.`,
-      'Make it feel playful, iconic, and music-quiz readable while staying generic enough to avoid depicting any exact real person.',
-      'Render face shape, hairstyle, costume, symbolic props, and expression with enough crisp detail to read clearly at 800x800 without becoming an exact likeness.',
+      'Make it feel playful, iconic, and music-quiz readable while staying generic enough to avoid recreating any exact album cover or exact identifiable portrait.',
+      'Render face shape, hairstyle, costume, symbolic props, and color story with enough crisp detail to read clearly at 800x800 without becoming an exact likeness or direct cover match.',
       'Use only broad era cues, wardrobe shapes, props, silhouette, and exaggerated caricature energy.',
-      'Do not include names, readable text, logos, or exact facial resemblance.',
+      'Do not include names, readable text, logos, exact facial resemblance, or an exact album-cover recreation.',
     ].join(' ');
   }
   return [
@@ -476,13 +477,13 @@ function buildUltraSafePromptForSubject(pack, subject, options, compositionMode)
   const brief = String(safeBriefs[subject] || '').trim();
   if (pack.categoryId === 'music') {
     return [
-      'Create a single square original parody portrait graphic built from symbolic music-artist cues only.',
-      brief ? `Subject brief: ${brief}.` : 'Use a generic transformed music-artist concept with symbolic cues only.',
+      'Create a single square original spoof album-cover graphic built from symbolic pop-or-rock concept cues only.',
+      brief ? `Subject brief: ${brief}.` : 'Use a generic pop-or-rock album concept with transformed symbolic cues only.',
       `Composition mode: ${compositionMode}.`,
       `Style direction: ${options.styleNotes}.`,
-      'Prefer anonymous transformed figures, cropped body language, silhouettes, props, wardrobe fragments, hairstyle cues, and expression over any direct portrait match.',
-      'Make it quiz-readable and detailed at 800x800 while avoiding any exact real person, readable text, or trademark-like design.',
-      'No names, no logos, no readable typography, and no exact facial resemblance.',
+      'Prefer anonymous transformed figures, cropped body language, silhouettes, props, wardrobe fragments, and iconic color-story cues over any direct portrait.',
+      'Make it quiz-readable and detailed at 800x800 while avoiding any exact real person, exact album layout, readable text, or trademark-like design.',
+      'No names, no album titles, no logos, no readable typography, and no exact facial resemblance.',
     ].join(' ');
   }
   return [
@@ -511,17 +512,33 @@ function pickCompositionMode(pack, index) {
   return list[index % list.length];
 }
 
+function parseMusicAlbumSubject(subject) {
+  const separator = ' - ';
+  const index = String(subject || '').indexOf(separator);
+  if (index <= 0) {
+    return { artist: String(subject || '').trim(), album: '' };
+  }
+  return {
+    artist: String(subject || '').slice(0, index).trim(),
+    album: String(subject || '').slice(index + separator.length).trim(),
+  };
+}
+
 function buildMusicPrompt(subject, options, compositionMode) {
+  const { artist, album } = parseMusicAlbumSubject(subject);
+  const namedReference = album
+    ? `the pop or rock album cover "${album}" by ${artist}`
+    : `the pop or rock album cover associated with ${artist}`;
   return [
-    `Create a single square original parody portrait inspired by the musician or band "${subject}".`,
-    'Make it recognisable to a music-trivia player through transformed visual cues, exaggerated silhouette, performance attitude, hair, wardrobe, props, and portrait energy rather than an exact likeness.',
-    'If the inspiration is a group, show a compact ensemble of two to four transformed members; if it is a solo act, show one central performer.',
+    `Create a single square original spoof album cover inspired by ${namedReference}.`,
+    'Make it recognisable to a music-trivia player through transformed cover-era styling, silhouette, wardrobe, props, color story, and iconic album-cover energy rather than a direct recreation.',
+    'Show one central transformed performer, a compact transformed group, or one highly iconic symbolic setup, depending on what best suits the album being spoofed.',
     `Composition mode: ${compositionMode}.`,
     `Style direction: ${options.styleNotes}.`,
-    'Push the humour, facial exaggeration, pose, and costume shapes so it feels like a spoof or satirical caricature, not a clone.',
+    'Push the humour, caricature, pose, and visual motif choices so it feels like a satirical spoof cover, not a clone.',
     'Render face shape, hair, costume, props, and expression with enough crisp detail that the features are easy to read at 800x800 and still recognizable in a quiz.',
     'Keep the composition bold, clean, and instantly legible at thumbnail size for a party-game picture round.',
-    'Do not include artist names, readable text, logos, wordmarks, watermarks, or exact face matching.',
+    'Do not include album titles, artist names, readable text, logos, wordmarks, watermarks, exact cover layouts, or exact face matching.',
   ].join(' ');
 }
 
