@@ -709,6 +709,16 @@ function buildPromptPlan(pack, options) {
   const manifest = buildPackManifest(pack, selectedEntries);
   const promptRecords = [];
   const useSafePrimary = options.provider === 'openai';
+  const musicReferenceMap = pack.categoryId === 'music'
+    ? (options.musicReferenceMap || new Map())
+    : new Map();
+  const styleReferenceImageUrl = (
+    pack.categoryId === 'music'
+    && options.styleReferenceEnabled
+    && options.styleReferenceUrl
+  )
+    ? String(options.styleReferenceUrl).trim()
+    : '';
 
   selectedEntries.forEach((entry) => {
     const compositionMode = pickCompositionMode(pack, promptRecords.length);
@@ -716,6 +726,9 @@ function buildPromptPlan(pack, options) {
     const mainSafePrompt = buildFallbackPromptForSubject(pack, entry.main, options, compositionMode);
     const mainUltraSafePrompt = buildUltraSafePromptForSubject(pack, entry.main, options, compositionMode);
     const mainDedupeKey = pack.categoryId === 'music' ? String(entry.main).trim().toLowerCase() : '';
+    const mainReferenceImageUrl = pack.categoryId === 'music'
+      ? String(musicReferenceMap.get(normalizeMusicActName(entry.main)) || '').trim()
+      : '';
     promptRecords.push({
       entryId: entry.entryId,
       side: 'main',
@@ -734,12 +747,17 @@ function buildPromptPlan(pack, options) {
       finalRetryPrompt: useSafePrimary ? '' : (mainUltraSafePrompt || ''),
       finalRetryPromptStrategy: 'ultra_safe_symbolic_retry',
       dedupeKey: mainDedupeKey,
+      referenceImageUrl: mainReferenceImageUrl,
+      styleReferenceImageUrl,
     });
     const imposterCompositionMode = pickCompositionMode(pack, promptRecords.length);
     const imposterNamedPrompt = buildPromptForSubject(pack, entry.imposter, options, imposterCompositionMode);
     const imposterSafePrompt = buildFallbackPromptForSubject(pack, entry.imposter, options, imposterCompositionMode);
     const imposterUltraSafePrompt = buildUltraSafePromptForSubject(pack, entry.imposter, options, imposterCompositionMode);
     const imposterDedupeKey = pack.categoryId === 'music' ? String(entry.imposter).trim().toLowerCase() : '';
+    const imposterReferenceImageUrl = pack.categoryId === 'music'
+      ? String(musicReferenceMap.get(normalizeMusicActName(entry.imposter)) || '').trim()
+      : '';
     promptRecords.push({
       entryId: entry.entryId,
       side: 'imposter',
@@ -758,6 +776,8 @@ function buildPromptPlan(pack, options) {
       finalRetryPrompt: useSafePrimary ? '' : (imposterUltraSafePrompt || ''),
       finalRetryPromptStrategy: 'ultra_safe_symbolic_retry',
       dedupeKey: imposterDedupeKey,
+      referenceImageUrl: imposterReferenceImageUrl,
+      styleReferenceImageUrl,
     });
   });
 

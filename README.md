@@ -266,6 +266,11 @@ npm run dlc:sync-picture-manifests
   source unless you disable it with `--no-music-reference-feed`.
 - The default music style-reference image is:
   - `https://media.craiyon.com/2025-08-06/Kx1Iy3b-RCSGhKhPYW3Aog.webp`
+- When a matching music cover is found in the RSS feed and you are using `--provider flux`,
+  the script uses fal image-to-image with:
+  - the matched album cover as the content reference image
+  - the style-reference URL as the visual style guide
+  - the patch-emblem prompt as the transformation instruction
 - Defaults now focus on expanded music patch-emblem generation across rock bands, pop stars,
   rap/hip-hop, boy bands, and girl groups:
   - text logo / wordmark
