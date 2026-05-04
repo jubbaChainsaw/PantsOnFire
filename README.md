@@ -177,8 +177,8 @@ Importer output:
 ## AI parody picture round generator (OpenAI)
 
 You can also generate original parody/caricature image packs for picture rounds using
-OpenAI image generation. This is useful for recognisable-but-transformed spoof album
-covers for classic pop/rock albums and spoof movie posters for all-time-great films.
+OpenAI image generation. This is useful for recognisable-but-transformed parody music
+artist portraits and spoof movie posters for all-time-great films.
 
 ### What it creates
 
@@ -186,7 +186,7 @@ covers for classic pop/rock albums and spoof movie posters for all-time-great fi
   - `music-parodies-v1`
   - `screen-parodies-v1`
 - 50 prompt pairs per pack by default
-- music pack now targets top pop/rock albums
+- music pack now targets famous artists and bands
 - screen pack now targets top films only, excluding sequels and prequels
 - `manifest.json` files compatible with the picture DLC workflow
 - `generation-prompts.json` files so you can review/edit prompts before spending API credits
@@ -230,8 +230,8 @@ npm run dlc:sync-picture-manifests
 ### Notes
 
 - Uses `OPENAI_API_KEY` (or `scripts/royaltyFreeApiKeys.local.json` -> `openaiApiKey`).
-- Defaults now focus on spoof album-cover layouts for top pop/rock albums and spoof
-  movie-poster layouts for top films only.
+- Defaults now focus on parody artist portraits for music and spoof movie-poster
+  layouts for top films only.
 - The prompts are written to steer results toward transformed parody/caricature territory
   with readable faces, costume cues, and props, but outputs should still be manually
   reviewed before shipping.
