@@ -168,11 +168,12 @@ function usage() {
   console.log('Options:');
   console.log('  --category <music|screen|all>  Which curated pack(s) to process (default: all)');
   console.log(`  --output-root <path>            Output folder (default: ${path.relative(repoRoot, defaultOutputRoot)})`);
-  console.log('  --provider <openai>             Image provider (default: openai)');
-  console.log('  --api-key <key>                 OpenAI API key (or OPENAI_API_KEY)');
-  console.log('  --model <name>                  OpenAI model (default: gpt-image-1)');
+  console.log('  --provider <openai|flux>        Image provider (default: openai)');
+  console.log('  --api-key <key>                 Provider API key (OPENAI_API_KEY or BFL_API_KEY / FLUX_API_KEY)');
+  console.log('  --model <name>                  Model name (OpenAI default: gpt-image-1, FLUX default: flux-dev)');
   console.log('  --size <WxH>                    Image size (default: 800x800)');
   console.log('  --quality <low|medium|high>     Image quality (default: high)');
+  console.log('  --safety-tolerance <0-6>        FLUX safety tolerance (default: 6)');
   console.log('  --limit <n>                     Limit entries per pack for sampling/review');
   console.log('  --style-notes <text>            Override the built-in visual style notes');
   console.log('  --delay-ms <n>                  Wait time between OpenAI calls (default: 500)');
@@ -191,9 +192,10 @@ function parseArgs(argv) {
   const options = {
     category: 'all',
     provider: 'openai',
-    model: 'gpt-image-1',
+    model: '',
     size: '800x800',
     quality: 'high',
+    safetyTolerance: 6,
     outputRoot: defaultOutputRoot,
     delayMs: 500,
     overwrite: false,
@@ -212,6 +214,7 @@ function parseArgs(argv) {
     else if (arg === '--model') { options.model = String(argv[i + 1] || '').trim(); i += 1; }
     else if (arg === '--size') { options.size = String(argv[i + 1] || '').trim(); i += 1; }
     else if (arg === '--quality') { options.quality = String(argv[i + 1] || '').trim(); i += 1; }
+    else if (arg === '--safety-tolerance') { options.safetyTolerance = Number.parseInt(String(argv[i + 1] || '6'), 10); i += 1; }
     else if (arg === '--output-root') { options.outputRoot = path.resolve(repoRoot, String(argv[i + 1] || '').trim()); i += 1; }
     else if (arg === '--limit') { options.limit = Number.parseInt(String(argv[i + 1] || '0'), 10) || 0; i += 1; }
     else if (arg === '--style-notes') { options.styleNotes = String(argv[i + 1] || '').trim() || DEFAULT_STYLE_NOTES; i += 1; }
@@ -245,11 +248,43 @@ function resolveApiKey(provider, cliKey) {
     const local = readJsonSafe(localKeysPath, {});
     return String(local.openaiApiKey || '').trim();
   }
+  if (provider === 'flux') {
+    if (process.env.BFL_API_KEY) return process.env.BFL_API_KEY;
+    if (process.env.FLUX_API_KEY) return process.env.FLUX_API_KEY;
+    const local = readJsonSafe(localKeysPath, {});
+    return String(local.bflApiKey || local.fluxApiKey || '').trim();
+  }
   return '';
 }
 
 function writeJson(filePath, value) {
   fs.writeFileSync(filePath, `${JSON.stringify(value, null, 2)}\n`, 'utf8');
+}
+
+function getDefaultModel(provider) {
+  if (provider === 'flux') return 'flux-dev';
+  return 'gpt-image-1';
+}
+
+function parseSize(size) {
+  const match = String(size || '').trim().match(/^(\d+)x(\d+)$/i);
+  if (!match) throw new Error(`Invalid --size "${size}". Use WIDTHxHEIGHT, for example 800x800.`);
+  const width = Number.parseInt(match[1], 10);
+  const height = Number.parseInt(match[2], 10);
+  if (!Number.isFinite(width) || !Number.isFinite(height) || width <= 0 || height <= 0) {
+    throw new Error(`Invalid --size "${size}". Width and height must be positive integers.`);
+  }
+  return { width, height };
+}
+
+function validateFluxSize(size) {
+  const { width, height } = parseSize(size);
+  const validWidth = width >= 256 && width <= 1440 && width % 32 === 0;
+  const validHeight = height >= 256 && height <= 1440 && height % 32 === 0;
+  if (!validWidth || !validHeight) {
+    throw new Error(`FLUX requires width/height between 256 and 1440, each a multiple of 32. Received ${width}x${height}.`);
+  }
+  return { width, height };
 }
 
 const SAFE_SUBJECT_BRIEFS = {
@@ -537,6 +572,7 @@ function buildPromptPlan(pack, options) {
     : pack.entries.slice();
   const manifest = buildPackManifest(pack, selectedEntries);
   const promptRecords = [];
+  const useSafePrimary = options.provider === 'openai';
 
   selectedEntries.forEach((entry) => {
     const compositionMode = pickCompositionMode(pack, promptRecords.length);
@@ -550,10 +586,16 @@ function buildPromptPlan(pack, options) {
       mediaFile: `${entry.entryId}-main.png`,
       compositionMode,
       originalPrompt: mainNamedPrompt,
-      prompt: mainSafePrompt || mainNamedPrompt,
-      promptStrategy: mainSafePrompt ? 'safe_concept_primary' : 'named_title_primary',
-      retryPrompt: mainUltraSafePrompt || mainSafePrompt || mainNamedPrompt,
-      retryPromptStrategy: mainUltraSafePrompt ? 'ultra_safe_symbolic_retry' : 'safe_concept_retry',
+      prompt: useSafePrimary ? (mainSafePrompt || mainNamedPrompt) : mainNamedPrompt,
+      promptStrategy: useSafePrimary
+        ? (mainSafePrompt ? 'safe_concept_primary' : 'named_title_primary')
+        : 'named_title_primary',
+      retryPrompt: useSafePrimary ? (mainUltraSafePrompt || mainSafePrompt || mainNamedPrompt) : (mainSafePrompt || mainUltraSafePrompt || mainNamedPrompt),
+      retryPromptStrategy: useSafePrimary
+        ? (mainUltraSafePrompt ? 'ultra_safe_symbolic_retry' : 'safe_concept_retry')
+        : (mainSafePrompt ? 'safe_concept_retry' : 'ultra_safe_symbolic_retry'),
+      finalRetryPrompt: useSafePrimary ? '' : (mainUltraSafePrompt || ''),
+      finalRetryPromptStrategy: 'ultra_safe_symbolic_retry',
     });
     const imposterCompositionMode = pickCompositionMode(pack, promptRecords.length);
     const imposterNamedPrompt = buildPromptForSubject(pack, entry.imposter, options, imposterCompositionMode);
@@ -566,10 +608,16 @@ function buildPromptPlan(pack, options) {
       mediaFile: `${entry.entryId}-imposter.png`,
       compositionMode: imposterCompositionMode,
       originalPrompt: imposterNamedPrompt,
-      prompt: imposterSafePrompt || imposterNamedPrompt,
-      promptStrategy: imposterSafePrompt ? 'safe_concept_primary' : 'named_title_primary',
-      retryPrompt: imposterUltraSafePrompt || imposterSafePrompt || imposterNamedPrompt,
-      retryPromptStrategy: imposterUltraSafePrompt ? 'ultra_safe_symbolic_retry' : 'safe_concept_retry',
+      prompt: useSafePrimary ? (imposterSafePrompt || imposterNamedPrompt) : imposterNamedPrompt,
+      promptStrategy: useSafePrimary
+        ? (imposterSafePrompt ? 'safe_concept_primary' : 'named_title_primary')
+        : 'named_title_primary',
+      retryPrompt: useSafePrimary ? (imposterUltraSafePrompt || imposterSafePrompt || imposterNamedPrompt) : (imposterSafePrompt || imposterUltraSafePrompt || imposterNamedPrompt),
+      retryPromptStrategy: useSafePrimary
+        ? (imposterUltraSafePrompt ? 'ultra_safe_symbolic_retry' : 'safe_concept_retry')
+        : (imposterSafePrompt ? 'safe_concept_retry' : 'ultra_safe_symbolic_retry'),
+      finalRetryPrompt: useSafePrimary ? '' : (imposterUltraSafePrompt || ''),
+      finalRetryPromptStrategy: 'ultra_safe_symbolic_retry',
     });
   });
 
@@ -641,6 +689,77 @@ async function generateWithOpenAi({ prompt, apiKey, model, size, quality }) {
   return Buffer.from(imageBase64, 'base64');
 }
 
+async function pollFluxResult(pollingUrl, apiKey) {
+  while (true) {
+    await sleep(500);
+    const response = await fetch(pollingUrl, {
+      method: 'GET',
+      headers: {
+        accept: 'application/json',
+        'x-key': apiKey,
+      },
+    });
+    if (!response.ok) {
+      const message = await response.text().catch(() => '');
+      throw new Error(`FLUX polling failed: HTTP ${response.status} ${message}`);
+    }
+    const payload = await response.json();
+    const status = String(payload && payload.status ? payload.status : '').trim();
+    if (status === 'Ready') return payload;
+    if (status === 'Error' || status === 'Failed') {
+      throw new Error(`FLUX image generation failed: ${JSON.stringify(payload)}`);
+    }
+  }
+}
+
+async function generateWithFlux({ prompt, apiKey, model, size, safetyTolerance = 6 }) {
+  const { width, height } = validateFluxSize(size);
+  const response = await fetch(`https://api.bfl.ai/v1/${String(model || 'flux-dev').replace(/^\/+/, '')}`, {
+    method: 'POST',
+    headers: {
+      accept: 'application/json',
+      'x-key': apiKey,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      prompt,
+      width,
+      height,
+      output_format: 'png',
+      prompt_upsampling: false,
+      safety_tolerance: safetyTolerance,
+    }),
+  });
+  if (!response.ok) {
+    const message = await response.text().catch(() => '');
+    throw new Error(`FLUX image generation failed: HTTP ${response.status} ${message}`);
+  }
+  const request = await response.json();
+  const pollingUrl = String(request && request.polling_url ? request.polling_url : '').trim();
+  if (!pollingUrl) {
+    throw new Error('FLUX response did not include a polling_url.');
+  }
+  const result = await pollFluxResult(pollingUrl, apiKey);
+  const sampleUrl = String(result && result.result && result.result.sample ? result.result.sample : '').trim();
+  if (!sampleUrl) {
+    throw new Error('FLUX result did not include a sample URL.');
+  }
+  const imageResponse = await fetch(sampleUrl);
+  if (!imageResponse.ok) {
+    const message = await imageResponse.text().catch(() => '');
+    throw new Error(`FLUX image download failed: HTTP ${imageResponse.status} ${message}`);
+  }
+  const arrayBuffer = await imageResponse.arrayBuffer();
+  return Buffer.from(arrayBuffer);
+}
+
+async function generateImageWithProvider({ provider, prompt, apiKey, model, size, quality, safetyTolerance }) {
+  if (provider === 'flux') {
+    return generateWithFlux({ prompt, apiKey, model, size, safetyTolerance });
+  }
+  return generateWithOpenAi({ prompt, apiKey, model, size, quality });
+}
+
 function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, Math.max(0, ms)));
 }
@@ -675,7 +794,7 @@ async function runPack(plan, options) {
   }
 
   if (options.promptsOnly) {
-    console.log('[generateParodyPictureRounds] prompts-only enabled, skipping OpenAI image calls.');
+    console.log('[generateParodyPictureRounds] prompts-only enabled, skipping image provider calls.');
     return;
   }
 
@@ -706,29 +825,76 @@ async function runPack(plan, options) {
     let usedRetryPrompt = false;
     let usedPromptStrategy = record.promptStrategy || 'unknown';
     try {
-      imageBuffer = await generateWithOpenAi({
+      imageBuffer = await generateImageWithProvider({
+        provider: options.provider,
         prompt: record.prompt,
         apiKey: options.apiKey,
         model: options.model,
         size: options.size,
         quality: options.quality,
+        safetyTolerance: options.safetyTolerance,
       });
     } catch (error) {
       if (!isModerationBlock(error) || !record.retryPrompt || record.retryPrompt === record.prompt) {
         throw error;
       }
-      console.warn(`- [${index + 1}/${plan.promptRecords.length}] RETRY ${record.subject} with ultra-safe symbolic prompt`);
+      console.warn(`- [${index + 1}/${plan.promptRecords.length}] RETRY ${record.subject} with safer prompt`);
       try {
-        imageBuffer = await generateWithOpenAi({
+        imageBuffer = await generateImageWithProvider({
+          provider: options.provider,
           prompt: record.retryPrompt,
           apiKey: options.apiKey,
           model: options.model,
           size: options.size,
           quality: options.quality,
+          safetyTolerance: options.safetyTolerance,
         });
         usedRetryPrompt = true;
         usedPromptStrategy = record.retryPromptStrategy || 'retry_prompt';
       } catch (fallbackError) {
+        if (
+          isModerationBlock(fallbackError)
+          && record.finalRetryPrompt
+          && record.finalRetryPrompt !== record.retryPrompt
+          && record.finalRetryPrompt !== record.prompt
+        ) {
+          console.warn(`- [${index + 1}/${plan.promptRecords.length}] FINAL RETRY ${record.subject} with ultra-safe symbolic prompt`);
+          try {
+            imageBuffer = await generateImageWithProvider({
+              provider: options.provider,
+              prompt: record.finalRetryPrompt,
+              apiKey: options.apiKey,
+              model: options.model,
+              size: options.size,
+              quality: options.quality,
+              safetyTolerance: options.safetyTolerance,
+            });
+            usedRetryPrompt = true;
+            usedPromptStrategy = record.finalRetryPromptStrategy || 'final_retry_prompt';
+            fs.writeFileSync(outputPath, imageBuffer);
+            created += 1;
+            results.push({
+              subject: record.subject,
+              side: record.side,
+              mediaFile: record.mediaFile,
+              status: 'created_with_retry',
+              promptStrategy: usedPromptStrategy,
+              provider: options.provider,
+              model: options.model,
+            });
+            console.log(`- [${index + 1}/${plan.promptRecords.length}] WROTE ${record.subject} (${relOutputPath}) [retry]`);
+            if (options.delayMs > 0 && index < plan.promptRecords.length - 1) {
+              await sleep(options.delayMs);
+            }
+            continue;
+          } catch (finalRetryError) {
+            if (!isModerationBlock(finalRetryError)) {
+              throw finalRetryError;
+            }
+            fallbackError = finalRetryError;
+            usedPromptStrategy = record.finalRetryPromptStrategy || usedPromptStrategy;
+          }
+        }
         if (!isModerationBlock(fallbackError)) {
           throw fallbackError;
         }
@@ -739,6 +905,8 @@ async function runPack(plan, options) {
           mediaFile: record.mediaFile,
           status: 'blocked',
           promptStrategy: usedPromptStrategy,
+          provider: options.provider,
+          model: options.model,
           reason: String(fallbackError.message || fallbackError),
         });
         console.warn(`- [${index + 1}/${plan.promptRecords.length}] BLOCKED ${record.subject} (${relOutputPath})`);
@@ -754,6 +922,8 @@ async function runPack(plan, options) {
       mediaFile: record.mediaFile,
       status: usedRetryPrompt ? 'created_with_retry' : 'created',
       promptStrategy: usedPromptStrategy,
+      provider: options.provider,
+      model: options.model,
     });
     console.log(`- [${index + 1}/${plan.promptRecords.length}] WROTE ${record.subject} (${relOutputPath})${usedRetryPrompt ? ' [retry]' : ''}`);
     if (options.delayMs > 0 && index < plan.promptRecords.length - 1) {
@@ -765,6 +935,8 @@ async function runPack(plan, options) {
     writeJson(path.join(packDir, 'generation-results.json'), {
       packId: plan.pack.packId,
       generatedAt: new Date().toISOString(),
+      provider: options.provider,
+      model: options.model,
       created,
       skipped,
       blocked,
@@ -784,22 +956,36 @@ async function run() {
   if (!['music', 'screen', 'all'].includes(options.category)) {
     throw new Error(`Unsupported --category "${options.category}". Use music, screen, or all.`);
   }
-  if (options.provider !== 'openai') {
-    throw new Error(`Unsupported provider "${options.provider}". Currently only "openai" is implemented.`);
+  if (!['openai', 'flux'].includes(options.provider)) {
+    throw new Error(`Unsupported provider "${options.provider}". Use "openai" or "flux".`);
   }
   if (options.limit < 0) {
     throw new Error('--limit must be 0 or greater.');
+  }
+  if (!options.model) {
+    options.model = getDefaultModel(options.provider);
+  }
+  if (options.provider === 'flux') {
+    validateFluxSize(options.size);
+    if (!Number.isFinite(options.safetyTolerance) || options.safetyTolerance < 0 || options.safetyTolerance > 6) {
+      throw new Error('--safety-tolerance must be an integer between 0 and 6.');
+    }
   }
 
   if (!options.promptsOnly) {
     options.apiKey = resolveApiKey(options.provider, options.apiKey);
     if (!options.apiKey && !options.dryRun) {
+      if (options.provider === 'flux') {
+        throw new Error('Missing FLUX API key. Use --api-key, BFL_API_KEY, FLUX_API_KEY, or scripts/royaltyFreeApiKeys.local.json (bflApiKey / fluxApiKey).');
+      }
       throw new Error('Missing OpenAI API key. Use --api-key, OPENAI_API_KEY, or scripts/royaltyFreeApiKeys.local.json (openaiApiKey).');
     }
   }
 
   const packKeys = options.category === 'all' ? ['music', 'screen'] : [options.category];
   console.log(`[generateParodyPictureRounds] Category: ${options.category}`);
+  console.log(`[generateParodyPictureRounds] Provider: ${options.provider}`);
+  console.log(`[generateParodyPictureRounds] Model: ${options.model}`);
   console.log(`[generateParodyPictureRounds] Output root: ${path.relative(repoRoot, options.outputRoot) || '.'}`);
   if (options.promptsOnly) console.log('[generateParodyPictureRounds] Prompt export mode enabled.');
   if (options.dryRun) console.log('[generateParodyPictureRounds] Dry run enabled.');

@@ -174,11 +174,11 @@ Importer output:
 - Keep attribution metadata (`attribution.json`) for legal/audit tracking.
 - Check source site terms before shipping; provider terms may change over time.
 
-## AI parody picture round generator (OpenAI)
+## AI parody picture round generator (OpenAI / FLUX)
 
 You can also generate original parody/caricature image packs for picture rounds using
-OpenAI image generation. This is useful for recognisable-but-transformed parody music
-artist portraits and spoof movie posters for all-time-great films.
+OpenAI or FLUX image generation. This is useful for recognisable-but-transformed parody
+music artist portraits and spoof movie posters for all-time-great films.
 
 ### What it creates
 
@@ -211,6 +211,12 @@ This writes reviewable pack folders under:
 npm run picture:generate-parody-rounds -- --category music --limit 5
 ```
 
+Using FLUX instead of OpenAI:
+
+```bash
+npm run picture:generate-parody-rounds -- --provider flux --category music --limit 5
+```
+
 If you want a different size, override it explicitly:
 
 ```bash
@@ -229,7 +235,14 @@ npm run dlc:sync-picture-manifests
 
 ### Notes
 
-- Uses `OPENAI_API_KEY` (or `scripts/royaltyFreeApiKeys.local.json` -> `openaiApiKey`).
+- OpenAI key sources:
+  - `OPENAI_API_KEY`
+  - `scripts/royaltyFreeApiKeys.local.json` -> `openaiApiKey`
+- FLUX / Black Forest Labs key sources:
+  - `BFL_API_KEY`
+  - `FLUX_API_KEY`
+  - `scripts/royaltyFreeApiKeys.local.json` -> `bflApiKey` or `fluxApiKey`
+- FLUX defaults to model `flux-dev` and uses the BFL async polling API.
 - Defaults now focus on parody artist portraits for music and spoof movie-poster
   layouts for top films only.
 - The prompts are written to steer results toward transformed parody/caricature territory
