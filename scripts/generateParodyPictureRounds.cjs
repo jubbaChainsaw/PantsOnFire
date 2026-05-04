@@ -252,6 +252,246 @@ function writeJson(filePath, value) {
   fs.writeFileSync(filePath, `${JSON.stringify(value, null, 2)}\n`, 'utf8');
 }
 
+const SAFE_SUBJECT_BRIEFS = {
+  music: {
+    'The Beatles': 'a 1960s British mop-top rock quartet with matching-era tailoring, cheeky charisma, and beat-combo energy',
+    'The Rolling Stones': 'a swaggering blues-rock band with messy glamour, skinny silhouettes, and rebellious stage attitude',
+    'Elvis Presley': 'a pompadoured rock-and-roll showman in flashy stagewear with retro microphone energy',
+    'Johnny Cash': 'a solemn country outlaw singer in stark dark clothing with an acoustic guitar and no-frills stage presence',
+    'Madonna': 'a chameleon pop diva with era-shifting fashion, bold dance-pop attitude, and theatrical pose language',
+    'Lady Gaga': 'an avant-pop performance icon in surreal high-fashion styling and dramatic stage spectacle',
+    'David Bowie': 'an androgynous glam-rock star with lightning-bolt theatricality, vivid styling, and alien-pop charisma',
+    'Prince': 'a flamboyant purple-toned funk-pop virtuoso with ornate tailoring and electric-guitar royalty energy',
+    'Freddie Mercury': 'a moustached arena-rock frontman with commanding stage pose and stadium singalong energy',
+    'Mick Jagger': 'a wiry rock singer with flamboyant movement, pouty swagger, and vintage stage glamour',
+    'Taylor Swift': 'a modern stadium-pop songwriter archetype with glittery tour styling, acoustic-pop cues, and diaristic glamour',
+    'Olivia Rodrigo': 'a young pop-rock heartbreak star with punky prom-night styling and purple stage energy',
+    'Beyonce': 'a regal pop and R&B superstar with gold stage glamour, commanding choreography, and queenly presence',
+    'Rihanna': 'a cool fashion-forward pop icon with edgy styling, Caribbean-inflected attitude, and beauty-mogul confidence',
+    'Adele': 'a soulful powerhouse vocalist in elegant classic styling with microphone-in-the-spotlight drama',
+    'Amy Winehouse': 'a beehive-haired retro-soul rebel with winged eyeliner, tattoos, and smoky jazz-club energy',
+    'Michael Jackson': 'a precision-dancing pop legend with military-style stage jacket cues, fedora energy, and moonwalk attitude',
+    'Bruno Mars': 'a retro-funk pop entertainer with slick tailoring, showband energy, and charismatic dance moves',
+    'Elton John': 'a piano-rock showman with outrageous glasses, sparkling costume flair, and joyful stage exuberance',
+    'Billy Joel': 'a piano bar troubadour with New York everyman energy and classic singer-songwriter styling',
+    'Bob Dylan': 'a scruffy poetic folk-rock troubadour with harmonica cues and counterculture mystique',
+    'Neil Young': 'a rugged folk-rock loner with flannel-ish styling, weathered guitar energy, and melancholic cool',
+    'Bruce Springsteen': 'a blue-collar heartland rocker with denim, sweaty arena sincerity, and working-class bravado',
+    'Tom Petty': 'a laid-back American rock songwriter with lanky silhouette, jangly guitar vibes, and dusty cool',
+    'Dolly Parton': 'a rhinestone country queen with towering blonde hair, sparkling stagewear, and warm Southern charisma',
+    'Shania Twain': 'a crossover country-pop diva with leopard-print flair, stadium confidence, and polished glamour',
+    'The Sex Pistols': 'a sneering punk band with torn clothes, safety-pin chaos, and tabloid-anarchy energy',
+    'The Clash': 'a politically charged punk group with militant street style, guitars, and restless rebel energy',
+    'Nirvana': 'a scruffy grunge trio with thrift-store styling, slacker angst, and fuzzy guitar energy',
+    'Pearl Jam': 'a brooding 1990s alt-rock band with long-haired earnestness, flannel textures, and arena-grunge vibe',
+    'Metallica': 'a heavy metal band with black denim, aggressive guitar attack, and thunderous stage presence',
+    'Iron Maiden': 'a theatrical metal act with mascots, galloping riffs, and dramatic fantasy-war imagery',
+    'AC/DC': 'a hard-rock band with schoolboy-uniform cheek, duckwalk energy, and giant guitar-riff swagger',
+    "Guns N' Roses": 'a sleazy glam-hard-rock group with bandanas, leather, and wild Sunset Strip excess',
+    'The Ramones': 'a leather-jacket punk quartet with bowl-cut simplicity, fast chords, and comic-book toughness',
+    'Green Day': 'a bratty pop-punk trio with dyed hair, skate-kid energy, and sarcastic suburban rebellion',
+    'The Cure': 'a gothic new-wave act with teased black hair, smeared eyeliner, and moody romantic melancholy',
+    'Depeche Mode': 'a sleek synth-pop group in dark tailored styling with brooding electronic cool',
+    'ABBA': 'a glittery Scandinavian pop quartet with bright harmonies, satin stagewear, and disco brightness',
+    'Bee Gees': 'a falsetto disco-pop trio with chest hair, white suits, and dance-floor shimmer',
+    'Daft Punk': 'a robot-helmet electronic duo with sleek chrome anonymity and neon club energy',
+    'Kraftwerk': 'a minimalist electronic group with matching outfits, precision geometry, and deadpan machine cool',
+    'Tupac Shakur': 'a fiery 1990s West Coast rap icon with bandana cues, intense gaze, and revolutionary swagger',
+    'The Notorious B.I.G.': 'a larger-than-life East Coast rap king with crown motifs, luxury streetwear, and smooth confidence',
+    'Kendrick Lamar': 'a cerebral modern rap poet with understated streetwear and intense, focused stage presence',
+    'J. Cole': 'a thoughtful rap storyteller with hoodie-and-dreadlock cues and grounded introspective energy',
+    'Dr. Dre': 'a legendary hip-hop producer archetype with studio authority, black streetwear, and West Coast polish',
+    'Snoop Dogg': 'a lanky laid-back rap icon with braids, smooth attitude, and lowrider-party cool',
+    'Jay-Z': 'a mogul rapper in luxury minimalist tailoring with cool confidence and empire-builder presence',
+    'Kanye West': 'a polarizing fashion-minded rap auteur in oversized silhouettes and stark performance minimalism',
+    'Britney Spears': 'a millennial pop princess with glossy dance-pop styling and high-energy teen-idol spectacle',
+    'Christina Aguilera': 'a powerhouse pop vocalist with glamorous stage styling and diva-level vocal bravado',
+    'Billie Eilish': 'a whisper-pop anti-pop star in oversized streetwear with eerie cool and neon-green edge',
+    'Lorde': 'an art-pop outsider with dark curls, moody minimalism, and witchy cool',
+    'Ed Sheeran': 'a ginger acoustic pop troubadour with loop-pedal busker energy and casual stadium charm',
+    'Shawn Mendes': 'a polished young pop heartthrob with clean-cut guitar-pop styling and soft-rock charm',
+    'Justin Bieber': 'a tattooed modern pop idol with streetwear polish and tabloid-bred celebrity aura',
+    'Harry Styles': 'a flamboyant retro-pop heartthrob with feathered fashion, satin shirts, and charming stage confidence',
+    'Whitney Houston': 'a glamorous vocal powerhouse with radiant stage presence and soaring pop-soul elegance',
+    'Mariah Carey': 'a melismatic diva with festive glam, luxurious styling, and superstar sparkle',
+    'Celine Dion': 'a grand theatrical ballad singer with elegant couture and powerhouse Vegas polish',
+    'Barbra Streisand': 'a classic showbiz legend with dramatic profile, old-school glamour, and torch-song poise',
+    'Frank Sinatra': 'a tuxedoed lounge crooner with fedora cues, whiskey-bar cool, and Rat Pack polish',
+    'Dean Martin': 'a smooth martini-era entertainer with relaxed tuxedo swagger and easy lounge charm',
+    'Aretha Franklin': 'a soul queen in regal stagewear with church-to-stage power and commanding vocal aura',
+    'Tina Turner': 'a lion-maned rock-soul dynamo with fierce legs-forward stage energy and unstoppable motion',
+    'The Beach Boys': 'a sunlit harmony group with striped shirts, surf cues, and California nostalgia',
+    'The Backstreet Boys': 'a coordinated late-1990s boy band with frosted-pop glamour and synchronized poses',
+    'Oasis': 'a swaggering Britpop brother band in parkas with sneering Manchester guitar cool',
+    'Blur': 'an arty Britpop group with cheeky mod styling and clever London indie energy',
+    'Coldplay': 'a polished arena-pop band with heartfelt uplift, colorful stage visuals, and earnest anthemic mood',
+    'U2': 'a stadium-rock quartet with activist grandeur, windblown hero poses, and giant-anthem intensity',
+    'Radiohead': 'an anxious art-rock band with glitchy mood, introspective tension, and cerebral melancholy',
+    'Muse': 'a bombastic sci-fi rock trio with dramatic lighting, dystopian flair, and operatic intensity',
+    'Red Hot Chili Peppers': 'a funk-rock band with shirtless chaos, slap-bass energy, and sunburnt California weirdness',
+    'Foo Fighters': 'a friendly hard-rock band with bearded frontman energy and straightforward arena uplift',
+    'Pink Floyd': 'a psychedelic prog-rock act with prism-like light, cosmic mood, and expansive sonic dreaminess',
+    'Led Zeppelin': 'a mythic hard-rock band with wizardly hair, dragonish grandeur, and thunder god energy',
+    'Linkin Park': 'a rap-rock band with spiky hair, urban angst, and turn-of-the-millennium emotional intensity',
+    'Limp Bizkit': 'a bratty nu-metal act with baseball-cap swagger, baggy streetwear, and mosh-pit chaos',
+    'The White Stripes': 'a red-white-black garage-rock duo with minimal props and sharp striped visual identity',
+    'The Black Keys': 'a bluesy garage-rock duo with beard-and-drum simplicity and analog grit',
+    'Kiss': 'a theatrical shock-rock band with face paint, platform boots, and comic-book pyrotechnic excess',
+    'Twisted Sister': 'a glam-metal band with huge hair, clownish makeup, and rebellious cartoon aggression',
+    'Janet Jackson': 'a sleek dance-pop icon with military-chic performance styling and cool choreographic precision',
+    'Paula Abdul': 'a cheerful dance-pop performer with choreographer energy and bright 1990s TV-ready polish',
+    'Cher': 'a legendary diva with endless reinvention, dramatic hair, and glamorous stage-camp presence',
+    'Cyndi Lauper': 'a colorful new-wave pop eccentric with mismatched fashion, playful attitude, and quirky charm',
+    'The Weeknd': 'a dark sleek pop-R&B antihero with red-suit nightlife mood and noir decadence',
+    'Drake': 'a luxury rap-pop superstar with moody introspection, beard, and understated designer cool',
+    'Bad Bunny': 'a flamboyant Latin trap superstar with bold shades, wrestling flair, and playful fashion chaos',
+    'J Balvin': 'a neon-colored reggaeton star with streetwear polish and hyper-saturated urban-pop energy',
+    'Selena Quintanilla': 'a sparkling Tejano-pop star with stage charisma, purple glamour, and warm crossover shine',
+    'Shakira': 'a global pop star with wild curls, belly-dance motion, and Latin-rock performance energy',
+    'BTS': 'a polished global boy band with coordinated fashion, bright hair, and hyper-stylized performance precision',
+    'NSYNC': 'a glossy late-1990s boy band with synchronized poses, frosted fashion, and teen-mag charisma',
+    'The Spice Girls': 'a playful five-member pop group with contrasting fashion personas and cheeky girl-power energy',
+    "Destiny's Child": 'a glamorous R&B trio in coordinated stagewear with confident diva synchronization',
+  },
+  screen: {
+    'Star Wars': 'a space-opera adventure with laser swords, a masked dark tyrant, scrappy rebels, and desert-to-starship imagery',
+    'Star Trek': 'a utopian starship crew in colorful uniforms exploring strange new worlds with sleek sci-fi optimism',
+    'Harry Potter': 'a school-of-magic fantasy with round spectacles, house-scarf cues, owls, and wand-casting drama',
+    'The Lord of the Rings': 'an epic quest fantasy with cloaked travelers, a glowing ring, mountains, and ancient-medieval grandeur',
+    'Breaking Bad': 'a desert crime drama with chemistry-cook imagery, yellow protective gear, and tense moral collapse',
+    'Better Call Saul': 'a flashy strip-mall lawyer world with cheap suits, legal ads, and scheming underdog energy',
+    'The Simpsons': 'a yellow suburban cartoon family in a goofy small-town living-room setup',
+    'Family Guy': 'a cutaway-gag cartoon family with awkward suburban chaos and an irreverent living-room vibe',
+    'Friends': 'a cozy coffeehouse ensemble sitcom with city-apartment friendship energy and 1990s casual fashion',
+    'Seinfeld': 'a neurotic New York apartment sitcom with stand-up-comedy vibes and observational everyday absurdity',
+    'The Office': 'a cringe-comedy mockumentary in a drab paper office with awkward boss energy',
+    'Parks and Recreation': 'an optimistic small-town government mockumentary with civic-chaos charm and cheerful bureaucrats',
+    'Stranger Things': 'a retro synth-horror adventure with kids on bikes, glowing portals, and small-town monster dread',
+    'Dark': 'a moody European time-loop mystery with raincoats, caves, and tangled family timelines',
+    'Game of Thrones': 'a grim medieval power struggle with iron-throne vibes, dragons, fur cloaks, and noble intrigue',
+    'House of the Dragon': 'a silver-haired dragon-rider dynasty in fiery medieval court politics and regal family conflict',
+    'Batman': 'a brooding urban vigilante in bat-like silhouette overlooking a dark crime-ridden city',
+    'Spider-Man': 'a quippy wall-crawling hero in red-blue bug-like costume language swinging above a city skyline',
+    'Superman': 'a bright primary-colored flying hero with cape, farm-boy nobility, and clean skyward optimism',
+    'Captain America': 'a patriotic shield-carrying super-soldier in military-inspired comic-book heroism',
+    'The Matrix': 'a black-coated cyberpunk rebellion with dark glasses, code-rain atmosphere, and reality-bending action',
+    'Tron': 'a neon digital arena with glowing suits, light-cycle geometry, and computer-grid futurism',
+    'Jurassic Park': 'a dinosaur theme-park disaster with jeeps, electric fences, and towering prehistoric predator tension',
+    'King Kong': 'a giant ape adventure with skyscraper peril, jungle drama, and beauty-and-beast spectacle',
+    'Ghostbusters': 'a paranormal comedy team with jumpsuits, proton-pack-like gear, and city-ghost chaos',
+    'Men in Black': 'a secret-agent alien-policing duo in black suits with sleek sci-fi gadgets and deadpan cool',
+    'Rocky': 'an underdog boxing drama with grey sweats, worn gloves, and triumphant training montage energy',
+    'The Karate Kid': 'a teen martial-arts story with dojo rivalry, crane-kick attitude, and mentor-student wisdom',
+    'Indiana Jones': 'a whip-cracking fedora-wearing archaeologist in dusty tomb-raiding adventure mode',
+    'National Treasure': 'a modern clue-chasing treasure hunter with maps, lantern light, and historical-puzzle excitement',
+    'Top Gun': 'a swaggering fighter-pilot drama with aviators, jets, and sunlit runway cool',
+    'Mission: Impossible': 'a high-tech spy-action thriller with dangling heist poses and impossible gadget stunts',
+    'Pirates of the Caribbean': 'a chaotic swashbuckling sea adventure with eyeliner, tricorn hats, cursed treasure, and rum-soaked mischief',
+    'Hook': 'a whimsical grown-up Peter Pan pirate tale with bright costumes and theatrical family adventure',
+    'The Godfather': 'a shadowy old-world crime-family drama with suits, roses, and patriarchal menace',
+    'Goodfellas': 'a flashy mob-life story with suits, bars, cash, and fast-talking streetwise energy',
+    'Pulp Fiction': 'a cool crime anthology with diner-guns tension, retro suits, and pop-culture swagger',
+    'Reservoir Dogs': 'a minimalist heist-gang image with skinny black suits, ties, and warehouse tension',
+    'The Silence of the Lambs': 'a psychological thriller with moth imagery, prison-glass tension, and an eerie serial-killer stare',
+    'American Psycho': 'a glossy yuppie horror satire with slicked-back hair, luxury business cards, and manic menace',
+    'Back to the Future': 'a time-travel comedy adventure with a teen in puffy vest, lightning, and gull-wing car vibes',
+    "Bill & Ted's Excellent Adventure": 'a goofy buddy time-travel romp with enthusiastic rock-kid poses and phone-booth absurdity',
+    'Alien': 'a claustrophobic sci-fi horror with industrial spaceship corridors and a sleek nightmare creature in the shadows',
+    'Predator': 'a jungle action-horror hunt with a camouflaged alien warrior and macho commando tension',
+    'The Terminator': 'a relentless killer cyborg with leather, red-eye menace, and urban-apocalypse action',
+    'RoboCop': 'a metallic lawman in a dystopian city with corporate satire and armored justice vibes',
+    'Die Hard': 'a lone everyman action hero in a skyscraper siege with bare feet, radio banter, and explosive chaos',
+    'Lethal Weapon': 'a mismatched buddy-cop action story with rough detectives, guns, and reckless city-chase energy',
+    'The Addams Family': 'a gothic comic clan in elegant black costumes, spooky mansion decor, and deadpan family weirdness',
+    'The Munsters': 'a goofy suburban monster family in retro TV-horror style with cheerful creature-household charm',
+    'South Park': 'a crude snowy-town cartoon with colorful winter hats and outrageous satirical chaos',
+    'Rick and Morty': 'a frantic portal-jumping sci-fi cartoon duo with lab-coat chaos and multiverse absurdity',
+    'Beavis and Butt-Head': 'two dim grunge-metal teens on a couch with slacker snickering and TV-glow stupidity',
+    "Wayne's World": 'a goofy public-access rock-comedy duo with long hair, caps, and basement-party enthusiasm',
+    'The X-Files': 'a paranormal-investigation duo with flashlights, FBI-ish coats, and eerie alien-conspiracy mood',
+    'Fringe': 'a weird-science investigation team with lab gear, strange phenomena, and blue-toned mystery',
+    'Doctor Who': 'a whimsical time-travel adventurer with eccentric coat, impossible gadget, and cosmic British charm',
+    'Sherlock': 'a modern detective in long coat and scarf with violin-and-deduction cool in moody London',
+    'Peaky Blinders': 'a razor-edged period gang drama with flat caps, long coats, and smoky industrial Birmingham mood',
+    'Boardwalk Empire': 'a Prohibition crime saga with suits, fedoras, and seaside corruption in 1920s America',
+    'The Sopranos': 'a suburban mob-boss drama with therapist tension, ducks, and heavy New Jersey family menace',
+    'Sons of Anarchy': 'an outlaw biker-family drama with leather vests, motorcycles, and dusty brotherhood tension',
+    'Narcos': 'a cartel-crime saga with tropical heat, aviator cops, and drug-war intensity',
+    'Scarface': 'a flashy rise-and-fall gangster epic with white suit swagger, excess, and cocaine-fueled decadence',
+    'Avatar': 'a bioluminescent alien-world adventure with blue jungle tribes, giant trees, and soaring creatures',
+    'Dune': 'a desert prophecy epic with sand, veils, giant worms, and austere sci-fi nobility',
+    'Mad Max': 'a wasteland road-war apocalypse with spiked vehicles, dust storms, and feral survival energy',
+    'Waterworld': 'a soggy post-apocalyptic ocean adventure with improvised sea gear and floating-settlement chaos',
+    'Mean Girls': 'a glossy high-school clique comedy with pink fashion codes and cafeteria-power politics',
+    'Clueless': 'a sunny Beverly Hills teen-comedy world with plaid fashion, makeover energy, and valley-girl charm',
+    'Barbie': 'a hyper-pink toy-dream fantasy with plastic-perfect suburbia and playful self-aware glamour',
+    'Legally Blonde': 'a bright pink legal-comedy heroine with fashionable confidence, tiny-dog energy, and campus-to-court ambition',
+    'Wednesday': 'a deadpan gothic teen with braids, black school uniform cues, and creepy-academy cool',
+    'Sabrina the Teenage Witch': 'a bubbly magical-teen sitcom with sparkly spells, cat familiar energy, and bright suburban fantasy',
+    'Bridgerton': 'a pastel Regency romance world with ballroom glamour, gossip scandal, and floral aristocratic excess',
+    'Pride and Prejudice': 'a classic Regency courtship world with windswept estates, formal dress, and restrained romantic tension',
+    'The Walking Dead': 'a grim zombie-survival ensemble trudging through ruined roads and desperate campfire tension',
+    'The Last of Us': 'a fungal-apocalypse road journey with weary guardianship, ruined cities, and tender survival sadness',
+    'The Mandalorian': 'a lone armored space bounty hunter with a tiny green companion crossing dusty frontier worlds',
+    'The Witcher': 'a white-haired monster hunter with swords, potions, and grim fantasy tavern-road atmosphere',
+    'Shrek': 'a swamp-dwelling green ogre fairy-tale comedy with grumpy charm and storybook chaos',
+    'Monsters, Inc.': 'a bright cartoon monster workplace with furry giant creature energy and colorful factory comedy',
+    'Toy Story': 'a secret-life-of-toys adventure with plastic cowboy-spaceman rivalry and bedroom wonder',
+    'Cars': 'a glossy talking-racecar world with highway nostalgia and small-town speedway charm',
+    'Frozen': 'an icy musical fairy tale with snow powers, regal sisters, and glittering winter wonderland drama',
+    'Moana': 'an ocean-voyage adventure with island heroine energy, giant waves, and mythic Polynesian-inspired spirit',
+    'The Lion King': 'a savannah animal-royalty epic with dramatic sunrise cliffs and coming-of-age pride drama',
+    'Madagascar': 'a comic zoo-animal escape with wild-eyed critters and tropical island mayhem',
+    'SpongeBob SquarePants': 'a zany undersea cartoon world with square yellow fry-cook energy and nautical silliness',
+    'Minions': 'a chaotic gaggle of small yellow helpers in goggles causing slapstick trouble',
+    'Black Mirror': 'a cold near-future tech dystopia with screens, surveillance, and unsettling digital paranoia',
+    'The Twilight Zone': 'a classic eerie anthology with black-and-white uncanny suburbia and cosmic weirdness',
+    'Jaws': 'a seaside summer thriller with a giant shark lurking beneath swimmers and poster-like beach panic',
+    'Deep Blue Sea': 'a glossy shark-lab action thriller with stormy seas, scientific hubris, and toothy chaos',
+    'Home Alone': 'a festive kid-vs-burglars slapstick setup with booby traps, winter house, and shocked expressions',
+    'Dennis the Menace': 'a mischievous suburban kid-comedy setup with striped overalls, neighborhood chaos, and exasperated adults',
+    'Kill Bill': 'a revenge-action saga with yellow-suited swordfighter energy, stylized violence, and comic-book cool',
+    "Charlie's Angels": 'a glamorous action-team setup with spy poses, fashion-forward attitude, and playful crime-fighting energy',
+    'The Hunger Games': 'a dystopian survival-competition saga with archer iconography, fiery pageantry, and defiant rebellion',
+    'Squid Game': 'a deadly game-show dystopia with numbered tracksuits, masked guards, and geometric neon menace',
+  },
+};
+
+function buildFallbackPromptForSubject(pack, subject, options, compositionMode) {
+  const safeBriefs = SAFE_SUBJECT_BRIEFS[pack.categoryId] || {};
+  const brief = String(safeBriefs[subject] || '').trim();
+  if (!brief) return '';
+  if (pack.categoryId === 'music') {
+    return [
+      'Create a single square original parody caricature of a transformed music archetype.',
+      `Subject brief: ${brief}.`,
+      `Composition mode: ${compositionMode}.`,
+      `Style direction: ${options.styleNotes}.`,
+      'Make it feel playful, iconic, and music-quiz readable while staying generic enough to avoid depicting any exact real person.',
+      'Use only broad era cues, wardrobe shapes, props, silhouette, and exaggerated caricature energy.',
+      'Do not include names, text, logos, exact facial resemblance, or an album-cover recreation.',
+    ].join(' ');
+  }
+  return [
+    'Create a single square original parody poster-style caricature built from transformed fictional archetypes.',
+    `Subject brief: ${brief}.`,
+    `Composition mode: ${compositionMode}.`,
+    `Style direction: ${options.styleNotes}.`,
+    'Make it readable as a playful spoof for a quiz image while staying generic enough to avoid depicting exact copyrighted characters or a recreated poster.',
+    'Use broad costume language, props, setting hints, and silhouette only.',
+    'Do not include names, title text, logos, or any exact character design.',
+  ].join(' ');
+}
+
+function isModerationBlock(error) {
+  const message = String(error && error.message ? error.message : error || '');
+  return (
+    message.includes('moderation_blocked')
+    || message.includes('safety system')
+    || message.includes('image_generation_user_error')
+  );
+}
+
 function pickCompositionMode(pack, index) {
   const list = Array.isArray(pack.compositionModes) ? pack.compositionModes : [];
   if (!list.length) return 'a clean caricature poster layout';
@@ -328,6 +568,7 @@ function buildPromptPlan(pack, options) {
       mediaFile: `${entry.entryId}-main.png`,
       compositionMode,
       prompt: buildPromptForSubject(pack, entry.main, options, compositionMode),
+      fallbackPrompt: buildFallbackPromptForSubject(pack, entry.main, options, compositionMode),
     });
     const imposterCompositionMode = pickCompositionMode(pack, promptRecords.length);
     promptRecords.push({
@@ -337,6 +578,7 @@ function buildPromptPlan(pack, options) {
       mediaFile: `${entry.entryId}-imposter.png`,
       compositionMode: imposterCompositionMode,
       prompt: buildPromptForSubject(pack, entry.imposter, options, imposterCompositionMode),
+      fallbackPrompt: buildFallbackPromptForSubject(pack, entry.imposter, options, imposterCompositionMode),
     });
   });
 
@@ -396,7 +638,12 @@ async function generateWithOpenAi({ prompt, apiKey, model, size, quality }) {
     throw new Error(`OpenAI image generation failed: HTTP ${response.status} ${message}`);
   }
   const payload = await response.json();
-  const imageBase64 = payload?.data?.[0]?.b64_json;
+  const imageBase64 = (
+    payload
+    && Array.isArray(payload.data)
+    && payload.data[0]
+    && payload.data[0].b64_json
+  ) || '';
   if (!imageBase64) {
     throw new Error('OpenAI response did not include image data.');
   }
@@ -443,6 +690,8 @@ async function runPack(plan, options) {
 
   let created = 0;
   let skipped = 0;
+  let blocked = 0;
+  const results = [];
   for (let index = 0; index < plan.promptRecords.length; index += 1) {
     const record = plan.promptRecords[index];
     const outputPath = path.join(imagesDir, record.mediaFile);
@@ -451,31 +700,84 @@ async function runPack(plan, options) {
 
     if (exists && !options.overwrite) {
       skipped += 1;
+      results.push({ subject: record.subject, side: record.side, mediaFile: record.mediaFile, status: 'skipped' });
       console.log(`- [${index + 1}/${plan.promptRecords.length}] SKIP ${record.subject} (${relOutputPath})`);
       continue;
     }
 
     if (options.dryRun) {
+      results.push({ subject: record.subject, side: record.side, mediaFile: record.mediaFile, status: 'planned' });
       console.log(`- [${index + 1}/${plan.promptRecords.length}] PLAN ${record.subject} -> ${relOutputPath}`);
       continue;
     }
 
-    const imageBuffer = await generateWithOpenAi({
-      prompt: record.prompt,
-      apiKey: options.apiKey,
-      model: options.model,
-      size: options.size,
-      quality: options.quality,
-    });
+    let imageBuffer = null;
+    let usedFallbackPrompt = false;
+    try {
+      imageBuffer = await generateWithOpenAi({
+        prompt: record.prompt,
+        apiKey: options.apiKey,
+        model: options.model,
+        size: options.size,
+        quality: options.quality,
+      });
+    } catch (error) {
+      if (!isModerationBlock(error) || !record.fallbackPrompt) {
+        throw error;
+      }
+      console.warn(`- [${index + 1}/${plan.promptRecords.length}] RETRY ${record.subject} with safer fallback prompt`);
+      try {
+        imageBuffer = await generateWithOpenAi({
+          prompt: record.fallbackPrompt,
+          apiKey: options.apiKey,
+          model: options.model,
+          size: options.size,
+          quality: options.quality,
+        });
+        usedFallbackPrompt = true;
+      } catch (fallbackError) {
+        if (!isModerationBlock(fallbackError)) {
+          throw fallbackError;
+        }
+        blocked += 1;
+        results.push({
+          subject: record.subject,
+          side: record.side,
+          mediaFile: record.mediaFile,
+          status: 'blocked',
+          reason: String(fallbackError.message || fallbackError),
+        });
+        console.warn(`- [${index + 1}/${plan.promptRecords.length}] BLOCKED ${record.subject} (${relOutputPath})`);
+        continue;
+      }
+    }
+
     fs.writeFileSync(outputPath, imageBuffer);
     created += 1;
-    console.log(`- [${index + 1}/${plan.promptRecords.length}] WROTE ${record.subject} (${relOutputPath})`);
+    results.push({
+      subject: record.subject,
+      side: record.side,
+      mediaFile: record.mediaFile,
+      status: usedFallbackPrompt ? 'created_with_fallback' : 'created',
+    });
+    console.log(`- [${index + 1}/${plan.promptRecords.length}] WROTE ${record.subject} (${relOutputPath})${usedFallbackPrompt ? ' [fallback]' : ''}`);
     if (options.delayMs > 0 && index < plan.promptRecords.length - 1) {
       await sleep(options.delayMs);
     }
   }
 
-  console.log(`[generateParodyPictureRounds] Pack done. Created: ${created}, Skipped: ${skipped}`);
+  if (!options.dryRun) {
+    writeJson(path.join(packDir, 'generation-results.json'), {
+      packId: plan.pack.packId,
+      generatedAt: new Date().toISOString(),
+      created,
+      skipped,
+      blocked,
+      results,
+    });
+  }
+
+  console.log(`[generateParodyPictureRounds] Pack done. Created: ${created}, Skipped: ${skipped}, Blocked: ${blocked}`);
 }
 
 async function run() {
