@@ -100,6 +100,7 @@ import {
   sanitizeBannedWords,
 } from "./data/categories";
 import { PICTURE_DLC_MANIFESTS } from "./data/pictureDlcManifests";
+import { getDefaultHostVoiceSrcCandidatesForLine } from "./data/defaultHostVoiceLineMap";
 import {
   createLobbyTransport,
   createNextRoundOnServer,
@@ -1690,6 +1691,7 @@ function ThemeHostVisual({
     themeName,
   });
   const talkingVideoSrc = hostAssets?.talkingVideo || "";
+  const overlaySrc = hostAssets?.overlay || "";
   const [videoBroken, setVideoBroken] = useState(false);
 
   useEffect(() => {
@@ -1698,22 +1700,46 @@ function ThemeHostVisual({
 
   if (talkingVideoSrc && !videoBroken) {
     return (
-      <MultiSourceVideo
-        src={talkingVideoSrc}
-        className={className}
-        autoPlay={isTalking}
-        loop={isTalking}
-        muted
-        playsInline
-        preload="metadata"
-        poster={animatedHostSrc || undefined}
-        ariaHidden
-        onError={() => setVideoBroken(true)}
-      />
+      <div className={className}>
+        <div className="grid h-full w-full [grid-template-areas:'stack']">
+          <MultiSourceVideo
+            src={talkingVideoSrc}
+            className="[grid-area:stack] h-full w-full object-contain"
+            autoPlay={isTalking}
+            loop={isTalking}
+            muted
+            playsInline
+            preload="metadata"
+            poster={animatedHostSrc || undefined}
+            ariaHidden
+            onError={() => setVideoBroken(true)}
+          />
+          <ThemeArt
+            src={overlaySrc}
+            alt=""
+            className="[grid-area:stack] h-full w-full object-contain pointer-events-none"
+          />
+        </div>
+      </div>
     );
   }
 
-  return <ThemeArt src={animatedHostSrc} alt={alt} className={className} />;
+  return (
+    <div className={className}>
+      <div className="grid h-full w-full [grid-template-areas:'stack']">
+        <ThemeArt
+          src={animatedHostSrc}
+          alt={alt}
+          className="[grid-area:stack] h-full w-full object-contain"
+        />
+        <ThemeArt
+          src={overlaySrc}
+          alt=""
+          className="[grid-area:stack] h-full w-full object-contain pointer-events-none"
+        />
+      </div>
+    </div>
+  );
 }
 function RoundTypeLogo({ src, alt, className = "" }) {
   if (!src) return null;
@@ -1820,6 +1846,132 @@ function useTalkingAnimation({ enabled = false, themeName = "Default" } = {}) {
   }
   return idleFrames[0] || "";
 }
+function normalizeHostVoiceLine(line = "") {
+  return String(line || "")
+    .replace(/\s+/g, " ")
+    .trim()
+    .toLowerCase();
+}
+function useDefaultHostVoicePlayback({
+  enabled = false,
+  line = "",
+  fallbackDurationMs = 6000,
+} = {}) {
+  const [isPlaying, setIsPlaying] = useState(false);
+  const audioRef = useRef(null);
+  const fallbackTimerRef = useRef(null);
+  useEffect(() => {
+    const clearFallbackTimer = () => {
+      if (!fallbackTimerRef.current) return;
+      clearTimeout(fallbackTimerRef.current);
+      fallbackTimerRef.current = null;
+    };
+    const fallbackMs = Math.max(600, Number(fallbackDurationMs) || 6000);
+    const normalized = normalizeHostVoiceLine(line);
+    if (!enabled || !normalized) {
+      clearFallbackTimer();
+      setIsPlaying(false);
+      if (audioRef.current) {
+        try {
+          audioRef.current.pause();
+        } catch {}
+        audioRef.current = null;
+      }
+      return undefined;
+    }
+    const mappedSrcCandidates = getDefaultHostVoiceSrcCandidatesForLine(normalized);
+    if (!mappedSrcCandidates.length) {
+      setIsPlaying(true);
+      clearFallbackTimer();
+      fallbackTimerRef.current = setTimeout(() => {
+        fallbackTimerRef.current = null;
+        setIsPlaying(false);
+      }, fallbackMs);
+      return () => {
+        clearFallbackTimer();
+      };
+    }
+    const audio = new Audio(mappedSrcCandidates[0]);
+    audio.preload = "auto";
+    audioRef.current = audio;
+    setIsPlaying(true);
+    const stopPlayback = () => {
+      clearFallbackTimer();
+      setIsPlaying(false);
+    };
+    const fallbackStopPlayback = () => {
+      clearFallbackTimer();
+      fallbackTimerRef.current = setTimeout(() => {
+        fallbackTimerRef.current = null;
+        setIsPlaying(false);
+      }, fallbackMs);
+    };
+    let activeCandidateIndex = 0;
+    const tryPlayAtIndex = (index) => {
+      activeCandidateIndex = index;
+      audio.src = mappedSrcCandidates[index];
+      audio.load();
+      return audio.play();
+    };
+    const tryNextCandidateOrFallback = () => {
+      const nextIndex = activeCandidateIndex + 1;
+      if (nextIndex < mappedSrcCandidates.length) {
+        tryPlayAtIndex(nextIndex).catch(() => tryNextCandidateOrFallback());
+        return;
+      }
+      fallbackStopPlayback();
+    };
+    audio.addEventListener("ended", stopPlayback);
+    audio.addEventListener("error", tryNextCandidateOrFallback);
+    tryPlayAtIndex(0).catch(() => tryNextCandidateOrFallback());
+    return () => {
+      audio.removeEventListener("ended", stopPlayback);
+      audio.removeEventListener("error", tryNextCandidateOrFallback);
+      clearFallbackTimer();
+      try {
+        audio.pause();
+        audio.currentTime = 0;
+      } catch {}
+      if (audioRef.current === audio) {
+        audioRef.current = null;
+      }
+    };
+  }, [enabled, line, fallbackDurationMs]);
+  return isPlaying;
+}
+function getDefaultThemeVoiceLineForGameIntroLine({
+  line = "",
+  lineIndex = 0,
+  total = 0,
+  isOnlineMode = false,
+  totalRounds = 1,
+  playerCount = 1,
+} = {}) {
+  const currentLine = String(line || "").trim();
+  if (!currentLine) return "";
+  if (lineIndex === 0) {
+    const hour = new Date().getHours();
+    const greeting = hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening";
+    return `${greeting}, and welcome to Pants on Fire! Find the Liar.`;
+  }
+  if (lineIndex === 1) {
+    return DEFAULT_HOST_NAME_LINE;
+  }
+  if (lineIndex === 2) {
+    return Number(isOnlineMode)
+      ? (DEFAULT_HOST.onlinePrompt || currentLine)
+      : (DEFAULT_HOST.passPrompt || currentLine);
+  }
+  if (lineIndex === total - 2) {
+    const safeRounds = Math.max(1, Number(totalRounds) || 1);
+    const safePlayers = Math.max(1, Number(playerCount) || 1);
+    return `Through ${safeRounds} rounds, the ${safePlayers} of you will try to expose the liar without exposing yourselves first.`;
+  }
+  if (lineIndex >= total - 1) {
+    return DEFAULT_HOST_CLOSING_LINE;
+  }
+  return currentLine;
+}
 function fitTextToBubble(
   textElement,
   containerElement,
@@ -1887,17 +2039,33 @@ function GameIntroScreen({
   const introSpeechTextRef = useRef(null);
   const introSpeechBubbleRef = useRef(null);
   const [introLineFontSize, setIntroLineFontSize] = useState(30);
+  const currentLine = introLines[lineIndex] || "";
+  const voicePlaybackEnabled = toCanonicalThemeName(theme) === "Default";
+  const voiceLineForPlayback = getDefaultThemeVoiceLineForGameIntroLine({
+    line: currentLine,
+    lineIndex,
+    total: introLines.length,
+    isOnlineMode,
+    totalRounds: resolvedRoundCount,
+    playerCount: resolvedPlayerCount,
+  });
+  const isVoicePlayingLine = useDefaultHostVoicePlayback({
+    enabled: voicePlaybackEnabled,
+    line: voiceLineForPlayback,
+    fallbackDurationMs: HOST_DIALOGUE_TIMINGS.gameIntroAdvanceMs,
+  });
   const isTalking = lineIndex < introLines.length - 1;
   useEffect(() => {
     setLineIndex(0);
   }, [theme, isOnlineMode]);
   useEffect(() => {
     if (lineIndex >= introLines.length - 1) return undefined;
+    if (isVoicePlayingLine) return undefined;
     const timer = setTimeout(() => {
       setLineIndex((current) => Math.min(current + 1, introLines.length - 1));
     }, HOST_DIALOGUE_TIMINGS.gameIntroAdvanceMs);
     return () => clearTimeout(timer);
-  }, [lineIndex, introLines.length]);
+  }, [lineIndex, introLines.length, isVoicePlayingLine]);
   useLayoutEffect(() => {
     const nextSize = fitTextToBubble(
       introSpeechTextRef.current,
@@ -2377,6 +2545,13 @@ function HostIntroScreen({ round, stingerLine, onContinue, theme }) {
   const speechBubbleTextRef = useRef(null);
   const speechBubbleFitRef = useRef(null);
   const [speechBubbleFontSize, setSpeechBubbleFontSize] = useState(28);
+  const currentSpeechLine = speechSentences[speechIndex] || "";
+  const voicePlaybackEnabled = toCanonicalThemeName(theme) === "Default";
+  const isVoicePlayingLine = useDefaultHostVoicePlayback({
+    enabled: voicePlaybackEnabled,
+    line: currentSpeechLine,
+    fallbackDurationMs: HOST_DIALOGUE_TIMINGS.roundIntroAdvanceMs,
+  });
   const canContinue = speechIndex >= speechSentences.length - 1;
   const isTalking = speechIndex < speechSentences.length - 1;
   const introLine =
@@ -2388,13 +2563,14 @@ function HostIntroScreen({ round, stingerLine, onContinue, theme }) {
   }, [round.id, round.roundNumber, round.roundTypeId]);
   useEffect(() => {
     if (speechIndex >= speechSentences.length - 1) return undefined;
+    if (isVoicePlayingLine) return undefined;
     const timer = setTimeout(() => {
       setSpeechIndex((current) =>
         Math.min(current + 1, speechSentences.length - 1),
       );
     }, HOST_DIALOGUE_TIMINGS.roundIntroAdvanceMs);
     return () => clearTimeout(timer);
-  }, [speechIndex, speechSentences.length]);
+  }, [speechIndex, speechSentences.length, isVoicePlayingLine]);
   useLayoutEffect(() => {
     const nextSize = fitTextToBubble(
       speechBubbleTextRef.current,
@@ -4537,7 +4713,7 @@ function RevealScreen({
                   <img
                     src={cardFrontSrc}
                     alt="Prompt card front"
-                    className="absolute inset-0 h-full w-full object-contain object-center bg-black/30"
+                    className={`absolute inset-0 h-full w-full object-contain object-center bg-black/30 ${isImposter ? "scale-[1.25]" : ""}`}
                   />
                 )}
                 <div
