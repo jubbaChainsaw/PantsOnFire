@@ -142,11 +142,11 @@ const PACKS = {
   music: {
     categoryId: 'music',
     packId: 'music-parodies-v1',
-    label: 'Top 50 Pop/Rock Album Cover Parodies v1',
+    label: 'Top 50 Pop/Rock Artist Logo Parodies v1',
     groupId: 'music-parodies',
-    groupName: 'Album Cover Parodies',
-    previewLabel: 'Describe the album-cover parody image clearly without naming the exact album.',
-    promptHint: 'Picture Prompt • Album Cover Parody',
+    groupName: 'Artist Logo Parodies',
+    previewLabel: 'Describe the parody logo mark clearly without naming the exact act.',
+    promptHint: 'Picture Prompt • Artist Logo Parody',
     entries: MUSIC_ENTRIES,
     compositionModes: MUSIC_COMPOSITION_MODES,
   },
@@ -450,14 +450,14 @@ function buildFallbackPromptForSubject(pack, subject, options, compositionMode) 
   if (!brief) return '';
   if (pack.categoryId === 'music') {
     return [
-      'Create a single square original spoof album-cover image built from a transformed pop-or-rock album concept.',
+      'Create a single square original artist or band-inspired logo mark built from transformed visual identity cues.',
       `Subject brief: ${brief}.`,
       `Composition mode: ${compositionMode}.`,
       `Style direction: ${options.styleNotes}.`,
-      'Make it feel playful, iconic, and music-quiz readable while staying generic enough to avoid recreating any exact album cover or exact identifiable portrait.',
-      'Render face shape, hairstyle, costume, symbolic props, and color story with enough crisp detail to read clearly at 800x800 without becoming an exact likeness or direct cover match.',
-      'Use only broad era cues, wardrobe shapes, props, silhouette, and exaggerated caricature energy.',
-      'Do not include names, readable text, logos, exact facial resemblance, or an exact album-cover recreation.',
+      'Make it feel playful, iconic, and music-quiz readable while staying generic enough to avoid recreating any exact trademarked band logo, album cover, or exact portrait.',
+      'Use transformed motifs inspired by clothing, album-art colors, signature props, silhouette language, and attitude instead of literal copied branding.',
+      'Keep the mark crisp, bold, legible at 800x800, and suitable as a parody emblem or badge.',
+      'Do not include readable artist names, exact existing logos, exact album-cover layouts, or exact facial resemblance.',
     ].join(' ');
   }
   return [
@@ -477,13 +477,13 @@ function buildUltraSafePromptForSubject(pack, subject, options, compositionMode)
   const brief = String(safeBriefs[subject] || '').trim();
   if (pack.categoryId === 'music') {
     return [
-      'Create a single square original spoof album-cover graphic built from symbolic pop-or-rock concept cues only.',
-      brief ? `Subject brief: ${brief}.` : 'Use a generic pop-or-rock album concept with transformed symbolic cues only.',
+      'Create a single square original parody logo graphic built from symbolic music-identity cues only.',
+      brief ? `Subject brief: ${brief}.` : 'Use a generic transformed music-identity concept with symbolic cues only.',
       `Composition mode: ${compositionMode}.`,
       `Style direction: ${options.styleNotes}.`,
-      'Prefer anonymous transformed figures, cropped body language, silhouettes, props, wardrobe fragments, and iconic color-story cues over any direct portrait.',
-      'Make it quiz-readable and detailed at 800x800 while avoiding any exact real person, exact album layout, readable text, or trademark-like design.',
-      'No names, no album titles, no logos, no readable typography, and no exact facial resemblance.',
+      'Prefer symbols, silhouettes, props, hairstyle cues, costume fragments, and color-story motifs over any direct portrait or copied wordmark.',
+      'Make it quiz-readable and detailed at 800x800 while avoiding any exact real person, readable text, or trademark-like design.',
+      'No names, no exact logos, no readable typography, and no exact facial resemblance.',
     ].join(' ');
   }
   return [
@@ -527,18 +527,17 @@ function parseMusicAlbumSubject(subject) {
 function buildMusicPrompt(subject, options, compositionMode) {
   const { artist, album } = parseMusicAlbumSubject(subject);
   const namedReference = album
-    ? `the pop or rock album cover "${album}" by ${artist}`
-    : `the pop or rock album cover associated with ${artist}`;
+    ? `${artist} with visual inspiration from "${album}"`
+    : artist;
   return [
-    `Create a single square original spoof album cover inspired by ${namedReference}.`,
-    'Make it recognisable to a music-trivia player through transformed cover-era styling, silhouette, wardrobe, props, color story, and iconic album-cover energy rather than a direct recreation.',
-    'Show one central transformed performer, a compact transformed group, or one highly iconic symbolic setup, depending on what best suits the album being spoofed.',
+    `Create a single square original parody logo mark for ${namedReference}.`,
+    'Base it on transformed inspiration from the artist or band visual identity, including logo vibes, clothing, stage styling, props, and album-art color language, without directly copying any existing logo or cover.',
+    'Design it like a bold emblem, badge, crest, stencil, or icon-first wordmark substitute that a music-trivia player could connect to the act at a glance.',
     `Composition mode: ${compositionMode}.`,
     `Style direction: ${options.styleNotes}.`,
-    'Push the humour, caricature, pose, and visual motif choices so it feels like a satirical spoof cover, not a clone.',
-    'Render face shape, hair, costume, props, and expression with enough crisp detail that the features are easy to read at 800x800 and still recognizable in a quiz.',
-    'Keep the composition bold, clean, and instantly legible at thumbnail size for a party-game picture round.',
-    'Do not include album titles, artist names, readable text, logos, wordmarks, watermarks, exact cover layouts, or exact face matching.',
+    'Push the humour, caricature, symbolic motifs, and graphic identity choices so it feels like a satirical spoof logo, not a clone.',
+    'Keep the composition bold, clean, high-contrast, and instantly legible at thumbnail size for a party-game picture round.',
+    'Do not include readable artist names, exact existing logos, wordmarks, watermarks, exact album-cover layouts, or exact face matching.',
   ].join(' ');
 }
 
@@ -597,6 +596,7 @@ function buildPromptPlan(pack, options) {
     const mainNamedPrompt = buildPromptForSubject(pack, entry.main, options, compositionMode);
     const mainSafePrompt = buildFallbackPromptForSubject(pack, entry.main, options, compositionMode);
     const mainUltraSafePrompt = buildUltraSafePromptForSubject(pack, entry.main, options, compositionMode);
+    const mainDedupeKey = pack.categoryId === 'music' ? String(entry.main).trim().toLowerCase() : '';
     promptRecords.push({
       entryId: entry.entryId,
       side: 'main',
@@ -614,11 +614,13 @@ function buildPromptPlan(pack, options) {
         : (mainSafePrompt ? 'safe_concept_retry' : 'ultra_safe_symbolic_retry'),
       finalRetryPrompt: useSafePrimary ? '' : (mainUltraSafePrompt || ''),
       finalRetryPromptStrategy: 'ultra_safe_symbolic_retry',
+      dedupeKey: mainDedupeKey,
     });
     const imposterCompositionMode = pickCompositionMode(pack, promptRecords.length);
     const imposterNamedPrompt = buildPromptForSubject(pack, entry.imposter, options, imposterCompositionMode);
     const imposterSafePrompt = buildFallbackPromptForSubject(pack, entry.imposter, options, imposterCompositionMode);
     const imposterUltraSafePrompt = buildUltraSafePromptForSubject(pack, entry.imposter, options, imposterCompositionMode);
+    const imposterDedupeKey = pack.categoryId === 'music' ? String(entry.imposter).trim().toLowerCase() : '';
     promptRecords.push({
       entryId: entry.entryId,
       side: 'imposter',
@@ -636,6 +638,7 @@ function buildPromptPlan(pack, options) {
         : (imposterSafePrompt ? 'safe_concept_retry' : 'ultra_safe_symbolic_retry'),
       finalRetryPrompt: useSafePrimary ? '' : (imposterUltraSafePrompt || ''),
       finalRetryPromptStrategy: 'ultra_safe_symbolic_retry',
+      dedupeKey: imposterDedupeKey,
     });
   });
 
@@ -790,6 +793,7 @@ async function runPack(plan, options) {
   const manifestPath = path.join(packDir, 'manifest.json');
   const promptsPath = path.join(packDir, 'generation-prompts.json');
   const readmePath = path.join(packDir, 'README.md');
+  const generatedByDedupeKey = new Map();
 
   console.log(`\n[generateParodyPictureRounds] Pack: ${plan.pack.packId}`);
   console.log(`[generateParodyPictureRounds] Entries: ${plan.selectedEntries.length}`);
@@ -827,6 +831,29 @@ async function runPack(plan, options) {
     const outputPath = path.join(imagesDir, record.mediaFile);
     const relOutputPath = path.relative(repoRoot, outputPath);
     const exists = fs.existsSync(outputPath);
+    const dedupeKey = String(record.dedupeKey || '').trim();
+
+    if (dedupeKey && generatedByDedupeKey.has(dedupeKey)) {
+      const sourcePath = generatedByDedupeKey.get(dedupeKey);
+      if (sourcePath && fs.existsSync(sourcePath)) {
+        if (!exists || options.overwrite) {
+          fs.copyFileSync(sourcePath, outputPath);
+        }
+        skipped += 1;
+        results.push({
+          subject: record.subject,
+          side: record.side,
+          mediaFile: record.mediaFile,
+          status: 'copied_from_duplicate',
+          dedupeKey,
+          copiedFrom: path.relative(repoRoot, sourcePath),
+          provider: options.provider,
+          model: options.model,
+        });
+        console.log(`- [${index + 1}/${plan.promptRecords.length}] COPY ${record.subject} (${relOutputPath}) <- ${path.relative(repoRoot, sourcePath)}`);
+        continue;
+      }
+    }
 
     if (exists && !options.overwrite) {
       skipped += 1;
@@ -892,6 +919,7 @@ async function runPack(plan, options) {
             usedRetryPrompt = true;
             usedPromptStrategy = record.finalRetryPromptStrategy || 'final_retry_prompt';
             fs.writeFileSync(outputPath, imageBuffer);
+            if (dedupeKey) generatedByDedupeKey.set(dedupeKey, outputPath);
             created += 1;
             results.push({
               subject: record.subject,
@@ -899,6 +927,7 @@ async function runPack(plan, options) {
               mediaFile: record.mediaFile,
               status: 'created_with_retry',
               promptStrategy: usedPromptStrategy,
+              dedupeKey,
               provider: options.provider,
               model: options.model,
             });
@@ -935,6 +964,7 @@ async function runPack(plan, options) {
     }
 
     fs.writeFileSync(outputPath, imageBuffer);
+    if (dedupeKey) generatedByDedupeKey.set(dedupeKey, outputPath);
     created += 1;
     results.push({
       subject: record.subject,
@@ -942,6 +972,7 @@ async function runPack(plan, options) {
       mediaFile: record.mediaFile,
       status: usedRetryPrompt ? 'created_with_retry' : 'created',
       promptStrategy: usedPromptStrategy,
+      dedupeKey,
       provider: options.provider,
       model: options.model,
     });
