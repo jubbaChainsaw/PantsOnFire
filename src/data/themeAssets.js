@@ -1,4 +1,5 @@
 import { toCanonicalThemeName } from './themeAliases';
+import { THEME_GENERATED_HOST_MEDIA } from './generatedHostMedia';
 
 export const THEME_ASSETS = {
   Default: {
@@ -280,20 +281,25 @@ export const ROUND_TYPE_CARD_FRONT_BY_ID = {
 export function getThemeAssets(themeName = 'Default') {
   const canonicalThemeName = toCanonicalThemeName(themeName);
   const selected = THEME_ASSETS[canonicalThemeName] || THEME_ASSETS.Default;
+  const generatedDefault = THEME_GENERATED_HOST_MEDIA.Default || {};
+  const generatedSelected = THEME_GENERATED_HOST_MEDIA[canonicalThemeName] || {};
   return {
     ...THEME_ASSETS.Default,
+    ...generatedDefault,
     ...selected,
+    ...generatedSelected,
   };
 }
 
 export function getThemeHostAssets(themeName = 'Default') {
   const canonicalThemeName = toCanonicalThemeName(themeName);
-  const selected = THEME_ASSETS[canonicalThemeName];
-  const fallback = THEME_ASSETS.Default || {};
+  const selected = getThemeAssets(canonicalThemeName);
+  const fallback = getThemeAssets('Default');
   const isDefaultTheme = canonicalThemeName === 'Default';
-  const hasThemeConfig = Boolean(selected);
+  const hasThemeConfig = Boolean(selected && Object.keys(selected).length);
   const unique = (list = []) => list.filter(Boolean).filter((value, index, arr) => arr.indexOf(value) === index);
   const getPersonaTalkFrames = (assetEntry = {}) => unique([
+    ...(Array.isArray(assetEntry.personaHostTalkingFrames) ? assetEntry.personaHostTalkingFrames : []),
     assetEntry.personaHostTalk1,
     assetEntry.personaHostTalk2,
     assetEntry.personaHostTalk3,
@@ -343,8 +349,12 @@ export function getThemeHostAssets(themeName = 'Default') {
     'Cops and Robbers': buildNewUiHostFrames('Cops and Robbers', 6),
     'Ghosts and Ghouls': buildNewUiHostFrames('Ghosts and Ghouls', 6),
   };
-  const themedFallbackFrames = themedFallbackFrameMap[canonicalThemeName] || [];
+  const themedFallbackFrames = selectedFrames.length
+    ? []
+    : (themedFallbackFrameMap[canonicalThemeName] || []);
   const themedFallbackIdle = themedFallbackFrames[0] || '';
+  const selectedOverlay = selectedEntry.hostOverlay || null;
+  const fallbackOverlay = fallback.hostOverlay || null;
 
   const resolvedIdle = themedFallbackFrames.length
     ? themedFallbackIdle
@@ -371,6 +381,9 @@ export function getThemeHostAssets(themeName = 'Default') {
     talkingFrames: resolvedTalkingFrames.length
       ? resolvedTalkingFrames
       : [resolvedIdle].filter(Boolean),
+    overlay: isDefaultTheme
+      ? (selectedOverlay || fallbackOverlay || null)
+      : selectedOverlay,
     talkingVideo: themedFallbackFrames.length ? '' : buildHostTalkingVideoSrc(canonicalThemeName),
   };
 }
