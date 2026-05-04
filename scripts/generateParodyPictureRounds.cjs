@@ -190,10 +190,10 @@ const SCREEN_ENTRIES = [
 ];
 
 const MUSIC_COMPOSITION_MODES = [
-  'a bold illustrated text logo with one central cartoon artist mascot',
-  'a circular badge logo with a compact cartoon lineup and surrounding signature elements',
-  'a distressed merch-logo emblem with stacked text, icon props, and sticker-like collage framing',
-  'a graphic wordmark with a cartoon bust or full-band lineup surrounded by themed symbols',
+  'an embroidered jacket-patch badge with a bold central wordmark and surrounding themed icons',
+  'a distressed back-patch emblem with stacked text, stitched border, and symbolic act imagery',
+  'a circular woven bag-patch design with a crest-like logo and small surrounding motifs',
+  'a sticker-like merch patch with rugged outline, banner text treatment, and iconic symbolic elements',
 ];
 
 const SCREEN_COMPOSITION_MODES = [
@@ -207,11 +207,11 @@ const PACKS = {
   music: {
     categoryId: 'music',
     packId: 'music-parodies-v1',
-    label: 'Top-Selling Rock Bands and Pop Stars Logo Parodies v1',
+    label: 'Top-Selling Rock Bands and Pop Stars Patch Logo Parodies v1',
     groupId: 'music-parodies',
-    groupName: 'Music Logo Parodies',
-    previewLabel: 'Describe the parody logo mark clearly without naming the exact artist or band.',
-    promptHint: 'Picture Prompt • Music Logo Parody',
+    groupName: 'Music Patch Logo Parodies',
+    previewLabel: 'Describe the parody patch logo clearly without naming the exact artist or band.',
+    promptHint: 'Picture Prompt • Music Patch Logo',
     entries: MUSIC_ENTRIES,
     compositionModes: MUSIC_COMPOSITION_MODES,
   },
@@ -416,14 +416,14 @@ function buildFallbackPromptForSubject(pack, subject, options, compositionMode) 
   if (!brief) return '';
   if (pack.categoryId === 'music') {
     return [
-      'Create a single square original artist or band-inspired logo mark built from transformed visual identity cues.',
+      'Create a single square original artist or band-inspired patch emblem built from transformed visual identity cues.',
       `Subject brief: ${brief}.`,
       `Composition mode: ${compositionMode}.`,
       `Style direction: ${options.styleNotes}.`,
-      'Make it feel playful, iconic, and music-quiz readable while staying generic enough to avoid recreating any exact trademarked band logo, album cover, or exact portrait.',
+      'Make it feel playful, iconic, and music-quiz readable while staying generic enough to avoid recreating any exact trademarked band logo, album cover, or official merch patch.',
       'Use transformed motifs inspired by clothing, album-art colors, signature props, silhouette language, and attitude instead of literal copied branding.',
-      'Keep the mark crisp, bold, legible at 800x800, and suitable as a parody emblem or badge.',
-      'Do not include readable artist names, exact existing logos, exact album-cover layouts, or exact facial resemblance.',
+      'Keep it patch-like: embroidered or woven border, badge-emblem construction, bold central wordmark area, and symbolic act imagery around it.',
+      'Do not include people, faces, exact existing logos, or exact album-cover layouts.',
     ].join(' ');
   }
   return [
@@ -443,13 +443,13 @@ function buildUltraSafePromptForSubject(pack, subject, options, compositionMode)
   const brief = String(safeBriefs[subject] || '').trim();
   if (pack.categoryId === 'music') {
     return [
-      'Create a single square original parody logo graphic built from symbolic music-identity cues only.',
+      'Create a single square original patch-style music emblem built from symbolic identity cues only.',
       brief ? `Subject brief: ${brief}.` : 'Use a generic transformed music-identity concept with symbolic cues only.',
       `Composition mode: ${compositionMode}.`,
       `Style direction: ${options.styleNotes}.`,
-      'Prefer symbols, silhouettes, props, hairstyle cues, costume fragments, and color-story motifs over any direct portrait or copied wordmark.',
-      'Make it quiz-readable and detailed at 800x800 while avoiding any exact real person, readable text, or trademark-like design.',
-      'No names, no exact logos, no readable typography, and no exact facial resemblance.',
+      'Prefer symbols, props, instruments, costume fragments, insignia shapes, and color-story motifs over any people or portrait elements.',
+      'Make it quiz-readable and detailed at 800x800 while avoiding any exact real person, readable extra text, or trademark-like design.',
+      'No people, no faces, no exact logos, and no copied official wordmark styling.',
     ].join(' ');
   }
   return [
@@ -484,19 +484,17 @@ function buildMusicPrompt(subject, options, compositionMode) {
     ? `the best-selling rock band "${subject}"`
     : `the best-selling pop star "${subject}"`;
   return [
-    `Create a single square original parody logo mark for ${namedReference}.`,
+    `Create a single square original parody patch emblem for ${namedReference}.`,
     'Make the act name itself the central stylized text logo or wordmark.',
-    meta.kind === 'band'
-      ? 'Include a compact cartoon lineup showing every band member with only slightly exaggerated features, still recognisable as them.'
-      : 'Include one cartoon version of the artist with only slightly exaggerated features, still recognisable as them.',
-    'Surround the logo and character art with small graphic elements pulled from the act\'s clothing, stage persona, instruments, signature props, and album-art color cues.',
-    'Design it like a bold emblem, badge, merch mark, stencil, or sticker-ready icon-wordmark hybrid that a music-trivia player could connect to the act at a glance.',
+    'Do not include any people, faces, or character art.',
+    'Surround the wordmark with symbolic imagery pulled from the act\'s clothing, stage persona, instruments, signature props, and album-art color cues.',
+    'Design it like a jacket patch, bag patch, woven badge, embroidered crest, or rugged merch emblem that a music-trivia player could connect to the act at a glance.',
     `Composition mode: ${compositionMode}.`,
     `Style direction: ${options.styleNotes}.`,
-    'Use the attached graphic direction as inspiration: comic-punk illustration, crisp outlines, flat saturated fills, slightly exaggerated but still recognisable faces, and playful collage poster energy.',
-    'Push the humour, symbolic motifs, and graphic identity choices so it feels like a satirical spoof logo, not a clone.',
+    'Use the attached graphic direction as inspiration: comic-punk illustration, crisp outlines, flat saturated fills, distressed stitched-patch energy, and playful collage poster symbolism.',
+    'Push the humour, symbolic motifs, and graphic identity choices so it feels like a satirical spoof patch, not a clone.',
     'Keep the composition bold, clean, high-contrast, and instantly legible at thumbnail size for a party-game picture round.',
-    'Do not copy any exact official logo, exact album cover, exact photo likeness, or trademarked wordmark styling.',
+    'Do not copy any exact official logo, exact album cover, exact merch patch, or trademarked wordmark styling.',
   ].join(' ');
 }
 

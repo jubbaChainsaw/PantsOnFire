@@ -178,7 +178,7 @@ Importer output:
 
 You can also generate original parody/caricature image packs for picture rounds using
 OpenAI or FLUX image generation. This is useful for recognisable-but-transformed artist/band
-logo marks for music rounds and spoof movie posters for all-time-great films.
+patch-style logo emblems for music rounds and spoof movie posters for all-time-great films.
 
 ### What it creates
 
@@ -187,7 +187,7 @@ logo marks for music rounds and spoof movie posters for all-time-great films.
   - `screen-parodies-v1`
 - 40 prompt pairs in the music pack and 50 prompt pairs in the screen pack by default
 - music pack now targets 40 top-selling rock bands and 40 top-selling pop stars,
-  paired into music logo rounds
+  paired into music patch-logo rounds
 - screen pack now targets top films only, excluding sequels and prequels
 - `manifest.json` files compatible with the picture DLC workflow
 - `generation-prompts.json` files so you can review/edit prompts before spending API credits
@@ -249,11 +249,12 @@ npm run dlc:sync-picture-manifests
   - `FLUX_API_KEY`
   - `scripts/royaltyFreeApiKeys.local.json` -> `falApiKey` or `fluxApiKey`
 - FLUX defaults to model `fal-ai/flux/dev` and uses the fal model API.
-- Defaults now focus on artist/band logo-mark generation for music:
+- Defaults now focus on artist/band patch-emblem generation for music:
   - text logo / wordmark
-  - a cartoon version of the artist, or every member of the band
-  - surrounding elements tied to the act's clothing, props, stage persona, and album-art colors
-- Music prompts are styled toward a punchy comic-punk illustrated graphic look.
+  - no people or faces
+  - surrounding symbolic elements tied to the act's clothing, props, stage persona, and album-art colors
+  - jacket-patch / bag-patch / badge-emblem composition
+- Music prompts are styled toward a punchy comic-punk illustrated patch look.
 - Film prompts remain spoof movie-poster layouts for top films only.
 - The prompts are written to steer results toward transformed parody/caricature territory
   with readable faces, costume cues, and props, but outputs should still be manually
