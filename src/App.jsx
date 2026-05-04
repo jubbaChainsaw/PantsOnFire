@@ -4605,7 +4605,7 @@ function RevealScreen({
                       aria-hidden="true"
                       className="h-4 w-4 object-contain"
                     />
-                    <span>{isImposter ? "IMPOSTER CARD" : round.hint}</span>
+                    <span>{isImposter ? "LIAR CARD" : round.hint}</span>
                   </div>
                   {round.mediaPreviewLabel && (
                     <div className="mt-2 text-sm text-white/85">
@@ -6800,7 +6800,7 @@ function SettingsScreen({
               <div>
                 <div className="font-black text-lg">Sound Effects</div>
                 <div className="text-sm text-white/60 mt-1">
-                  Toggle fire, card flip, imposter, and ByteBlitz cue SFX.
+                  Toggle fire, card flip, liar, and ByteBlitz cue SFX.
                 </div>
               </div>
               <Switch
