@@ -18,7 +18,7 @@
  *     --style ./public/assets/host-generation/host-default-key-art.png \
  *     --out-dir ./exports/generated-host-stills
  *
- * Options: --model, --size, --quality, --input-fidelity, --only-theme, --delay-ms, --dry-run, --overwrite, --api-key
+ * Options: --model, --size, --quality, --input-fidelity, --only-theme, --delay-ms, --dry-run, --overwrite, --api-key, --keys-file
  */
 
 const fs = require('fs');
@@ -26,7 +26,9 @@ const path = require('path');
 const crypto = require('crypto');
 
 const repoRoot = path.resolve(__dirname, '..');
-const localKeysPath = path.join(__dirname, 'royaltyFreeApiKeys.local.json');
+const defaultLocalKeysPath = path.join(__dirname, 'royaltyFreeApiKeys.local.json');
+const localSecretsKeysPath = path.join(repoRoot, '.local-secrets', 'royaltyFreeApiKeys.local.json');
+const nonLocalKeysPath = path.join(__dirname, 'royaltyFreeApiKeys.json');
 
 /** Must match keys in src/data/themeHosts.js THEME_HOST_PERSONAS (plus GrillEm for assets). */
 const THEME_SPECS = [
@@ -242,6 +244,7 @@ function parseArgs(argv) {
     dryRun: false,
     overwrite: false,
     writePromptManifest: '',
+    keysFile: '',
   };
   for (let i = 0; i < argv.length; i += 1) {
     const arg = argv[i];
@@ -276,6 +279,9 @@ function parseArgs(argv) {
     } else if (arg === '--api-key') {
       options.apiKey = String(argv[i + 1] || '').trim();
       i += 1;
+    } else if (arg === '--keys-file') {
+      options.keysFile = String(argv[i + 1] || '').trim();
+      i += 1;
     } else if (arg === '--write-prompt-manifest') {
       options.writePromptManifest = String(argv[i + 1] || '').trim();
       i += 1;
@@ -307,7 +313,12 @@ Optional:
   --write-prompt-manifest <path>  write JSON of prompts and exit (no API calls)
   --overwrite
   --dry-run
-  --api-key <key>   or set OPENAI_API_KEY / scripts/royaltyFreeApiKeys.local.json`);
+  --keys-file <path>  JSON with openaiApiKey (same shape as royalty-free scripts); checked before default paths
+  --api-key <key>   or set OPENAI_API_KEY, or openaiApiKey in:
+                    scripts/royaltyFreeApiKeys.local.json,
+                    $ROYALTYFREE_API_KEYS_FILE,
+                    .local-secrets/royaltyFreeApiKeys.local.json,
+                    scripts/royaltyFreeApiKeys.json (first match wins)`);
 }
 
 function ensureDir(dirPath) {
@@ -323,11 +334,37 @@ function readJsonSafe(filePath, fallback = {}) {
   }
 }
 
-function resolveApiKey(cliKey) {
+function extractOpenAiKeyFromObject(obj) {
+  if (!obj || typeof obj !== 'object') return '';
+  const candidates = ['openaiApiKey', 'OPENAI_API_KEY', 'openai_api_key', 'OpenAIApiKey'];
+  for (let i = 0; i < candidates.length; i += 1) {
+    const v = String(obj[candidates[i]] || '').trim();
+    if (v) return v;
+  }
+  return '';
+}
+
+function resolveOpenAiApiKey({ cliKey = '', keysFile = '' } = {}) {
   if (cliKey) return cliKey;
-  if (process.env.OPENAI_API_KEY) return process.env.OPENAI_API_KEY;
-  const local = readJsonSafe(localKeysPath, {});
-  return String(local.openaiApiKey || '').trim();
+  if (process.env.OPENAI_API_KEY) return String(process.env.OPENAI_API_KEY).trim();
+
+  const paths = [];
+  if (keysFile) paths.push(path.resolve(repoRoot, keysFile));
+  if (process.env.ROYALTYFREE_API_KEYS_FILE) {
+    paths.push(path.resolve(repoRoot, String(process.env.ROYALTYFREE_API_KEYS_FILE).trim()));
+  }
+  paths.push(defaultLocalKeysPath, localSecretsKeysPath, nonLocalKeysPath);
+
+  const seen = new Set();
+  for (let i = 0; i < paths.length; i += 1) {
+    const p = paths[i];
+    if (!p || seen.has(p)) continue;
+    seen.add(p);
+    if (!fs.existsSync(p)) continue;
+    const key = extractOpenAiKeyFromObject(readJsonSafe(p, {}));
+    if (key) return key;
+  }
+  return '';
 }
 
 function themeSlug(themeId) {
@@ -523,9 +560,11 @@ async function run() {
     return;
   }
 
-  const apiKey = resolveApiKey(options.apiKey);
+  const apiKey = resolveOpenAiApiKey({ cliKey: options.apiKey, keysFile: options.keysFile });
   if (!apiKey && !options.dryRun) {
-    throw new Error('Missing API key: use --api-key, OPENAI_API_KEY, or scripts/royaltyFreeApiKeys.local.json (openaiApiKey).');
+    throw new Error(
+      'Missing OpenAI API key: use --api-key, OPENAI_API_KEY, --keys-file <json>, ROYALTYFREE_API_KEYS_FILE, or openaiApiKey in scripts/royaltyFreeApiKeys.local.json (see --help).',
+    );
   }
 
   const outRoot = path.resolve(repoRoot, options.outDir);

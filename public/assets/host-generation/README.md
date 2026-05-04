@@ -15,7 +15,7 @@ Inputs for `scripts/generateOpenAiThemeHostImages.cjs` (OpenAI Images Edit). Pat
 npm run host:generate-openai-theme-stills:defaults
 ```
 
-Requires `OPENAI_API_KEY` (or `scripts/royaltyFreeApiKeys.local.json` like other media scripts). Outputs: `exports/generated-host-stills/` (gitignored).
+Requires `OPENAI_API_KEY` **or** an `openaiApiKey` field in the same JSON file used for royalty-free imports (`scripts/royaltyFreeApiKeys.local.json`). You can also set `ROYALTYFREE_API_KEYS_FILE` to point at your file, or pass `--keys-file ./path/to/keys.json`. Optional non-gitignored fallback: `scripts/royaltyFreeApiKeys.json`.
 
 Explicit paths:
 
