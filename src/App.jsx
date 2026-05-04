@@ -2061,6 +2061,45 @@ function preloadImageSources(sources = []) {
       image.src = source;
     });
 }
+function preloadImageSourcesWithPromise(
+  sources = [],
+  { perImageTimeoutMs = 2200 } = {},
+) {
+  if (typeof window === "undefined" || typeof window.Image === "undefined") {
+    return Promise.resolve();
+  }
+  const sourceList = Array.from(
+    new Set(
+      (Array.isArray(sources) ? sources : [sources])
+        .map((source) => String(source || "").trim())
+        .filter(Boolean),
+    ),
+  );
+  if (!sourceList.length) return Promise.resolve();
+  const seenCache = (window.__pofPreloadedImageSources =
+    window.__pofPreloadedImageSources || new Set());
+  const waitForSource = (source) =>
+    new Promise((resolve) => {
+      if (seenCache.has(source)) {
+        resolve();
+        return;
+      }
+      seenCache.add(source);
+      const image = new window.Image();
+      image.decoding = "async";
+      const finish = () => {
+        clearTimeout(timeoutRef);
+        image.onload = null;
+        image.onerror = null;
+        resolve();
+      };
+      image.onload = finish;
+      image.onerror = finish;
+      const timeoutRef = setTimeout(finish, perImageTimeoutMs);
+      image.src = source;
+    });
+  return Promise.allSettled(sourceList.map((source) => waitForSource(source)));
+}
 function useCategoryAndModeIconPreload({
   screen = "",
   roundTypeOptions = [],
@@ -2096,7 +2135,16 @@ function useCategoryAndModeIconPreload({
   }, [screen, roundTypeOptions, categoryOptions, canonicalThemeName]);
 }
 function useGlobalGraphicsPreload() {
+  const [isReady, setIsReady] = useState(() =>
+    typeof window === "undefined",
+  );
   useEffect(() => {
+    if (typeof window === "undefined") {
+      setIsReady(true);
+      return;
+    }
+    let cancelled = false;
+    const startedAtMs = Date.now();
     const coreUiSources = [
       NEW_UI_LOGO_MAIN_SRC,
       NEW_UI_LOGO_18PLUS_SRC,
@@ -2125,8 +2173,63 @@ function useGlobalGraphicsPreload() {
         Object.values(entry || {}).map((source) => String(source || "").trim()),
       )
       .filter(Boolean);
-    preloadImageSources([...coreUiSources, ...themeSources]);
+    const allSources = [...coreUiSources, ...themeSources];
+    preloadImageSources(allSources);
+    const maxOverlayMs = 3000;
+    const minOverlayMs = 700;
+    Promise.race([
+      preloadImageSourcesWithPromise(allSources),
+      new Promise((resolve) => setTimeout(resolve, maxOverlayMs)),
+    ])
+      .then(async () => {
+        const elapsedMs = Date.now() - startedAtMs;
+        const remainingMinMs = minOverlayMs - elapsedMs;
+        if (remainingMinMs > 0) {
+          await new Promise((resolve) => setTimeout(resolve, remainingMinMs));
+        }
+      })
+      .finally(() => {
+        if (cancelled) return;
+        setIsReady(true);
+      });
+    return () => {
+      cancelled = true;
+    };
   }, []);
+  return isReady;
+}
+function StartupPreloadOverlay({ show = false }) {
+  return (
+    <AnimatePresence>
+      {show && (
+        <motion.div
+          key="startup-preload-overlay"
+          initial={{ opacity: 1 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.32, ease: "easeOut" }}
+          className="fixed inset-0 z-[1200] flex items-center justify-center bg-black/85 backdrop-blur-[2px]"
+        >
+          <div className="flex flex-col items-center justify-center gap-5 text-center text-white">
+            <motion.img
+              src={NEW_UI_LOGO_MAIN_SRC}
+              alt="Pants on Fire loading logo"
+              className="h-32 w-32 sm:h-40 sm:w-40 object-contain drop-shadow-[0_10px_30px_rgba(255,120,0,0.55)]"
+              animate={{ rotate: 360 }}
+              transition={{
+                duration: 1.6,
+                ease: "linear",
+                repeat: Infinity,
+              }}
+            />
+            <div className="text-sm sm:text-base font-black uppercase tracking-[0.26em] text-yellow-300">
+              Loading the heat...
+            </div>
+          </div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
 }
 function getCustomCategoryMetaById() {
   return Object.fromEntries(
@@ -9064,7 +9167,7 @@ export default function App() {
   const categoryChoiceGridClass = isDesktopLandscapeWeb
     ? "mt-8 grid grid-cols-4 gap-4 items-stretch"
     : "mt-8 grid grid-cols-2 gap-4 items-stretch";
-  useGlobalGraphicsPreload();
+  const startupGraphicsReady = useGlobalGraphicsPreload();
   useCategoryAndModeIconPreload({
     screen,
     roundTypeOptions,
@@ -9758,6 +9861,7 @@ export default function App() {
         customCategories={customCategories}
         setCustomCategories={setCustomCategories}
       />
+      <StartupPreloadOverlay show={!startupGraphicsReady} />
     </>
   );
 }
