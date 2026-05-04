@@ -26,7 +26,8 @@
     "host:install-theme-host-packs": "node scripts/installThemeHostPacks.cjs",
     "export:default-host-ssml": "node scripts/exportDefaultHostSsmlCsv.cjs",
     "persona:export-avatar-prompts": "node scripts/exportPersonaAvatarPrompts.cjs",
-    "persona:generate-avatars": "node scripts/generatePersonaAvatars.cjs"
+    "persona:generate-avatars": "node scripts/generatePersonaAvatars.cjs",
+    "picture:generate-parody-rounds": "node scripts/generateParodyPictureRounds.cjs"
   },
   "dependencies": {
     "cors": "^2.8.6",

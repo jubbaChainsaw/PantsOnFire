@@ -174,6 +174,58 @@ Importer output:
 - Keep attribution metadata (`attribution.json`) for legal/audit tracking.
 - Check source site terms before shipping; provider terms may change over time.
 
+## AI parody picture round generator (OpenAI)
+
+You can also generate original parody/caricature image packs for picture rounds using
+OpenAI image generation. This is useful for recognisable-but-transformed music acts,
+album-cover spoofs, and film/TV poster-style parody rounds.
+
+### What it creates
+
+- two curated packs:
+  - `music-parodies-v1`
+  - `screen-parodies-v1`
+- 50 prompt pairs per pack by default
+- `manifest.json` files compatible with the picture DLC workflow
+- `generation-prompts.json` files so you can review/edit prompts before spending API credits
+
+### Prompt-only review pass
+
+Start here to export prompts and manifests without generating any images:
+
+```bash
+npm run picture:generate-parody-rounds -- --prompts-only
+```
+
+This writes reviewable pack folders under:
+
+- `exports/parody-picture-rounds/music-parodies-v1/`
+- `exports/parody-picture-rounds/screen-parodies-v1/`
+
+### Generate a small sample first
+
+```bash
+npm run picture:generate-parody-rounds -- --category music --limit 5
+```
+
+### Generate directly into the live picture-pack folder
+
+After reviewing the prompts:
+
+```bash
+npm run picture:generate-parody-rounds -- --output-root public/assets/graphic-packs/picture
+npm run dlc:lint-picture-manifests
+npm run dlc:sync-picture-manifests
+```
+
+### Notes
+
+- Uses `OPENAI_API_KEY` (or `scripts/royaltyFreeApiKeys.local.json` -> `openaiApiKey`).
+- The prompts are written to steer results toward transformed parody/caricature territory,
+  but outputs should still be manually reviewed before shipping.
+- The generated prompts explicitly avoid logos, title text, direct poster/cover recreation,
+  and exact face matching.
+
 ## Global Online Lobbies (App Store / Play Store ready)
 
 To support players in different homes/countries, you must run the lobby server on a
