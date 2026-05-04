@@ -307,6 +307,45 @@ npm run dlc:sync-picture-manifests
 - The generated prompts explicitly avoid logos, title text, direct poster/cover recreation,
   and exact face matching.
 
+## Realistic animal picture set (OpenAI)
+
+There is also a standalone animal generator for realistic picture-round images.
+
+### What it creates
+
+- one pack: `animals-realistic-v1`
+- 50 animals arranged as 25 visually similar pairs
+- simple gameplay-facing records such as:
+  - `hint: "Insect"`
+  - `prompt: "beetle"`
+- realistic animal rendering with the established graphic-style influence kept subtle
+
+### Examples
+
+Export prompts only:
+
+```bash
+npm run picture:generate-animal-set -- --prompts-only
+```
+
+Generate a small sample:
+
+```bash
+npm run picture:generate-animal-set -- --limit 10
+```
+
+Generate the full animal set:
+
+```bash
+npm run picture:generate-animal-set
+```
+
+### Notes
+
+- Uses `OPENAI_API_KEY` (or `scripts/royaltyFreeApiKeys.local.json` -> `openaiApiKey`).
+- Rerun without `--overwrite` to preserve already generated animal images.
+- The prompt bank is grouped into lookalike pairs such as octopus/squid, crocodile/alligator, and leopard/cheetah to suit picture-round comparisons.
+
 ## Global Online Lobbies (App Store / Play Store ready)
 
 To support players in different homes/countries, you must run the lobby server on a
