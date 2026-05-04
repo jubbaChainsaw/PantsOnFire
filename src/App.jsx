@@ -65,6 +65,7 @@ import { THEME_META } from "./data/themes";
 import {
   getThemeAssets,
   getThemeHostAssets,
+  THEME_ASSETS,
 } from "./data/themeAssets";
 import { NAME_POOLS, randomNameFromTheme } from "./data/names";
 import { toCanonicalThemeName } from "./data/themeAliases";
@@ -2060,6 +2061,45 @@ function preloadImageSources(sources = []) {
       image.src = source;
     });
 }
+function preloadImageSourcesWithPromise(
+  sources = [],
+  { perImageTimeoutMs = 2200 } = {},
+) {
+  if (typeof window === "undefined" || typeof window.Image === "undefined") {
+    return Promise.resolve();
+  }
+  const sourceList = Array.from(
+    new Set(
+      (Array.isArray(sources) ? sources : [sources])
+        .map((source) => String(source || "").trim())
+        .filter(Boolean),
+    ),
+  );
+  if (!sourceList.length) return Promise.resolve();
+  const seenCache = (window.__pofPreloadedImageSources =
+    window.__pofPreloadedImageSources || new Set());
+  const waitForSource = (source) =>
+    new Promise((resolve) => {
+      if (seenCache.has(source)) {
+        resolve();
+        return;
+      }
+      seenCache.add(source);
+      const image = new window.Image();
+      image.decoding = "async";
+      const finish = () => {
+        clearTimeout(timeoutRef);
+        image.onload = null;
+        image.onerror = null;
+        resolve();
+      };
+      image.onload = finish;
+      image.onerror = finish;
+      const timeoutRef = setTimeout(finish, perImageTimeoutMs);
+      image.src = source;
+    });
+  return Promise.allSettled(sourceList.map((source) => waitForSource(source)));
+}
 function useCategoryAndModeIconPreload({
   screen = "",
   roundTypeOptions = [],
@@ -2093,6 +2133,103 @@ function useCategoryAndModeIconPreload({
       .filter(Boolean);
     preloadImageSources([...roundTypeIconSources, ...categoryIconSources]);
   }, [screen, roundTypeOptions, categoryOptions, canonicalThemeName]);
+}
+function useGlobalGraphicsPreload() {
+  const [isReady, setIsReady] = useState(() =>
+    typeof window === "undefined",
+  );
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      setIsReady(true);
+      return;
+    }
+    let cancelled = false;
+    const startedAtMs = Date.now();
+    const coreUiSources = [
+      NEW_UI_LOGO_MAIN_SRC,
+      NEW_UI_LOGO_18PLUS_SRC,
+      NEW_UI_WALLPAPER_HOME_SRC,
+      NEW_UI_WALLPAPER_IN_GAME_SRC,
+      NEW_UI_CARD_DEFAULT_FRONT_SRC,
+      NEW_UI_CARD_DEFAULT_BACK_SRC,
+      NEW_UI_CARD_LIAR_FRONT_SRC,
+      ...Object.values(NEW_UI_GAME_MODE_ICON_BY_ID),
+      ...Object.values(NEW_UI_CATEGORY_ICON_BY_ID),
+      ...NEW_UI_CUSTOM_CATEGORY_META.map((entry) => entry?.iconSrc),
+      ...CARD_FIRE_FLAME_SOURCES,
+      UI_ICON_BOXERS_RED_SRC,
+      UI_ICON_BOXERS_GREEN_SRC,
+      UI_ICON_FLAME_RED_SRC,
+      UI_ICON_FLAME_GREEN_SRC,
+      UI_ICON_CROWN_GOLD_SRC,
+      UI_ICON_BADGE_18_PLUS_SRC,
+      UI_ICON_BADGE_LIAR_SRC,
+      UI_ICON_MAGNIFIER_FIRE_SRC,
+    ]
+      .map((source) => String(source || "").trim())
+      .filter(Boolean);
+    const themeSources = Object.values(THEME_ASSETS || {})
+      .flatMap((entry) =>
+        Object.values(entry || {}).map((source) => String(source || "").trim()),
+      )
+      .filter(Boolean);
+    const allSources = [...coreUiSources, ...themeSources];
+    preloadImageSources(allSources);
+    const maxOverlayMs = 3000;
+    const minOverlayMs = 700;
+    Promise.race([
+      preloadImageSourcesWithPromise(allSources),
+      new Promise((resolve) => setTimeout(resolve, maxOverlayMs)),
+    ])
+      .then(async () => {
+        const elapsedMs = Date.now() - startedAtMs;
+        const remainingMinMs = minOverlayMs - elapsedMs;
+        if (remainingMinMs > 0) {
+          await new Promise((resolve) => setTimeout(resolve, remainingMinMs));
+        }
+      })
+      .finally(() => {
+        if (cancelled) return;
+        setIsReady(true);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+  return isReady;
+}
+function StartupPreloadOverlay({ show = false }) {
+  return (
+    <AnimatePresence>
+      {show && (
+        <motion.div
+          key="startup-preload-overlay"
+          initial={{ opacity: 1 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.32, ease: "easeOut" }}
+          className="fixed inset-0 z-[1200] flex items-center justify-center bg-black/85 backdrop-blur-[2px]"
+        >
+          <div className="flex flex-col items-center justify-center gap-5 text-center text-white">
+            <motion.img
+              src={NEW_UI_LOGO_MAIN_SRC}
+              alt="Pants on Fire loading logo"
+              className="h-32 w-32 sm:h-40 sm:w-40 object-contain drop-shadow-[0_10px_30px_rgba(255,120,0,0.55)]"
+              animate={{ rotate: 360 }}
+              transition={{
+                duration: 1.6,
+                ease: "linear",
+                repeat: Infinity,
+              }}
+            />
+            <div className="text-sm sm:text-base font-black uppercase tracking-[0.26em] text-yellow-300">
+              Loading the heat...
+            </div>
+          </div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
 }
 function getCustomCategoryMetaById() {
   return Object.fromEntries(
@@ -4360,18 +4497,18 @@ function RevealScreen({
             </div>
           )}
 
-          <div className="mt-3 mx-auto w-full max-w-[23.5rem] sm:max-w-[25.25rem] [perspective:1200px]">
+          <div className="mt-3 mx-auto w-full max-w-[24.25rem] sm:max-w-[26rem] [perspective:1200px]">
             <motion.div
               animate={{ rotateY: cardFace === "front" ? 180 : 0 }}
               transition={{ duration: 0.75, ease: "easeInOut" }}
-              className="relative w-full aspect-[2/3] [transform-style:preserve-3d]"
+              className="relative w-full aspect-[2/3] overflow-visible [transform-style:preserve-3d]"
             >
-              <div className="absolute inset-0 overflow-hidden rounded-[1.7rem] border-2 border-white/25 [backface-visibility:hidden]">
+              <div className="absolute inset-0 overflow-visible rounded-[1.7rem] [backface-visibility:hidden]">
                 {cardBackSrc && (
                   <img
                     src={cardBackSrc}
                     alt="Prompt card back"
-                    className="absolute inset-0 h-full w-full scale-[1.07] object-cover bg-black/30"
+                    className="absolute inset-0 h-full w-full object-contain object-center bg-black/30"
                   />
                 )}
                 <div className="absolute inset-0 bg-black/20" />
@@ -4394,13 +4531,13 @@ function RevealScreen({
               </div>
 
               <div
-                className={`absolute inset-0 overflow-hidden rounded-[1.7rem] border-2 [backface-visibility:hidden] [transform:rotateY(180deg)] ${isImposter ? "border-orange-300/90 shadow-[0_0_42px_rgba(255,94,0,0.62)]" : "border-cyan-300/60"}`}
+                className={`absolute inset-0 overflow-visible rounded-[1.7rem] [backface-visibility:hidden] [transform:rotateY(180deg)] ${isImposter ? "shadow-[0_0_42px_rgba(255,94,0,0.62)]" : ""}`}
               >
                 {cardFrontSrc && (
                   <img
                     src={cardFrontSrc}
                     alt="Prompt card front"
-                    className="absolute inset-0 h-full w-full scale-[1.07] object-cover bg-black/30"
+                    className="absolute inset-0 h-full w-full object-contain object-center bg-black/30"
                   />
                 )}
                 <div
@@ -4468,7 +4605,7 @@ function RevealScreen({
                       aria-hidden="true"
                       className="h-4 w-4 object-contain"
                     />
-                    <span>{isImposter ? "IMPOSTER CARD" : round.hint}</span>
+                    <span>{isImposter ? "LIAR CARD" : round.hint}</span>
                   </div>
                   {round.mediaPreviewLabel && (
                     <div className="mt-2 text-sm text-white/85">
@@ -6663,7 +6800,7 @@ function SettingsScreen({
               <div>
                 <div className="font-black text-lg">Sound Effects</div>
                 <div className="text-sm text-white/60 mt-1">
-                  Toggle fire, card flip, imposter, and ByteBlitz cue SFX.
+                  Toggle fire, card flip, liar, and ByteBlitz cue SFX.
                 </div>
               </div>
               <Switch
@@ -9030,6 +9167,7 @@ export default function App() {
   const categoryChoiceGridClass = isDesktopLandscapeWeb
     ? "mt-8 grid grid-cols-4 gap-4 items-stretch"
     : "mt-8 grid grid-cols-2 gap-4 items-stretch";
+  const startupGraphicsReady = useGlobalGraphicsPreload();
   useCategoryAndModeIconPreload({
     screen,
     roundTypeOptions,
@@ -9723,6 +9861,7 @@ export default function App() {
         customCategories={customCategories}
         setCustomCategories={setCustomCategories}
       />
+      <StartupPreloadOverlay show={!startupGraphicsReady} />
     </>
   );
 }
