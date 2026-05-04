@@ -4501,14 +4501,14 @@ function RevealScreen({
             <motion.div
               animate={{ rotateY: cardFace === "front" ? 180 : 0 }}
               transition={{ duration: 0.75, ease: "easeInOut" }}
-              className="relative w-full aspect-[2/3] [transform-style:preserve-3d]"
+              className="relative w-full aspect-[2/3] overflow-visible [transform-style:preserve-3d]"
             >
-              <div className="absolute inset-0 overflow-hidden rounded-[1.7rem] [backface-visibility:hidden]">
+              <div className="absolute inset-0 overflow-visible rounded-[1.7rem] [backface-visibility:hidden]">
                 {cardBackSrc && (
                   <img
                     src={cardBackSrc}
                     alt="Prompt card back"
-                    className="absolute inset-0 h-full w-full translate-y-[20px] scale-[1.2] object-fill bg-black/30"
+                    className="absolute inset-0 h-full w-full object-contain object-center bg-black/30"
                   />
                 )}
                 <div className="absolute inset-0 bg-black/20" />
@@ -4531,13 +4531,13 @@ function RevealScreen({
               </div>
 
               <div
-                className={`absolute inset-0 overflow-hidden rounded-[1.7rem] [backface-visibility:hidden] [transform:rotateY(180deg)] ${isImposter ? "shadow-[0_0_42px_rgba(255,94,0,0.62)]" : ""}`}
+                className={`absolute inset-0 overflow-visible rounded-[1.7rem] [backface-visibility:hidden] [transform:rotateY(180deg)] ${isImposter ? "shadow-[0_0_42px_rgba(255,94,0,0.62)]" : ""}`}
               >
                 {cardFrontSrc && (
                   <img
                     src={cardFrontSrc}
                     alt="Prompt card front"
-                    className="absolute inset-0 h-full w-full translate-y-[20px] scale-[1.2] object-fill bg-black/30"
+                    className="absolute inset-0 h-full w-full object-contain object-center bg-black/30"
                   />
                 )}
                 <div
