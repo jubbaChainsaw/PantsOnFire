@@ -4508,7 +4508,7 @@ function RevealScreen({
                   <img
                     src={cardBackSrc}
                     alt="Prompt card back"
-                    className="absolute inset-0 h-full w-full scale-[1.2] object-fill bg-black/30"
+                    className="absolute inset-0 h-full w-full translate-y-[20px] scale-[1.2] object-fill bg-black/30"
                   />
                 )}
                 <div className="absolute inset-0 bg-black/20" />
@@ -4537,7 +4537,7 @@ function RevealScreen({
                   <img
                     src={cardFrontSrc}
                     alt="Prompt card front"
-                    className="absolute inset-0 h-full w-full scale-[1.2] object-fill bg-black/30"
+                    className="absolute inset-0 h-full w-full translate-y-[20px] scale-[1.2] object-fill bg-black/30"
                   />
                 )}
                 <div
