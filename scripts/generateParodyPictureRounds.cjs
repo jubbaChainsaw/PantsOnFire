@@ -127,6 +127,10 @@ const MUSIC_ACT_META = Object.fromEntries(
   ]
 );
 
+function getMusicActMeta(subject) {
+  return MUSIC_ACT_META[String(subject || '').trim()] || { kind: 'artist', segment: 'music', brief: '' };
+}
+
 const MUSIC_ENTRIES = [
   ...buildMusicEntriesFromActs('rock', 'rock-bands', 'Rock Bands', ROCK_BAND_ACTS),
   ...buildMusicEntriesFromActs('pop', 'pop-stars', 'Pop Stars', POP_STAR_ACTS),
