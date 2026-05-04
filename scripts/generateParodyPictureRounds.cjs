@@ -780,8 +780,7 @@ function buildPromptPlan(pack, options) {
       : '';
     const mainReferenceImageUrl = pack.categoryId === 'music'
       ? String(musicReferenceMap.get(normalizeMusicActName(entry.main)) || '').trim()
-      : (pack.categoryId === 'albums' ? String(entry.referenceCoverUrl || '').trim() : '')
-      : '';
+      : (pack.categoryId === 'albums' ? String(entry.referenceCoverUrl || '').trim() : '');
     promptRecords.push({
       entryId: entry.entryId,
       side: 'main',
@@ -812,8 +811,7 @@ function buildPromptPlan(pack, options) {
       : '';
     const imposterReferenceImageUrl = pack.categoryId === 'music'
       ? String(musicReferenceMap.get(normalizeMusicActName(entry.imposter)) || '').trim()
-      : (pack.categoryId === 'albums' ? String(entry.referenceCoverUrl || '').trim() : '')
-      : '';
+      : (pack.categoryId === 'albums' ? String(entry.referenceCoverUrl || '').trim() : '');
     promptRecords.push({
       entryId: entry.entryId,
       side: 'imposter',
