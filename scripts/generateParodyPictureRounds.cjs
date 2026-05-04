@@ -514,20 +514,30 @@ async function loadMusicReferenceMap(options) {
 
 function buildAlbumsEntriesFromFeedMap(referenceMap) {
   const entries = [];
-  let index = 0;
+  const feedRows = [];
   for (const [key, coverUrl] of referenceMap.entries()) {
     const source = referenceMap.__meta && referenceMap.__meta[key];
     if (!source || !source.title || !source.artist) continue;
+    feedRows.push({
+      key,
+      coverUrl,
+      title: source.title,
+      artist: source.artist,
+    });
+  }
+  for (let index = 0; index < feedRows.length - 1; index += 2) {
+    const mainRow = feedRows[index];
+    const imposterRow = feedRows[index + 1];
     entries.push({
-      entryId: `album-${String(index + 1).padStart(2, '0')}`,
+      entryId: `album-${String(Math.floor(index / 2) + 1).padStart(2, '0')}`,
       groupId: 'albums-reference',
       groupName: 'Albums',
-      hint: `Picture Prompt • Albums ${index + 1}`,
-      main: `${source.artist} - ${source.title}`,
-      imposter: `${source.artist} - ${source.title}`,
-      referenceCoverUrl: coverUrl,
+      hint: `Picture Prompt • Albums ${Math.floor(index / 2) + 1}`,
+      main: `${mainRow.artist} - ${mainRow.title}`,
+      imposter: `${imposterRow.artist} - ${imposterRow.title}`,
+      mainReferenceCoverUrl: mainRow.coverUrl,
+      imposterReferenceCoverUrl: imposterRow.coverUrl,
     });
-    index += 1;
   }
   return entries;
 }
