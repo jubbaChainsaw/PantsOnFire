@@ -8,6 +8,7 @@ const defaultOutputRoot = path.join(repoRoot, 'exports', 'parody-picture-rounds'
 const DEFAULT_MUSIC_REFERENCE_FEED_URL = 'https://www.besteveralbums.com/feeds/BestEverAlbumsdotCom_OverallChart.xml';
 const DEFAULT_STYLE_REFERENCE_URL = 'https://media.craiyon.com/2025-08-06/Kx1Iy3b-RCSGhKhPYW3Aog.webp';
 const DEFAULT_MUSIC_STYLE_REFERENCE_URL = 'https://media.craiyon.com/2025-08-06/Kx1Iy3b-RCSGhKhPYW3Aog.webp';
+const DEFAULT_ALBUMS_PACK_ID = 'albums-parodies-v1';
 
 const DEFAULT_STYLE_NOTES = [
   'bold comic-caricature linework',
@@ -293,6 +294,22 @@ const PACKS = {
     entries: MUSIC_ENTRIES,
     compositionModes: MUSIC_COMPOSITION_MODES,
   },
+  albums: {
+    categoryId: 'albums',
+    packId: DEFAULT_ALBUMS_PACK_ID,
+    label: 'Top Albums Cover Parodies v1',
+    groupId: 'albums-parodies',
+    groupName: 'Album Cover Parodies',
+    previewLabel: 'Describe the album-cover parody image clearly without naming the exact album.',
+    promptHint: 'Picture Prompt • Album Cover Parody',
+    entries: [],
+    compositionModes: [
+      'a spoof album-cover poster layout with one bold central visual',
+      'a dramatic illustrated sleeve composition with transformed cover symbolism',
+      'a collage-heavy faux vinyl-cover layout with iconic visual motifs',
+      'a clean graphic album-jacket design with strong color blocking and emblematic props',
+    ],
+  },
   screen: {
     categoryId: 'screen',
     packId: 'screen-parodies-v1',
@@ -310,7 +327,7 @@ function usage() {
   console.log('Usage: npm run picture:generate-parody-rounds -- [options]');
   console.log('');
   console.log('Options:');
-  console.log('  --category <music|screen|all>  Which curated pack(s) to process (default: all)');
+  console.log('  --category <music|albums|screen|all>  Which curated pack(s) to process (default: all)');
   console.log(`  --output-root <path>            Output folder (default: ${path.relative(repoRoot, defaultOutputRoot)})`);
   console.log('  --provider <openai|flux>        Image provider (default: openai)');
   console.log('  --api-key <key>                 Provider API key (OPENAI_API_KEY or FAL_KEY / FAL_API_KEY / FLUX_API_KEY)');
@@ -495,6 +512,26 @@ async function loadMusicReferenceMap(options) {
   return map;
 }
 
+function buildAlbumsEntriesFromFeedMap(referenceMap) {
+  const entries = [];
+  let index = 0;
+  for (const [key, coverUrl] of referenceMap.entries()) {
+    const source = referenceMap.__meta && referenceMap.__meta[key];
+    if (!source || !source.title || !source.artist) continue;
+    entries.push({
+      entryId: `album-${String(index + 1).padStart(2, '0')}`,
+      groupId: 'albums-reference',
+      groupName: 'Albums',
+      hint: `Picture Prompt • Albums ${index + 1}`,
+      main: `${source.artist} - ${source.title}`,
+      imposter: `${source.artist} - ${source.title}`,
+      referenceCoverUrl: coverUrl,
+    });
+    index += 1;
+  }
+  return entries;
+}
+
 function parseSize(size) {
   const match = String(size || '').trim().match(/^(\d+)x(\d+)$/i);
   if (!match) throw new Error(`Invalid --size "${size}". Use WIDTHxHEIGHT, for example 800x800.`);
@@ -674,8 +711,21 @@ function buildScreenPrompt(subject, options, compositionMode) {
   ].join(' ');
 }
 
+function buildAlbumsPrompt(subject, options, compositionMode) {
+  return [
+    `Create a single square original parody album-cover image inspired by "${subject}".`,
+    'Use the reference album cover only as composition and motif material, then transform it into a fresh parody image rather than a direct recreation.',
+    `Composition mode: ${compositionMode}.`,
+    `Style direction: ${options.styleNotes}.`,
+    'Preserve the broad visual read of the cover while making the artwork more comic, graphic, and stylized.',
+    'Keep the result clean, bold, and recognisable at thumbnail size for a picture round.',
+    'Do not reproduce exact title typography, logos, or the exact original layout one-for-one.',
+  ].join(' ');
+}
+
 function buildPromptForSubject(pack, subject, options, compositionMode) {
   if (pack.categoryId === 'music') return buildMusicPrompt(subject, options, compositionMode);
+  if (pack.categoryId === 'albums') return buildAlbumsPrompt(subject, options, compositionMode);
   return buildScreenPrompt(subject, options, compositionMode);
 }
 
@@ -709,11 +759,11 @@ function buildPromptPlan(pack, options) {
   const manifest = buildPackManifest(pack, selectedEntries);
   const promptRecords = [];
   const useSafePrimary = options.provider === 'openai';
-  const musicReferenceMap = pack.categoryId === 'music'
+  const musicReferenceMap = (pack.categoryId === 'music' || pack.categoryId === 'albums')
     ? (options.musicReferenceMap || new Map())
     : new Map();
   const styleReferenceImageUrl = (
-    pack.categoryId === 'music'
+    (pack.categoryId === 'music' || pack.categoryId === 'albums')
     && options.styleReferenceEnabled
     && options.styleReferenceUrl
   )
@@ -725,9 +775,12 @@ function buildPromptPlan(pack, options) {
     const mainNamedPrompt = buildPromptForSubject(pack, entry.main, options, compositionMode);
     const mainSafePrompt = buildFallbackPromptForSubject(pack, entry.main, options, compositionMode);
     const mainUltraSafePrompt = buildUltraSafePromptForSubject(pack, entry.main, options, compositionMode);
-    const mainDedupeKey = pack.categoryId === 'music' ? String(entry.main).trim().toLowerCase() : '';
+    const mainDedupeKey = (pack.categoryId === 'music' || pack.categoryId === 'albums')
+      ? String(entry.main).trim().toLowerCase()
+      : '';
     const mainReferenceImageUrl = pack.categoryId === 'music'
       ? String(musicReferenceMap.get(normalizeMusicActName(entry.main)) || '').trim()
+      : (pack.categoryId === 'albums' ? String(entry.referenceCoverUrl || '').trim() : '')
       : '';
     promptRecords.push({
       entryId: entry.entryId,
@@ -754,9 +807,12 @@ function buildPromptPlan(pack, options) {
     const imposterNamedPrompt = buildPromptForSubject(pack, entry.imposter, options, imposterCompositionMode);
     const imposterSafePrompt = buildFallbackPromptForSubject(pack, entry.imposter, options, imposterCompositionMode);
     const imposterUltraSafePrompt = buildUltraSafePromptForSubject(pack, entry.imposter, options, imposterCompositionMode);
-    const imposterDedupeKey = pack.categoryId === 'music' ? String(entry.imposter).trim().toLowerCase() : '';
+    const imposterDedupeKey = (pack.categoryId === 'music' || pack.categoryId === 'albums')
+      ? String(entry.imposter).trim().toLowerCase()
+      : '';
     const imposterReferenceImageUrl = pack.categoryId === 'music'
       ? String(musicReferenceMap.get(normalizeMusicActName(entry.imposter)) || '').trim()
+      : (pack.categoryId === 'albums' ? String(entry.referenceCoverUrl || '').trim() : '')
       : '';
     promptRecords.push({
       entryId: entry.entryId,
@@ -872,23 +928,41 @@ async function pollFluxResult(pollingUrl, apiKey) {
   }
 }
 
-async function generateWithFlux({ prompt, apiKey, model, size }) {
+async function generateWithFlux({ prompt, apiKey, model, size, referenceImageUrl = '', styleReferenceImageUrl = '' }) {
   const { width, height } = validateFluxSize(size);
-  const modelId = String(model || 'fal-ai/flux/dev').trim().replace(/^\/+/, '');
+  const useImageToImage = Boolean(referenceImageUrl);
+  const modelId = String(
+    model || (useImageToImage ? 'fal-ai/flux/dev/image-to-image' : 'fal-ai/flux/dev')
+  ).trim().replace(/^\/+/, '');
+  const promptWithStyle = styleReferenceImageUrl
+    ? `${prompt} Use this style reference image as the visual style guide: ${styleReferenceImageUrl}`
+    : prompt;
+  const body = useImageToImage
+    ? {
+        image_url: referenceImageUrl,
+        prompt: promptWithStyle,
+        strength: 0.92,
+        image_size: { width, height },
+        num_images: 1,
+        output_format: 'png',
+        enable_safety_checker: true,
+        sync_mode: false,
+      }
+    : {
+        prompt: promptWithStyle,
+        image_size: { width, height },
+        num_images: 1,
+        output_format: 'png',
+        enable_safety_checker: true,
+        sync_mode: false,
+      };
   const response = await fetch(`https://fal.run/${modelId}`, {
     method: 'POST',
     headers: {
       Authorization: `Key ${apiKey}`,
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({
-      prompt,
-      image_size: { width, height },
-      num_images: 1,
-      output_format: 'png',
-      enable_safety_checker: true,
-      sync_mode: false,
-    }),
+    body: JSON.stringify(body),
   });
   if (!response.ok) {
     const message = await response.text().catch(() => '');
@@ -915,9 +989,27 @@ async function generateWithFlux({ prompt, apiKey, model, size }) {
   return Buffer.from(arrayBuffer);
 }
 
-async function generateImageWithProvider({ provider, prompt, apiKey, model, size, quality, safetyTolerance }) {
+async function generateImageWithProvider({
+  provider,
+  prompt,
+  apiKey,
+  model,
+  size,
+  quality,
+  safetyTolerance,
+  referenceImageUrl = '',
+  styleReferenceImageUrl = '',
+}) {
   if (provider === 'flux') {
-    return generateWithFlux({ prompt, apiKey, model, size, safetyTolerance });
+    return generateWithFlux({
+      prompt,
+      apiKey,
+      model,
+      size,
+      safetyTolerance,
+      referenceImageUrl,
+      styleReferenceImageUrl,
+    });
   }
   return generateWithOpenAi({ prompt, apiKey, model, size, quality });
 }
@@ -1019,6 +1111,8 @@ async function runPack(plan, options) {
         size: options.size,
         quality: options.quality,
         safetyTolerance: options.safetyTolerance,
+        referenceImageUrl: record.referenceImageUrl,
+        styleReferenceImageUrl: record.styleReferenceImageUrl,
       });
     } catch (error) {
       if (!isModerationBlock(error) || !record.retryPrompt || record.retryPrompt === record.prompt) {
@@ -1034,6 +1128,8 @@ async function runPack(plan, options) {
           size: options.size,
           quality: options.quality,
           safetyTolerance: options.safetyTolerance,
+          referenceImageUrl: record.referenceImageUrl,
+          styleReferenceImageUrl: record.styleReferenceImageUrl,
         });
         usedRetryPrompt = true;
         usedPromptStrategy = record.retryPromptStrategy || 'retry_prompt';
@@ -1054,6 +1150,8 @@ async function runPack(plan, options) {
               size: options.size,
               quality: options.quality,
               safetyTolerance: options.safetyTolerance,
+              referenceImageUrl: record.referenceImageUrl,
+              styleReferenceImageUrl: record.styleReferenceImageUrl,
             });
             usedRetryPrompt = true;
             usedPromptStrategy = record.finalRetryPromptStrategy || 'final_retry_prompt';
@@ -1143,8 +1241,8 @@ async function run() {
     usage();
     return;
   }
-  if (!['music', 'screen', 'all'].includes(options.category)) {
-    throw new Error(`Unsupported --category "${options.category}". Use music, screen, or all.`);
+  if (!['music', 'albums', 'screen', 'all'].includes(options.category)) {
+    throw new Error(`Unsupported --category "${options.category}". Use music, albums, screen, or all.`);
   }
   if (!['openai', 'flux'].includes(options.provider)) {
     throw new Error(`Unsupported provider "${options.provider}". Use "openai" or "flux".`);
@@ -1172,7 +1270,19 @@ async function run() {
     }
   }
 
-  const packKeys = options.category === 'all' ? ['music', 'screen'] : [options.category];
+  options.musicReferenceMap = await loadMusicReferenceMap(options);
+  if (options.musicReferenceMap && options.musicReferenceMap.size > 0) {
+    options.musicReferenceMap.__meta = Object.fromEntries(
+      Array.from(options.musicReferenceMap.entries()).map(([normalizedArtist, coverUrl]) => {
+        const parts = normalizedArtist.split(' ');
+        return [normalizedArtist, { artist: parts.join(' '), title: normalizedArtist, coverUrl }];
+      })
+    );
+  }
+
+  PACKS.albums.entries = buildAlbumsEntriesFromFeedMap(options.musicReferenceMap || new Map());
+
+  const packKeys = options.category === 'all' ? ['music', 'albums', 'screen'] : [options.category];
   console.log(`[generateParodyPictureRounds] Category: ${options.category}`);
   console.log(`[generateParodyPictureRounds] Provider: ${options.provider}`);
   console.log(`[generateParodyPictureRounds] Model: ${options.model}`);

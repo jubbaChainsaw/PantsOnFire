@@ -178,17 +178,20 @@ Importer output:
 
 You can also generate original parody/caricature image packs for picture rounds using
 OpenAI or FLUX image generation. This is useful for recognisable-but-transformed
-artist/band patch-style logo emblems for music rounds and spoof movie posters for
-all-time-great films.
+artist/band patch-style logo emblems for music rounds, standalone album-cover-inspired
+packs, and spoof movie posters for all-time-great films.
 
 ### What it creates
 
-- two curated packs:
+- three curated packs:
   - `music-parodies-v1`
+  - `albums-parodies-v1`
   - `screen-parodies-v1`
-- 50 prompt pairs in the music pack and 50 prompt pairs in the screen pack by default
+- 50 prompt pairs in the music pack, a feed-derived albums pack, and 50 prompt pairs in the screen pack by default
 - music pack now starts with top-selling rock bands and top-selling pop stars, then expands
   into rap/hip-hop, boy bands, and girl groups, all paired into music patch-logo rounds
+- albums pack is built from the BestEverAlbums OverallChart RSS feed and is designed for
+  album-cover-inspired generations in its own standalone output folder
 - screen pack now targets top films only, excluding sequels and prequels
 - `manifest.json` files compatible with the picture DLC workflow
 - `generation-prompts.json` files so you can review/edit prompts before spending API credits
@@ -205,6 +208,7 @@ npm run picture:generate-parody-rounds -- --prompts-only
 This writes reviewable pack folders under:
 
 - `exports/parody-picture-rounds/music-parodies-v1/`
+- `exports/parody-picture-rounds/albums-parodies-v1/`
 - `exports/parody-picture-rounds/screen-parodies-v1/`
 
 ### Generate a small sample first
@@ -219,14 +223,26 @@ Using FLUX instead of OpenAI:
 npm run picture:generate-parody-rounds -- --provider flux --category music --limit 5
 ```
 
-By default, music generation now also tries to:
+Generate the standalone Albums pack:
+
+```bash
+npm run picture:generate-parody-rounds -- --provider flux --category albums --limit 20
+```
+
+By default, album-cover references now come from:
+- `https://www.besteveralbums.com/feeds/BestEverAlbumsdotCom_OverallChart.xml`
+
+The standalone Albums pack uses those feed items directly as its prompt source. The music
+pack can also use matched feed covers as references when a matching act is found.
+
+For music/albums image-to-image generation, the script also tries to:
 - pull matching album-cover URLs from:
   - `https://www.besteveralbums.com/feeds/BestEverAlbumsdotCom_OverallChart.xml`
 - use this style-reference image for the patch-emblem look:
   - `https://media.craiyon.com/2025-08-06/Kx1Iy3b-RCSGhKhPYW3Aog.webp`
 
-When a matching cover is found, the FLUX music path can use image-to-image mode rather than
-text-only generation.
+When a matching cover is found, the FLUX music/albums path can use image-to-image mode
+rather than text-only generation.
 
 Repeated music subjects are deduped automatically: if the same artist/band appears more
 than once in the selected batch, the script generates the first image once and copies it
@@ -266,11 +282,12 @@ npm run dlc:sync-picture-manifests
   source unless you disable it with `--no-music-reference-feed`.
 - The default music style-reference image is:
   - `https://media.craiyon.com/2025-08-06/Kx1Iy3b-RCSGhKhPYW3Aog.webp`
-- When a matching music cover is found in the RSS feed and you are using `--provider flux`,
+- When a matching music cover is found in the RSS feed, or when you generate the standalone
+  Albums pack, and you are using `--provider flux`, the script uses fal image-to-image with:
   the script uses fal image-to-image with:
   - the matched album cover as the content reference image
   - the style-reference URL as the visual style guide
-  - the patch-emblem prompt as the transformation instruction
+  - the patch-emblem or album-cover-inspired prompt as the transformation instruction
 - Defaults now focus on expanded music patch-emblem generation across rock bands, pop stars,
   rap/hip-hop, boy bands, and girl groups:
   - text logo / wordmark
