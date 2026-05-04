@@ -177,8 +177,8 @@ Importer output:
 ## AI parody picture round generator (OpenAI / FLUX)
 
 You can also generate original parody/caricature image packs for picture rounds using
-OpenAI or FLUX image generation. This is useful for recognisable-but-transformed parody
-music artist portraits and spoof movie posters for all-time-great films.
+OpenAI or FLUX image generation. This is useful for recognisable-but-transformed spoof album
+covers for classic pop/rock albums and spoof movie posters for all-time-great films.
 
 ### What it creates
 
@@ -186,7 +186,7 @@ music artist portraits and spoof movie posters for all-time-great films.
   - `music-parodies-v1`
   - `screen-parodies-v1`
 - 50 prompt pairs per pack by default
-- music pack now targets famous artists and bands
+- music pack now targets top pop/rock albums
 - screen pack now targets top films only, excluding sequels and prequels
 - `manifest.json` files compatible with the picture DLC workflow
 - `generation-prompts.json` files so you can review/edit prompts before spending API credits
@@ -244,8 +244,8 @@ npm run dlc:sync-picture-manifests
   - `FLUX_API_KEY`
   - `scripts/royaltyFreeApiKeys.local.json` -> `falApiKey` or `fluxApiKey`
 - FLUX defaults to model `fal-ai/flux/dev` and uses the fal model API.
-- Defaults now focus on parody artist portraits for music and spoof movie-poster
-  layouts for top films only.
+- Defaults now focus on spoof album-cover layouts for top pop/rock albums and spoof
+  movie-poster layouts for top films only.
 - The prompts are written to steer results toward transformed parody/caricature territory
   with readable faces, costume cues, and props, but outputs should still be manually
   reviewed before shipping.
