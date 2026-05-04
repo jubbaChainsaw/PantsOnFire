@@ -1,26 +1,26 @@
 # Host image generation references
 
-These files are **inputs** for `scripts/generateOpenAiThemeHostImages.cjs` (OpenAI Images Edit). They are committed on purpose so the repo has stable paths for CI or teammates.
+Inputs for `scripts/generateOpenAiThemeHostImages.cjs` (OpenAI Images Edit). Paths are public on purpose.
 
-## Required files
+## Files
 
 | File | Role |
 |------|------|
-| `host-face-reference.jpg` | Your portrait (likeness). Clear head-and-shoulders, facing camera, good light. JPEG or PNG is fine; keep this filename or update `package.json` script paths. |
-| `host-style-reference.png` | Art style **and** layout reference (e.g. 90s MTV adult-animation line weight, full-body centered staging, busy themed backgrounds). |
+| **`host-face.png`** | Head-and-shoulders portrait (likeness). Centered, facing camera, neutral or slight smile. PNG or JPEG. |
+| **`host-default-key-art.png`** | **Default theme** look target: comic/cel-shaded host on the game stage (purple jacket, mic, neon, **PANTS ON FIRE!** branding when you use full key art). Same file is the **style** reference for every theme. The repo currently seeds this from `public/assets/themes/default/characters/host-idle.png`; replace this file with your full-bleed key art PNG when you have it. |
 
-After adding or replacing either file, run:
+## Run
 
 ```bash
 npm run host:generate-openai-theme-stills:defaults
 ```
 
-Or call the script with explicit paths:
+Requires `OPENAI_API_KEY` (or `scripts/royaltyFreeApiKeys.local.json` like other media scripts). Outputs: `exports/generated-host-stills/` (gitignored).
+
+Explicit paths:
 
 ```bash
 npm run host:generate-openai-theme-stills -- \
-  --face ./public/assets/host-generation/host-face-reference.jpg \
-  --style ./public/assets/host-generation/host-style-reference.png
+  --face ./public/assets/host-generation/host-face.png \
+  --style ./public/assets/host-generation/host-default-key-art.png
 ```
-
-Generated outputs go to `exports/generated-host-stills/` (gitignored). Set `OPENAI_API_KEY` first, or use `scripts/royaltyFreeApiKeys.local.json` like other media scripts.

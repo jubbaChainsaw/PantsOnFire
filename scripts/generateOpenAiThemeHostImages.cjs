@@ -14,8 +14,8 @@
  *   npm run host:generate-openai-theme-stills:defaults
  *   # or explicit paths:
  *   node scripts/generateOpenAiThemeHostImages.cjs \
- *     --face ./public/assets/host-generation/host-face-reference.jpg \
- *     --style ./public/assets/host-generation/host-style-reference.png \
+ *     --face ./public/assets/host-generation/host-face.png \
+ *     --style ./public/assets/host-generation/host-default-key-art.png \
  *     --out-dir ./exports/generated-host-stills
  *
  * Options: --model, --size, --quality, --input-fidelity, --only-theme, --delay-ms, --dry-run, --overwrite, --api-key
@@ -204,20 +204,21 @@ const THEME_SPECS = [
 const STYLE_AND_LAYOUT_BLOCK = `
 IMAGE INPUTS (in multipart order):
 - First uploaded image: face/likeness reference — preserve recognizable facial identity.
-- Second uploaded image: style and composition reference — match its line quality, caricature proportions, background density, and full-body centered staging.
+- Second uploaded image: visual style reference — match its line weight, coloring, cel-shading or comic rendering, outline treatment, saturation, rim lighting, and overall polish. The repo default is the game's neon comic key art (game-show host on stage).
 
-ART STYLE (match the style reference image closely):
-- 1990s MTV adult-animation / Beavis-and-Butt-Head parody energy: hand-drawn 2D cartoon, bold black outlines (slightly jittery), cel-shading with flat colors and hard-edge shadows, gritty-but-funny "ugly-cool" caricature proportions (slightly lanky limbs, expressive head), NOT photorealistic, NOT anime, NOT 3D render.
+ART STYLE (derive from the second reference image; do not invent a different medium):
+- Treat the reference as the canonical look: e.g. bold ink outlines, saturated neon palette, comic/cel-shaded game promo illustration, dramatic stage rim light — whatever the reference actually demonstrates.
+- NOT photorealistic, NOT soft photo paintover, NOT anime unless the reference clearly is.
 
-LAYOUT (match the layout reference / game key art composition):
+LAYOUT (full-body host promo still):
 - Full-body host centered in frame, straight-on eye-level camera, symmetrical staging.
 - Character occupies lower-middle foreground with readable silhouette head-to-toe.
-- Background is a detailed thematic environment (clutter, props, perspective) appropriate to the theme — same visual density and storytelling as a good TV promo still.
+- Background matches the theme's ENVIRONMENT below with busy, readable set dressing (props, depth, perspective) similar in storytelling density to the style reference's background.
 
 FRAMING FOR GAME ANIMATION:
-- Host faces the camera directly, eyes toward viewer, friendly slight closed-mouth smile (neutral mouth for lip-sync base), relaxed eyebrows.
+- Host faces the camera directly, eyes toward viewer, friendly slight closed-mouth smile (neutral closed lips for lip-sync base), relaxed eyebrows.
 - Hands and prop clearly visible; no extreme foreshortening of face.
-- Single clear key light + simple rim; high readability at small UI sizes.
+- Single clear key light + rim where appropriate; high readability at small UI sizes.
 `.trim();
 
 const HOST_IDENTITY_BLOCK = `
@@ -337,12 +338,19 @@ function themeSlug(themeId) {
 }
 
 function buildPrompt(spec) {
+  const themeStyleNote =
+    spec.id === 'Default'
+      ? 'DEFAULT THEME: Match the style reference image closely for outfit, stage, logo placement, and overall default key-art composition (purple sequin jacket, game studio, PANTS ON FIRE branding as in ENVIRONMENT).'
+      : 'NON-DEFAULT THEME: Use the style reference only for illustration technique (outlines, shading, color energy). Do NOT keep the style reference\'s specific background, logos, or costume—use WARDROBE, ENVIRONMENT, and HAND PROP from this theme instead.';
+
   return `
 ${STYLE_AND_LAYOUT_BLOCK}
 
 ${HOST_IDENTITY_BLOCK}
 
 THEME: ${spec.id}
+
+${themeStyleNote}
 
 WARDROBE: ${spec.costume}
 
@@ -351,7 +359,7 @@ ENVIRONMENT: ${spec.environment}
 HAND PROP: ${spec.prop}
 
 OUTPUT:
-- One illustration combining likeness from the face reference with line weight, color handling, and caricature rules from the style reference.
+- One illustration combining likeness from the face reference with rendering rules from the style reference.
 - No text in the image except the explicit "PANTS ON FIRE" / "FIND THE LIAR" branding described for the Default theme only; other themes must have NO readable captions or logos unless part of generic set dressing (e.g. illegible wanted poster blur).
 - No watermarks, no UI frames, no photographer credit.
 `.trim();
