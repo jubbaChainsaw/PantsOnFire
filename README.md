@@ -219,6 +219,15 @@ Using FLUX instead of OpenAI:
 npm run picture:generate-parody-rounds -- --provider flux --category music --limit 5
 ```
 
+By default, music generation now also tries to:
+- pull matching album-cover URLs from:
+  - `https://www.besteveralbums.com/feeds/BestEverAlbumsdotCom_OverallChart.xml`
+- use this style-reference image for the patch-emblem look:
+  - `https://media.craiyon.com/2025-08-06/Kx1Iy3b-RCSGhKhPYW3Aog.webp`
+
+When a matching cover is found, the FLUX music path can use image-to-image mode rather than
+text-only generation.
+
 Repeated music subjects are deduped automatically: if the same artist/band appears more
 than once in the selected batch, the script generates the first image once and copies it
 to the other matching output files instead of regenerating it.
@@ -253,6 +262,10 @@ npm run dlc:sync-picture-manifests
   - `FLUX_API_KEY`
   - `scripts/royaltyFreeApiKeys.local.json` -> `falApiKey` or `fluxApiKey`
 - FLUX defaults to model `fal-ai/flux/dev` and uses the fal model API.
+- FLUX music generation now defaults to using the OverallChart RSS feed as a cover-reference
+  source unless you disable it with `--no-music-reference-feed`.
+- The default music style-reference image is:
+  - `https://media.craiyon.com/2025-08-06/Kx1Iy3b-RCSGhKhPYW3Aog.webp`
 - Defaults now focus on expanded music patch-emblem generation across rock bands, pop stars,
   rap/hip-hop, boy bands, and girl groups:
   - text logo / wordmark

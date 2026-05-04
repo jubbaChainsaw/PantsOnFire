@@ -5,6 +5,9 @@ const path = require('path');
 const repoRoot = path.resolve(__dirname, '..');
 const localKeysPath = path.join(__dirname, 'royaltyFreeApiKeys.local.json');
 const defaultOutputRoot = path.join(repoRoot, 'exports', 'parody-picture-rounds');
+const DEFAULT_MUSIC_REFERENCE_FEED_URL = 'https://www.besteveralbums.com/feeds/BestEverAlbumsdotCom_OverallChart.xml';
+const DEFAULT_STYLE_REFERENCE_URL = 'https://media.craiyon.com/2025-08-06/Kx1Iy3b-RCSGhKhPYW3Aog.webp';
+const DEFAULT_MUSIC_STYLE_REFERENCE_URL = 'https://media.craiyon.com/2025-08-06/Kx1Iy3b-RCSGhKhPYW3Aog.webp';
 
 const DEFAULT_STYLE_NOTES = [
   'bold comic-caricature linework',
@@ -315,6 +318,10 @@ function usage() {
   console.log('  --size <WxH>                    Image size (default: 800x800)');
   console.log('  --quality <low|medium|high>     Image quality (default: high)');
   console.log('  --safety-tolerance <0-6>        Reserved for non-fal FLUX backends');
+  console.log(`  --music-reference-feed-url <url> Music cover RSS feed for references (default: ${DEFAULT_MUSIC_REFERENCE_FEED_URL})`);
+  console.log('  --no-music-reference-feed       Disable music cover reference image lookup');
+  console.log(`  --style-reference-url <url>     Default music style reference image (default: ${DEFAULT_STYLE_REFERENCE_URL})`);
+  console.log('  --no-style-reference            Disable default music style reference image');
   console.log('  --limit <n>                     Limit entries per pack for sampling/review');
   console.log('  --style-notes <text>            Override the built-in visual style notes');
   console.log('  --delay-ms <n>                  Wait time between OpenAI calls (default: 500)');
@@ -337,6 +344,10 @@ function parseArgs(argv) {
     size: '800x800',
     quality: 'high',
     safetyTolerance: 6,
+    musicReferenceFeedUrl: DEFAULT_MUSIC_REFERENCE_FEED_URL,
+    musicReferenceFeedEnabled: true,
+    styleReferenceUrl: DEFAULT_STYLE_REFERENCE_URL,
+    styleReferenceEnabled: true,
     outputRoot: defaultOutputRoot,
     delayMs: 500,
     overwrite: false,
@@ -356,6 +367,10 @@ function parseArgs(argv) {
     else if (arg === '--size') { options.size = String(argv[i + 1] || '').trim(); i += 1; }
     else if (arg === '--quality') { options.quality = String(argv[i + 1] || '').trim(); i += 1; }
     else if (arg === '--safety-tolerance') { options.safetyTolerance = Number.parseInt(String(argv[i + 1] || '6'), 10); i += 1; }
+    else if (arg === '--music-reference-feed-url') { options.musicReferenceFeedUrl = String(argv[i + 1] || '').trim(); i += 1; }
+    else if (arg === '--no-music-reference-feed') { options.musicReferenceFeedEnabled = false; options.musicReferenceFeedUrl = ''; }
+    else if (arg === '--style-reference-url') { options.styleReferenceUrl = String(argv[i + 1] || '').trim(); i += 1; }
+    else if (arg === '--no-style-reference') { options.styleReferenceEnabled = false; options.styleReferenceUrl = ''; }
     else if (arg === '--output-root') { options.outputRoot = path.resolve(repoRoot, String(argv[i + 1] || '').trim()); i += 1; }
     else if (arg === '--limit') { options.limit = Number.parseInt(String(argv[i + 1] || '0'), 10) || 0; i += 1; }
     else if (arg === '--style-notes') { options.styleNotes = String(argv[i + 1] || '').trim() || DEFAULT_STYLE_NOTES; i += 1; }
@@ -406,6 +421,78 @@ function writeJson(filePath, value) {
 function getDefaultModel(provider) {
   if (provider === 'flux') return 'fal-ai/flux/dev';
   return 'gpt-image-1';
+}
+
+function normalizeMusicActName(value) {
+  return String(value || '')
+    .toLowerCase()
+    .replace(/^the\s+/, '')
+    .replace(/[^a-z0-9]+/g, ' ')
+    .trim();
+}
+
+async function fetchTextWithUserAgent(url) {
+  const response = await fetch(url, {
+    headers: {
+      'User-Agent': 'Mozilla/5.0 CursorCloudAgent',
+      Accept: 'application/xml,text/xml;q=0.9,*/*;q=0.8',
+    },
+  });
+  if (!response.ok) {
+    const message = await response.text().catch(() => '');
+    throw new Error(`Reference feed fetch failed: HTTP ${response.status} ${message}`);
+  }
+  return response.text();
+}
+
+function decodeXmlEntities(value) {
+  return String(value || '')
+    .replace(/&amp;/g, '&')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>');
+}
+
+function extractCoverUrlFromRssDescription(description = '') {
+  const match = String(description).match(/https:\/\/albumart\.besteveralbums\.com\/albumart\/[^"'\s>]+?\.(?:jpg|jpeg|png|webp)/i);
+  return match ? decodeXmlEntities(match[0]) : '';
+}
+
+function parseMusicReferenceFeedItems(xmlText = '') {
+  const items = [];
+  const itemMatches = String(xmlText).match(/<item>[\s\S]*?<\/item>/gi) || [];
+  itemMatches.forEach((itemXml) => {
+    const titleMatch = itemXml.match(/<title>([\s\S]*?)<\/title>/i);
+    const descriptionMatch = itemXml.match(/<description><!\[CDATA\[([\s\S]*?)\]\]><\/description>/i)
+      || itemXml.match(/<description>([\s\S]*?)<\/description>/i);
+    const title = decodeXmlEntities(titleMatch ? titleMatch[1] : '').trim();
+    const description = descriptionMatch ? descriptionMatch[1] : '';
+    const coverUrl = extractCoverUrlFromRssDescription(description);
+    if (!title || !coverUrl) return;
+    const rankedTitle = title.replace(/^\d+\.\s*/, '').trim();
+    const artistMatch = rankedTitle.match(/-\s*(.+)$/);
+    const artist = artistMatch ? artistMatch[1].trim() : rankedTitle;
+    items.push({
+      title: rankedTitle,
+      artist,
+      coverUrl,
+      normalizedArtist: normalizeMusicActName(artist),
+    });
+  });
+  return items;
+}
+
+async function loadMusicReferenceMap(options) {
+  if (!options.musicReferenceFeedEnabled || !options.musicReferenceFeedUrl) return new Map();
+  const xml = await fetchTextWithUserAgent(options.musicReferenceFeedUrl);
+  const items = parseMusicReferenceFeedItems(xml);
+  const map = new Map();
+  items.forEach((item) => {
+    if (!item.normalizedArtist || map.has(item.normalizedArtist)) return;
+    map.set(item.normalizedArtist, item.coverUrl);
+  });
+  return map;
 }
 
 function parseSize(size) {
