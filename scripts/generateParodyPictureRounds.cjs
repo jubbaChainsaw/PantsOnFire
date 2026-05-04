@@ -121,10 +121,7 @@ function buildMusicEntriesFromActs(prefix, groupId, groupName, acts) {
 }
 
 const MUSIC_ACT_META = Object.fromEntries(
-  [
-    ...ROCK_BAND_ACTS.map((act) => [act.name, { kind: 'band', segment: 'rock', brief: act.brief }]),
-    ...POP_STAR_ACTS.map((act) => [act.name, { kind: 'solo', segment: 'pop', brief: act.brief }]),
-  ]
+  ROCK_BAND_ACTS.map((act) => [act.name, { kind: 'band', segment: 'rock', brief: act.brief }])
 );
 
 function getMusicActMeta(subject) {
@@ -133,7 +130,6 @@ function getMusicActMeta(subject) {
 
 const MUSIC_ENTRIES = [
   ...buildMusicEntriesFromActs('rock', 'rock-bands', 'Rock Bands', ROCK_BAND_ACTS),
-  ...buildMusicEntriesFromActs('pop', 'pop-stars', 'Pop Stars', POP_STAR_ACTS),
 ];
 
 const SCREEN_ENTRIES = [
@@ -207,10 +203,10 @@ const PACKS = {
   music: {
     categoryId: 'music',
     packId: 'music-parodies-v1',
-    label: 'Top-Selling Rock Bands and Pop Stars Patch Logo Parodies v1',
+    label: 'Top-Selling Rock Bands Patch Logo Parodies v1',
     groupId: 'music-parodies',
-    groupName: 'Music Patch Logo Parodies',
-    previewLabel: 'Describe the parody patch logo clearly without naming the exact artist or band.',
+    groupName: 'Rock Band Patch Logo Parodies',
+    previewLabel: 'Describe the rock-band patch logo clearly without naming the exact band.',
     promptHint: 'Picture Prompt • Music Patch Logo',
     entries: MUSIC_ENTRIES,
     compositionModes: MUSIC_COMPOSITION_MODES,

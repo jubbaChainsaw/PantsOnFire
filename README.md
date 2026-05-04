@@ -177,7 +177,7 @@ Importer output:
 ## AI parody picture round generator (OpenAI / FLUX)
 
 You can also generate original parody/caricature image packs for picture rounds using
-OpenAI or FLUX image generation. This is useful for recognisable-but-transformed artist/band
+OpenAI or FLUX image generation. This is useful for recognisable-but-transformed rock-band
 patch-style logo emblems for music rounds and spoof movie posters for all-time-great films.
 
 ### What it creates
@@ -185,8 +185,8 @@ patch-style logo emblems for music rounds and spoof movie posters for all-time-g
 - two curated packs:
   - `music-parodies-v1`
   - `screen-parodies-v1`
-- 40 prompt pairs in the music pack and 50 prompt pairs in the screen pack by default
-- music pack now targets 40 top-selling rock bands and 40 top-selling pop stars,
+- 20 prompt pairs in the music pack and 50 prompt pairs in the screen pack by default
+- music pack now targets 40 top-selling rock bands only,
   paired into music patch-logo rounds
 - screen pack now targets top films only, excluding sequels and prequels
 - `manifest.json` files compatible with the picture DLC workflow
@@ -222,6 +222,9 @@ Repeated music subjects are deduped automatically: if the same artist/band appea
 than once in the selected batch, the script generates the first image once and copies it
 to the other matching output files instead of regenerating it.
 
+To keep what you already generated, rerun **without** `--overwrite`. Existing image files
+will be left untouched and only missing outputs will be created.
+
 If you want a different size, override it explicitly:
 
 ```bash
@@ -249,11 +252,14 @@ npm run dlc:sync-picture-manifests
   - `FLUX_API_KEY`
   - `scripts/royaltyFreeApiKeys.local.json` -> `falApiKey` or `fluxApiKey`
 - FLUX defaults to model `fal-ai/flux/dev` and uses the fal model API.
-- Defaults now focus on artist/band patch-emblem generation for music:
+- Defaults now focus on rock-band patch-emblem generation for music:
   - text logo / wordmark
   - no people or faces
   - surrounding symbolic elements tied to the act's clothing, props, stage persona, and album-art colors
   - jacket-patch / bag-patch / badge-emblem composition
+- If you already generated older pop-star outputs and want to remove them, delete just those
+  old image files/folders manually, then rerun without `--overwrite` so your existing rock
+  images stay in place.
 - Music prompts are styled toward a punchy comic-punk illustrated patch look.
 - Film prompts remain spoof movie-poster layouts for top films only.
 - The prompts are written to steer results toward transformed parody/caricature territory
