@@ -238,11 +238,12 @@ npm run dlc:sync-picture-manifests
 - OpenAI key sources:
   - `OPENAI_API_KEY`
   - `scripts/royaltyFreeApiKeys.local.json` -> `openaiApiKey`
-- FLUX / Black Forest Labs key sources:
-  - `BFL_API_KEY`
+- FLUX / fal.ai key sources:
+  - `FAL_KEY`
+  - `FAL_API_KEY`
   - `FLUX_API_KEY`
-  - `scripts/royaltyFreeApiKeys.local.json` -> `bflApiKey` or `fluxApiKey`
-- FLUX defaults to model `flux-dev` and uses the BFL async polling API.
+  - `scripts/royaltyFreeApiKeys.local.json` -> `falApiKey` or `fluxApiKey`
+- FLUX defaults to model `fal-ai/flux/dev` and uses the fal model API.
 - Defaults now focus on parody artist portraits for music and spoof movie-poster
   layouts for top films only.
 - The prompts are written to steer results toward transformed parody/caricature territory

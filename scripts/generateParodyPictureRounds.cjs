@@ -169,11 +169,11 @@ function usage() {
   console.log('  --category <music|screen|all>  Which curated pack(s) to process (default: all)');
   console.log(`  --output-root <path>            Output folder (default: ${path.relative(repoRoot, defaultOutputRoot)})`);
   console.log('  --provider <openai|flux>        Image provider (default: openai)');
-  console.log('  --api-key <key>                 Provider API key (OPENAI_API_KEY or BFL_API_KEY / FLUX_API_KEY)');
-  console.log('  --model <name>                  Model name (OpenAI default: gpt-image-1, FLUX default: flux-dev)');
+  console.log('  --api-key <key>                 Provider API key (OPENAI_API_KEY or FAL_KEY / FAL_API_KEY / FLUX_API_KEY)');
+  console.log('  --model <name>                  Model name (OpenAI default: gpt-image-1, FLUX default: fal-ai/flux/dev)');
   console.log('  --size <WxH>                    Image size (default: 800x800)');
   console.log('  --quality <low|medium|high>     Image quality (default: high)');
-  console.log('  --safety-tolerance <0-6>        FLUX safety tolerance (default: 6)');
+  console.log('  --safety-tolerance <0-6>        Reserved for non-fal FLUX backends');
   console.log('  --limit <n>                     Limit entries per pack for sampling/review');
   console.log('  --style-notes <text>            Override the built-in visual style notes');
   console.log('  --delay-ms <n>                  Wait time between OpenAI calls (default: 500)');
@@ -249,10 +249,11 @@ function resolveApiKey(provider, cliKey) {
     return String(local.openaiApiKey || '').trim();
   }
   if (provider === 'flux') {
-    if (process.env.BFL_API_KEY) return process.env.BFL_API_KEY;
+    if (process.env.FAL_KEY) return process.env.FAL_KEY;
+    if (process.env.FAL_API_KEY) return process.env.FAL_API_KEY;
     if (process.env.FLUX_API_KEY) return process.env.FLUX_API_KEY;
     const local = readJsonSafe(localKeysPath, {});
-    return String(local.bflApiKey || local.fluxApiKey || '').trim();
+    return String(local.falApiKey || local.fluxApiKey || '').trim();
   }
   return '';
 }
@@ -262,7 +263,7 @@ function writeJson(filePath, value) {
 }
 
 function getDefaultModel(provider) {
-  if (provider === 'flux') return 'flux-dev';
+  if (provider === 'flux') return 'fal-ai/flux/dev';
   return 'gpt-image-1';
 }
 
@@ -712,39 +713,41 @@ async function pollFluxResult(pollingUrl, apiKey) {
   }
 }
 
-async function generateWithFlux({ prompt, apiKey, model, size, safetyTolerance = 6 }) {
+async function generateWithFlux({ prompt, apiKey, model, size }) {
   const { width, height } = validateFluxSize(size);
-  const response = await fetch(`https://api.bfl.ai/v1/${String(model || 'flux-dev').replace(/^\/+/, '')}`, {
+  const modelId = String(model || 'fal-ai/flux/dev').trim().replace(/^\/+/, '');
+  const response = await fetch(`https://fal.run/${modelId}`, {
     method: 'POST',
     headers: {
-      accept: 'application/json',
-      'x-key': apiKey,
+      Authorization: `Key ${apiKey}`,
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
       prompt,
-      width,
-      height,
+      image_size: { width, height },
+      num_images: 1,
       output_format: 'png',
-      prompt_upsampling: false,
-      safety_tolerance: safetyTolerance,
+      enable_safety_checker: true,
+      sync_mode: false,
     }),
   });
   if (!response.ok) {
     const message = await response.text().catch(() => '');
     throw new Error(`FLUX image generation failed: HTTP ${response.status} ${message}`);
   }
-  const request = await response.json();
-  const pollingUrl = String(request && request.polling_url ? request.polling_url : '').trim();
-  if (!pollingUrl) {
-    throw new Error('FLUX response did not include a polling_url.');
+  const payload = await response.json();
+  const imageUrl = String(
+    payload
+    && Array.isArray(payload.images)
+    && payload.images[0]
+    && payload.images[0].url
+      ? payload.images[0].url
+      : ''
+  ).trim();
+  if (!imageUrl) {
+    throw new Error(`FLUX response did not include an image URL: ${JSON.stringify(payload)}`);
   }
-  const result = await pollFluxResult(pollingUrl, apiKey);
-  const sampleUrl = String(result && result.result && result.result.sample ? result.result.sample : '').trim();
-  if (!sampleUrl) {
-    throw new Error('FLUX result did not include a sample URL.');
-  }
-  const imageResponse = await fetch(sampleUrl);
+  const imageResponse = await fetch(imageUrl);
   if (!imageResponse.ok) {
     const message = await imageResponse.text().catch(() => '');
     throw new Error(`FLUX image download failed: HTTP ${imageResponse.status} ${message}`);
@@ -976,7 +979,7 @@ async function run() {
     options.apiKey = resolveApiKey(options.provider, options.apiKey);
     if (!options.apiKey && !options.dryRun) {
       if (options.provider === 'flux') {
-        throw new Error('Missing FLUX API key. Use --api-key, BFL_API_KEY, FLUX_API_KEY, or scripts/royaltyFreeApiKeys.local.json (bflApiKey / fluxApiKey).');
+        throw new Error('Missing FLUX API key. Use --api-key, FAL_KEY, FAL_API_KEY, FLUX_API_KEY, or scripts/royaltyFreeApiKeys.local.json (falApiKey / fluxApiKey).');
       }
       throw new Error('Missing OpenAI API key. Use --api-key, OPENAI_API_KEY, or scripts/royaltyFreeApiKeys.local.json (openaiApiKey).');
     }
