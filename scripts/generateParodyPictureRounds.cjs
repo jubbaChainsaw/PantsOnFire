@@ -387,6 +387,31 @@ function buildFallbackPromptForSubject(pack, subject, options, compositionMode) 
   ].join(' ');
 }
 
+function buildUltraSafePromptForSubject(pack, subject, options, compositionMode) {
+  const safeBriefs = SAFE_SUBJECT_BRIEFS[pack.categoryId] || {};
+  const brief = String(safeBriefs[subject] || '').trim();
+  if (pack.categoryId === 'music') {
+    return [
+      'Create a single square original spoof album-cover graphic built from symbolic pop-or-rock concept cues only.',
+      brief ? `Subject brief: ${brief}.` : 'Use a generic pop-or-rock album concept with transformed symbolic cues only.',
+      `Composition mode: ${compositionMode}.`,
+      `Style direction: ${options.styleNotes}.`,
+      'Prefer anonymous transformed figures, cropped body language, silhouettes, props, wardrobe fragments, and iconic color-story cues over any direct portrait.',
+      'Make it quiz-readable and detailed at 800x800 while avoiding any exact real person, exact album layout, readable text, or trademark-like design.',
+      'No names, no album titles, no logos, no readable typography, and no exact facial resemblance.',
+    ].join(' ');
+  }
+  return [
+    'Create a single square original spoof movie-poster graphic built from symbolic film concept cues only.',
+    brief ? `Subject brief: ${brief}.` : 'Use a generic film-poster concept with transformed symbolic cues only.',
+    `Composition mode: ${compositionMode}.`,
+    `Style direction: ${options.styleNotes}.`,
+    'Prefer anonymous transformed figures, silhouettes, props, environments, and lighting mood over any exact character depiction.',
+    'Make it quiz-readable and detailed at 800x800 while avoiding any exact copyrighted character, exact poster layout, readable text, or trademark-like design.',
+    'No names, no film titles, no logos, no readable typography, and no exact character likeness.',
+  ].join(' ');
+}
+
 function isModerationBlock(error) {
   const message = String(error && error.message ? error.message : error || '');
   return (
@@ -467,24 +492,36 @@ function buildPromptPlan(pack, options) {
 
   selectedEntries.forEach((entry) => {
     const compositionMode = pickCompositionMode(pack, promptRecords.length);
+    const mainNamedPrompt = buildPromptForSubject(pack, entry.main, options, compositionMode);
+    const mainSafePrompt = buildFallbackPromptForSubject(pack, entry.main, options, compositionMode);
+    const mainUltraSafePrompt = buildUltraSafePromptForSubject(pack, entry.main, options, compositionMode);
     promptRecords.push({
       entryId: entry.entryId,
       side: 'main',
       subject: entry.main,
       mediaFile: `${entry.entryId}-main.png`,
       compositionMode,
-      prompt: buildPromptForSubject(pack, entry.main, options, compositionMode),
-      fallbackPrompt: buildFallbackPromptForSubject(pack, entry.main, options, compositionMode),
+      originalPrompt: mainNamedPrompt,
+      prompt: mainSafePrompt || mainNamedPrompt,
+      promptStrategy: mainSafePrompt ? 'safe_concept_primary' : 'named_title_primary',
+      retryPrompt: mainUltraSafePrompt || mainSafePrompt || mainNamedPrompt,
+      retryPromptStrategy: mainUltraSafePrompt ? 'ultra_safe_symbolic_retry' : 'safe_concept_retry',
     });
     const imposterCompositionMode = pickCompositionMode(pack, promptRecords.length);
+    const imposterNamedPrompt = buildPromptForSubject(pack, entry.imposter, options, imposterCompositionMode);
+    const imposterSafePrompt = buildFallbackPromptForSubject(pack, entry.imposter, options, imposterCompositionMode);
+    const imposterUltraSafePrompt = buildUltraSafePromptForSubject(pack, entry.imposter, options, imposterCompositionMode);
     promptRecords.push({
       entryId: entry.entryId,
       side: 'imposter',
       subject: entry.imposter,
       mediaFile: `${entry.entryId}-imposter.png`,
       compositionMode: imposterCompositionMode,
-      prompt: buildPromptForSubject(pack, entry.imposter, options, imposterCompositionMode),
-      fallbackPrompt: buildFallbackPromptForSubject(pack, entry.imposter, options, imposterCompositionMode),
+      originalPrompt: imposterNamedPrompt,
+      prompt: imposterSafePrompt || imposterNamedPrompt,
+      promptStrategy: imposterSafePrompt ? 'safe_concept_primary' : 'named_title_primary',
+      retryPrompt: imposterUltraSafePrompt || imposterSafePrompt || imposterNamedPrompt,
+      retryPromptStrategy: imposterUltraSafePrompt ? 'ultra_safe_symbolic_retry' : 'safe_concept_retry',
     });
   });
 
@@ -618,7 +655,8 @@ async function runPack(plan, options) {
     }
 
     let imageBuffer = null;
-    let usedFallbackPrompt = false;
+    let usedRetryPrompt = false;
+    let usedPromptStrategy = record.promptStrategy || 'unknown';
     try {
       imageBuffer = await generateWithOpenAi({
         prompt: record.prompt,
@@ -628,19 +666,20 @@ async function runPack(plan, options) {
         quality: options.quality,
       });
     } catch (error) {
-      if (!isModerationBlock(error) || !record.fallbackPrompt) {
+      if (!isModerationBlock(error) || !record.retryPrompt || record.retryPrompt === record.prompt) {
         throw error;
       }
-      console.warn(`- [${index + 1}/${plan.promptRecords.length}] RETRY ${record.subject} with safer fallback prompt`);
+      console.warn(`- [${index + 1}/${plan.promptRecords.length}] RETRY ${record.subject} with ultra-safe symbolic prompt`);
       try {
         imageBuffer = await generateWithOpenAi({
-          prompt: record.fallbackPrompt,
+          prompt: record.retryPrompt,
           apiKey: options.apiKey,
           model: options.model,
           size: options.size,
           quality: options.quality,
         });
-        usedFallbackPrompt = true;
+        usedRetryPrompt = true;
+        usedPromptStrategy = record.retryPromptStrategy || 'retry_prompt';
       } catch (fallbackError) {
         if (!isModerationBlock(fallbackError)) {
           throw fallbackError;
@@ -651,6 +690,7 @@ async function runPack(plan, options) {
           side: record.side,
           mediaFile: record.mediaFile,
           status: 'blocked',
+          promptStrategy: usedPromptStrategy,
           reason: String(fallbackError.message || fallbackError),
         });
         console.warn(`- [${index + 1}/${plan.promptRecords.length}] BLOCKED ${record.subject} (${relOutputPath})`);
@@ -664,9 +704,10 @@ async function runPack(plan, options) {
       subject: record.subject,
       side: record.side,
       mediaFile: record.mediaFile,
-      status: usedFallbackPrompt ? 'created_with_fallback' : 'created',
+      status: usedRetryPrompt ? 'created_with_retry' : 'created',
+      promptStrategy: usedPromptStrategy,
     });
-    console.log(`- [${index + 1}/${plan.promptRecords.length}] WROTE ${record.subject} (${relOutputPath})${usedFallbackPrompt ? ' [fallback]' : ''}`);
+    console.log(`- [${index + 1}/${plan.promptRecords.length}] WROTE ${record.subject} (${relOutputPath})${usedRetryPrompt ? ' [retry]' : ''}`);
     if (options.delayMs > 0 && index < plan.promptRecords.length - 1) {
       await sleep(options.delayMs);
     }
