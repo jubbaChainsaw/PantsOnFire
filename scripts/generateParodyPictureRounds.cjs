@@ -10,7 +10,7 @@ const DEFAULT_STYLE_NOTES = [
   'bold comic-caricature linework',
   'warped anatomy and exaggerated silhouettes',
   'editorial collage poster energy',
-  'strictly spoof album-cover or spoof movie-poster composition language without recreating any exact cover or poster',
+  'strictly artist-logo-mark or spoof movie-poster composition language without recreating any exact official logo, cover, or poster',
   'punk-zine attitude with occasional retro paper-cut collage framing',
   'rich readable costume, hair, prop, and face-shape detail at 800x800',
   'clean but fully designed poster or cover background that helps recognition',
@@ -18,57 +18,118 @@ const DEFAULT_STYLE_NOTES = [
   'instantly readable central subject or compact ensemble',
 ].join(', ');
 
+const ROCK_BAND_ACTS = [
+  { name: 'The Beatles', brief: 'a 1960s mop-top quartet with tailored suits, cheeky charisma, and psychedelic Sgt. Pepper color bursts' },
+  { name: 'The Rolling Stones', brief: 'a swaggering blues-rock band with skinny silhouettes, tongue-out attitude, and ragged glam energy' },
+  { name: 'Eagles', brief: 'a polished California country-rock band with desert sunsets, hotel decadence, and laid-back West Coast cool' },
+  { name: 'Fleetwood Mac', brief: 'a mystic 1970s rock group with shawls, stage romance, and elegant bohemian drama' },
+  { name: 'Led Zeppelin', brief: 'a mythic hard-rock band with wizard-hair grandeur, runic mystique, and thunder-god energy' },
+  { name: 'Queen', brief: 'a flamboyant arena-rock band with regal crests, theatrical camp, and operatic stage force' },
+  { name: 'Pink Floyd', brief: 'a psychedelic prog-rock band with prism light, surreal space, and cerebral cosmic mood' },
+  { name: 'Genesis', brief: 'an art-rock band with British theatricality, surreal prog motifs, and polished 1980s arena sheen' },
+  { name: 'AC/DC', brief: 'a hard-rock band with schoolboy-uniform cheek, duckwalk swagger, and giant guitar-riff punch' },
+  { name: "Guns N' Roses", brief: 'a sleazy hard-rock band with bandanas, roses, tattoo-flash menace, and Sunset Strip chaos' },
+  { name: 'Aerosmith', brief: 'a flashy American rock band with scarves, big hair, microphones, and sleazy stage motion' },
+  { name: 'Bon Jovi', brief: 'an anthemic arena-rock band with leather jackets, New Jersey grit, and glam-radio swagger' },
+  { name: 'Metallica', brief: 'a heavy metal band with black denim, angular lightning forms, and aggressive thrash intensity' },
+  { name: 'Def Leppard', brief: 'a glossy British rock band with leopard patterns, neon geometry, and radio-metal shine' },
+  { name: 'U2', brief: 'a stadium-rock band with windswept silhouettes, desert horizons, and earnest activist grandeur' },
+  { name: 'Coldplay', brief: 'a polished arena-pop-rock band with colorful light bursts, heartfelt uplift, and soft cosmic visuals' },
+  { name: 'Chicago', brief: 'a brass-driven rock band with bold horn iconography, city-night polish, and classic FM warmth' },
+  { name: 'Journey', brief: 'a melodic arena-rock band with soaring sci-fi fantasy motifs and uplifting power-ballad energy' },
+  { name: 'Van Halen', brief: 'a party-hard guitar-rock band with striped guitar graphics, acrobatic motion, and flashy California swagger' },
+  { name: 'Kiss', brief: 'a shock-rock band with face paint, platform boots, comic-book flames, and pyrotechnic excess' },
+  { name: 'The Beach Boys', brief: 'a harmony surf-pop band with striped shirts, beach motifs, and bright California nostalgia' },
+  { name: 'The Who', brief: 'a mod-rock band with Union Jack stage cues, smashed instruments, and explosive target iconography' },
+  { name: 'Santana', brief: 'a guitar-led Latin rock band with spiritual iconography, swirling colors, and smooth Afro-Latin groove' },
+  { name: 'ZZ Top', brief: 'a blues-rock band with giant beards, hot-rod cool, and dusty Texas swagger' },
+  { name: 'Foreigner', brief: 'a polished arena-rock band with chrome typography, dramatic lighting, and radio-rock sharpness' },
+  { name: 'Dire Straits', brief: 'a clean guitar-rock band with steel-string emblems, sky-back calm, and tasteful adult-rock elegance' },
+  { name: 'Nirvana', brief: 'a scruffy grunge band with thrift-store attitude, scribbled smiley iconography, and raw 1990s angst' },
+  { name: 'Green Day', brief: 'a bratty pop-punk band with skate-kid energy, graffiti textures, and sarcastic suburban rebellion' },
+  { name: 'Red Hot Chili Peppers', brief: 'a funk-rock band with shirtless chaos, slap-bass energy, and spiky California weirdness' },
+  { name: 'Foo Fighters', brief: 'a friendly hard-rock band with bearded frontman energy, bold circles-and-rays graphics, and arena uplift' },
+  { name: 'Linkin Park', brief: 'a rap-rock band with urban angst, sharp tech-metal edges, and turn-of-the-millennium emotional intensity' },
+  { name: 'Maroon 5', brief: 'a slick pop-rock band with fashion-forward stage styling, glossy romance, and radio-chart polish' },
+  { name: 'The Police', brief: 'a sharp new-wave rock trio with angular contrast colors, reggae-pop bounce, and sting-driven cool' },
+  { name: 'Duran Duran', brief: 'a glossy new-romantic band with yacht-club glamour, pastel fashion, and art-deco pop energy' },
+  { name: 'The Clash', brief: 'a politically charged punk band with militant street style, collage typography, and rebel urgency' },
+  { name: 'Oasis', brief: 'a swaggering Britpop band in parkas with sneering Manchester cool and union-jack-adjacent lad energy' },
+  { name: 'The Cure', brief: 'a gothic new-wave band with teased hair, smeared eyeliner, and romantic end-of-the-world melancholy' },
+  { name: 'Depeche Mode', brief: 'a sleek synth-pop band with dark tailored styling, industrial geometry, and brooding electronic cool' },
+  { name: 'The Doors', brief: 'a psychedelic rock band with leather-poet mystique, sunset silhouettes, and smoky nightclub surrealism' },
+  { name: 'R.E.M.', brief: 'an introspective alternative rock band with Americana iconography, faded signage, and thoughtful college-radio mood' },
+];
+
+const POP_STAR_ACTS = [
+  { name: 'Michael Jackson', brief: 'a precision-dancing pop icon with red-jacket glamour, fedora cues, and moonwalk electricity' },
+  { name: 'Prince', brief: 'a purple-toned pop-funk virtuoso with ornate tailoring, electric-guitar royalty, and erotic glamour' },
+  { name: 'Elvis Presley', brief: 'a pompadoured rock-and-roll king with gold-lamé spectacle, vintage microphone flair, and Vegas shine' },
+  { name: 'Cliff Richard', brief: 'a clean-cut British pop idol with polished suits, old-school smile, and evergreen stage charm' },
+  { name: 'Madonna', brief: 'a chameleon pop diva with devotional glamour, cone-bra-era boldness, and reinvention energy' },
+  { name: 'Lady Gaga', brief: 'an avant-pop icon in surreal high-fashion looks, theatrical spectacle, and fearless stage drama' },
+  { name: 'Mariah Carey', brief: 'a melismatic diva with luxurious sparkle, microphone glamour, and holiday-pop queen energy' },
+  { name: 'Whitney Houston', brief: 'a radiant vocal powerhouse with elegant gowns, spotlight drama, and soaring pop-soul strength' },
+  { name: 'Elton John', brief: 'a piano-pop showman with outrageous glasses, glittering jackets, and joyful spectacle' },
+  { name: 'Billy Joel', brief: 'a piano-bar storyteller with New York cool, classic tuxedo energy, and everyman charm' },
+  { name: 'Barbra Streisand', brief: 'a dramatic showbiz legend with classic profile, old-Hollywood glamour, and torch-song poise' },
+  { name: 'Celine Dion', brief: 'a grand theatrical ballad singer with elegant couture and powerhouse Vegas polish' },
+  { name: 'Taylor Swift', brief: 'a modern stadium-pop star with glittery tour styling, diaristic glamour, and era-switching polish' },
+  { name: 'Ariana Grande', brief: 'a high-ponytail pop diva with cloudlike gloss, sleek performance styling, and whistle-note sparkle' },
+  { name: 'Rihanna', brief: 'a cool fashion-forward pop icon with edgy styling, beauty-mogul poise, and island-inflected confidence' },
+  { name: 'Beyonce', brief: 'a regal pop and R&B superstar with gold stage glamour, commanding choreography, and queenly presence' },
+  { name: 'Britney Spears', brief: 'a glossy millennial pop princess with schoolgirl-to-stage iconography and dance-pop sparkle' },
+  { name: 'Christina Aguilera', brief: 'a powerhouse pop vocalist with glamorous stage styling and diva-level vocal bravado' },
+  { name: 'Adele', brief: 'a soulful powerhouse vocalist in monochrome elegance with side-lit expression and emotional gravity' },
+  { name: 'Katy Perry', brief: 'a candy-colored pop star with pin-up gloss, playful costume fantasy, and chart-pop brightness' },
+  { name: 'Justin Bieber', brief: 'a tattooed pop idol with streetwear polish, tabloid celebrity aura, and youthful heartthrob energy' },
+  { name: 'Ed Sheeran', brief: 'a ginger acoustic pop troubadour with loop-pedal busker charm and casual stadium appeal' },
+  { name: 'Bruno Mars', brief: 'a retro-funk pop entertainer with slick tailoring, showband energy, and charismatic dance moves' },
+  { name: 'George Michael', brief: 'a cool leather-jacket pop icon with stubble, jukebox swagger, and late-1980s confidence' },
+  { name: 'Janet Jackson', brief: 'a sleek dance-pop icon with military-chic styling and cool choreographic precision' },
+  { name: 'Cher', brief: 'a legendary diva with endless reinvention, dramatic hair, and glamorous camp spectacle' },
+  { name: 'Shania Twain', brief: 'a crossover country-pop diva with leopard-print flair, radio polish, and stage confidence' },
+  { name: 'Dolly Parton', brief: 'a rhinestone country-pop queen with towering blonde hair, sparkle, and warm Southern charisma' },
+  { name: 'Olivia Newton-John', brief: 'a sunshine pop icon with roller-disco glow, soft curls, and wholesome-to-glam transformation' },
+  { name: 'Cyndi Lauper', brief: 'a colorful pop eccentric with mismatched fashion, playful attitude, and quirky 1980s neon charm' },
+  { name: 'Phil Collins', brief: 'a polished soft-rock pop star with drum-icon cues, blazer styling, and adult-contemporary cool' },
+  { name: 'Rod Stewart', brief: 'a raspy-voiced pop-rock crooner with spiky hair, satin swagger, and stage-rogue charm' },
+  { name: 'Lionel Richie', brief: 'a smooth pop-soul hitmaker with tuxedo ease, romantic ballad polish, and warm smile energy' },
+  { name: 'Julio Iglesias', brief: 'a suave Latin pop crooner with luxury-suit elegance, romantic gaze, and international glamour' },
+  { name: 'Frank Sinatra', brief: 'a tuxedoed lounge legend with fedora cues, martini cool, and old-school big-band polish' },
+  { name: 'Tony Bennett', brief: 'a classic standards singer with tailored elegance, painterly warmth, and jazz-club sophistication' },
+  { name: 'Tina Turner', brief: 'a lion-maned rock-pop dynamo with fierce stage energy, leather glamour, and unstoppable motion' },
+  { name: 'Shakira', brief: 'a global pop star with wild curls, belly-dance motion, and Latin-rock performance energy' },
+  { name: 'Selena Quintanilla', brief: 'a sparkling Tejano-pop icon with purple glamour, warm charisma, and crossover shine' },
+  { name: 'Gloria Estefan', brief: 'a polished Latin pop star with Miami glamour, tropical rhythm cues, and bright crossover elegance' },
+];
+
+function buildMusicEntriesFromActs(prefix, groupId, groupName, acts) {
+  const entries = [];
+  for (let index = 0; index < acts.length; index += 2) {
+    const pairNumber = Math.floor(index / 2) + 1;
+    entries.push({
+      entryId: `${prefix}-${String(pairNumber).padStart(2, '0')}`,
+      groupId,
+      groupName,
+      hint: `Picture Prompt • ${groupName} Logo ${pairNumber}`,
+      main: acts[index].name,
+      imposter: acts[index + 1].name,
+    });
+  }
+  return entries;
+}
+
+const MUSIC_ACT_META = Object.fromEntries(
+  [
+    ...ROCK_BAND_ACTS.map((act) => [act.name, { kind: 'band', segment: 'rock', brief: act.brief }]),
+    ...POP_STAR_ACTS.map((act) => [act.name, { kind: 'solo', segment: 'pop', brief: act.brief }]),
+  ]
+);
+
 const MUSIC_ENTRIES = [
-  { entryId: 'music-01', main: "The Beatles - Sgt. Pepper's Lonely Hearts Club Band", imposter: 'The Beach Boys - Pet Sounds' },
-  { entryId: 'music-02', main: 'The Beach Boys - Pet Sounds', imposter: "The Beatles - Sgt. Pepper's Lonely Hearts Club Band" },
-  { entryId: 'music-03', main: 'Michael Jackson - Thriller', imposter: 'Prince - Purple Rain' },
-  { entryId: 'music-04', main: 'Prince - Purple Rain', imposter: 'Michael Jackson - Thriller' },
-  { entryId: 'music-05', main: 'Fleetwood Mac - Rumours', imposter: 'Carole King - Tapestry' },
-  { entryId: 'music-06', main: 'Carole King - Tapestry', imposter: 'Joni Mitchell - Blue' },
-  { entryId: 'music-07', main: 'The Beatles - Abbey Road', imposter: 'The Rolling Stones - Exile on Main St.' },
-  { entryId: 'music-08', main: 'The Rolling Stones - Exile on Main St.', imposter: 'The Clash - London Calling' },
-  { entryId: 'music-09', main: 'Bruce Springsteen - Born to Run', imposter: 'Bruce Springsteen - Born in the U.S.A.' },
-  { entryId: 'music-10', main: 'Bob Dylan - Highway 61 Revisited', imposter: 'Bob Dylan - Blood on the Tracks' },
-  { entryId: 'music-11', main: 'Pink Floyd - The Dark Side of the Moon', imposter: 'Led Zeppelin - Led Zeppelin IV' },
-  { entryId: 'music-12', main: 'Led Zeppelin - Led Zeppelin IV', imposter: 'AC/DC - Back in Black' },
-  { entryId: 'music-13', main: 'Nirvana - Nevermind', imposter: 'Radiohead - The Bends' },
-  { entryId: 'music-14', main: 'Radiohead - OK Computer', imposter: 'The Cure - Disintegration' },
-  { entryId: 'music-15', main: "Marvin Gaye - What's Going On", imposter: 'Stevie Wonder - Songs in the Key of Life' },
-  { entryId: 'music-16', main: 'Stevie Wonder - Songs in the Key of Life', imposter: "Marvin Gaye - What's Going On" },
-  { entryId: 'music-17', main: 'Kate Bush - Hounds of Love', imposter: 'Kate Bush - The Kick Inside' },
-  { entryId: 'music-18', main: 'Joni Mitchell - Blue', imposter: 'Carole King - Tapestry' },
-  { entryId: 'music-19', main: 'AC/DC - Back in Black', imposter: "Guns N' Roses - Appetite for Destruction" },
-  { entryId: 'music-20', main: 'Queen - A Night at the Opera', imposter: 'Elton John - Goodbye Yellow Brick Road' },
-  { entryId: 'music-21', main: 'Paul Simon - Graceland', imposter: 'Simon & Garfunkel - Bridge Over Troubled Water' },
-  { entryId: 'music-22', main: 'U2 - The Joshua Tree', imposter: 'Dire Straits - Brothers in Arms' },
-  { entryId: 'music-23', main: 'The Smiths - The Queen Is Dead', imposter: 'The Stone Roses - The Stone Roses' },
-  { entryId: 'music-24', main: 'Madonna - Like a Prayer', imposter: 'George Michael - Faith' },
-  { entryId: 'music-25', main: 'Bruce Springsteen - Born in the U.S.A.', imposter: 'Bruce Springsteen - Born to Run' },
-  { entryId: 'music-26', main: 'Blondie - Parallel Lines', imposter: 'Duran Duran - Rio' },
-  { entryId: 'music-27', main: 'David Bowie - The Rise and Fall of Ziggy Stardust and the Spiders from Mars', imposter: 'David Bowie - Hunky Dory' },
-  { entryId: 'music-28', main: 'R.E.M. - Automatic for the People', imposter: 'Radiohead - The Bends' },
-  { entryId: 'music-29', main: 'Alanis Morissette - Jagged Little Pill', imposter: 'Adele - 21' },
-  { entryId: 'music-30', main: "Sex Pistols - Never Mind the Bollocks, Here's the Sex Pistols", imposter: 'The Clash - London Calling' },
-  { entryId: 'music-31', main: 'Radiohead - The Bends', imposter: 'Radiohead - OK Computer' },
-  { entryId: 'music-32', main: 'The Velvet Underground & Nico - The Velvet Underground & Nico', imposter: 'The Stone Roses - The Stone Roses' },
-  { entryId: 'music-33', main: 'Bob Dylan - Blood on the Tracks', imposter: 'Bob Dylan - Highway 61 Revisited' },
-  { entryId: 'music-34', main: 'Michael Jackson - Off the Wall', imposter: 'Michael Jackson - Thriller' },
-  { entryId: 'music-35', main: 'The Cure - Disintegration', imposter: 'The Smiths - The Queen Is Dead' },
-  { entryId: 'music-36', main: 'David Bowie - Hunky Dory', imposter: 'David Bowie - The Rise and Fall of Ziggy Stardust and the Spiders from Mars' },
-  { entryId: 'music-37', main: 'The Stone Roses - The Stone Roses', imposter: 'The Smiths - The Queen Is Dead' },
-  { entryId: 'music-38', main: 'Simon & Garfunkel - Bridge Over Troubled Water', imposter: 'Paul Simon - Graceland' },
-  { entryId: 'music-39', main: 'Eagles - Hotel California', imposter: 'Dire Straits - Brothers in Arms' },
-  { entryId: 'music-40', main: 'Elton John - Goodbye Yellow Brick Road', imposter: 'Queen - A Night at the Opera' },
-  { entryId: 'music-41', main: "Guns N' Roses - Appetite for Destruction", imposter: 'AC/DC - Back in Black' },
-  { entryId: 'music-42', main: 'Amy Winehouse - Back to Black', imposter: 'Adele - 21' },
-  { entryId: 'music-43', main: 'The Police - Synchronicity', imposter: 'Duran Duran - Rio' },
-  { entryId: 'music-44', main: 'Dire Straits - Brothers in Arms', imposter: 'U2 - The Joshua Tree' },
-  { entryId: 'music-45', main: 'Duran Duran - Rio', imposter: 'Blondie - Parallel Lines' },
-  { entryId: 'music-46', main: 'Kate Bush - The Kick Inside', imposter: 'Kate Bush - Hounds of Love' },
-  { entryId: 'music-47', main: 'Adele - 21', imposter: 'Alanis Morissette - Jagged Little Pill' },
-  { entryId: 'music-48', main: 'George Michael - Faith', imposter: 'Madonna - Like a Prayer' },
-  { entryId: 'music-49', main: 'Billy Joel - The Stranger', imposter: 'Carole King - Tapestry' },
-  { entryId: 'music-50', main: 'The Clash - London Calling', imposter: "Sex Pistols - Never Mind the Bollocks, Here's the Sex Pistols" },
+  ...buildMusicEntriesFromActs('rock', 'rock-bands', 'Rock Bands', ROCK_BAND_ACTS),
+  ...buildMusicEntriesFromActs('pop', 'pop-stars', 'Pop Stars', POP_STAR_ACTS),
 ];
 
 const SCREEN_ENTRIES = [
@@ -125,10 +186,10 @@ const SCREEN_ENTRIES = [
 ];
 
 const MUSIC_COMPOSITION_MODES = [
-  'a spoof album-cover portrait with one bold central figure',
-  'a fake gatefold-album sleeve composition with a compact transformed ensemble',
-  'an exaggerated spoof vinyl-cover layout with cutout collage framing and strong central iconography',
-  'a mock greatest-hits album sleeve built around caricature, silhouette, and signature props',
+  'a bold illustrated text logo with one central cartoon artist mascot',
+  'a circular badge logo with a compact cartoon lineup and surrounding signature elements',
+  'a distressed merch-logo emblem with stacked text, icon props, and sticker-like collage framing',
+  'a graphic wordmark with a cartoon bust or full-band lineup surrounded by themed symbols',
 ];
 
 const SCREEN_COMPOSITION_MODES = [
@@ -142,11 +203,11 @@ const PACKS = {
   music: {
     categoryId: 'music',
     packId: 'music-parodies-v1',
-    label: 'Top 50 Pop/Rock Artist Logo Parodies v1',
+    label: 'Top-Selling Rock Bands and Pop Stars Logo Parodies v1',
     groupId: 'music-parodies',
-    groupName: 'Artist Logo Parodies',
-    previewLabel: 'Describe the parody logo mark clearly without naming the exact act.',
-    promptHint: 'Picture Prompt • Artist Logo Parody',
+    groupName: 'Music Logo Parodies',
+    previewLabel: 'Describe the parody logo mark clearly without naming the exact artist or band.',
+    promptHint: 'Picture Prompt • Music Logo Parody',
     entries: MUSIC_ENTRIES,
     compositionModes: MUSIC_COMPOSITION_MODES,
   },
@@ -290,106 +351,7 @@ function validateFluxSize(size) {
 }
 
 const SAFE_SUBJECT_BRIEFS = {
-  music: {
-    'The Beatles': 'a 1960s British mop-top rock quartet with matching-era tailoring, cheeky charisma, and beat-combo energy',
-    'The Rolling Stones': 'a swaggering blues-rock band with messy glamour, skinny silhouettes, and rebellious stage attitude',
-    'Elvis Presley': 'a pompadoured rock-and-roll showman in flashy stagewear with retro microphone energy',
-    'Johnny Cash': 'a solemn country outlaw singer in stark dark clothing with an acoustic guitar and no-frills stage presence',
-    'Madonna': 'a chameleon pop diva with era-shifting fashion, bold dance-pop attitude, and theatrical pose language',
-    'Lady Gaga': 'an avant-pop performance icon in surreal high-fashion styling and dramatic stage spectacle',
-    'David Bowie': 'an androgynous glam-rock star with lightning-bolt theatricality, vivid styling, and alien-pop charisma',
-    'Prince': 'a flamboyant purple-toned funk-pop virtuoso with ornate tailoring and electric-guitar royalty energy',
-    'Freddie Mercury': 'a moustached arena-rock frontman with commanding stage pose and stadium singalong energy',
-    'Mick Jagger': 'a wiry rock singer with flamboyant movement, pouty swagger, and vintage stage glamour',
-    'Taylor Swift': 'a modern stadium-pop songwriter archetype with glittery tour styling, acoustic-pop cues, and diaristic glamour',
-    'Olivia Rodrigo': 'a young pop-rock heartbreak star with punky prom-night styling and purple stage energy',
-    'Beyonce': 'a regal pop and R&B superstar with gold stage glamour, commanding choreography, and queenly presence',
-    'Rihanna': 'a cool fashion-forward pop icon with edgy styling, Caribbean-inflected attitude, and beauty-mogul confidence',
-    'Adele': 'a soulful powerhouse vocalist in elegant classic styling with microphone-in-the-spotlight drama',
-    'Amy Winehouse': 'a beehive-haired retro-soul rebel with winged eyeliner, tattoos, and smoky jazz-club energy',
-    'Michael Jackson': 'a precision-dancing pop legend with military-style stage jacket cues, fedora energy, and moonwalk attitude',
-    'Bruno Mars': 'a retro-funk pop entertainer with slick tailoring, showband energy, and charismatic dance moves',
-    'Elton John': 'a piano-rock showman with outrageous glasses, sparkling costume flair, and joyful stage exuberance',
-    'Billy Joel': 'a piano bar troubadour with New York everyman energy and classic singer-songwriter styling',
-    'Bob Dylan': 'a scruffy poetic folk-rock troubadour with harmonica cues and counterculture mystique',
-    'Neil Young': 'a rugged folk-rock loner with flannel-ish styling, weathered guitar energy, and melancholic cool',
-    'Bruce Springsteen': 'a blue-collar heartland rocker with denim, sweaty arena sincerity, and working-class bravado',
-    'Tom Petty': 'a laid-back American rock songwriter with lanky silhouette, jangly guitar vibes, and dusty cool',
-    'Dolly Parton': 'a rhinestone country queen with towering blonde hair, sparkling stagewear, and warm Southern charisma',
-    'Shania Twain': 'a crossover country-pop diva with leopard-print flair, stadium confidence, and polished glamour',
-    'The Sex Pistols': 'a sneering punk band with torn clothes, safety-pin chaos, and tabloid-anarchy energy',
-    'The Clash': 'a politically charged punk group with militant street style, guitars, and restless rebel energy',
-    'Nirvana': 'a scruffy grunge trio with thrift-store styling, slacker angst, and fuzzy guitar energy',
-    'Pearl Jam': 'a brooding 1990s alt-rock band with long-haired earnestness, flannel textures, and arena-grunge vibe',
-    'Metallica': 'a heavy metal band with black denim, aggressive guitar attack, and thunderous stage presence',
-    'Iron Maiden': 'a theatrical metal act with mascots, galloping riffs, and dramatic fantasy-war imagery',
-    'AC/DC': 'a hard-rock band with schoolboy-uniform cheek, duckwalk energy, and giant guitar-riff swagger',
-    "Guns N' Roses": 'a sleazy glam-hard-rock group with bandanas, leather, and wild Sunset Strip excess',
-    'The Ramones': 'a leather-jacket punk quartet with bowl-cut simplicity, fast chords, and comic-book toughness',
-    'Green Day': 'a bratty pop-punk trio with dyed hair, skate-kid energy, and sarcastic suburban rebellion',
-    'The Cure': 'a gothic new-wave act with teased black hair, smeared eyeliner, and moody romantic melancholy',
-    'Depeche Mode': 'a sleek synth-pop group in dark tailored styling with brooding electronic cool',
-    'ABBA': 'a glittery Scandinavian pop quartet with bright harmonies, satin stagewear, and disco brightness',
-    'Bee Gees': 'a falsetto disco-pop trio with chest hair, white suits, and dance-floor shimmer',
-    'Daft Punk': 'a robot-helmet electronic duo with sleek chrome anonymity and neon club energy',
-    'Kraftwerk': 'a minimalist electronic group with matching outfits, precision geometry, and deadpan machine cool',
-    'Tupac Shakur': 'a fiery 1990s West Coast rap icon with bandana cues, intense gaze, and revolutionary swagger',
-    'The Notorious B.I.G.': 'a larger-than-life East Coast rap king with crown motifs, luxury streetwear, and smooth confidence',
-    'Kendrick Lamar': 'a cerebral modern rap poet with understated streetwear and intense, focused stage presence',
-    'J. Cole': 'a thoughtful rap storyteller with hoodie-and-dreadlock cues and grounded introspective energy',
-    'Dr. Dre': 'a legendary hip-hop producer archetype with studio authority, black streetwear, and West Coast polish',
-    'Snoop Dogg': 'a lanky laid-back rap icon with braids, smooth attitude, and lowrider-party cool',
-    'Jay-Z': 'a mogul rapper in luxury minimalist tailoring with cool confidence and empire-builder presence',
-    'Kanye West': 'a polarizing fashion-minded rap auteur in oversized silhouettes and stark performance minimalism',
-    'Britney Spears': 'a millennial pop princess with glossy dance-pop styling and high-energy teen-idol spectacle',
-    'Christina Aguilera': 'a powerhouse pop vocalist with glamorous stage styling and diva-level vocal bravado',
-    'Billie Eilish': 'a whisper-pop anti-pop star in oversized streetwear with eerie cool and neon-green edge',
-    'Lorde': 'an art-pop outsider with dark curls, moody minimalism, and witchy cool',
-    'Ed Sheeran': 'a ginger acoustic pop troubadour with loop-pedal busker energy and casual stadium charm',
-    'Shawn Mendes': 'a polished young pop heartthrob with clean-cut guitar-pop styling and soft-rock charm',
-    'Justin Bieber': 'a tattooed modern pop idol with streetwear polish and tabloid-bred celebrity aura',
-    'Harry Styles': 'a flamboyant retro-pop heartthrob with feathered fashion, satin shirts, and charming stage confidence',
-    'Whitney Houston': 'a glamorous vocal powerhouse with radiant stage presence and soaring pop-soul elegance',
-    'Mariah Carey': 'a melismatic diva with festive glam, luxurious styling, and superstar sparkle',
-    'Celine Dion': 'a grand theatrical ballad singer with elegant couture and powerhouse Vegas polish',
-    'Barbra Streisand': 'a classic showbiz legend with dramatic profile, old-school glamour, and torch-song poise',
-    'Frank Sinatra': 'a tuxedoed lounge crooner with fedora cues, whiskey-bar cool, and Rat Pack polish',
-    'Dean Martin': 'a smooth martini-era entertainer with relaxed tuxedo swagger and easy lounge charm',
-    'Aretha Franklin': 'a soul queen in regal stagewear with church-to-stage power and commanding vocal aura',
-    'Tina Turner': 'a lion-maned rock-soul dynamo with fierce legs-forward stage energy and unstoppable motion',
-    'The Beach Boys': 'a sunlit harmony group with striped shirts, surf cues, and California nostalgia',
-    'The Backstreet Boys': 'a coordinated late-1990s boy band with frosted-pop glamour and synchronized poses',
-    'Oasis': 'a swaggering Britpop brother band in parkas with sneering Manchester guitar cool',
-    'Blur': 'an arty Britpop group with cheeky mod styling and clever London indie energy',
-    'Coldplay': 'a polished arena-pop band with heartfelt uplift, colorful stage visuals, and earnest anthemic mood',
-    'U2': 'a stadium-rock quartet with activist grandeur, windblown hero poses, and giant-anthem intensity',
-    'Radiohead': 'an anxious art-rock band with glitchy mood, introspective tension, and cerebral melancholy',
-    'Muse': 'a bombastic sci-fi rock trio with dramatic lighting, dystopian flair, and operatic intensity',
-    'Red Hot Chili Peppers': 'a funk-rock band with shirtless chaos, slap-bass energy, and sunburnt California weirdness',
-    'Foo Fighters': 'a friendly hard-rock band with bearded frontman energy and straightforward arena uplift',
-    'Pink Floyd': 'a psychedelic prog-rock act with prism-like light, cosmic mood, and expansive sonic dreaminess',
-    'Led Zeppelin': 'a mythic hard-rock band with wizardly hair, dragonish grandeur, and thunder god energy',
-    'Linkin Park': 'a rap-rock band with spiky hair, urban angst, and turn-of-the-millennium emotional intensity',
-    'Limp Bizkit': 'a bratty nu-metal act with baseball-cap swagger, baggy streetwear, and mosh-pit chaos',
-    'The White Stripes': 'a red-white-black garage-rock duo with minimal props and sharp striped visual identity',
-    'The Black Keys': 'a bluesy garage-rock duo with beard-and-drum simplicity and analog grit',
-    'Kiss': 'a theatrical shock-rock band with face paint, platform boots, and comic-book pyrotechnic excess',
-    'Twisted Sister': 'a glam-metal band with huge hair, clownish makeup, and rebellious cartoon aggression',
-    'Janet Jackson': 'a sleek dance-pop icon with military-chic performance styling and cool choreographic precision',
-    'Paula Abdul': 'a cheerful dance-pop performer with choreographer energy and bright 1990s TV-ready polish',
-    'Cher': 'a legendary diva with endless reinvention, dramatic hair, and glamorous stage-camp presence',
-    'Cyndi Lauper': 'a colorful new-wave pop eccentric with mismatched fashion, playful attitude, and quirky charm',
-    'The Weeknd': 'a dark sleek pop-R&B antihero with red-suit nightlife mood and noir decadence',
-    'Drake': 'a luxury rap-pop superstar with moody introspection, beard, and understated designer cool',
-    'Bad Bunny': 'a flamboyant Latin trap superstar with bold shades, wrestling flair, and playful fashion chaos',
-    'J Balvin': 'a neon-colored reggaeton star with streetwear polish and hyper-saturated urban-pop energy',
-    'Selena Quintanilla': 'a sparkling Tejano-pop star with stage charisma, purple glamour, and warm crossover shine',
-    'Shakira': 'a global pop star with wild curls, belly-dance motion, and Latin-rock performance energy',
-    'BTS': 'a polished global boy band with coordinated fashion, bright hair, and hyper-stylized performance precision',
-    'NSYNC': 'a glossy late-1990s boy band with synchronized poses, frosted fashion, and teen-mag charisma',
-    'The Spice Girls': 'a playful five-member pop group with contrasting fashion personas and cheeky girl-power energy',
-    "Destiny's Child": 'a glamorous R&B trio in coordinated stagewear with confident diva synchronization',
-  },
+  music: Object.fromEntries(Object.entries(MUSIC_ACT_META).map(([name, meta]) => [name, meta.brief])),
   screen: {
     'Citizen Kane': 'a grand old-Hollywood media-emperor tableau with looming mansion scale, snow-globe symbolism, and deep-focus dramatic power',
     'Sunset Boulevard': 'a decaying silent-era glamour image with theatrical diva stare, mansion noir, and fatal Hollywood decadence',
@@ -512,32 +474,25 @@ function pickCompositionMode(pack, index) {
   return list[index % list.length];
 }
 
-function parseMusicAlbumSubject(subject) {
-  const separator = ' - ';
-  const index = String(subject || '').indexOf(separator);
-  if (index <= 0) {
-    return { artist: String(subject || '').trim(), album: '' };
-  }
-  return {
-    artist: String(subject || '').slice(0, index).trim(),
-    album: String(subject || '').slice(index + separator.length).trim(),
-  };
-}
-
 function buildMusicPrompt(subject, options, compositionMode) {
-  const { artist, album } = parseMusicAlbumSubject(subject);
-  const namedReference = album
-    ? `${artist} with visual inspiration from "${album}"`
-    : artist;
+  const meta = getMusicActMeta(subject);
+  const namedReference = meta.kind === 'band'
+    ? `the best-selling rock band "${subject}"`
+    : `the best-selling pop star "${subject}"`;
   return [
     `Create a single square original parody logo mark for ${namedReference}.`,
-    'Base it on transformed inspiration from the artist or band visual identity, including logo vibes, clothing, stage styling, props, and album-art color language, without directly copying any existing logo or cover.',
-    'Design it like a bold emblem, badge, crest, stencil, or icon-first wordmark substitute that a music-trivia player could connect to the act at a glance.',
+    'Make the act name itself the central stylized text logo or wordmark.',
+    meta.kind === 'band'
+      ? 'Include a compact cartoon lineup showing every band member with only slightly exaggerated features, still recognisable as them.'
+      : 'Include one cartoon version of the artist with only slightly exaggerated features, still recognisable as them.',
+    'Surround the logo and character art with small graphic elements pulled from the act\'s clothing, stage persona, instruments, signature props, and album-art color cues.',
+    'Design it like a bold emblem, badge, merch mark, stencil, or sticker-ready icon-wordmark hybrid that a music-trivia player could connect to the act at a glance.',
     `Composition mode: ${compositionMode}.`,
     `Style direction: ${options.styleNotes}.`,
-    'Push the humour, caricature, symbolic motifs, and graphic identity choices so it feels like a satirical spoof logo, not a clone.',
+    'Use the attached graphic direction as inspiration: comic-punk illustration, crisp outlines, flat saturated fills, slightly exaggerated but still recognisable faces, and playful collage poster energy.',
+    'Push the humour, symbolic motifs, and graphic identity choices so it feels like a satirical spoof logo, not a clone.',
     'Keep the composition bold, clean, high-contrast, and instantly legible at thumbnail size for a party-game picture round.',
-    'Do not include readable artist names, exact existing logos, wordmarks, watermarks, exact album-cover layouts, or exact face matching.',
+    'Do not copy any exact official logo, exact album cover, exact photo likeness, or trademarked wordmark styling.',
   ].join(' ');
 }
 
@@ -571,9 +526,9 @@ function buildPackManifest(pack, entries) {
     basePath: `/assets/graphic-packs/picture/${pack.packId}/images`,
     entries: entries.map((entry, index) => ({
       entryId: entry.entryId,
-      groupId: pack.groupId,
-      groupName: pack.groupName,
-      hint: `${pack.promptHint} ${index + 1}`,
+      groupId: entry.groupId || pack.groupId,
+      groupName: entry.groupName || pack.groupName,
+      hint: entry.hint || `${pack.promptHint} ${index + 1}`,
       main: entry.main,
       imposter: entry.imposter,
       mainMediaFile: `${entry.entryId}-main.png`,

@@ -185,8 +185,9 @@ logo marks for music rounds and spoof movie posters for all-time-great films.
 - two curated packs:
   - `music-parodies-v1`
   - `screen-parodies-v1`
-- 50 prompt pairs per pack by default
-- music pack now targets artist/band-inspired logo marks
+- 40 prompt pairs in the music pack and 50 prompt pairs in the screen pack by default
+- music pack now targets 40 top-selling rock bands and 40 top-selling pop stars,
+  paired into music logo rounds
 - screen pack now targets top films only, excluding sequels and prequels
 - `manifest.json` files compatible with the picture DLC workflow
 - `generation-prompts.json` files so you can review/edit prompts before spending API credits
@@ -248,8 +249,12 @@ npm run dlc:sync-picture-manifests
   - `FLUX_API_KEY`
   - `scripts/royaltyFreeApiKeys.local.json` -> `falApiKey` or `fluxApiKey`
 - FLUX defaults to model `fal-ai/flux/dev` and uses the fal model API.
-- Defaults now focus on artist/band logo-mark generation for music and spoof movie-poster
-  layouts for top films only.
+- Defaults now focus on artist/band logo-mark generation for music:
+  - text logo / wordmark
+  - a cartoon version of the artist, or every member of the band
+  - surrounding elements tied to the act's clothing, props, stage persona, and album-art colors
+- Music prompts are styled toward a punchy comic-punk illustrated graphic look.
+- Film prompts remain spoof movie-poster layouts for top films only.
 - The prompts are written to steer results toward transformed parody/caricature territory
   with readable faces, costume cues, and props, but outputs should still be manually
   reviewed before shipping.
