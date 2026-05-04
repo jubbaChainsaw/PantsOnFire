@@ -10,9 +10,10 @@ const DEFAULT_STYLE_NOTES = [
   'bold comic-caricature linework',
   'warped anatomy and exaggerated silhouettes',
   'editorial collage poster energy',
-  'spoof album-cover and movie-poster layout instincts without recreating any exact cover or poster',
+  'strictly spoof album-cover or spoof movie-poster composition language without recreating any exact cover or poster',
   'punk-zine attitude with occasional retro paper-cut collage framing',
-  'clean pale or transparent background unless a simple poster backdrop helps readability',
+  'rich readable costume, hair, prop, and face-shape detail at 800x800',
+  'clean but fully designed poster or cover background that helps recognition',
   'punchy cel shading and high contrast',
   'instantly readable central subject or compact ensemble',
 ].join(', ');
@@ -125,16 +126,16 @@ const SCREEN_ENTRIES = [
 
 const MUSIC_COMPOSITION_MODES = [
   'a spoof album-cover portrait with one bold central figure',
-  'a fake tour-poster composition with dramatic pose and oversized prop cues',
-  'an exaggerated editorial collage portrait with cutout shapes and playful framing',
-  'a mock greatest-hits sleeve design built around caricature and silhouette',
+  'a fake gatefold-album sleeve composition with a compact transformed ensemble',
+  'an exaggerated spoof vinyl-cover layout with cutout collage framing and strong central iconography',
+  'a mock greatest-hits album sleeve built around caricature, silhouette, and signature props',
 ];
 
 const SCREEN_COMPOSITION_MODES = [
-  'a spoof theatrical poster composition with transformed archetypes',
-  'a fake streaming key-art layout with bold central figure placement',
-  'an editorial caricature collage inspired by poster art, not a direct poster recreation',
-  'a parody one-sheet style image with clean iconic props and simplified background',
+  'a spoof theatrical one-sheet poster with transformed archetypes',
+  'a fake blockbuster movie-poster layout with bold central figure placement',
+  'an editorial caricature collage framed as a spoof cinema poster, not a direct poster recreation',
+  'a parody movie-poster composition with iconic props, tag-line space, and simplified dramatic background',
 ];
 
 const PACKS = {
@@ -171,8 +172,8 @@ function usage() {
   console.log('  --provider <openai>             Image provider (default: openai)');
   console.log('  --api-key <key>                 OpenAI API key (or OPENAI_API_KEY)');
   console.log('  --model <name>                  OpenAI model (default: gpt-image-1)');
-  console.log('  --size <WxH>                    Image size (default: 1024x1024)');
-  console.log('  --quality <low|medium|high>     Image quality (default: medium)');
+  console.log('  --size <WxH>                    Image size (default: 800x800)');
+  console.log('  --quality <low|medium|high>     Image quality (default: high)');
   console.log('  --limit <n>                     Limit entries per pack for sampling/review');
   console.log('  --style-notes <text>            Override the built-in visual style notes');
   console.log('  --delay-ms <n>                  Wait time between OpenAI calls (default: 500)');
@@ -192,8 +193,8 @@ function parseArgs(argv) {
     category: 'all',
     provider: 'openai',
     model: 'gpt-image-1',
-    size: '1024x1024',
-    quality: 'medium',
+    size: '800x800',
+    quality: 'high',
     outputRoot: defaultOutputRoot,
     delayMs: 500,
     overwrite: false,
@@ -463,23 +464,25 @@ function buildFallbackPromptForSubject(pack, subject, options, compositionMode) 
   if (!brief) return '';
   if (pack.categoryId === 'music') {
     return [
-      'Create a single square original parody caricature of a transformed music archetype.',
+      'Create a single square original spoof album-cover caricature of a transformed music archetype.',
       `Subject brief: ${brief}.`,
       `Composition mode: ${compositionMode}.`,
       `Style direction: ${options.styleNotes}.`,
       'Make it feel playful, iconic, and music-quiz readable while staying generic enough to avoid depicting any exact real person.',
+      'Render face shape, hairstyle, costume, and signature props with enough crisp detail to read clearly at 800x800 without becoming an exact likeness.',
       'Use only broad era cues, wardrobe shapes, props, silhouette, and exaggerated caricature energy.',
-      'Do not include names, text, logos, exact facial resemblance, or an album-cover recreation.',
+      'Do not include names, readable text, logos, exact facial resemblance, or an album-cover recreation.',
     ].join(' ');
   }
   return [
-    'Create a single square original parody poster-style caricature built from transformed fictional archetypes.',
+    'Create a single square original spoof movie-poster caricature built from transformed fictional archetypes.',
     `Subject brief: ${brief}.`,
     `Composition mode: ${compositionMode}.`,
     `Style direction: ${options.styleNotes}.`,
     'Make it readable as a playful spoof for a quiz image while staying generic enough to avoid depicting exact copyrighted characters or a recreated poster.',
+    'Render face shape, hair, costume, props, and setting clues with enough crisp detail to read clearly at 800x800 without becoming an exact character design.',
     'Use broad costume language, props, setting hints, and silhouette only.',
-    'Do not include names, title text, logos, or any exact character design.',
+    'Do not include names, readable title text, logos, or any exact character design.',
   ].join(' ');
 }
 
@@ -500,27 +503,29 @@ function pickCompositionMode(pack, index) {
 
 function buildMusicPrompt(subject, options, compositionMode) {
   return [
-    `Create a single square original parody caricature inspired by the musician or band "${subject}".`,
-    'Make it recognisable to a music-trivia player through transformed visual cues, exaggerated silhouette, performance attitude, hair, wardrobe, props, and stage energy rather than an exact likeness.',
+    `Create a single square original spoof album cover inspired by the musician or band "${subject}".`,
+    'Make it recognisable to a music-trivia player through transformed visual cues, exaggerated silhouette, performance attitude, hair, wardrobe, props, and album-cover energy rather than an exact likeness.',
     'If the inspiration is a group, show a compact ensemble of two to four transformed members; if it is a solo act, show one central performer.',
     `Composition mode: ${compositionMode}.`,
     `Style direction: ${options.styleNotes}.`,
     'Push the humour, facial exaggeration, pose, and costume shapes so it feels like a spoof or satirical caricature, not a clone.',
+    'Render face shape, hair, costume, props, and expression with enough crisp detail that the features are easy to read at 800x800 and still recognizable in a quiz.',
     'Keep the composition clean and readable at thumbnail size for a party-game picture round.',
-    'Do not include band names, song titles, logos, wordmarks, watermarks, album-cover recreations, exact face matching, or direct poster layouts.',
+    'Do not include band names, song titles, readable text, logos, wordmarks, watermarks, album-cover recreations, exact face matching, or any non-album-cover layout.',
   ].join(' ');
 }
 
 function buildScreenPrompt(subject, options, compositionMode) {
   return [
-    `Create a single square original parody caricature inspired by the film or TV property "${subject}".`,
+    `Create a single square original spoof movie poster inspired by the film or TV property "${subject}".`,
     'Make it recognisable through transformed archetypes, costume cues, props, setting hints, and silhouette, while clearly avoiding a direct still, poster recreation, or exact character copy.',
     'If the inspiration is a broad franchise or ensemble, show one to three transformed archetypal characters; if it centers on one icon, focus on a single lead parody figure.',
     `Composition mode: ${compositionMode}.`,
     `Style direction: ${options.styleNotes}.`,
     'Lean into comic exaggeration, caricature proportions, and playful parody energy so it reads as a fresh spoof rather than a replica.',
+    'Render face shape, hair, costume, props, and setting clues with enough crisp detail that the features are easy to read at 800x800.',
     'Keep the image clean, high-contrast, and easy to read in a picture round.',
-    'Do not include title text, logos, studio marks, watermarks, copyrighted typography, exact costume duplication, or a recreated poster composition.',
+    'Do not include title text, readable tag lines, logos, studio marks, watermarks, copyrighted typography, exact costume duplication, or anything other than a spoof movie-poster composition.',
   ].join(' ');
 }
 

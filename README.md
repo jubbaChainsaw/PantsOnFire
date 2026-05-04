@@ -177,8 +177,8 @@ Importer output:
 ## AI parody picture round generator (OpenAI)
 
 You can also generate original parody/caricature image packs for picture rounds using
-OpenAI image generation. This is useful for recognisable-but-transformed music acts,
-album-cover spoofs, and film/TV poster-style parody rounds.
+OpenAI image generation. This is useful for recognisable-but-transformed spoof album
+covers for music acts and spoof movie/TV posters for screen rounds.
 
 ### What it creates
 
@@ -188,6 +188,7 @@ album-cover spoofs, and film/TV poster-style parody rounds.
 - 50 prompt pairs per pack by default
 - `manifest.json` files compatible with the picture DLC workflow
 - `generation-prompts.json` files so you can review/edit prompts before spending API credits
+- square 800x800 image generation by default
 
 ### Prompt-only review pass
 
@@ -208,6 +209,12 @@ This writes reviewable pack folders under:
 npm run picture:generate-parody-rounds -- --category music --limit 5
 ```
 
+If you want a different size, override it explicitly:
+
+```bash
+npm run picture:generate-parody-rounds -- --category music --limit 5 --size 1024x1024
+```
+
 ### Generate directly into the live picture-pack folder
 
 After reviewing the prompts:
@@ -221,8 +228,11 @@ npm run dlc:sync-picture-manifests
 ### Notes
 
 - Uses `OPENAI_API_KEY` (or `scripts/royaltyFreeApiKeys.local.json` -> `openaiApiKey`).
-- The prompts are written to steer results toward transformed parody/caricature territory,
-  but outputs should still be manually reviewed before shipping.
+- Defaults now focus on spoof album-cover layouts for music and spoof movie-poster /
+  TV-poster layouts for screen rounds.
+- The prompts are written to steer results toward transformed parody/caricature territory
+  with readable faces, costume cues, and props, but outputs should still be manually
+  reviewed before shipping.
 - The generated prompts explicitly avoid logos, title text, direct poster/cover recreation,
   and exact face matching.
 
