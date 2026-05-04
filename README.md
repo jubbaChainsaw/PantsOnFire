@@ -177,17 +177,18 @@ Importer output:
 ## AI parody picture round generator (OpenAI / FLUX)
 
 You can also generate original parody/caricature image packs for picture rounds using
-OpenAI or FLUX image generation. This is useful for recognisable-but-transformed rock-band
-patch-style logo emblems for music rounds and spoof movie posters for all-time-great films.
+OpenAI or FLUX image generation. This is useful for recognisable-but-transformed
+artist/band patch-style logo emblems for music rounds and spoof movie posters for
+all-time-great films.
 
 ### What it creates
 
 - two curated packs:
   - `music-parodies-v1`
   - `screen-parodies-v1`
-- 20 prompt pairs in the music pack and 50 prompt pairs in the screen pack by default
-- music pack now targets 40 top-selling rock bands only,
-  paired into music patch-logo rounds
+- 50 prompt pairs in the music pack and 50 prompt pairs in the screen pack by default
+- music pack now starts with top-selling rock bands and top-selling pop stars, then expands
+  into rap/hip-hop, boy bands, and girl groups, all paired into music patch-logo rounds
 - screen pack now targets top films only, excluding sequels and prequels
 - `manifest.json` files compatible with the picture DLC workflow
 - `generation-prompts.json` files so you can review/edit prompts before spending API credits
@@ -252,14 +253,17 @@ npm run dlc:sync-picture-manifests
   - `FLUX_API_KEY`
   - `scripts/royaltyFreeApiKeys.local.json` -> `falApiKey` or `fluxApiKey`
 - FLUX defaults to model `fal-ai/flux/dev` and uses the fal model API.
-- Defaults now focus on rock-band patch-emblem generation for music:
+- Defaults now focus on expanded music patch-emblem generation across rock bands, pop stars,
+  rap/hip-hop, boy bands, and girl groups:
   - text logo / wordmark
   - no people or faces
   - surrounding symbolic elements tied to the act's clothing, props, stage persona, and album-art colors
   - jacket-patch / bag-patch / badge-emblem composition
-- If you already generated older pop-star outputs and want to remove them, delete just those
-  old image files/folders manually, then rerun without `--overwrite` so your existing rock
-  images stay in place.
+- The generator automatically removes obsolete old `music-*` image files from the current run
+  folder before generating, so only the active prefixed sets remain.
+- Rerun without `--overwrite` to preserve any existing rock/pop/new-genre files you already
+  like while still filling in any missing ones. Because rock and pop appear first in the
+  music bank, missing rock/pop files will be attempted before the newly added categories.
 - Music prompts are styled toward a punchy comic-punk illustrated patch look.
 - Film prompts remain spoof movie-poster layouts for top films only.
 - The prompts are written to steer results toward transformed parody/caricature territory

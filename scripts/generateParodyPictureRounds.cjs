@@ -104,6 +104,75 @@ const POP_STAR_ACTS = [
   { name: 'Gloria Estefan', brief: 'a polished Latin pop star with Miami glamour, tropical rhythm cues, and bright crossover elegance' },
 ];
 
+const BOY_BAND_ACTS = [
+  { name: 'Backstreet Boys', brief: 'a polished boy band with coordinated poses, glossy late-1990s styling, and frosted teen-mag charisma' },
+  { name: 'NSYNC', brief: 'a synchronized boy band with futuristic-pop styling, bright smiles, and shiny Y2K stage polish' },
+  { name: 'Boyz II Men', brief: 'a smooth vocal harmony group with tailored suits, romantic R&B elegance, and classic quartet polish' },
+  { name: 'New Kids on the Block', brief: 'a bright mall-pop boy band with varsity-jacket energy, big smiles, and bubblegum choreography' },
+  { name: 'Westlife', brief: 'a clean-cut ballad-heavy boy band with glossy suits, heartfelt pop romance, and polished smiles' },
+  { name: 'One Direction', brief: 'a modern global boy band with tousled hair, casual-chic styling, and playful arena-pop energy' },
+  { name: 'Take That', brief: 'a British pop group with stage-suit polish, cheeky choreo, and long-running comeback confidence' },
+  { name: 'Jackson 5', brief: 'a family pop-soul group with Afros, rainbow stagewear, and joyful retro Motown energy' },
+  { name: 'BTS', brief: 'a hyper-stylized global boy band with fashion-forward looks, bright hair, and precision performance energy' },
+  { name: 'Jonas Brothers', brief: 'a family pop-rock trio with glossy guitar-pop styling, teen-idol polish, and sibling-brand energy' },
+  { name: 'Menudo', brief: 'a Latin teen-pop boy group with bright stagewear, synchronized smiles, and youthful tropical flair' },
+  { name: '98 Degrees', brief: 'a sleek boy band with silk-shirt romance, smooth poses, and late-1990s pop polish' },
+  { name: 'O-Town', brief: 'a reality-TV-era boy band with coordinated fashion, glossy photoshoot styling, and pop-star aspiration' },
+  { name: 'Big Time Rush', brief: 'a TV-born boy band with bright California fun, shiny pop energy, and playful group branding' },
+  { name: 'JLS', brief: 'a British vocal boy band with matching stagewear, glossy pop-soul styling, and performance swagger' },
+  { name: 'The Osmonds', brief: 'a family pop group with clean-cut smiles, purple-era stage flair, and wholesome retro showbiz energy' },
+  { name: 'Bros', brief: 'an 80s teen-pop boy act with denim jackets, teased hair, and glossy poster-wall fandom energy' },
+  { name: 'Hanson', brief: 'a long-haired brother pop group with sunny power-pop energy, youthful charm, and guitar hooks' },
+  { name: 'New Edition', brief: 'a foundational boy group with Boston street flair, polished choreography, and smooth R&B crossover style' },
+  { name: 'The Monkees', brief: 'a TV-pop band with mod haircuts, comic charm, and colorful 1960s bubblegum energy' },
+];
+
+const GIRL_GROUP_ACTS = [
+  { name: 'Spice Girls', brief: 'a girl-power pop group with bold individual personas, British sass, and bright spice-coded colors' },
+  { name: "Destiny's Child", brief: 'a glamorous R&B girl group with coordinated stagewear, confident poses, and polished diva energy' },
+  { name: 'TLC', brief: 'a colorful R&B trio with baggy fashion, bright primary colors, and playful 1990s attitude' },
+  { name: 'The Supremes', brief: 'a classic Motown girl group with elegant gowns, beehive glamour, and polished 1960s stage symmetry' },
+  { name: 'Little Mix', brief: 'a modern vocal girl group with glam-pop styling, coordinated confidence, and arena-ready sparkle' },
+  { name: 'Fifth Harmony', brief: 'a sleek pop girl group with high-fashion poses, glossy hair, and social-media-era shine' },
+  { name: 'En Vogue', brief: 'a sophisticated vocal group with sharp black couture, smooth elegance, and cool R&B authority' },
+  { name: 'Bananarama', brief: 'a bright 80s pop trio with colorful fashion, beach-party energy, and playful new-wave charm' },
+  { name: 'The Pussycat Dolls', brief: 'a cabaret-pop group with burlesque glamour, corset styling, and high-heel performance swagger' },
+  { name: 'Girls Aloud', brief: 'a British pop girl group with glossy magazine styling, coordinated glam, and chart-pop sparkle' },
+  { name: 'BLACKPINK', brief: 'a luxury-styled global girl group with black-pink contrast, high-fashion edge, and fierce stage precision' },
+  { name: 'The Chicks', brief: 'a country-pop trio with boots, fiddle cues, and outspoken modern-roots confidence' },
+  { name: 'SWV', brief: 'a 90s R&B trio with smooth harmony styling, cool oversized fashion, and romantic streetwise polish' },
+  { name: 'All Saints', brief: 'a British girl group with cargo-pants cool, understated fashion, and moody pop-soul edge' },
+  { name: 'Wilson Phillips', brief: 'a California harmony group with flowing hair, soft-focus adult-pop polish, and warm vocal blend' },
+  { name: 'Sugababes', brief: 'a UK girl group with fashion-forward cool, changing-lineup mystique, and sleek electro-pop edge' },
+  { name: 'AKB48', brief: 'a giant Japanese idol group with school-uniform sparkle, ribbon motifs, and cheerful pop maximalism' },
+  { name: '2NE1', brief: 'a K-pop girl group with bold street-glam styling, sharp attitude, and futuristic stage energy' },
+  { name: 'The Pointer Sisters', brief: 'a stylish vocal group with dance-floor gloss, retro-soul sparkle, and warm performance charisma' },
+  { name: 'Sister Sledge', brief: 'a family disco-soul group with glittering stagewear, unity motifs, and bright dance-floor elegance' },
+];
+
+const RAP_HIPHOP_ACTS = [
+  { name: 'Eminem', kind: 'solo', brief: 'a sharp-tongued rap icon with hoodie energy, bleach-blond edge, and Detroit battle intensity' },
+  { name: 'Drake', kind: 'solo', brief: 'a luxury rap-pop star with beard iconography, moody introspection, and understated designer cool' },
+  { name: 'Jay-Z', kind: 'solo', brief: 'a mogul rapper with minimalist luxury, empire-building confidence, and black-and-gold prestige' },
+  { name: 'Kanye West', kind: 'solo', brief: 'a fashion-forward rap auteur with oversized silhouettes, stark minimalism, and polarizing grandeur' },
+  { name: 'Tupac Shakur', kind: 'solo', brief: 'a revolutionary rap icon with bandana motifs, intense gaze, and West Coast street poetry' },
+  { name: 'The Notorious B.I.G.', kind: 'solo', brief: 'a crown-tipped rap king with luxury streetwear, smooth swagger, and East Coast opulence' },
+  { name: 'Lil Wayne', kind: 'solo', brief: 'a tattoo-heavy rap star with dreadlocks, skate-punk chaos, and Southern mixtape intensity' },
+  { name: 'Nicki Minaj', kind: 'solo', brief: 'a flamboyant rap-pop queen with hyper-color wigs, toy-like glam, and fierce alter-ego energy' },
+  { name: 'Snoop Dogg', kind: 'solo', brief: 'a lanky rap icon with braids, lowrider cool, and laid-back West Coast swagger' },
+  { name: 'Dr. Dre', kind: 'solo', brief: 'a producer-rap legend with studio authority, black streetwear polish, and heavy-beat gravitas' },
+  { name: 'Kendrick Lamar', kind: 'solo', brief: 'a cerebral rap poet with understated streetwear, intense focus, and activist edge' },
+  { name: 'J. Cole', kind: 'solo', brief: 'a thoughtful rap storyteller with hoodie cues, locs, and grounded introspective energy' },
+  { name: '50 Cent', kind: 'solo', brief: 'a bulletproof-era rap star with tank-top swagger, gritty New York bravado, and muscular menace' },
+  { name: 'Missy Elliott', kind: 'solo', brief: 'a futuristic rap innovator with inflatable silhouettes, chrome weirdness, and playful hip-hop surrealism' },
+  { name: 'Run-D.M.C.', kind: 'group', brief: 'an old-school rap trio with adidas-shell-toe cues, bold stripes, and hard-hitting street simplicity' },
+  { name: 'Beastie Boys', kind: 'group', brief: 'a bratty rap trio with skate-punk energy, block-letter graphics, and chaotic downtown cool' },
+  { name: 'OutKast', kind: 'group', brief: 'an eclectic southern rap duo with cosmic funk color, fur-and-flash style, and fearless creativity' },
+  { name: 'Public Enemy', kind: 'group', brief: 'a militant rap group with target iconography, loud protest energy, and black-red urgency' },
+  { name: 'N.W.A.', kind: 'group', brief: 'a stark street-rap crew with black caps, confrontational typography, and West Coast menace' },
+  { name: 'Cardi B', kind: 'solo', brief: 'a bold rap-pop star with maximal glamour, long nails, luxury fashion, and outspoken Bronx energy' },
+];
+
 function buildMusicEntriesFromActs(prefix, groupId, groupName, acts) {
   const entries = [];
   for (let index = 0; index < acts.length; index += 2) {
@@ -121,7 +190,13 @@ function buildMusicEntriesFromActs(prefix, groupId, groupName, acts) {
 }
 
 const MUSIC_ACT_META = Object.fromEntries(
-  ROCK_BAND_ACTS.map((act) => [act.name, { kind: 'band', segment: 'rock', brief: act.brief }])
+  [
+    ...ROCK_BAND_ACTS.map((act) => [act.name, { kind: 'band', descriptor: 'best-selling rock band', segment: 'rock', brief: act.brief }]),
+    ...POP_STAR_ACTS.map((act) => [act.name, { kind: 'solo', descriptor: 'best-selling pop star', segment: 'pop', brief: act.brief }]),
+    ...BOY_BAND_ACTS.map((act) => [act.name, { kind: 'group', descriptor: 'best-selling boy band', segment: 'boy-band', brief: act.brief }]),
+    ...GIRL_GROUP_ACTS.map((act) => [act.name, { kind: 'group', descriptor: 'best-selling girl group', segment: 'girl-group', brief: act.brief }]),
+    ...RAP_HIPHOP_ACTS.map((act) => [act.name, { kind: act.kind || 'solo', descriptor: act.kind === 'group' ? 'best-selling rap or hip-hop group' : 'best-selling rap or hip-hop artist', segment: 'rap-hip-hop', brief: act.brief }]),
+  ]
 );
 
 function getMusicActMeta(subject) {
@@ -130,6 +205,10 @@ function getMusicActMeta(subject) {
 
 const MUSIC_ENTRIES = [
   ...buildMusicEntriesFromActs('rock', 'rock-bands', 'Rock Bands', ROCK_BAND_ACTS),
+  ...buildMusicEntriesFromActs('pop', 'pop-stars', 'Pop Stars', POP_STAR_ACTS),
+  ...buildMusicEntriesFromActs('boy', 'boy-bands', 'Boy Bands', BOY_BAND_ACTS),
+  ...buildMusicEntriesFromActs('girl', 'girl-groups', 'Girl Groups', GIRL_GROUP_ACTS),
+  ...buildMusicEntriesFromActs('rap', 'rap-hip-hop', 'Rap & Hip-Hop', RAP_HIPHOP_ACTS),
 ];
 
 const SCREEN_ENTRIES = [
@@ -203,10 +282,10 @@ const PACKS = {
   music: {
     categoryId: 'music',
     packId: 'music-parodies-v1',
-    label: 'Top-Selling Rock Bands Patch Logo Parodies v1',
+    label: 'Top-Selling Music Patch Logo Parodies v1',
     groupId: 'music-parodies',
-    groupName: 'Rock Band Patch Logo Parodies',
-    previewLabel: 'Describe the rock-band patch logo clearly without naming the exact band.',
+    groupName: 'Music Patch Logo Parodies',
+    previewLabel: 'Describe the music patch logo clearly without naming the exact act.',
     promptHint: 'Picture Prompt • Music Patch Logo',
     entries: MUSIC_ENTRIES,
     compositionModes: MUSIC_COMPOSITION_MODES,
