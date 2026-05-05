@@ -235,7 +235,7 @@ The standalone Albums pack uses local files from:
 For each local cover, the Albums path uses the literal prompt:
 - `Recreate this album cover in this cartoon art style`
 
-For music/albums image-to-image generation, the script also tries to use this style-reference image:
+For music image-to-image generation, the script can also use this style-reference image:
   - `https://media.craiyon.com/2025-08-06/Kx1Iy3b-RCSGhKhPYW3Aog.webp`
 
 Repeated music subjects are deduped automatically: if the same artist/band appears more
@@ -272,13 +272,11 @@ npm run dlc:sync-picture-manifests
   - `FLUX_API_KEY`
   - `scripts/royaltyFreeApiKeys.local.json` -> `falApiKey` or `fluxApiKey`
 - FLUX defaults to model `fal-ai/flux/dev` and uses the fal model API.
-- The default style-reference image is:
-  - `https://media.craiyon.com/2025-08-06/Kx1Iy3b-RCSGhKhPYW3Aog.webp`
 - When you generate the standalone Albums pack with `--provider flux`, the script uses fal
   Nano Banana edit with:
   - the local album cover file as the content reference image
-  - the style-reference URL as the visual style guide
-  - the literal prompt `Recreate this album cover in this cartoon art style`
+  - your full parody-cartoon prompt embedded directly in the request
+  - no separate style-reference image
 - Defaults now focus on expanded music patch-emblem generation across rock bands, pop stars,
   rap/hip-hop, boy bands, and girl groups:
   - text logo / wordmark
