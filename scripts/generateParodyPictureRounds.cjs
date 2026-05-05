@@ -746,7 +746,15 @@ function buildScreenPrompt(subject, options, compositionMode) {
 }
 
 function buildAlbumsPrompt(_subject, _options, _compositionMode) {
-  return LITERAL_ALBUM_EDIT_PROMPT;
+  return [
+    LITERAL_ALBUM_EDIT_PROMPT,
+    'Image 1 is the source album cover to reinterpret.',
+    'Image 2 is the cartoon style reference to follow.',
+    'Keep the recognisable composition, subject placement, and major visual motifs from image 1, but redraw the whole cover in the style language of image 2.',
+    'Do not simply return the original cover unchanged.',
+    'Use the color blocking, line quality, simplified shapes, and illustrated finish from the style reference image.',
+    'Preserve the album identity while making it clearly look like a newly illustrated cartoon-style reinterpretation.',
+  ].join(' ');
 }
 
 function buildPromptForSubject(pack, subject, options, compositionMode) {
@@ -1144,6 +1152,9 @@ async function runPack(plan, options) {
     let usedPromptStrategy = record.promptStrategy || 'unknown';
     if (options.provider === 'flux' && record.referenceImageUrl) {
       console.log(`- [${index + 1}/${plan.promptRecords.length}] REF ${record.subject} using reference image`);
+    }
+    if (options.provider === 'flux' && record.referenceImageUrl && record.styleReferenceImageUrl) {
+      console.log(`- [${index + 1}/${plan.promptRecords.length}] REF ${record.subject} using source cover + style image`);
     }
     try {
       imageBuffer = await generateImageWithProvider({
