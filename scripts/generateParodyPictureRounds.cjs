@@ -9,6 +9,7 @@ const DEFAULT_MUSIC_REFERENCE_FEED_URL = 'https://www.besteveralbums.com/feeds/B
 const DEFAULT_STYLE_REFERENCE_URL = 'https://media.craiyon.com/2025-08-06/Kx1Iy3b-RCSGhKhPYW3Aog.webp';
 const DEFAULT_MUSIC_STYLE_REFERENCE_URL = 'https://media.craiyon.com/2025-08-06/Kx1Iy3b-RCSGhKhPYW3Aog.webp';
 const DEFAULT_ALBUMS_PACK_ID = 'albums-parodies-v1';
+const DEFAULT_LOCAL_ALBUMS_SOURCE_DIR = path.join(repoRoot, 'assets', 'music-albums', 'to-process');
 const DEFAULT_LOCAL_ALBUM_SOURCE_DIR = path.join(repoRoot, 'assets', 'music-albums', 'to-process');
 const ALBUM_SOURCE_EXTENSIONS = new Set(['.jpg', '.jpeg', '.png', '.webp']);
 const LITERAL_ALBUM_EDIT_PROMPT = 'Recreate this album cover in this cartoon art style';
@@ -515,31 +516,51 @@ async function loadMusicReferenceMap(options) {
   return map;
 }
 
-function buildAlbumsEntriesFromFeedMap(referenceMap) {
-  const entries = [];
-  const feedRows = [];
-  for (const [key, coverUrl] of referenceMap.entries()) {
-    const source = referenceMap.__meta && referenceMap.__meta[key];
-    if (!source || !source.title || !source.artist) continue;
-    feedRows.push({
-      key,
-      coverUrl,
-      title: source.title,
-      artist: source.artist,
-    });
+function parseLocalAlbumFilename(fileName = '') {
+  const ext = path.extname(fileName);
+  const base = path.basename(fileName, ext);
+  const separator = '---';
+  if (!base.includes(separator)) {
+    return {
+      artist: base,
+      album: '',
+      label: base,
+    };
   }
-  for (let index = 0; index < feedRows.length - 1; index += 2) {
-    const mainRow = feedRows[index];
-    const imposterRow = feedRows[index + 1];
+  const [artistPart, albumPart] = base.split(separator);
+  const normalizeLabel = (value) => String(value || '')
+    .replace(/[-_]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+  const artist = normalizeLabel(artistPart);
+  const album = normalizeLabel(albumPart);
+  return {
+    artist,
+    album,
+    label: album ? `${artist} - ${album}` : artist,
+  };
+}
+
+function buildAlbumsEntriesFromLocalFiles(sourceDir) {
+  if (!fs.existsSync(sourceDir)) return [];
+  const files = fs.readdirSync(sourceDir)
+    .filter((name) => /\.(jpg|jpeg|png|webp)$/i.test(name))
+    .sort((a, b) => a.localeCompare(b, 'en', { sensitivity: 'base' }));
+  const entries = [];
+  for (let index = 0; index < files.length - 1; index += 2) {
+    const mainFile = files[index];
+    const imposterFile = files[index + 1];
+    const mainMeta = parseLocalAlbumFilename(mainFile);
+    const imposterMeta = parseLocalAlbumFilename(imposterFile);
     entries.push({
       entryId: `album-${String(Math.floor(index / 2) + 1).padStart(2, '0')}`,
-      groupId: 'albums-reference',
+      groupId: 'albums-local',
       groupName: 'Albums',
       hint: `Picture Prompt • Albums ${Math.floor(index / 2) + 1}`,
-      main: `${mainRow.artist} - ${mainRow.title}`,
-      imposter: `${imposterRow.artist} - ${imposterRow.title}`,
-      mainReferenceCoverUrl: mainRow.coverUrl,
-      imposterReferenceCoverUrl: imposterRow.coverUrl,
+      main: mainMeta.label,
+      imposter: imposterMeta.label,
+      mainReferenceCoverPath: path.join(sourceDir, mainFile),
+      imposterReferenceCoverPath: path.join(sourceDir, imposterFile),
     });
   }
   return entries;
@@ -724,16 +745,8 @@ function buildScreenPrompt(subject, options, compositionMode) {
   ].join(' ');
 }
 
-function buildAlbumsPrompt(subject, options, compositionMode) {
-  return [
-    `Create a single square original parody album-cover image inspired by "${subject}".`,
-    'Use the reference album cover only as composition and motif material, then transform it into a fresh parody image rather than a direct recreation.',
-    `Composition mode: ${compositionMode}.`,
-    `Style direction: ${options.styleNotes}.`,
-    'Preserve the broad visual read of the cover while making the artwork more comic, graphic, and stylized.',
-    'Keep the result clean, bold, and recognisable at thumbnail size for a picture round.',
-    'Do not reproduce exact title typography, logos, or the exact original layout one-for-one.',
-  ].join(' ');
+function buildAlbumsPrompt(_subject, _options, _compositionMode) {
+  return LITERAL_ALBUM_EDIT_PROMPT;
 }
 
 function buildPromptForSubject(pack, subject, options, compositionMode) {
@@ -793,7 +806,7 @@ function buildPromptPlan(pack, options) {
       : '';
     const mainReferenceImageUrl = pack.categoryId === 'music'
       ? String(musicReferenceMap.get(normalizeMusicActName(entry.main)) || '').trim()
-      : (pack.categoryId === 'albums' ? String(entry.referenceCoverUrl || '').trim() : '');
+      : (pack.categoryId === 'albums' ? String(entry.mainReferenceCoverPath || '').trim() : '');
     promptRecords.push({
       entryId: entry.entryId,
       side: 'main',
@@ -824,7 +837,7 @@ function buildPromptPlan(pack, options) {
       : '';
     const imposterReferenceImageUrl = pack.categoryId === 'music'
       ? String(musicReferenceMap.get(normalizeMusicActName(entry.imposter)) || '').trim()
-      : (pack.categoryId === 'albums' ? String(entry.referenceCoverUrl || '').trim() : '');
+      : (pack.categoryId === 'albums' ? String(entry.imposterReferenceCoverPath || '').trim() : '');
     promptRecords.push({
       entryId: entry.entryId,
       side: 'imposter',
@@ -939,28 +952,43 @@ async function pollFluxResult(pollingUrl, apiKey) {
   }
 }
 
+async function readImageInputForFal(value = '') {
+  const raw = String(value || '').trim();
+  if (!raw) return '';
+  if (/^https?:\/\//i.test(raw)) return raw;
+  const filePath = path.isAbsolute(raw) ? raw : path.join(repoRoot, raw);
+  const buffer = fs.readFileSync(filePath);
+  const ext = path.extname(filePath).toLowerCase();
+  const mime = ext === '.png'
+    ? 'image/png'
+    : ext === '.webp'
+      ? 'image/webp'
+      : 'image/jpeg';
+  return `data:${mime};base64,${buffer.toString('base64')}`;
+}
+
 async function generateWithFlux({ prompt, apiKey, model, size, referenceImageUrl = '', styleReferenceImageUrl = '' }) {
   const { width, height } = validateFluxSize(size);
-  const useImageToImage = Boolean(referenceImageUrl);
+  const hasReference = Boolean(String(referenceImageUrl || '').trim());
+  const hasStyle = Boolean(String(styleReferenceImageUrl || '').trim());
+  const imageInputs = [];
+  if (hasReference) imageInputs.push(await readImageInputForFal(referenceImageUrl));
+  if (hasStyle) imageInputs.push(await readImageInputForFal(styleReferenceImageUrl));
+  const useNanoBanana = imageInputs.length > 0;
   const modelId = String(
-    model || (useImageToImage ? 'fal-ai/flux/dev/image-to-image' : 'fal-ai/flux/dev')
+    model || (useNanoBanana ? 'fal-ai/nano-banana/edit' : 'fal-ai/flux/dev')
   ).trim().replace(/^\/+/, '');
-  const promptWithStyle = styleReferenceImageUrl
-    ? `${prompt} Use this style reference image as the visual style guide: ${styleReferenceImageUrl}`
-    : prompt;
-  const body = useImageToImage
+  const body = useNanoBanana
     ? {
-        image_url: referenceImageUrl,
-        prompt: promptWithStyle,
-        strength: 0.92,
-        image_size: { width, height },
+        prompt,
+        image_urls: imageInputs,
         num_images: 1,
+        aspect_ratio: '1:1',
         output_format: 'png',
-        enable_safety_checker: true,
         sync_mode: false,
       }
     : {
-        prompt: promptWithStyle,
+        prompt,
         image_size: { width, height },
         num_images: 1,
         output_format: 'png',
@@ -1291,7 +1319,7 @@ async function run() {
     );
   }
 
-  PACKS.albums.entries = buildAlbumsEntriesFromFeedMap(options.musicReferenceMap || new Map());
+  PACKS.albums.entries = buildAlbumsEntriesFromLocalFiles(DEFAULT_LOCAL_ALBUMS_SOURCE_DIR);
 
   const packKeys = options.category === 'all' ? ['music', 'albums', 'screen'] : [options.category];
   console.log(`[generateParodyPictureRounds] Category: ${options.category}`);
