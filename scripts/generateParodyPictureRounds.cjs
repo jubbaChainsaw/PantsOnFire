@@ -987,6 +987,9 @@ async function generateWithFlux({ prompt, apiKey, model, size, referenceImageUrl
   const modelId = requestedModel
     ? ((useNanoBanana && requestedModel === 'fal-ai/flux/dev') ? 'fal-ai/nano-banana/edit' : requestedModel)
     : (useNanoBanana ? 'fal-ai/nano-banana/edit' : 'fal-ai/flux/dev');
+  console.log(
+    `[generateParodyPictureRounds] FLUX mode: ${useNanoBanana ? 'image-edit' : 'text-to-image'} via ${modelId} (references: ${imageInputs.length})`
+  );
   const body = useNanoBanana
     ? {
         prompt,
