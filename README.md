@@ -187,11 +187,11 @@ packs, and spoof movie posters for all-time-great films.
   - `music-parodies-v1`
   - `albums-parodies-v1`
   - `screen-parodies-v1`
-- 50 prompt pairs in the music pack, a feed-derived albums pack, and 50 prompt pairs in the screen pack by default
+- 50 prompt pairs in the music pack, a local-source albums pack, and 50 prompt pairs in the screen pack by default
 - music pack now starts with top-selling rock bands and top-selling pop stars, then expands
   into rap/hip-hop, boy bands, and girl groups, all paired into music patch-logo rounds
-- albums pack is built from the BestEverAlbums OverallChart RSS feed and is designed for
-  album-cover-inspired generations in its own standalone output folder
+- albums pack is built from local files in `assets/music-albums/to-process/` and is designed
+  for album-cover recreations in its own standalone output folder
 - screen pack now targets top films only, excluding sequels and prequels
 - `manifest.json` files compatible with the picture DLC workflow
 - `generation-prompts.json` files so you can review/edit prompts before spending API credits
@@ -229,20 +229,14 @@ Generate the standalone Albums pack:
 npm run picture:generate-parody-rounds -- --provider flux --category albums --limit 20
 ```
 
-By default, album-cover references now come from:
-- `https://www.besteveralbums.com/feeds/BestEverAlbumsdotCom_OverallChart.xml`
+The standalone Albums pack uses local files from:
+- `assets/music-albums/to-process/`
 
-The standalone Albums pack uses those feed items directly as its prompt source. The music
-pack can also use matched feed covers as references when a matching act is found.
+For each local cover, the Albums path uses the literal prompt:
+- `Recreate this album cover in this cartoon art style`
 
-For music/albums image-to-image generation, the script also tries to:
-- pull matching album-cover URLs from:
-  - `https://www.besteveralbums.com/feeds/BestEverAlbumsdotCom_OverallChart.xml`
-- use this style-reference image for the patch-emblem look:
+For music/albums image-to-image generation, the script also tries to use this style-reference image:
   - `https://media.craiyon.com/2025-08-06/Kx1Iy3b-RCSGhKhPYW3Aog.webp`
-
-When a matching cover is found, the FLUX music/albums path can use image-to-image mode
-rather than text-only generation.
 
 Repeated music subjects are deduped automatically: if the same artist/band appears more
 than once in the selected batch, the script generates the first image once and copies it
@@ -278,16 +272,13 @@ npm run dlc:sync-picture-manifests
   - `FLUX_API_KEY`
   - `scripts/royaltyFreeApiKeys.local.json` -> `falApiKey` or `fluxApiKey`
 - FLUX defaults to model `fal-ai/flux/dev` and uses the fal model API.
-- FLUX music generation now defaults to using the OverallChart RSS feed as a cover-reference
-  source unless you disable it with `--no-music-reference-feed`.
-- The default music style-reference image is:
+- The default style-reference image is:
   - `https://media.craiyon.com/2025-08-06/Kx1Iy3b-RCSGhKhPYW3Aog.webp`
-- When a matching music cover is found in the RSS feed, or when you generate the standalone
-  Albums pack, and you are using `--provider flux`, the script uses fal image-to-image with:
-  the script uses fal image-to-image with:
-  - the matched album cover as the content reference image
+- When you generate the standalone Albums pack with `--provider flux`, the script uses fal
+  Nano Banana edit with:
+  - the local album cover file as the content reference image
   - the style-reference URL as the visual style guide
-  - the patch-emblem or album-cover-inspired prompt as the transformation instruction
+  - the literal prompt `Recreate this album cover in this cartoon art style`
 - Defaults now focus on expanded music patch-emblem generation across rock bands, pop stars,
   rap/hip-hop, boy bands, and girl groups:
   - text logo / wordmark

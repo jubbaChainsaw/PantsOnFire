@@ -9,6 +9,9 @@ const DEFAULT_MUSIC_REFERENCE_FEED_URL = 'https://www.besteveralbums.com/feeds/B
 const DEFAULT_STYLE_REFERENCE_URL = 'https://media.craiyon.com/2025-08-06/Kx1Iy3b-RCSGhKhPYW3Aog.webp';
 const DEFAULT_MUSIC_STYLE_REFERENCE_URL = 'https://media.craiyon.com/2025-08-06/Kx1Iy3b-RCSGhKhPYW3Aog.webp';
 const DEFAULT_ALBUMS_PACK_ID = 'albums-parodies-v1';
+const DEFAULT_LOCAL_ALBUM_SOURCE_DIR = path.join(repoRoot, 'assets', 'music-albums', 'to-process');
+const ALBUM_SOURCE_EXTENSIONS = new Set(['.jpg', '.jpeg', '.png', '.webp']);
+const LITERAL_ALBUM_EDIT_PROMPT = 'Recreate this album cover in this cartoon art style';
 
 const DEFAULT_STYLE_NOTES = [
   'bold comic-caricature linework',
