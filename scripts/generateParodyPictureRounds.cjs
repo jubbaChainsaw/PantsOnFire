@@ -38,6 +38,12 @@ const LITERAL_ALBUM_EDIT_PROMPT = [
   '- Add attitude: smirks, glare, confidence, awkwardness, chaos',
   '- Each subject should feel like a distinct cartoon character',
   '',
+  'REDRAW RULE:',
+  '- Every visible element from the source must be redrawn as a new cartoon graphic',
+  '- Do not leave any direct photographic fragments, copied textures, or pasted original image pieces in the final result',
+  '- Replace all faces, hands, clothing, props, backgrounds, and lettering with newly illustrated cartoon versions',
+  '- If text appears, it should be newly drawn and altered rather than copied from the original',
+  '',
   'COMPOSITION:',
   '- Maintain the source cover’s broad layout and framing',
   '- Keep the main subject placement recognisable',
@@ -56,6 +62,8 @@ const LITERAL_ALBUM_EDIT_PROMPT = [
   '',
   'DO NOT:',
   '- Do not copy the image exactly',
+  '- Do not leave any untouched parts of the original cover in the final image',
+  '- Do not trace over the original while preserving exact photo detail',
   '- Do not make it realistic',
   '- Do not soften the style',
   '- Do not reduce the exaggeration',
@@ -1126,6 +1134,7 @@ async function runPack(plan, options) {
   const promptsPath = path.join(packDir, 'generation-prompts.json');
   const readmePath = path.join(packDir, 'README.md');
   const generatedByDedupeKey = new Map();
+  const preserveExistingOutputs = plan.pack.categoryId === 'albums';
 
   console.log(`\n[generateParodyPictureRounds] Pack: ${plan.pack.packId}`);
   console.log(`[generateParodyPictureRounds] Entries: ${plan.selectedEntries.length}`);
@@ -1168,7 +1177,7 @@ async function runPack(plan, options) {
     if (dedupeKey && generatedByDedupeKey.has(dedupeKey)) {
       const sourcePath = generatedByDedupeKey.get(dedupeKey);
       if (sourcePath && fs.existsSync(sourcePath)) {
-        if (!exists || options.overwrite) {
+        if (!exists || (options.overwrite && !preserveExistingOutputs)) {
           fs.copyFileSync(sourcePath, outputPath);
         }
         skipped += 1;
@@ -1187,7 +1196,7 @@ async function runPack(plan, options) {
       }
     }
 
-    if (exists && !options.overwrite) {
+    if (exists && (!options.overwrite || preserveExistingOutputs)) {
       skipped += 1;
       results.push({ subject: record.subject, side: record.side, mediaFile: record.mediaFile, status: 'skipped' });
       console.log(`- [${index + 1}/${plan.promptRecords.length}] SKIP ${record.subject} (${relOutputPath})`);

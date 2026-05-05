@@ -232,11 +232,11 @@ npm run picture:generate-parody-rounds -- --provider flux --category albums --li
 The standalone Albums pack uses local files from:
 - `assets/music-albums/to-process/`
 
-For each local cover, the Albums path uses the literal prompt:
-- `Recreate this album cover in this cartoon art style`
-
-For music image-to-image generation, the script can also use this style-reference image:
-  - `https://media.craiyon.com/2025-08-06/Kx1Iy3b-RCSGhKhPYW3Aog.webp`
+For each local cover, the Albums path uses a strict redraw-only cartoon prompt that:
+- keeps the broad composition and visual idea
+- redraws all cover elements into new cartoon graphics
+- forbids direct copied source fragments
+- does not send a separate style-reference image
 
 Repeated music subjects are deduped automatically: if the same artist/band appears more
 than once in the selected batch, the script generates the first image once and copies it
@@ -244,6 +244,9 @@ to the other matching output files instead of regenerating it.
 
 To keep what you already generated, rerun **without** `--overwrite`. Existing image files
 will be left untouched and only missing outputs will be created.
+
+For the standalone Albums pack specifically, existing generated outputs are always preserved
+and only missing images are created, even if you pass `--overwrite`.
 
 If you want a different size, override it explicitly:
 
@@ -275,8 +278,10 @@ npm run dlc:sync-picture-manifests
 - When you generate the standalone Albums pack with `--provider flux`, the script uses fal
   Nano Banana edit with:
   - the local album cover file as the content reference image
-  - your full parody-cartoon prompt embedded directly in the request
+  - your full parody-cartoon redraw prompt embedded directly in the request
   - no separate style-reference image
+- The Albums prompt now explicitly tells Nano Banana to replace direct source-cover elements
+  with newly drawn cartoon graphics rather than carrying fragments through unchanged.
 - Defaults now focus on expanded music patch-emblem generation across rock bands, pop stars,
   rap/hip-hop, boy bands, and girl groups:
   - text logo / wordmark
