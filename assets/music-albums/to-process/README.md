@@ -1,4 +1,5 @@
-Place source album cover images for the Nano Banana workflow in this folder.
+Place source album cover images for the local album recreation workflow in this
+folder.
 
 Suggested file naming:
 - `artist-name---album-title.jpg`
