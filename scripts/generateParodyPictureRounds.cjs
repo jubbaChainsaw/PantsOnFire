@@ -440,7 +440,7 @@ function writeJson(filePath, value) {
 }
 
 function getDefaultModel(provider) {
-  if (provider === 'flux') return 'fal-ai/flux/dev';
+  if (provider === 'flux') return '';
   return 'gpt-image-1';
 }
 
@@ -975,9 +975,10 @@ async function generateWithFlux({ prompt, apiKey, model, size, referenceImageUrl
   if (hasReference) imageInputs.push(await readImageInputForFal(referenceImageUrl));
   if (hasStyle) imageInputs.push(await readImageInputForFal(styleReferenceImageUrl));
   const useNanoBanana = imageInputs.length > 0;
-  const modelId = String(
-    model || (useNanoBanana ? 'fal-ai/nano-banana/edit' : 'fal-ai/flux/dev')
-  ).trim().replace(/^\/+/, '');
+  const requestedModel = String(model || '').trim().replace(/^\/+/, '');
+  const modelId = requestedModel
+    ? ((useNanoBanana && requestedModel === 'fal-ai/flux/dev') ? 'fal-ai/nano-banana/edit' : requestedModel)
+    : (useNanoBanana ? 'fal-ai/nano-banana/edit' : 'fal-ai/flux/dev');
   const body = useNanoBanana
     ? {
         prompt,
@@ -1141,6 +1142,9 @@ async function runPack(plan, options) {
     let imageBuffer = null;
     let usedRetryPrompt = false;
     let usedPromptStrategy = record.promptStrategy || 'unknown';
+    if (options.provider === 'flux' && record.referenceImageUrl) {
+      console.log(`- [${index + 1}/${plan.promptRecords.length}] REF ${record.subject} using reference image`);
+    }
     try {
       imageBuffer = await generateImageWithProvider({
         provider: options.provider,
@@ -1324,7 +1328,7 @@ async function run() {
   const packKeys = options.category === 'all' ? ['music', 'albums', 'screen'] : [options.category];
   console.log(`[generateParodyPictureRounds] Category: ${options.category}`);
   console.log(`[generateParodyPictureRounds] Provider: ${options.provider}`);
-  console.log(`[generateParodyPictureRounds] Model: ${options.model}`);
+  console.log(`[generateParodyPictureRounds] Model: ${options.model || (options.provider === 'flux' ? 'auto' : 'gpt-image-1')}`);
   console.log(`[generateParodyPictureRounds] Output root: ${path.relative(repoRoot, options.outputRoot) || '.'}`);
   if (options.promptsOnly) console.log('[generateParodyPictureRounds] Prompt export mode enabled.');
   if (options.dryRun) console.log('[generateParodyPictureRounds] Dry run enabled.');
