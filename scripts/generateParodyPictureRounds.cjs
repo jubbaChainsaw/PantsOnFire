@@ -15,7 +15,7 @@ const ALBUM_SOURCE_EXTENSIONS = new Set(['.jpg', '.jpeg', '.png', '.webp']);
 const LITERAL_ALBUM_EDIT_PROMPT = [
   'Recreate the provided album cover as a highly stylised, exaggerated cartoon illustration in a bold comic / punk graphic novel style.',
   '',
-  'This must be a parody reinterpretation, NOT a direct copy. Keep the general composition, subject placement, and visual idea, but alter details enough so it becomes an original illustration inspired by the source, not a replica.',
+  'Keep the general composition, subject placement, and visual idea.',
   '',
   'STYLE:',
   '- Thick, bold black ink outlines',
@@ -38,13 +38,6 @@ const LITERAL_ALBUM_EDIT_PROMPT = [
   '- Add attitude: smirks, glare, confidence, awkwardness, chaos',
   '- Each subject should feel like a distinct cartoon character',
   '',
-  'PARODY SAFETY:',
-  '- Do not replicate original text or logos exactly',
-  '- Replace album titles and artist names with altered parody versions',
-  '- Slightly change props, clothing details, background elements, and typography',
-  '- Avoid exact likeness of real people',
-  '- Make the final image clearly inspired by the source, but visually distinct',
-  '',
   'COMPOSITION:',
   '- Maintain the source cover’s broad layout and framing',
   '- Keep the main subject placement recognisable',
@@ -63,13 +56,12 @@ const LITERAL_ALBUM_EDIT_PROMPT = [
   '',
   'DO NOT:',
   '- Do not copy the image exactly',
-  '- Do not reuse original typography exactly',
   '- Do not make it realistic',
   '- Do not soften the style',
   '- Do not reduce the exaggeration',
   '',
   'GOAL:',
-  'Create a bold, exaggerated, parody cartoon album-cover reinterpretation that feels like part of a high-energy party game, with strong personality, humour, visual impact, and consistent comic-style art direction.',
+  'Create a bold, exaggerated, cartoon album-cover reinterpretation that feels like part of a high-energy party game, with strong personality, humour, visual impact, and consistent comic-style art direction.',
 ].join('\n');
 
 const DEFAULT_STYLE_NOTES = [
