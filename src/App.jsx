@@ -206,8 +206,8 @@ const UI_ICON_MAGNIFIER_FIRE_SRC = "/assets/images/ui-icons/magnifier-fire.png";
 const NEW_UI_BASE = "/assets/new-ui";
 const NEW_UI_LOGO_MAIN_SRC = `${NEW_UI_BASE}/logos/main-logo.png`;
 const NEW_UI_LOGO_18PLUS_SRC = `${NEW_UI_BASE}/logos/logo-18plus.png`;
-const NEW_UI_WALLPAPER_HOME_SRC = `${NEW_UI_BASE}/wallpapers/home-page.png`;
 const NEW_UI_WALLPAPER_IN_GAME_SRC = `${NEW_UI_BASE}/wallpapers/in-game.png`;
+const NEW_UI_WALLPAPER_HOME_SRC = NEW_UI_WALLPAPER_IN_GAME_SRC;
 const NEW_UI_CARD_BASE = `${NEW_UI_BASE}/cards`;
 const NEW_UI_CATEGORY_ICON_BASE = `${NEW_UI_BASE}/categories`;
 const NEW_UI_ROUND_TYPE_ICON_BASE = `${NEW_UI_BASE}/game-modes`;
@@ -1725,10 +1725,10 @@ function ThemeHostVisual({
   if (talkingVideoSrc && !videoBroken) {
     return (
       <div className={className}>
-        <div className="grid h-full w-full [grid-template-areas:'stack']">
+        <div className="h-full w-full">
           <MultiSourceVideo
             src={talkingVideoSrc}
-            className="[grid-area:stack] h-full w-full object-contain"
+            className="h-full w-full object-cover"
             autoPlay={isTalking}
             loop={isTalking}
             muted
@@ -1823,7 +1823,38 @@ function ThemeIconStrip({ src, alt }) {
     />
   );
 }
+function getNewUiHostSlug(themeName = "Default") {
+  const canonicalThemeName = toCanonicalThemeName(themeName || "Default");
+  const slugByTheme = {
+    Default: "default",
+    "Murder Mystery": "murder-mystery",
+    Pirates: "pirates",
+    "Cops and Robbers": "cops-and-robbers",
+    "Ghosts and Ghouls": "ghosts-and-ghouls",
+  };
+  return slugByTheme[canonicalThemeName] || "default";
+}
+function getNewUiHostFrames(themeName = "Default") {
+  const slug = getNewUiHostSlug(themeName);
+  const frameCountBySlug = {
+    default: 9,
+    "murder-mystery": 6,
+    pirates: 6,
+    "cops-and-robbers": 6,
+    "ghosts-and-ghouls": 6,
+  };
+  const frameCount = frameCountBySlug[slug] || frameCountBySlug.default;
+  return Array.from(
+    { length: frameCount },
+    (_, index) =>
+      `/assets/new-ui/hosts/${slug}/talk-${String(index + 1).padStart(2, "0")}.png`,
+  );
+}
 function getThemeHostFrameSources(themeName = "Default", state = "idle") {
+  const newUiFrames = getNewUiHostFrames(themeName);
+  if (newUiFrames.length) {
+    return state === "talking" ? newUiFrames : [newUiFrames[0]].filter(Boolean);
+  }
   const hostAssets = getThemeHostAssets(themeName);
   const idleFrame = hostAssets?.idle || "";
   const talkingFrames = Array.isArray(hostAssets?.talkingFrames)
@@ -2021,6 +2052,11 @@ const HOST_DIALOGUE_TIMINGS = {
   liarRevealAdvanceMs: 6000,
   liarRevealCompleteMs: 6000,
 };
+const HOST_DIALOGUE_PANEL_CLASS =
+  "rounded-[1.75rem] bg-[#e60096] text-white shadow-[0_18px_38px_rgba(0,0,0,0.55)]";
+const HOST_DIALOGUE_BUTTON_CLASS =
+  "h-24 flex-1 rounded-[1.5rem] bg-[#e60096] px-4 text-2xl font-black uppercase tracking-[0.04em] text-white shadow-[0_16px_30px_rgba(0,0,0,0.5)] hover:bg-[#ff16ac]";
+
 function GameIntroScreen({
   theme,
   onContinue,
@@ -2028,7 +2064,6 @@ function GameIntroScreen({
   totalRounds = 1,
   playerCount = 0,
 }) {
-  const hostSizeConfig = useMemo(() => getHostSizeConfig(theme), [theme]);
   const themedHostPersona = useMemo(() => getThemeHostPersona(theme), [theme]);
   const greeting = (() => {
     const hour = new Date().getHours();
@@ -2085,9 +2120,9 @@ function GameIntroScreen({
       introSpeechTextRef.current,
       introSpeechBubbleRef.current,
       {
-        maxSize: 26,
+        maxSize: 34,
         minSize: 14,
-        lineHeight: 1.1,
+        lineHeight: 1.12,
       },
     );
     setIntroLineFontSize((current) =>
@@ -2098,84 +2133,74 @@ function GameIntroScreen({
   function advanceIntroLine() {
     setLineIndex((current) => Math.min(current + 1, introLines.length - 1));
   }
+  function handleNextIntroAction() {
+    if (canContinue) {
+      onContinue();
+      return;
+    }
+    advanceIntroLine();
+  }
   return (
     <BrandedScreen
       wallpaperSrc={NEW_UI_WALLPAPER_IN_GAME_SRC}
-      overlayClassName="bg-black/45"
+      overlayClassName="bg-black/65"
     >
-      <div className="mx-auto flex h-[calc(100dvh-2rem)] w-full max-w-4xl flex-col justify-center">
-        <GlassPanel className="rounded-[2.25rem] border-cyan-400/20 bg-black/25 p-5 sm:p-6">
-          <div className="text-center">
-            <div className="text-xs uppercase tracking-[0.35em] text-cyan-200/80">
-              Game intro
-            </div>
-            <h2 className="mt-3 text-4xl font-black text-yellow-300">
-              Host briefing
-            </h2>
-            <p className="mt-2 text-sm text-cyan-100/90">
-              Your host tonight:{" "}
-              <span className="font-black text-yellow-200">
-                {themedHostPersona.name}
-              </span>
-            </p>
-          </div>
-          <div className="relative mx-auto mt-5 w-full max-w-2xl min-h-[210px] sm:min-h-[255px]">
+      <div className="relative mx-auto flex h-[calc(100dvh-2.5rem)] w-full max-w-[28rem] flex-col items-center justify-between gap-4 overflow-hidden py-2">
+        <div
+          className="pointer-events-none absolute inset-x-[-30%] bottom-[10.5rem] h-40 opacity-80 blur-[0.3px]"
+          style={{
+            background:
+              "radial-gradient(circle at 50% 100%, rgba(255,130,0,0.95), rgba(255,0,160,0.55) 18%, rgba(0,180,255,0.28) 33%, transparent 62%)",
+          }}
+        />
+        <div className="relative z-10 w-full max-w-[21rem] rounded-[2rem] bg-[#e60096] p-3 shadow-[0_20px_45px_rgba(0,0,0,0.7)]">
+          <div className="aspect-[2/3] overflow-hidden rounded-[1.35rem] bg-black">
             <ThemeHostVisual
               themeName={theme}
               isTalking={isTalking}
               alt={`${theme} host ${themedHostPersona.name}`}
-              className={`pointer-events-none absolute bottom-0 left-0 ${hostSizeConfig.intro}`}
+              className="h-full w-full"
             />
-            <motion.div
-              key={`intro-line-${lineIndex}`}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.25, ease: "easeOut" }}
-              className={`${hostSizeConfig.introBubbleMargin} h-[9.5rem] sm:h-[10.25rem] pt-2 text-white`}
-            >
-              <div
-                ref={introSpeechBubbleRef}
-                className="relative mx-auto flex h-full max-w-xl items-center justify-center rounded-[1.8rem] border-2 border-cyan-200/80 bg-[#1d2376] px-4 py-3 text-center shadow-[0_12px_24px_rgba(0,0,0,0.35)] overflow-hidden"
-              >
-                <div className="absolute -left-3 top-[55%] h-6 w-6 -translate-y-1/2 rotate-45 border-b-2 border-l-2 border-cyan-200/80 bg-[#1d2376]" />
-                <p
-                  ref={introSpeechTextRef}
-                  className="text-white/95"
-                  style={{
-                    fontSize: `${introLineFontSize}px`,
-                    lineHeight: 1.1,
-                    whiteSpace: "normal",
-                    wordBreak: "normal",
-                    overflowWrap: "break-word",
-                    hyphens: "manual",
-                    WebkitHyphens: "manual",
-                  }}
-                >
-                  {introLines[lineIndex]}
-                </p>
-              </div>
-            </motion.div>
           </div>
-          <div className="mt-7 flex flex-wrap justify-center gap-3">
-            {!canContinue && (
-              <Button
-                className="h-14 rounded-[1.5rem] border border-white/25 bg-white/10 px-6 text-white"
-                onClick={advanceIntroLine}
-              >
-                Next line
-              </Button>
-            )}
-            <Button
-              className="h-14 min-w-[16rem] rounded-[1.5rem] border-2 border-white bg-yellow-300 px-8 text-zinc-950"
-              onClick={onContinue}
-              disabled={!canContinue}
+        </div>
+        <div className="relative z-10 flex w-full flex-1 flex-col justify-end gap-5">
+          <motion.div
+            key={`intro-line-${lineIndex}`}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.25, ease: "easeOut" }}
+            className={`${HOST_DIALOGUE_PANEL_CLASS} flex min-h-[12rem] items-center justify-center px-6 py-5 text-center`}
+          >
+            <div
+              ref={introSpeechBubbleRef}
+              className="flex h-full max-h-[12rem] w-full items-center justify-center overflow-hidden"
             >
-              {canContinue
-                ? "Continue to category selection"
-                : "Host is introducing..."}
+              <p
+                ref={introSpeechTextRef}
+                className="font-black uppercase tracking-[0.03em] text-white [text-shadow:0_3px_10px_rgba(0,0,0,0.35)]"
+                style={{
+                  fontSize: `${introLineFontSize}px`,
+                  lineHeight: 1.12,
+                  whiteSpace: "normal",
+                  wordBreak: "normal",
+                  overflowWrap: "break-word",
+                  hyphens: "manual",
+                  WebkitHyphens: "manual",
+                }}
+              >
+                {introLines[lineIndex]}
+              </p>
+            </div>
+          </motion.div>
+          <div className="flex gap-5">
+            <Button className={HOST_DIALOGUE_BUTTON_CLASS} onClick={handleNextIntroAction}>
+              Next
+            </Button>
+            <Button className={HOST_DIALOGUE_BUTTON_CLASS} onClick={onContinue}>
+              Skip
             </Button>
           </div>
-        </GlassPanel>
+        </div>
       </div>
     </BrandedScreen>
   );
@@ -2569,10 +2594,6 @@ function HostIntroScreen({ round, stingerLine, onContinue, theme }) {
   });
   const canContinue = speechIndex >= speechSentences.length - 1;
   const isTalking = speechIndex < speechSentences.length - 1;
-  const introLine =
-    round.roundTypeId === "grill"
-      ? `${themedHostPersona.name} is live. Mic up and question the AI.`
-      : `${themedHostPersona.name} is in the building. Let the chaos begin.`;
   useEffect(() => {
     setSpeechIndex(0);
   }, [round.id, round.roundNumber, round.roundTypeId]);
@@ -2591,9 +2612,9 @@ function HostIntroScreen({ round, stingerLine, onContinue, theme }) {
       speechBubbleTextRef.current,
       speechBubbleFitRef.current,
       {
-        maxSize: 24,
+        maxSize: 34,
         minSize: 12,
-        lineHeight: 1.16,
+        lineHeight: 1.12,
       },
     );
     setSpeechBubbleFontSize((current) =>
@@ -2605,129 +2626,74 @@ function HostIntroScreen({ round, stingerLine, onContinue, theme }) {
       Math.min(current + 1, speechSentences.length - 1),
     );
   }
+  function handleNextSpeechAction() {
+    if (canContinue) {
+      onContinue();
+      return;
+    }
+    advanceSpeechLine();
+  }
   return (
     <BrandedScreen
       wallpaperSrc={NEW_UI_WALLPAPER_IN_GAME_SRC}
-      overlayClassName="bg-black/45"
+      overlayClassName="bg-black/65"
     >
-      <div className="mx-auto flex h-[calc(100dvh-2rem)] w-full max-w-3xl flex-col justify-center">
-        <GlassPanel className="relative overflow-hidden rounded-[2.25rem] border-cyan-400/20 bg-black/25 p-5 sm:p-6 text-center">
-          <div className="text-xs uppercase tracking-[0.35em] text-white/50">
-            Host enters
-          </div>
-          <h2 className="mt-2 text-3xl sm:text-4xl font-black text-yellow-300">
-            {themedHostPersona.name}
-          </h2>
-          <p className="mt-1.5 text-sm sm:text-base font-semibold text-cyan-200">
-            {introLine}
-          </p>
-          <div className="relative mt-3 h-[180px] sm:h-[210px] w-full">
-            <div className="absolute inset-0 flex items-start justify-center gap-3">
-              <div className="relative w-[44%] max-w-[10rem]">
-                <div className="absolute -top-2 left-1/2 z-20 -translate-x-1/2 rounded-full border border-white/35 bg-black/35 px-3 py-1 text-[0.65rem] uppercase tracking-[0.18em] text-cyan-100">
-                  Normal
-                </div>
-                <div className="relative aspect-[2/3] overflow-hidden rounded-[1.2rem] border border-white/25 shadow-lg">
-                  {exampleCardSrc && (
-                    <img
-                      src={exampleCardSrc}
-                      alt=""
-                      aria-hidden="true"
-                      className="absolute inset-0 h-full w-full scale-[1.08] object-cover"
-                    />
-                  )}
-                  <div className="absolute inset-0 bg-black/25" />
-                  <div className="absolute bottom-3 left-3 right-3 text-xs font-black leading-tight text-white [text-shadow:0_2px_8px_rgba(0,0,0,0.8)]">
-                    {normalExamplePrompt}
-                  </div>
-                </div>
-              </div>
-              <div className="relative w-[44%] max-w-[10rem]">
-                <div className="absolute -top-2 left-1/2 z-20 -translate-x-1/2 rounded-full border border-red-200/60 bg-black/35 px-3 py-1 text-[0.65rem] uppercase tracking-[0.18em] text-red-100">
-                  Liar
-                </div>
-                <div className="relative aspect-[2/3] overflow-hidden rounded-[1.2rem] border border-white/25 shadow-lg">
-                  {exampleCardSrc && (
-                    <img
-                      src={exampleCardSrc}
-                      alt=""
-                      aria-hidden="true"
-                      className="absolute inset-0 h-full w-full scale-[1.08] object-cover"
-                    />
-                  )}
-                  <div className="absolute inset-0 bg-red-900/30" />
-                  <div className="absolute bottom-3 left-3 right-3 text-xs font-black leading-tight text-yellow-200 [text-shadow:0_2px_8px_rgba(0,0,0,0.8)]">
-                    {liarExamplePrompt}
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div className="relative mx-auto mt-2 w-full max-w-2xl h-[9.75rem] sm:h-[10.75rem]">
+      <div className="relative mx-auto flex h-[calc(100dvh-2.5rem)] w-full max-w-[28rem] flex-col items-center justify-between gap-4 overflow-hidden py-2">
+        <div
+          className="pointer-events-none absolute inset-x-[-30%] bottom-[10.5rem] h-40 opacity-80 blur-[0.3px]"
+          style={{
+            background:
+              "radial-gradient(circle at 50% 100%, rgba(255,130,0,0.95), rgba(255,0,160,0.55) 18%, rgba(0,180,255,0.28) 33%, transparent 62%)",
+          }}
+        />
+        <div className="relative z-10 w-full max-w-[21rem] rounded-[2rem] bg-[#e60096] p-3 shadow-[0_20px_45px_rgba(0,0,0,0.7)]">
+          <div className="aspect-[2/3] overflow-hidden rounded-[1.35rem] bg-black">
             <ThemeHostVisual
               themeName={theme}
               isTalking={isTalking}
               alt={`${theme} presenter`}
-              className={`pointer-events-none absolute bottom-0 left-0 ${hostSizeConfig.hostIntro}`}
+              className="h-full w-full"
             />
-            <motion.div
-              key={`${round.id || round.roundNumber}-${speechIndex}`}
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.28, ease: "easeOut" }}
-              className={`${hostSizeConfig.hostIntroBubbleMargin} h-full p-1 text-white`}
-            >
-              <div
-                ref={speechBubbleFitRef}
-                className="relative mx-auto flex h-full max-w-lg items-center justify-center overflow-hidden rounded-[1.8rem] border-2 border-cyan-200/80 bg-[#1d2376] px-3 py-3 shadow-[0_12px_24px_rgba(0,0,0,0.35)]"
-              >
-                <div className="absolute -left-3 top-[58%] h-6 w-6 -translate-y-1/2 rotate-45 border-b-2 border-l-2 border-cyan-200/80 bg-[#1d2376]" />
-                <p
-                  ref={speechBubbleTextRef}
-                  className="w-full text-white/95 text-center leading-tight"
-                  style={{
-                    fontSize: `${speechBubbleFontSize}px`,
-                    lineHeight: 1.08,
-                    wordBreak: "break-word",
-                    overflowWrap: "anywhere",
-                    whiteSpace: "normal",
-                    hyphens: "manual",
-                    WebkitHyphens: "manual",
-                  }}
-                >
-                  {speechSentences[speechIndex]}
-                </p>
-              </div>
-            </motion.div>
-            {round.roundTypeId === "grill" && (
-              <p className="mt-3 text-xs font-semibold text-yellow-200">
-                Each player gets {round.grillData?.questionsPerPlayer || 1}{" "}
-                questions this round.
-              </p>
-            )}
-            <div className="mt-3 text-xs text-white/70">
-              {round.roundTypeName} • {round.categoryEmoji}{" "}
-              {round.categoryLabel}
-            </div>
           </div>
-          <div className="mt-7 flex flex-wrap justify-center gap-3">
-            {!canContinue && (
-              <Button
-                className="h-14 rounded-[1.5rem] border border-white/25 bg-white/10 px-6 text-white"
-                onClick={advanceSpeechLine}
-              >
-                Next line
-              </Button>
-            )}
-            <Button
-              className="h-14 min-w-[16rem] rounded-[1.5rem] border-2 border-white bg-yellow-300 px-8 text-zinc-950"
-              onClick={onContinue}
-              disabled={!canContinue}
+        </div>
+        <div className="relative z-10 flex w-full flex-1 flex-col justify-end gap-5">
+          <motion.div
+            key={`${round.id || round.roundNumber}-${speechIndex}`}
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.28, ease: "easeOut" }}
+            className={`${HOST_DIALOGUE_PANEL_CLASS} flex min-h-[12rem] items-center justify-center px-6 py-5 text-center`}
+          >
+            <div
+              ref={speechBubbleFitRef}
+              className="flex h-full max-h-[12rem] w-full items-center justify-center overflow-hidden"
             >
-              {canContinue ? "Deal cards" : "Host is explaining..."}
+              <p
+                ref={speechBubbleTextRef}
+                className="w-full font-black uppercase tracking-[0.03em] text-white [text-shadow:0_3px_10px_rgba(0,0,0,0.35)]"
+                style={{
+                  fontSize: `${speechBubbleFontSize}px`,
+                  lineHeight: 1.12,
+                  wordBreak: "normal",
+                  overflowWrap: "break-word",
+                  whiteSpace: "normal",
+                  hyphens: "manual",
+                  WebkitHyphens: "manual",
+                }}
+              >
+                {speechSentences[speechIndex]}
+              </p>
+            </div>
+          </motion.div>
+          <div className="flex gap-5">
+            <Button className={HOST_DIALOGUE_BUTTON_CLASS} onClick={handleNextSpeechAction}>
+              Next
+            </Button>
+            <Button className={HOST_DIALOGUE_BUTTON_CLASS} onClick={onContinue}>
+              Skip
             </Button>
           </div>
-        </GlassPanel>
+        </div>
       </div>
     </BrandedScreen>
   );
@@ -3587,14 +3553,32 @@ function BrandedScreen({
   frameClassName = "",
   contentClassName = "",
 }) {
+  const resolvedWallpaperSrc = String(wallpaperSrc || "").trim();
   return (
     <div
-      className={`relative min-h-screen min-h-[100dvh] overflow-hidden bg-black text-white ${frameClassName}`}
+      className={`relative min-h-screen min-h-[100dvh] overflow-hidden bg-[#12002d] text-white ${frameClassName}`}
     >
       <div
         className="fixed inset-0 bg-cover bg-center bg-no-repeat"
-        style={{ backgroundImage: `url(${wallpaperSrc})` }}
+        style={
+          resolvedWallpaperSrc
+            ? { backgroundImage: `url(${resolvedWallpaperSrc})` }
+            : {
+                background:
+                  "radial-gradient(circle at 15% 8%, rgba(255,0,200,0.35), transparent 28%), radial-gradient(circle at 85% 18%, rgba(0,218,255,0.28), transparent 26%), linear-gradient(160deg, #260061 0%, #11002f 48%, #05010f 100%)",
+              }
+        }
       />
+      {!resolvedWallpaperSrc && (
+        <div
+          className="fixed inset-0 opacity-[0.16]"
+          style={{
+            backgroundImage:
+              "linear-gradient(135deg, rgba(255,255,255,0.18) 1px, transparent 1px), linear-gradient(45deg, rgba(255,255,255,0.08) 1px, transparent 1px)",
+            backgroundSize: "34px 34px",
+          }}
+        />
+      )}
       <div className={`fixed inset-0 ${overlayClassName}`} />
       <div
         className={`relative z-10 mx-auto flex min-h-screen min-h-[100dvh] w-full max-w-[460px] flex-col px-5 py-6 ${contentClassName}`}
@@ -9633,18 +9617,13 @@ export default function App() {
         </TopFrame>
       )}
       {screen === "game-intro" && (
-        <BrandedScreen
-          wallpaperSrc={NEW_UI_WALLPAPER_IN_GAME_SRC}
-          overlayClassName="bg-black/45"
-        >
-          <GameIntroScreen
-            theme={canonicalThemeName}
-            isOnlineMode={onlineMode}
-            totalRounds={totalRounds}
-            playerCount={players.length}
-            onContinue={() => setScreen("rules")}
-          />
-        </BrandedScreen>
+        <GameIntroScreen
+          theme={canonicalThemeName}
+          isOnlineMode={onlineMode}
+          totalRounds={totalRounds}
+          playerCount={players.length}
+          onContinue={() => setScreen("rules")}
+        />
       )}
       {screen === "rules" && (
         <RulesSplashScreen
@@ -9774,23 +9753,18 @@ export default function App() {
         </BrandedScreen>
       )}
       {screen === "host-intro" && round && (
-        <BrandedScreen
-          wallpaperSrc={NEW_UI_WALLPAPER_IN_GAME_SRC}
-          overlayClassName="bg-black/45"
-        >
-          <HostIntroScreen
-            round={round}
-            stingerLine={copyState.hostStinger}
-            onContinue={() => {
-              if (onlineMode) {
-                void runOnlinePhaseAdvance();
-                return;
-              }
-              setScreen("reveal");
-            }}
-            theme={canonicalThemeName}
-          />
-        </BrandedScreen>
+        <HostIntroScreen
+          round={round}
+          stingerLine={copyState.hostStinger}
+          onContinue={() => {
+            if (onlineMode) {
+              void runOnlinePhaseAdvance();
+              return;
+            }
+            setScreen("reveal");
+          }}
+          theme={canonicalThemeName}
+        />
       )}
       {screen === "reveal" && round && (
         <BrandedScreen
