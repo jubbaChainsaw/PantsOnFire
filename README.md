@@ -304,6 +304,172 @@ npm run host:install-theme-host-packs -- --zip "exports/Hosts (1).zip" --overlay
   - Liar reveal host screen
 - If an overlay is missing for a non-default theme, it simply does not render.
 
+## AI parody picture round generator (OpenAI / FLUX)
+
+You can also generate original parody/caricature image packs for picture rounds using
+OpenAI or FLUX image generation. This is useful for recognisable-but-transformed
+artist/band patch-style logo emblems for music rounds, standalone album-cover-inspired
+packs, and spoof movie posters for all-time-great films.
+
+### What it creates
+
+- three curated packs:
+  - `music-parodies-v1`
+  - `albums-parodies-v1`
+  - `screen-parodies-v1`
+- 50 prompt pairs in the music pack, a local-source albums pack, and 50 prompt pairs in the screen pack by default
+- music pack now starts with top-selling rock bands and top-selling pop stars, then expands
+  into rap/hip-hop, boy bands, and girl groups, all paired into music patch-logo rounds
+- albums pack is built from local files in `assets/music-albums/to-process/` and is designed
+  for album-cover recreations in its own standalone output folder
+- screen pack now targets top films only, excluding sequels and prequels
+- `manifest.json` files compatible with the picture DLC workflow
+- `generation-prompts.json` files so you can review/edit prompts before spending API credits
+- square 800x800 image generation by default
+
+### Prompt-only review pass
+
+Start here to export prompts and manifests without generating any images:
+
+```bash
+npm run picture:generate-parody-rounds -- --prompts-only
+```
+
+This writes reviewable pack folders under:
+
+- `exports/parody-picture-rounds/music-parodies-v1/`
+- `exports/parody-picture-rounds/albums-parodies-v1/`
+- `exports/parody-picture-rounds/screen-parodies-v1/`
+
+### Generate a small sample first
+
+```bash
+npm run picture:generate-parody-rounds -- --category music --limit 5
+```
+
+Using FLUX instead of OpenAI:
+
+```bash
+npm run picture:generate-parody-rounds -- --provider flux --category music --limit 5
+```
+
+Generate the standalone Albums pack:
+
+```bash
+npm run picture:generate-parody-rounds -- --provider flux --category albums --limit 20
+```
+
+The standalone Albums pack uses local files from:
+- `assets/music-albums/to-process/`
+
+For each local cover, the Albums path uses a strict redraw-only cartoon prompt that:
+- keeps the broad composition and visual idea
+- redraws all cover elements into new cartoon graphics
+- forbids direct copied source fragments
+- does not send a separate style-reference image
+
+Repeated music subjects are deduped automatically: if the same artist/band appears more
+than once in the selected batch, the script generates the first image once and copies it
+to the other matching output files instead of regenerating it.
+
+To keep what you already generated, rerun **without** `--overwrite`. Existing image files
+will be left untouched and only missing outputs will be created.
+
+For the standalone Albums pack specifically, existing generated outputs are always preserved
+and only missing images are created, even if you pass `--overwrite`.
+
+If you want a different size, override it explicitly:
+
+```bash
+npm run picture:generate-parody-rounds -- --category music --limit 5 --size 1024x1024
+```
+
+### Generate directly into the live picture-pack folder
+
+After reviewing the prompts:
+
+```bash
+npm run picture:generate-parody-rounds -- --output-root public/assets/graphic-packs/picture
+npm run dlc:lint-picture-manifests
+npm run dlc:sync-picture-manifests
+```
+
+### Notes
+
+- OpenAI key sources:
+  - `OPENAI_API_KEY`
+  - `scripts/royaltyFreeApiKeys.local.json` -> `openaiApiKey`
+- FLUX / fal.ai key sources:
+  - `FAL_KEY`
+  - `FAL_API_KEY`
+  - `FLUX_API_KEY`
+  - `scripts/royaltyFreeApiKeys.local.json` -> `falApiKey` or `fluxApiKey`
+- FLUX defaults to model `fal-ai/flux/dev` and uses the fal model API.
+- When you generate the standalone Albums pack with `--provider flux`, the script uses fal
+  Nano Banana edit with:
+  - the local album cover file as the content reference image
+  - your full parody-cartoon redraw prompt embedded directly in the request
+  - no separate style-reference image
+- The Albums prompt now explicitly tells Nano Banana to replace direct source-cover elements
+  with newly drawn cartoon graphics rather than carrying fragments through unchanged.
+- Defaults now focus on expanded music patch-emblem generation across rock bands, pop stars,
+  rap/hip-hop, boy bands, and girl groups:
+  - text logo / wordmark
+  - no people or faces
+  - surrounding symbolic elements tied to the act's clothing, props, stage persona, and album-art colors
+  - jacket-patch / bag-patch / badge-emblem composition
+- The generator automatically removes obsolete old `music-*` image files from the current run
+  folder before generating, so only the active prefixed sets remain.
+- Rerun without `--overwrite` to preserve any existing rock/pop/new-genre files you already
+  like while still filling in any missing ones. Because rock and pop appear first in the
+  music bank, missing rock/pop files will be attempted before the newly added categories.
+- Music prompts are styled toward a punchy comic-punk illustrated patch look.
+- Film prompts remain spoof movie-poster layouts for top films only.
+- The prompts are written to steer results toward transformed parody/caricature territory
+  with readable faces, costume cues, and props, but outputs should still be manually
+  reviewed before shipping.
+- The generated prompts explicitly avoid logos, title text, direct poster/cover recreation,
+  and exact face matching.
+
+## Realistic animal picture set (OpenAI)
+
+There is also a standalone animal generator for realistic picture-round images.
+
+### What it creates
+
+- one pack: `animals-realistic-v1`
+- 50 animals arranged as 25 visually similar pairs
+- simple gameplay-facing records such as:
+  - `hint: "Insect"`
+  - `prompt: "beetle"`
+- realistic animal rendering with the established graphic-style influence kept subtle
+
+### Examples
+
+Export prompts only:
+
+```bash
+npm run picture:generate-animal-set -- --prompts-only
+```
+
+Generate a small sample:
+
+```bash
+npm run picture:generate-animal-set -- --limit 10
+```
+
+Generate the full animal set:
+
+```bash
+npm run picture:generate-animal-set
+```
+
+### Notes
+
+- Uses `OPENAI_API_KEY` (or `scripts/royaltyFreeApiKeys.local.json` -> `openaiApiKey`).
+- Rerun without `--overwrite` to preserve already generated animal images.
+- The prompt bank is grouped into lookalike pairs such as octopus/squid, crocodile/alligator, and leopard/cheetah to suit picture-round comparisons.
+
 ## Global Online Lobbies (App Store / Play Store ready)
 
 To support players in different homes/countries, you must run the lobby server on a
