@@ -174,6 +174,136 @@ Importer output:
 - Keep attribution metadata (`attribution.json`) for legal/audit tracking.
 - Check source site terms before shipping; provider terms may change over time.
 
+## Default host voice-over pack (line-synced playback)
+
+You can install a generated voice-over ZIP for the **Default** host so intro/stinger
+text plays in sync with corresponding MP3 lines.
+
+### 1) Place your ZIP in exports
+
+Put the voice pack ZIP in:
+
+- `exports/`
+
+The installer supports nested folders inside the ZIP and finds files by MP3 name.
+
+### 2) Install into public assets
+
+```bash
+npm run host:install-default-voice-pack -- --zip exports/default-host-tts.zip
+```
+
+If `--zip` is omitted, it auto-selects the newest ZIP in `exports/`.
+
+Installer output location:
+
+- `public/assets/audio/host/default/tts/`
+
+### 3) Optional: regenerate SSML source CSV
+
+```bash
+npm run export:default-host-ssml
+```
+
+This writes:
+
+- `exports/default-host-voice-lines-ssml.csv`
+- `exports/default-host-voice-lines-ssml-polly-safe.csv`
+
+## Batch generation for persona avatars
+
+You can generate prompts for every persona and batch-generate avatar images.
+
+### 1) Export all persona avatar prompts
+
+```bash
+npm run persona:export-avatar-prompts
+```
+
+Output:
+
+- `exports/persona-avatar-prompts.json`
+- `exports/persona-avatar-prompts.csv`
+
+### 2) Generate all persona avatars (OpenAI Images API)
+
+Set your API key:
+
+```bash
+export OPENAI_API_KEY=your_key_here
+```
+
+Run generator:
+
+```bash
+npm run persona:generate-avatars
+```
+
+Optional flags:
+
+```bash
+npm run persona:generate-avatars -- --dry-run
+npm run persona:generate-avatars -- --overwrite
+npm run persona:generate-avatars -- --only-theme "Default"
+```
+
+Notes:
+
+- Images are saved to each persona `imageSrc` path (under `public/assets/themes/.../personas/`).
+- Use `--dry-run` first to verify prompt coverage and output paths.
+
+## Theme host pack installer (10 talking frames + themed overlays)
+
+Use this when you have a ZIP of host source PNGs and want to wire them into
+runtime host animations across themes.
+
+### 1) Put source files in `exports/`
+
+- Host source ZIP (example): `exports/Hosts (1).zip`
+- Overlay base PNG (example): `exports/hostoverlay.png`
+
+### 2) Install host packs
+
+```bash
+npm run host:install-theme-host-packs -- --zip "exports/Hosts (1).zip" --overlay "exports/hostoverlay.png"
+```
+
+What this script does:
+
+- extracts host PNG sources
+- maps them to themes using filename hints (and fallback assignment order)
+- writes host idle image per theme:
+  - `public/assets/themes/<theme-slug>/hosts/persona-host-idle.png`
+- generates a 10-frame talking sequence per installed theme:
+  - `persona-host-talk-01.png` ... `persona-host-talk-10.png`
+- generates themed overlay variants for every theme:
+  - `public/assets/themes/<theme-slug>/hosts/host-overlay.png`
+
+### 3) Optional flags
+
+```bash
+# dry run
+npm run host:install-theme-host-packs -- --zip "exports/Hosts (1).zip" --overlay "exports/hostoverlay.png" --dry-run
+
+# print unmatched files
+npm run host:install-theme-host-packs -- --zip "exports/Hosts (1).zip" --overlay "exports/hostoverlay.png" --list-unmatched
+
+# provide explicit fallback assignment order for unlabeled files
+npm run host:install-theme-host-packs -- --zip "exports/Hosts (1).zip" --overlay "exports/hostoverlay.png" --theme-order "Default,Murder Mystery,Pirates,Cops and Robbers,Ghosts and Ghouls"
+
+# override generated themed overlays with a per-theme overlay ZIP
+npm run host:install-theme-host-packs -- --zip "exports/Hosts (1).zip" --overlay-per-theme-zip "exports/theme-overlays.zip"
+```
+
+### Runtime behavior
+
+- Host talking animation now supports 10-frame persona sequences when present.
+- Theme host overlays (`host-overlay.png`) are rendered above the host art on:
+  - Game intro host screen
+  - Round host intro screen
+  - Liar reveal host screen
+- If an overlay is missing for a non-default theme, it simply does not render.
+
 ## AI parody picture round generator (OpenAI / FLUX)
 
 You can also generate original parody/caricature image packs for picture rounds using

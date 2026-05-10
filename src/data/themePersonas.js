@@ -1,4 +1,6 @@
-import { toCanonicalThemeName } from './themeAliases';
+import { toCanonicalThemeName } from './themeAliases.js';
+import { NAME_POOLS } from './names.js';
+import { ALL_THEME_NAMES } from './themeCatalog.js';
 
 const DEFAULT_THEME_PERSONAS = [
   {
@@ -150,6 +152,159 @@ const DEFAULT_THEME_PERSONAS = [
     name: 'Arthur "Old Tricks" Bennett',
     bio: "Seems harmless, but his eyes say otherwise. Has that unsettling vibe of someone who's done this before.",
     imageSrc: '/assets/themes/default/personas/25-arthur-old-tricks-bennett.png',
+  },
+];
+
+const DEFAULT_THEME_PERSONAS_ADDITIONAL = [
+  {
+    id: 'default-harper-highlighter-jones',
+    name: 'Harper "Highlighter" Jones',
+    bio: 'Marks up every detail in bright colors and still insists she missed nothing important.',
+    imageSrc: '/assets/themes/default/personas/26-harper-highlighter-jones.png',
+  },
+  {
+    id: 'default-rio-last-minute-lane',
+    name: 'Rio Last-Minute Lane',
+    bio: 'Always unprepared until suddenly overprepared. Keeps changing plans mid-sentence.',
+    imageSrc: '/assets/themes/default/personas/27-rio-last-minute-lane.png',
+  },
+  {
+    id: 'default-sadie-sticker-book',
+    name: 'Sadie Sticker Book',
+    bio: 'Looks cheerful and harmless, but her reactions are suspiciously timed.',
+    imageSrc: '/assets/themes/default/personas/28-sadie-sticker-book.png',
+  },
+  {
+    id: 'default-nico-soft-launch',
+    name: 'Nico Soft Launch',
+    bio: 'Drops tiny hints like breadcrumbs, then pretends he never said anything.',
+    imageSrc: '/assets/themes/default/personas/29-nico-soft-launch.png',
+  },
+  {
+    id: 'default-cleo-checkmate',
+    name: 'Cleo Checkmate',
+    bio: 'Talks like every sentence is a strategy move and every silence is a trap.',
+    imageSrc: '/assets/themes/default/personas/30-cleo-checkmate.png',
+  },
+  {
+    id: 'default-marco-half-truths-miles',
+    name: 'Marco "Half Truths" Miles',
+    bio: 'Technically honest, emotionally evasive, and definitely too comfortable with loopholes.',
+    imageSrc: '/assets/themes/default/personas/31-marco-half-truths-miles.png',
+  },
+  {
+    id: 'default-lena-late-reply',
+    name: 'Lena Late Reply',
+    bio: 'Always takes a beat too long to answer, like she is editing in real time.',
+    imageSrc: '/assets/themes/default/personas/32-lena-late-reply.png',
+  },
+  {
+    id: 'default-oscar-overfriendly',
+    name: 'Oscar Overfriendly',
+    bio: 'Greets everyone like best mates while quietly steering every conversation.',
+    imageSrc: '/assets/themes/default/personas/33-oscar-overfriendly.png',
+  },
+  {
+    id: 'default-priya-plot-twist',
+    name: 'Priya Plot Twist',
+    bio: 'Calm until challenged, then suddenly reveals details no one asked for.',
+    imageSrc: '/assets/themes/default/personas/34-priya-plot-twist.png',
+  },
+  {
+    id: 'default-dex-pocket-alibi',
+    name: 'Dex Pocket Alibi',
+    bio: 'Carries backup excuses for everything and reaches for one instantly.',
+    imageSrc: '/assets/themes/default/personas/35-dex-pocket-alibi.png',
+  },
+  {
+    id: 'default-naomi-soft-smirk',
+    name: 'Naomi Soft Smirk',
+    bio: 'Looks amused by the chaos, especially when she is likely causing it.',
+    imageSrc: '/assets/themes/default/personas/36-naomi-soft-smirk.png',
+  },
+  {
+    id: 'default-jules-crossed-wires',
+    name: 'Jules Crossed Wires',
+    bio: 'Gets details mixed up but somehow lands exactly where suspicion is lowest.',
+    imageSrc: '/assets/themes/default/personas/37-jules-crossed-wires.png',
+  },
+  {
+    id: 'default-freddie-fast-talk',
+    name: 'Freddie Fast Talk',
+    bio: 'Speaks quickly, changes topics faster, and leaves everyone slightly confused.',
+    imageSrc: '/assets/themes/default/personas/38-freddie-fast-talk.png',
+  },
+  {
+    id: 'default-carmen-cold-read',
+    name: 'Carmen Cold Read',
+    bio: 'Reads the room in seconds and adjusts her tone like a pro.',
+    imageSrc: '/assets/themes/default/personas/39-carmen-cold-read.png',
+  },
+  {
+    id: 'default-owen-too-specific',
+    name: 'Owen Too Specific',
+    bio: 'Adds oddly precise details to stories that should be simple.',
+    imageSrc: '/assets/themes/default/personas/40-owen-too-specific.png',
+  },
+  {
+    id: 'default-mia-never-rattled',
+    name: 'Mia Never Rattled',
+    bio: 'Keeps perfect composure even when everything around her goes sideways.',
+    imageSrc: '/assets/themes/default/personas/41-mia-never-rattled.png',
+  },
+  {
+    id: 'default-ezra-signal-noise',
+    name: 'Ezra Signal Noise',
+    bio: 'Floods conversations with side details to hide the one thing that matters.',
+    imageSrc: '/assets/themes/default/personas/42-ezra-signal-noise.png',
+  },
+  {
+    id: 'default-ivy-double-booked',
+    name: 'Ivy Double Booked',
+    bio: 'Always in a hurry, always somewhere else, somehow always nearby when drama starts.',
+    imageSrc: '/assets/themes/default/personas/43-ivy-double-booked.png',
+  },
+  {
+    id: 'default-rhett-side-bet',
+    name: 'Rhett Side Bet',
+    bio: 'Treats every round like a gamble and acts surprised when called out.',
+    imageSrc: '/assets/themes/default/personas/44-rhett-side-bet.png',
+  },
+  {
+    id: 'default-kira-curated-chaos',
+    name: 'Kira Curated Chaos',
+    bio: 'Looks polished, sounds polished, and leaves messy uncertainty behind.',
+    imageSrc: '/assets/themes/default/personas/45-kira-curated-chaos.png',
+  },
+  {
+    id: 'default-paul-no-comment',
+    name: 'Paul "No Comment"',
+    bio: 'Dodges direct questions with charming nonsense and a shrug.',
+    imageSrc: '/assets/themes/default/personas/46-paul-no-comment.png',
+  },
+  {
+    id: 'default-zoe-bounce-back',
+    name: 'Zoe Bounce Back',
+    bio: 'Recovers from bad answers instantly, like she rehearsed the recovery line.',
+    imageSrc: '/assets/themes/default/personas/47-zoe-bounce-back.png',
+  },
+  {
+    id: 'default-gabe-quiet-volume',
+    name: 'Gabe Quiet Volume',
+    bio: 'Speaks softly but somehow takes over the whole room.',
+    imageSrc: '/assets/themes/default/personas/48-gabe-quiet-volume.png',
+  },
+  {
+    id: 'default-tori-misdirect',
+    name: 'Tori Misdirect',
+    bio: 'Answers one question by creating three new ones.',
+    imageSrc: '/assets/themes/default/personas/49-tori-misdirect.png',
+  },
+  {
+    id: 'default-vincent-final-draft',
+    name: 'Vincent Final Draft',
+    bio: 'Edits his story every time he repeats it and calls that "clarity."',
+    imageSrc: '/assets/themes/default/personas/50-vincent-final-draft.png',
   },
 ];
 
@@ -765,16 +920,114 @@ const PIRATES_THEME_PERSONAS = [
   },
 ];
 
-const THEME_PERSONA_POOLS = {
-  Default: DEFAULT_THEME_PERSONAS,
+const EXTENDED_DEFAULT_THEME_PERSONAS = [
+  ...DEFAULT_THEME_PERSONAS,
+  ...DEFAULT_THEME_PERSONAS_ADDITIONAL,
+];
+
+const PROCEDURAL_PERSONA_BIO_TEMPLATES = [
+  '{name} keeps a confident smile while clearly editing the story in real time.',
+  '{name} reads the room fast and always answers a second too carefully.',
+  '{name} acts relaxed, but every detail sounds rehearsed under pressure.',
+  '{name} has strong {theme} energy and a suspicious talent for avoiding direct answers.',
+  '{name} sounds convincing until someone asks the one follow-up question.',
+  '{name} looks calm, moves deliberately, and notices far more than they admit.',
+  '{name} is charming and polished, but the timing of every reaction feels intentional.',
+  '{name} deflects neatly, then pivots the conversation before anyone can press further.',
+];
+
+const PROCEDURAL_PERSONA_COUNT = 25;
+
+function toSlug(value = '') {
+  return String(value || '')
+    .toLowerCase()
+    .replace(/&/g, 'and')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+}
+
+function ensureUnique(baseValue, seen, fallbackPrefix = 'item') {
+  const base = baseValue || `${fallbackPrefix}-1`;
+  if (!seen.has(base)) {
+    seen.add(base);
+    return base;
+  }
+  let suffix = 2;
+  let candidate = `${base}-${suffix}`;
+  while (seen.has(candidate)) {
+    suffix += 1;
+    candidate = `${base}-${suffix}`;
+  }
+  seen.add(candidate);
+  return candidate;
+}
+
+function buildProceduralThemePersonas(themeName = 'Default', count = PROCEDURAL_PERSONA_COUNT) {
+  const canonicalThemeName = toCanonicalThemeName(themeName);
+  const sourcePool = (
+    NAME_POOLS[themeName]
+    || NAME_POOLS[canonicalThemeName]
+    || NAME_POOLS.Default
+    || []
+  );
+  if (!sourcePool.length) return [];
+
+  const themeSlug = toSlug(themeName) || 'default';
+  const seenIds = new Set();
+  const seenFilenames = new Set();
+  const personas = [];
+
+  for (let index = 0; index < count; index += 1) {
+    const name = String(sourcePool[index % sourcePool.length] || `${themeName} Persona ${index + 1}`).trim();
+    const nameSlug = toSlug(name) || `persona-${index + 1}`;
+    const id = ensureUnique(`${themeSlug}-${nameSlug}`, seenIds, `${themeSlug}-persona`);
+    const filenameStem = ensureUnique(
+      `${String(index + 1).padStart(2, '0')}-${nameSlug}`,
+      seenFilenames,
+      `${String(index + 1).padStart(2, '0')}-persona`
+    );
+    const template = PROCEDURAL_PERSONA_BIO_TEMPLATES[index % PROCEDURAL_PERSONA_BIO_TEMPLATES.length];
+    const bio = template
+      .replaceAll('{name}', name)
+      .replaceAll('{theme}', themeName);
+
+    personas.push({
+      id,
+      name,
+      bio,
+      imageSrc: `/assets/themes/${themeSlug}/personas/${filenameStem}.png`,
+    });
+  }
+
+  return personas;
+}
+
+const CURATED_THEME_PERSONA_POOLS = {
+  Default: EXTENDED_DEFAULT_THEME_PERSONAS,
   'Murder Mystery': MURDER_MYSTERY_THEME_PERSONAS,
   'Cops and Robbers': COPS_AND_ROBBERS_THEME_PERSONAS,
   'Ghosts and Ghouls': GHOSTS_AND_GHOULS_THEME_PERSONAS,
   Pirates: PIRATES_THEME_PERSONAS,
-  Gangsters: COPS_AND_ROBBERS_THEME_PERSONAS,
-  Spies: COPS_AND_ROBBERS_THEME_PERSONAS,
-  Cowboys: COPS_AND_ROBBERS_THEME_PERSONAS,
-  Monsters: GHOSTS_AND_GHOULS_THEME_PERSONAS,
+};
+
+const ALL_KNOWN_THEME_NAMES = [
+  ...new Set([
+    ...ALL_THEME_NAMES,
+    ...Object.keys(NAME_POOLS),
+    ...Object.keys(CURATED_THEME_PERSONA_POOLS),
+  ]),
+];
+
+const PROCEDURAL_THEME_PERSONA_POOLS = Object.fromEntries(
+  ALL_KNOWN_THEME_NAMES
+    .filter((themeName) => !Array.isArray(CURATED_THEME_PERSONA_POOLS[themeName]))
+    .map((themeName) => [themeName, buildProceduralThemePersonas(themeName)])
+);
+
+const THEME_PERSONA_POOLS = {
+  ...CURATED_THEME_PERSONA_POOLS,
+  ...PROCEDURAL_THEME_PERSONA_POOLS,
+  Victorian: MURDER_MYSTERY_THEME_PERSONAS,
 };
 
 export function getThemePersonas(themeName = 'Default') {

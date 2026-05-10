@@ -59,6 +59,10 @@ import {
   buildPictureRoundsFromManifest,
   validatePictureDlcManifest,
 } from './pictureDlcManifests';
+import {
+  NAME_AND_BLAME_ROUNDS as UPLOADED_NAME_AND_BLAME_ROUNDS,
+  SOUND_CLUES_ROUNDS as UPLOADED_SOUND_CLUES_ROUNDS,
+} from './specialRoundPromptPools';
 import { CATEGORY_PROMPT_PACKS } from './packs/categoryPromptPacks';
 import { buildExpandedEntityPrompts, CATEGORY_GUESSABLE_ENTITY_POOLS } from './guessableEntityPools';
 
@@ -94,6 +98,29 @@ for (const category of DEFAULT_CATEGORIES) {
 
 const CATEGORY_ROUNDS_PER_CATEGORY = 100;
 const CATEGORY_ADULT_ROUNDS_PER_CATEGORY = 35;
+const SPECIAL_ROUND_HINT_FALLBACK = 'Prompt';
+
+function normalizeSpecialRoundPrompts(prompts = [], { previewLabel = '', soundOnly = false } = {}) {
+  return (Array.isArray(prompts) ? prompts : [])
+    .map((prompt) => ({
+      hint: String(prompt?.hint || SPECIAL_ROUND_HINT_FALLBACK).trim() || SPECIAL_ROUND_HINT_FALLBACK,
+      main: String(prompt?.main || '').trim(),
+      imposter: String(prompt?.imposter || '').trim(),
+      ...(previewLabel ? { previewLabel } : {}),
+      ...(soundOnly ? { soundOnly: true } : {}),
+    }))
+    .filter((prompt) => prompt.main && prompt.imposter);
+}
+
+export const NAME_AND_BLAME_ROUNDS = normalizeSpecialRoundPrompts(UPLOADED_NAME_AND_BLAME_ROUNDS, {
+  previewLabel: 'Call out players in the lobby without revealing your exact prompt.',
+});
+
+export const SOUND_CLUES_ROUNDS = normalizeSpecialRoundPrompts(UPLOADED_SOUND_CLUES_ROUNDS, {
+  previewLabel: 'Make the sound only. No words allowed.',
+  soundOnly: true,
+});
+
 const CHAIN_PROMPTS_PER_CATEGORY = CATEGORY_ROUNDS_PER_CATEGORY;
 const CHAIN_ADULT_PROMPTS_PER_CATEGORY = CATEGORY_ADULT_ROUNDS_PER_CATEGORY;
 const CHAIN_VIBE_WORDS = ['vibe', 'angle', 'energy', 'detail', 'moment', 'lore'];
@@ -925,6 +952,14 @@ function ensureBannedWordCoverage() {
   });
   OPINION_ROUNDS.forEach((prompt, index) => {
     const key = `opinion::global::${index}`;
+    BANNED_WORD_BANK[key] = autoBannedWords(prompt, BANNED_WORD_BANK[key] || []);
+  });
+  NAME_AND_BLAME_ROUNDS.forEach((prompt, index) => {
+    const key = `nameblame::global::${index}`;
+    BANNED_WORD_BANK[key] = autoBannedWords(prompt, BANNED_WORD_BANK[key] || []);
+  });
+  SOUND_CLUES_ROUNDS.forEach((prompt, index) => {
+    const key = `noise::global::${index}`;
     BANNED_WORD_BANK[key] = autoBannedWords(prompt, BANNED_WORD_BANK[key] || []);
   });
   GRILL_EM_ROUNDS.forEach((prompt, index) => {

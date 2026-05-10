@@ -249,23 +249,13 @@ export const THEME_ASSETS = {
   },
 };
 
-function toThemeSlug(themeName = 'Default') {
-  return String(themeName || 'default')
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/(^-|-$)/g, '');
-}
-
-function buildHostTalkingVideoSrc(themeName = 'Default') {
-  return `/assets/videos/hosts/${toThemeSlug(themeName)}/talking-placeholder.mp4`;
-}
-
-function buildNewUiHostFrame(themeName = 'Default', frameNumber = 1) {
-  return `/assets/new-ui/hosts/${toThemeSlug(themeName)}/talk-${String(frameNumber).padStart(2, '0')}.png`;
-}
-
-function buildNewUiHostFrames(themeName = 'Default', frameCount = 6) {
-  return Array.from({ length: frameCount }, (_, index) => buildNewUiHostFrame(themeName, index + 1));
+function getGeneratedThemeHostMedia(themeName = 'Default') {
+  const canonicalThemeName = toCanonicalThemeName(themeName);
+  return (
+    THEME_GENERATED_HOST_MEDIA[themeName]
+    || THEME_GENERATED_HOST_MEDIA[canonicalThemeName]
+    || {}
+  );
 }
 
 export const ROUND_TYPE_CARD_FRONT_BY_ID = {
@@ -281,13 +271,11 @@ export const ROUND_TYPE_CARD_FRONT_BY_ID = {
 export function getThemeAssets(themeName = 'Default') {
   const canonicalThemeName = toCanonicalThemeName(themeName);
   const selected = THEME_ASSETS[canonicalThemeName] || THEME_ASSETS.Default;
-  const generatedDefault = THEME_GENERATED_HOST_MEDIA.Default || {};
-  const generatedSelected = THEME_GENERATED_HOST_MEDIA[canonicalThemeName] || {};
+  const generated = getGeneratedThemeHostMedia(canonicalThemeName);
   return {
     ...THEME_ASSETS.Default,
-    ...generatedDefault,
     ...selected,
-    ...generatedSelected,
+    ...generated,
   };
 }
 
@@ -296,7 +284,6 @@ export function getThemeHostAssets(themeName = 'Default') {
   const selected = getThemeAssets(canonicalThemeName);
   const fallback = getThemeAssets('Default');
   const isDefaultTheme = canonicalThemeName === 'Default';
-  const hasThemeConfig = Boolean(selected && Object.keys(selected).length);
   const unique = (list = []) => list.filter(Boolean).filter((value, index, arr) => arr.indexOf(value) === index);
   const getPersonaTalkFrames = (assetEntry = {}) => unique([
     ...(Array.isArray(assetEntry.personaHostTalkingFrames) ? assetEntry.personaHostTalkingFrames : []),
@@ -314,76 +301,63 @@ export function getThemeHostAssets(themeName = 'Default') {
     ]);
   };
 
-  const selectedEntry = hasThemeConfig ? selected : fallback;
   // Critical: never mix persona host frames with generic host frames.
-  // Non-default themes are strictly persona-host only (no default host fallback).
-  const selectedPersonaFrames = getPersonaTalkFrames(selectedEntry);
-  const selectedHostFrames = getHostTalkFrames(selectedEntry);
+  // If persona frames are available for a theme, only use that persona set.
+  const selectedPersonaFrames = getPersonaTalkFrames(selected);
+  const selectedHostFrames = getHostTalkFrames(selected);
   const hasPersonaHostConfig = Boolean(
-    selectedEntry.personaHostIdle
-    || selectedEntry.personaHostTalk1
-    || selectedEntry.personaHostTalk2
-    || selectedEntry.personaHostTalk3
+    selected.personaHostIdle
+    || selected.personaHostTalk1
+    || selected.personaHostTalk2
+    || selected.personaHostTalk3
   );
-  const selectedFrames = isDefaultTheme
-    ? (selectedPersonaFrames.length ? selectedPersonaFrames : selectedHostFrames)
-    : selectedPersonaFrames;
-  const selectedIdle = isDefaultTheme
-    ? (
-      hasPersonaHostConfig
-        ? (selectedEntry.personaHostIdle || null)
-        : (selectedEntry.hostIdle || selectedEntry.characterCard || null)
-    )
-    : (selectedEntry.personaHostIdle || null);
+  const selectedFrames = selectedPersonaFrames.length ? selectedPersonaFrames : selectedHostFrames;
+  const selectedIdle = hasPersonaHostConfig
+    ? (selected.personaHostIdle || null)
+    : (selected.hostIdle || selected.characterCard || null);
   const fallbackPersonaFrames = getPersonaTalkFrames(fallback);
   const fallbackHostFrames = getHostTalkFrames(fallback);
   const fallbackFrames = fallbackPersonaFrames.length ? fallbackPersonaFrames : fallbackHostFrames;
   const fallbackIdle = fallback.personaHostIdle || fallback.hostIdle || fallback.characterCard || null;
+  const selectedTalkingVideoWebm = String(selected.talkingVideoWebm || selected.hostTalkingVideoWebm || '').trim();
+  const selectedTalkingVideoMp4 = String(
+    selected.talkingVideoMp4 || selected.hostTalkingVideoMp4 || selected.talkingVideo || ''
+  ).trim();
+  const fallbackTalkingVideoWebm = String(fallback.talkingVideoWebm || fallback.hostTalkingVideoWebm || '').trim();
+  const fallbackTalkingVideoMp4 = String(
+    fallback.talkingVideoMp4 || fallback.hostTalkingVideoMp4 || fallback.talkingVideo || ''
+  ).trim();
+  const selectedOverlay = selected.hostOverlay || null;
+  const fallbackOverlay = fallback.hostOverlay || null;
   const selectedTalkingFrames = selectedFrames.length
     ? selectedFrames
     : [selectedIdle].filter(Boolean);
-  const themedFallbackFrameMap = {
-    Default: buildNewUiHostFrames('Default', 9),
-    Pirates: buildNewUiHostFrames('Pirates', 6),
-    'Murder Mystery': buildNewUiHostFrames('Murder Mystery', 6),
-    'Cops and Robbers': buildNewUiHostFrames('Cops and Robbers', 6),
-    'Ghosts and Ghouls': buildNewUiHostFrames('Ghosts and Ghouls', 6),
-  };
-  const themedFallbackFrames = selectedFrames.length
-    ? []
-    : (themedFallbackFrameMap[canonicalThemeName] || []);
-  const themedFallbackIdle = themedFallbackFrames[0] || '';
-  const selectedOverlay = selectedEntry.hostOverlay || null;
-  const fallbackOverlay = fallback.hostOverlay || null;
-
-  const resolvedIdle = themedFallbackFrames.length
-    ? themedFallbackIdle
-    : (
-      isDefaultTheme
-        ? (selectedIdle || fallbackIdle || null)
-        : (selectedIdle || null)
-    );
-  const resolvedTalkingFrames = themedFallbackFrames.length
-    ? themedFallbackFrames
-    : (
-      isDefaultTheme
-        ? (
-          selectedTalkingFrames.length
-            ? selectedTalkingFrames
-            : (fallbackFrames.length ? fallbackFrames : [selectedEntry.characterCard || fallback.characterCard].filter(Boolean))
-        )
-        : selectedTalkingFrames
-    );
 
   return {
     // For non-default themes, never fall back to default host assets.
-    idle: resolvedIdle,
-    talkingFrames: resolvedTalkingFrames.length
-      ? resolvedTalkingFrames
-      : [resolvedIdle].filter(Boolean),
-    overlay: isDefaultTheme
-      ? (selectedOverlay || fallbackOverlay || null)
-      : selectedOverlay,
-    talkingVideo: themedFallbackFrames.length ? '' : buildHostTalkingVideoSrc(canonicalThemeName),
+    idle: isDefaultTheme ? (selectedIdle || fallbackIdle || null) : selectedIdle,
+    talkingFrames: isDefaultTheme
+      ? (
+        selectedTalkingFrames.length
+          ? selectedTalkingFrames
+          : (fallbackFrames.length ? fallbackFrames : [selected.characterCard || fallback.characterCard].filter(Boolean))
+      )
+      : selectedTalkingFrames,
+    talkingVideoWebm: isDefaultTheme
+      ? (selectedTalkingVideoWebm || fallbackTalkingVideoWebm || '')
+      : selectedTalkingVideoWebm,
+    talkingVideoMp4: isDefaultTheme
+      ? (selectedTalkingVideoMp4 || fallbackTalkingVideoMp4 || '')
+      : selectedTalkingVideoMp4,
+    talkingVideo: isDefaultTheme
+      ? (
+        selectedTalkingVideoWebm
+        || selectedTalkingVideoMp4
+        || fallbackTalkingVideoWebm
+        || fallbackTalkingVideoMp4
+        || ''
+      )
+      : (selectedTalkingVideoWebm || selectedTalkingVideoMp4 || ''),
+    overlay: isDefaultTheme ? (selectedOverlay || fallbackOverlay || null) : selectedOverlay,
   };
 }

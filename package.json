@@ -24,6 +24,7 @@
     "host:export-default-ssml": "node scripts/exportDefaultHostSsmlCsv.cjs",
     "host:install-default-voice-pack": "node scripts/installDefaultHostVoicePack.cjs",
     "host:install-theme-host-packs": "node scripts/installThemeHostPacks.cjs",
+    "host:install-mapped-videos": "node scripts/installMappedHostVideos.cjs",
     "export:default-host-ssml": "node scripts/exportDefaultHostSsmlCsv.cjs",
     "persona:export-avatar-prompts": "node scripts/exportPersonaAvatarPrompts.cjs",
     "persona:generate-avatars": "node scripts/generatePersonaAvatars.cjs",
