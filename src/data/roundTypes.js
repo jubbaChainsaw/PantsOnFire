@@ -33,7 +33,7 @@ export const ROUND_TYPES = {
   },
   noise: {
     id: 'noise',
-    name: 'Sound Clues',
+    name: 'Sound Off',
     tagline: 'No words allowed. Make the sound and blend in.',
     logoSrc: '/assets/images/round-types/noise-logo.svg',
     passThePhoneReady: true,

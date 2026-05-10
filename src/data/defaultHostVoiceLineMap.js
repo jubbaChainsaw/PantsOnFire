@@ -13,7 +13,7 @@ const DEFAULT_ROUND_TYPE_FLAVOR_BY_ID = {
   opinion: 'truth-or-twisted debates',
   picture: 'flash-frame visuals',
   nameblame: 'name-and-blame callouts',
-  noise: 'sound clue bluffs',
+  noise: 'sound-off bluffs',
   offtopic: 'off-topic defenses',
   chain: 'chain reaction links',
   grill: "Grill 'Em interrogations",

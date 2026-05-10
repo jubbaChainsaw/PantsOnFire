@@ -1109,7 +1109,7 @@ const MASCOT_BY_ROUND_TYPE = {
   opinion: { name: 'Ian Poster', face: '🎭', blurb: 'Debate instigator.' },
   picture: { name: 'Ian Poster', face: '🖼️', blurb: 'Flash-frame ringmaster.' },
   nameblame: { name: 'Ian Poster', face: '🫵', blurb: 'Call out the lobby without getting caught.' },
-  noise: { name: 'Ian Poster', face: '🔊', blurb: 'No words. Pure sound clues. Maximum suspicion.' },
+  noise: { name: 'Ian Poster', face: '🔊', blurb: 'No words. Pure sound chaos. Maximum suspicion.' },
   offtopic: { name: 'Ian Poster', face: '🛡️', blurb: 'Defend the topic like your life depends on it.' },
   chain: { name: 'Ian Poster', face: '🧩', blurb: 'Connect the clues, expose the break.' },
   grill: { name: 'Blaze Byte', face: '🤖', blurb: "AI host for Grill 'Em." },
@@ -1432,7 +1432,7 @@ function getRoundRuleText(roundTypeId = 'prompt') {
     return 'Name and Blame: everyone gets a lobby callout question. Liars got a totally different accusation and must blend in.';
   }
   if (roundTypeId === 'noise') {
-    return 'Sound Clues: perform your clue as a sound only. No words, no letters, no humming lyrics.';
+    return 'Sound Off: perform your clue as a sound only. No words, no letters, no humming lyrics.';
   }
   if (roundTypeId === 'offtopic') {
     return 'Off Topic Defense: truth players share one scenario. Liars got an irrelevant prompt and must argue like it still fits.';
@@ -1469,7 +1469,7 @@ function getInstructionHostLines(roundTypeId = 'prompt') {
   }
   if (roundTypeId === 'noise') {
     return [
-      'Sound Clues means clueing with sound only.',
+      'Sound Off means clueing with sound only.',
       'No words, no spelling, no lyric humming. Commit to your sound.',
       'Find the player whose sound feels most disconnected from the round.',
     ];
