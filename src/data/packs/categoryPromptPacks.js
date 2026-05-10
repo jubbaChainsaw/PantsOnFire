@@ -25,6 +25,13 @@ import { ToysPromptRoundData } from './toys/promptRoundData';
 import { WrestlingPromptRoundData } from './wrestling/promptRoundData';
 import { UfcPromptRoundData } from './ufc/promptRoundData';
 import { MotorsportPromptRoundData } from './motorsport/promptRoundData';
+import { TheatrePromptRoundData } from './theatre/promptRoundData';
+import { MusicalsPromptRoundData } from './musicals/promptRoundData';
+import { EurovisionPromptRoundData } from './eurovision/promptRoundData';
+import { GirlBandsVsBoyBandsPromptRoundData } from './girl-bands-vs-boy-bands/promptRoundData';
+import { ComedyPromptRoundData } from './comedy/promptRoundData';
+import { GameShowsPromptRoundData } from './game-shows/promptRoundData';
+import { HorrorPromptRoundData } from './horror/promptRoundData';
 
 const InternetSlangPromptRoundData = {
   id: 'internet-slang',
@@ -281,6 +288,23 @@ const FestivalsHolidaysPromptRoundData = {
   ],
 };
 
+const PicAndMixPromptRoundData = {
+  id: 'pic-mix',
+  name: 'Pic & Mix',
+  emoji: '🧩',
+  prompts: [
+    { hint: 'Urban Landmark Scene', main: 'City bridge at sunset', imposter: 'Canal ride through old town' },
+    { hint: 'Street & Travel Moment', main: 'Busy market street', imposter: 'Quiet historic side street' },
+    { hint: 'Food Close-up', main: 'Plated signature dish', imposter: 'Dessert close-up' },
+    { hint: 'Wildlife Snapshot', main: 'Animal portrait in nature', imposter: 'Animal in aquarium' },
+    { hint: 'Skyline View', main: 'Modern skyline at dusk', imposter: 'Historic skyline at dusk' },
+    { hint: 'Action Scene', main: 'Live sports action frame', imposter: 'Crowd celebration frame' },
+    { hint: 'Night Lights', main: 'Harbor lights at night', imposter: 'Fireworks over city harbor' },
+    { hint: 'Transit Moment', main: 'Train platform photo', imposter: 'Airplane cabin photo' },
+    { hint: 'Indoor Lifestyle', main: 'Workspace with laptop and coffee', imposter: 'Restaurant table with drinks' },
+  ],
+};
+
 export const CATEGORY_PROMPT_PACKS = [
   SportsPromptRoundData,
   FoodPromptRoundData,
@@ -324,4 +348,12 @@ export const CATEGORY_PROMPT_PACKS = [
   BoardGamesPromptRoundData,
   SuperstitionsPromptRoundData,
   FestivalsHolidaysPromptRoundData,
+  PicAndMixPromptRoundData,
+  TheatrePromptRoundData,
+  MusicalsPromptRoundData,
+  EurovisionPromptRoundData,
+  GirlBandsVsBoyBandsPromptRoundData,
+  ComedyPromptRoundData,
+  GameShowsPromptRoundData,
+  HorrorPromptRoundData,
 ];

@@ -2360,6 +2360,11 @@ function RevealScreen({ players, currentRevealIndex, round, totalRounds, onNext,
   const isImposter = onlineMode
     ? Boolean(onlinePrivatePrompt?.isImposter)
     : (round.imposterIds || []).includes(player.id);
+  const bannedWords = Array.isArray(round.bannedWords)
+    ? round.bannedWords
+    : Array.isArray(onlinePrivatePrompt?.bannedWords)
+      ? onlinePrivatePrompt.bannedWords
+      : [];
   const [cardFace, setCardFace] = useState('back');
   const [countdownValue, setCountdownValue] = useState(null);
   const [isCountingDown, setIsCountingDown] = useState(false);
@@ -2576,7 +2581,7 @@ function RevealScreen({ players, currentRevealIndex, round, totalRounds, onNext,
                     <div className="mt-3 text-sm text-white/85">{round.mediaPreviewLabel}</div>
                   )}
                   {mediaSrc && (
-                    <img src={mediaSrc} alt={`${round.roundTypeName} visual clue`} className="mt-3 w-full rounded-2xl" />
+                    <img src={mediaSrc} alt="Visual clue" className="mt-3 w-full rounded-2xl" />
                   )}
                   <div ref={promptFitContainerRef} className="mt-4 max-h-[12.5rem] overflow-hidden px-1">
                     <div
@@ -2603,10 +2608,10 @@ function RevealScreen({ players, currentRevealIndex, round, totalRounds, onNext,
                   <div className={`mt-3 text-sm font-semibold ${isImposter ? 'text-orange-200' : 'text-cyan-200'}`}>
                     {isImposter ? `🔥 ${liarLine} 🔥` : normalLine}
                   </div>
-                  {round.bannedWords.length > 0 && (
+                  {bannedWords.length > 0 && (
                     <div className="mt-4">
                       <div className="text-xs uppercase tracking-[0.2em] text-red-300">Banned Words</div>
-                      <div className="mt-1 text-xs text-red-200">{round.bannedWords.join(' • ')}</div>
+                      <div className="mt-1 text-xs text-red-200">{bannedWords.join(' • ')}</div>
                     </div>
                   )}
                 </div>

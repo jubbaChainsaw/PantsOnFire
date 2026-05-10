@@ -1,7 +1,14 @@
 import { io } from 'socket.io-client';
 
-const LOBBY_SERVER_URL = String(import.meta?.env?.VITE_LOBBY_SERVER_URL || '').trim();
-const LOBBY_API_BASE = `${LOBBY_SERVER_URL ? LOBBY_SERVER_URL.replace(/\/$/, '') : ''}/api`;
+const ENV_LOBBY_SERVER_URL = String(import.meta?.env?.VITE_LOBBY_SERVER_URL || '').trim();
+const RAILWAY_API_FALLBACK = 'https://api.pantsonfire.app';
+const RUNTIME_HOSTNAME = typeof window !== 'undefined' ? String(window.location?.hostname || '').toLowerCase() : '';
+const IS_LOCAL_WEB_HOST = RUNTIME_HOSTNAME === 'localhost' || RUNTIME_HOSTNAME === '127.0.0.1';
+const FALLBACK_LOBBY_SERVER_URL = IS_LOCAL_WEB_HOST ? '' : RAILWAY_API_FALLBACK;
+const LOBBY_SERVER_URL = ENV_LOBBY_SERVER_URL || FALLBACK_LOBBY_SERVER_URL;
+const LOBBY_API_BASE = LOBBY_SERVER_URL
+  ? `${LOBBY_SERVER_URL.replace(/\/$/, '')}/api`
+  : '/api';
 
 function randomId(prefix = 'id') {
   return `${prefix}-${Math.random().toString(36).slice(2, 10)}-${Date.now().toString(36)}`;
@@ -45,13 +52,17 @@ export function createOnlinePlayer({ name, clientId, isHost = false }) {
     clientId: String(clientId || ''),
     isHost: Boolean(isHost),
     joinedAt: nowIso(),
+    color: '',
+    personaId: '',
+    personaBio: '',
+    personaImageSrc: '',
   };
 }
 
-export async function createLobbyOnServer({ hostName, hostPlayer }) {
+export async function createLobbyOnServer({ hostName, hostPlayer, maxPlayers, settings } = {}) {
   const payload = await requestJson('/lobbies', {
     method: 'POST',
-    body: { hostName, hostPlayer },
+    body: { hostName, hostPlayer, maxPlayers, settings },
   });
   return {
     lobby: payload?.lobby || null,
@@ -117,6 +128,22 @@ export async function startLobbyOnServer(lobbyCode, { hostClientId, sessionToken
   return {
     lobby: payload?.lobby || null,
     rotatedSessionToken: payload?.rotatedSessionToken || '',
+  };
+}
+
+export async function setLobbyReadyOnServer(lobbyCode, { playerId, sessionToken, ready } = {}) {
+  const normalizedCode = normalizeCode(lobbyCode);
+  const payload = await requestJson(`/lobbies/${encodeURIComponent(normalizedCode)}/ready`, {
+    method: 'POST',
+    body: { playerId, sessionToken, ready: Boolean(ready) },
+  });
+  return {
+    lobby: payload?.lobby || null,
+    playerId: payload?.playerId || '',
+    isReady: Boolean(payload?.playerReadyState),
+    rotatedSessionToken: payload?.rotatedSessionToken || '',
+    readyCount: Number(payload?.readyCount || 0),
+    totalCount: Number(payload?.totalCount || 0),
   };
 }
 
@@ -208,7 +235,13 @@ export function toGamePlayers(onlinePlayers = []) {
   });
 }
 
-export function createLobbyTransport({ lobbyCode, onSnapshot = () => {}, onEvent = () => {} }) {
+export function createLobbyTransport({
+  lobbyCode,
+  playerId = '',
+  sessionToken = '',
+  onSnapshot = () => {},
+  onEvent = () => {},
+}) {
   if (typeof window === 'undefined' || !lobbyCode) {
     return {
       getSnapshot: () => null,
@@ -218,6 +251,8 @@ export function createLobbyTransport({ lobbyCode, onSnapshot = () => {}, onEvent
   }
 
   const normalizedCode = normalizeCode(lobbyCode);
+  const normalizedPlayerId = String(playerId || '').trim();
+  let currentSessionToken = String(sessionToken || '').trim();
   let closed = false;
   let lastSnapshot = null;
   const socket = io(LOBBY_SERVER_URL || undefined, {
@@ -249,7 +284,11 @@ export function createLobbyTransport({ lobbyCode, onSnapshot = () => {}, onEvent
 
   socket.on('connect', () => {
     if (closed) return;
-    socket.emit('lobby:subscribe', { code: normalizedCode });
+    socket.emit('lobby:subscribe', {
+      code: normalizedCode,
+      playerId: normalizedPlayerId,
+      sessionToken: currentSessionToken,
+    });
     onEvent({ type: 'socket-connected', code: normalizedCode }, 'socket');
   });
   socket.on('connect_error', (error) => {
@@ -265,12 +304,44 @@ export function createLobbyTransport({ lobbyCode, onSnapshot = () => {}, onEvent
     }
     pushSnapshot(snapshot, 'socket');
   });
-  socket.emit('lobby:subscribe', { code: normalizedCode });
+  socket.on('party-chat:message', (message) => {
+    if (closed || !message) return;
+    onEvent({ type: 'party-chat-message', message }, 'socket');
+  });
+  socket.on('party-voice:activity', (payload) => {
+    if (closed || !payload) return;
+    onEvent({ type: 'party-voice-activity', payload }, 'socket');
+  });
+  socket.emit('lobby:subscribe', {
+    code: normalizedCode,
+    playerId: normalizedPlayerId,
+    sessionToken: currentSessionToken,
+  });
   syncSnapshot().catch(() => {});
 
   return {
     getSnapshot: () => lastSnapshot,
     syncSnapshot,
+    updateSessionToken: (nextToken = '') => {
+      currentSessionToken = String(nextToken || '').trim();
+    },
+    sendPartyMessage: (payload = {}) => {
+      if (closed) return;
+      socket.emit('party-chat:message', {
+        code: normalizedCode,
+        playerId: normalizedPlayerId,
+        sessionToken: currentSessionToken,
+        ...payload,
+      });
+    },
+    setVoiceActivity: ({ playerId, isTalking } = {}) => {
+      if (closed) return;
+      socket.emit('party-voice:activity', {
+        code: normalizedCode,
+        playerId,
+        isTalking: Boolean(isTalking),
+      });
+    },
     close: () => {
       if (closed) return;
       closed = true;
@@ -278,6 +349,8 @@ export function createLobbyTransport({ lobbyCode, onSnapshot = () => {}, onEvent
       socket.off('connect');
       socket.off('connect_error');
       socket.off('lobby:snapshot');
+      socket.off('party-chat:message');
+      socket.off('party-voice:activity');
       socket.disconnect();
     },
   };

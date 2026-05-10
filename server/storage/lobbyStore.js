@@ -1,7 +1,58 @@
 const LOBBY_CODE_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 const LOBBY_CODE_LENGTH = 6;
 const MIN_PLAYERS = 3;
+const MAX_PLAYERS = 12;
 const MAX_RECENT_PROMPT_KEYS = 6;
+const DEFAULT_LOBBY_SETTINGS = {
+  themeName: 'Default',
+  mode: 'classic',
+  winCondition: 'rounds',
+  pointsToWin: 15,
+  roundsPerPlayer: 1,
+  adultMode: false,
+  allowFriendsJoinLobby: false,
+  inviteUsernames: [],
+  grillSettings: {
+    micEnabled: true,
+    ttsEnabled: true,
+  },
+};
+
+const SERVER_BANNED_WORD_BANK = {
+  'prompt::sports::0': ['bat', 'pitcher', 'stadium', 'scoreboard', 'coach'],
+  'prompt::sports::1': ['referee', 'supporters', 'captain', 'season', 'training'],
+  'prompt::sports::2': ['tournament', 'singles', 'doubles', 'umpire', 'grip'],
+  'prompt::sports::3': ['champion', 'fitness', 'crowd', 'aggressive', 'professional'],
+  'prompt::food::0': ['crispy', 'restaurant', 'delivery', 'toppings', 'stuffed'],
+  'prompt::food::1': ['mustard', 'barbecue', 'greasy', 'handheld', 'snack'],
+  'prompt::food::2': ['breakfast', 'steaming', 'sugar', 'morning', 'cafe'],
+  'prompt::food::3': ['bakery', 'frosting', 'gooey', 'treat', 'party'],
+  'prompt::movies::0': ['franchise', 'merchandise', 'funny', 'family', 'adventure'],
+  'prompt::movies::1': ['blockbuster', 'director', 'soundtrack', 'suspense', 'iconic'],
+  'prompt::movies::2': ['relationship', 'dramatic', 'emotional', 'chemistry', 'memorable'],
+  'prompt::movies::3': ['cinematography', 'director', 'ambitious', 'complex', 'masterpiece'],
+  'prompt::music::0': ['frontman', 'album', 'touring', 'anthem', 'fans'],
+  'prompt::music::1': ['teenage', 'chorus', 'gigs', 'melody', 'mosh'],
+  'prompt::music::2': ['intense', 'stage', 'headline', 'riffs', 'chaotic'],
+  'prompt::music::3': ['virtuoso', 'concert', 'legendary', 'solo', 'discography'],
+  'prompt::places::0': ['capital', 'landmark', 'tourist', 'rainy', 'commute'],
+  'prompt::places::1': ['passport', 'museum', 'nightlife', 'language', 'metro'],
+  'prompt::places::2': ['queues', 'departure', 'luggage', 'platform', 'delay'],
+  'prompt::places::3': ['sand', 'slides', 'crowded', 'suncream', 'towels'],
+};
+
+const SERVER_BANNED_WORD_FILLERS = [
+  'bluff',
+  'sus',
+  'vibe',
+  'nervous',
+  'awkward',
+  'shifty',
+  'dramatic',
+  'sneaky',
+  'confident',
+  'clueless',
+];
 
 const SERVER_PROMPT_CATEGORIES = [
   {
@@ -92,8 +143,53 @@ function sanitizePlayer(raw = {}, { fallbackName = 'Player', forceHost = false }
     name: String(raw.name || fallbackName).trim() || fallbackName,
     clientId: String(raw.clientId || ''),
     isHost: forceHost ? true : Boolean(raw.isHost),
+    isReady: Boolean(raw.isReady),
     joinedAt: raw.joinedAt || nowIso(),
     score: Number.isFinite(normalizedScore) ? Math.max(0, normalizedScore) : 0,
+    color: typeof raw.color === 'string' ? raw.color : '',
+    personaId: typeof raw.personaId === 'string' ? raw.personaId : '',
+    personaBio: typeof raw.personaBio === 'string' ? raw.personaBio : '',
+    personaImageSrc: typeof raw.personaImageSrc === 'string' ? raw.personaImageSrc : '',
+  };
+}
+
+function clampLobbyMaxPlayers(rawValue) {
+  const parsed = Number(rawValue);
+  if (!Number.isFinite(parsed)) return MAX_PLAYERS;
+  return Math.max(MIN_PLAYERS, Math.min(MAX_PLAYERS, Math.floor(parsed)));
+}
+
+function sanitizeLobbySettings(raw = {}) {
+  if (!raw || typeof raw !== 'object') return { ...DEFAULT_LOBBY_SETTINGS };
+  const winCondition = String(raw.winCondition || DEFAULT_LOBBY_SETTINGS.winCondition).trim();
+  const pointsToWin = Number(raw.pointsToWin);
+  const roundsPerPlayer = Number(raw.roundsPerPlayer);
+  const grillSettings = raw.grillSettings && typeof raw.grillSettings === 'object'
+    ? raw.grillSettings
+    : {};
+  const inviteUsernames = Array.isArray(raw.inviteUsernames)
+    ? raw.inviteUsernames
+      .map((value) => String(value || '').trim())
+      .filter(Boolean)
+      .slice(0, 64)
+    : [];
+  return {
+    themeName: String(raw.themeName || DEFAULT_LOBBY_SETTINGS.themeName).trim() || DEFAULT_LOBBY_SETTINGS.themeName,
+    mode: 'classic',
+    winCondition: winCondition === 'points' ? 'points' : 'rounds',
+    pointsToWin: Number.isFinite(pointsToWin)
+      ? Math.max(5, Math.min(50, Math.floor(pointsToWin)))
+      : DEFAULT_LOBBY_SETTINGS.pointsToWin,
+    roundsPerPlayer: Number.isFinite(roundsPerPlayer)
+      ? Math.max(1, Math.min(6, Math.floor(roundsPerPlayer)))
+      : DEFAULT_LOBBY_SETTINGS.roundsPerPlayer,
+    adultMode: Boolean(raw.adultMode),
+    allowFriendsJoinLobby: Boolean(raw.allowFriendsJoinLobby),
+    inviteUsernames,
+    grillSettings: {
+      micEnabled: grillSettings.micEnabled !== false,
+      ttsEnabled: grillSettings.ttsEnabled !== false,
+    },
   };
 }
 
@@ -109,6 +205,30 @@ function shuffle(items = []) {
 function pickRandom(items = []) {
   if (!Array.isArray(items) || items.length === 0) return null;
   return items[Math.floor(Math.random() * items.length)];
+}
+
+function sanitizeServerBannedWords(categoryName, hint, main, imposter, words) {
+  const forbidden = new Set(
+    `${categoryName} ${hint} ${main} ${imposter}`
+      .toLowerCase()
+      .replace(/[^a-z0-9\s-]/g, ' ')
+      .split(/\s+/)
+      .filter(Boolean)
+  );
+  const selected = [];
+  const seen = new Set();
+  const addWord = (word) => {
+    if (selected.length >= 5) return;
+    const normalized = String(word || '').trim().toLowerCase();
+    if (!normalized || seen.has(normalized)) return;
+    const parts = normalized.replace(/[^a-z0-9\s-]/g, ' ').trim().split(/\s+/).filter(Boolean);
+    if (!parts.length || parts.some((part) => forbidden.has(part))) return;
+    seen.add(normalized);
+    selected.push(String(word).trim());
+  };
+  (words || []).forEach(addWord);
+  SERVER_BANNED_WORD_FILLERS.forEach(addWord);
+  return selected.slice(0, 5);
 }
 
 function scoreRoundServer(players, round, votesByPlayerId = {}) {
@@ -244,6 +364,13 @@ function buildAuthoritativeRound(players = [], roundNumber = 1, recentPromptKeys
   const liarIds = shuffle(players)
     .slice(0, Math.max(1, Math.min(1, players.length - 1)))
     .map((player) => player.id);
+  const bannedWords = sanitizeServerBannedWords(
+    category.name,
+    selected.prompt.hint,
+    selected.prompt.main,
+    selected.prompt.imposter,
+    SERVER_BANNED_WORD_BANK[selected.key] || []
+  );
   return {
     id: randomId('round'),
     createdAt: nowIso(),
@@ -262,7 +389,7 @@ function buildAuthoritativeRound(players = [], roundNumber = 1, recentPromptKeys
     mediaPreviewLabel: null,
     mediaPackId: null,
     isAdultPrompt: false,
-    bannedWords: [],
+    bannedWords,
     mode: 'classic',
     imposterIds: liarIds,
     chooserId: pickRandom(players)?.id || players[0].id,
@@ -312,6 +439,7 @@ function toPrivateRoundForPlayer(round, playerId) {
     mediaSrc: round.mediaByPlayerId?.[playerId] || null,
     isImposter: Boolean((round.imposterIds || []).includes(playerId)),
     hint: round.hint,
+    bannedWords: Array.isArray(round.bannedWords) ? round.bannedWords : [],
     roundTypeId: round.roundTypeId,
     roundTypeName: round.roundTypeName,
     categoryLabel: round.categoryLabel,
@@ -335,13 +463,22 @@ function hydrateLobby(rawLobby) {
   const roundCounterRaw = Number(rawLobby.roundCounter);
   return {
     code,
-    status: rawLobby.status === 'started' ? 'started' : 'waiting',
+    status: rawLobby.status === 'started'
+      ? 'started'
+      : (rawLobby.status === 'ended' ? 'ended' : 'waiting'),
     hostName: String(rawLobby.hostName || 'Host'),
     hostClientId: String(rawLobby.hostClientId || ''),
     createdAt,
     updatedAt: rawLobby.updatedAt || createdAt,
     startedAt: rawLobby.startedAt || null,
     startedRevision: rawLobby.startedRevision || null,
+    endedAt: rawLobby.endedAt || null,
+    endedReason: String(rawLobby.endedReason || ''),
+    endedWinnerId: String(rawLobby.endedWinnerId || ''),
+    endedWinnerName: String(rawLobby.endedWinnerName || ''),
+    endedWinnerScore: Math.max(0, Number(rawLobby.endedWinnerScore || 0)),
+    maxPlayers: clampLobbyMaxPlayers(rawLobby.maxPlayers),
+    settings: sanitizeLobbySettings(rawLobby.settings),
     players,
     playerSessions,
     activeRound: hydrateRound(rawLobby.activeRound, players.length),
@@ -431,7 +568,7 @@ function buildStoreCore({
     return removeLobbyRaw(normalized);
   }
 
-  async function createLobby({ hostPlayer, hostName }) {
+  async function createLobby({ hostPlayer, hostName, maxPlayers, settings } = {}) {
     const code = await ensureUniqueCode();
     const createdAt = nowIso();
     const host = sanitizePlayer(hostPlayer, { fallbackName: hostName || 'Host', forceHost: true });
@@ -444,6 +581,13 @@ function buildStoreCore({
       updatedAt: createdAt,
       startedAt: null,
       startedRevision: null,
+      endedAt: null,
+      endedReason: '',
+      endedWinnerId: '',
+      endedWinnerName: '',
+      endedWinnerScore: 0,
+      maxPlayers: clampLobbyMaxPlayers(maxPlayers),
+      settings: sanitizeLobbySettings(settings),
       players: [host],
       playerSessions: {},
       activeRound: null,
@@ -467,14 +611,19 @@ function buildStoreCore({
     const lobby = await getLobby(code);
     if (!lobby) return { error: 'not-found' };
     if (lobby.status === 'started') return { error: 'already-started' };
+    if (lobby.status === 'ended') return { error: 'lobby-ended' };
     const incoming = sanitizePlayer(playerInput);
     const existingByClient = lobby.players.find((player) => player.clientId && player.clientId === incoming.clientId);
     const existingById = existingByClient || lobby.players.find((player) => player.id === incoming.id);
+    if (!existingById && lobby.players.length >= clampLobbyMaxPlayers(lobby.maxPlayers)) {
+      return { error: 'lobby-full', maxPlayers: clampLobbyMaxPlayers(lobby.maxPlayers) };
+    }
     const playerId = existingById?.id || incoming.id;
     const merged = {
       ...incoming,
       id: playerId,
       isHost: existingById?.isHost || Boolean(incoming.isHost),
+      isReady: typeof existingById?.isReady === 'boolean' ? existingById.isReady : Boolean(incoming.isReady),
       joinedAt: existingById?.joinedAt || incoming.joinedAt || nowIso(),
       score: Number.isFinite(Number(existingById?.score))
         ? Math.max(0, Number(existingById.score))
@@ -485,6 +634,40 @@ function buildStoreCore({
     const sessionToken = helpers.issueOrReuseSessionToken(lobby, merged.id);
     await saveLobby(lobby);
     return { lobby, player: merged, sessionToken };
+  }
+
+  async function setPlayerReady(code, playerId, sessionToken = '', isReady = true) {
+    const lobby = await getLobby(code);
+    if (!lobby) return { error: 'not-found' };
+    if (lobby.status === 'started') return { error: 'lobby-already-started', lobby };
+    if (lobby.status === 'ended') return { error: 'lobby-ended', lobby };
+    const normalizedPlayerId = String(playerId || '').trim();
+    if (!normalizedPlayerId) return { error: 'player-id-required' };
+    const validation = validatePlayerSession(lobby, sessionToken, normalizedPlayerId);
+    if (validation.error === 'session-token-expired') {
+      await saveLobby(lobby);
+      return { error: 'session-token-expired' };
+    }
+    if (validation.error) return { error: validation.error };
+    const targetPlayer = Array.isArray(lobby.players)
+      ? lobby.players.find((entry) => String(entry?.id || '') === normalizedPlayerId)
+      : null;
+    if (!targetPlayer) return { error: 'session-player-missing' };
+    targetPlayer.isReady = Boolean(isReady);
+    const rotatedSessionToken = helpers.rotateSessionTokenForPlayer(lobby, normalizedPlayerId);
+    const totalCount = Array.isArray(lobby.players) ? lobby.players.length : 0;
+    const readyCount = Array.isArray(lobby.players)
+      ? lobby.players.filter((entry) => entry?.isReady === true).length
+      : 0;
+    await saveLobby(lobby);
+    return {
+      lobby,
+      player: targetPlayer,
+      sessionToken: rotatedSessionToken,
+      totalCount,
+      readyCount,
+      allPlayersReady: totalCount > 0 && readyCount >= totalCount,
+    };
   }
 
   async function removePlayer(code, playerId) {
@@ -535,6 +718,21 @@ function buildStoreCore({
         lobby.hostClientId = fallbackHost.clientId || '';
         lobby.hostName = fallbackHost.name || lobby.hostName || 'Host';
       }
+    }
+    if (lobby.status === 'started' && lobby.players.length < MIN_PLAYERS) {
+      const rankedPlayers = [...lobby.players].sort((a, b) => {
+        const scoreDiff = Number(b?.score || 0) - Number(a?.score || 0);
+        if (scoreDiff !== 0) return scoreDiff;
+        return String(a?.joinedAt || '').localeCompare(String(b?.joinedAt || ''));
+      });
+      const winner = rankedPlayers[0] || null;
+      lobby.status = 'ended';
+      lobby.endedAt = nowIso();
+      lobby.endedReason = 'insufficient-players';
+      lobby.endedWinnerId = String(winner?.id || '');
+      lobby.endedWinnerName = String(winner?.name || '');
+      lobby.endedWinnerScore = Math.max(0, Number(winner?.score || 0));
+      lobby.activeRound = null;
     }
     await saveLobby(lobby);
     return { lobby };
@@ -587,6 +785,7 @@ function buildStoreCore({
   async function startLobby(code, hostClientId, sessionToken = '') {
     const lobby = await getLobby(code);
     if (!lobby) return { error: 'not-found' };
+    if (lobby.status === 'ended') return { error: 'lobby-ended' };
     if (lobby.hostClientId !== hostClientId) return { error: 'host-only' };
     const hostPlayer = lobby.players.find((player) => player.isHost);
     if (!hostPlayer) return { error: 'host-only' };
@@ -599,10 +798,35 @@ function buildStoreCore({
     }
     if (hostValidation.error) return { error: hostValidation.error };
     if (lobby.players.length < MIN_PLAYERS) return { error: 'not-enough-players' };
+    if (hostPlayer.isReady !== true) return { error: 'host-not-ready' };
+    const readyPlayers = Array.isArray(lobby.players)
+      ? lobby.players.filter((player) => player?.isReady === true)
+      : [];
+    if (readyPlayers.length < MIN_PLAYERS) {
+      return {
+        error: 'not-enough-ready-players',
+        readyCount: readyPlayers.length,
+        minPlayers: MIN_PLAYERS,
+      };
+    }
+    if (readyPlayers.length !== lobby.players.length) {
+      const readyPlayerIds = new Set(readyPlayers.map((player) => player.id));
+      lobby.players = readyPlayers;
+      if (lobby.playerSessions && typeof lobby.playerSessions === 'object') {
+        lobby.playerSessions = Object.fromEntries(
+          Object.entries(lobby.playerSessions).filter(([playerId]) => readyPlayerIds.has(playerId))
+        );
+      }
+    }
     if (lobby.status !== 'started') {
       lobby.status = 'started';
       lobby.startedAt = nowIso();
       lobby.startedRevision = randomId('start');
+      lobby.endedAt = null;
+      lobby.endedReason = '';
+      lobby.endedWinnerId = '';
+      lobby.endedWinnerName = '';
+      lobby.endedWinnerScore = 0;
     }
     if (!lobby.activeRound) {
       const firstRound = buildAuthoritativeRound(lobby.players, 1, lobby.recentPromptKeys || []);
@@ -621,6 +845,7 @@ function buildStoreCore({
   async function createNextRound(code, hostClientId, sessionToken = '') {
     const lobby = await getLobby(code);
     if (!lobby) return { error: 'not-found' };
+    if (lobby.status === 'ended') return { error: 'lobby-ended' };
     if (lobby.status !== 'started') return { error: 'lobby-not-started' };
     if (lobby.hostClientId !== hostClientId) return { error: 'host-only' };
     const hostPlayer = lobby.players.find((player) => player.isHost);
@@ -658,6 +883,7 @@ function buildStoreCore({
   async function advanceRoundPhase(code, playerId, sessionToken = '') {
     const lobby = await getLobby(code);
     if (!lobby) return { error: 'not-found' };
+    if (lobby.status === 'ended') return { error: 'lobby-ended' };
     if (lobby.status !== 'started') return { error: 'lobby-not-started' };
     if (!lobby.activeRound) return { error: 'round-not-found' };
     const normalizedPlayerId = String(playerId || '').trim();
@@ -723,6 +949,7 @@ function buildStoreCore({
   async function submitRoundVote(code, playerId, targetPlayerId, sessionToken = '') {
     const lobby = await getLobby(code);
     if (!lobby) return { error: 'not-found' };
+    if (lobby.status === 'ended') return { error: 'lobby-ended' };
     if (lobby.status !== 'started') return { error: 'lobby-not-started' };
     if (!lobby.activeRound) return { error: 'round-not-found' };
     const normalizedPlayerId = String(playerId || '').trim();
@@ -774,6 +1001,7 @@ function buildStoreCore({
   async function getCurrentRound(code) {
     const lobby = await getLobby(code);
     if (!lobby) return { error: 'not-found' };
+    if (lobby.status === 'ended') return { error: 'lobby-ended' };
     if (lobby.status !== 'started') return { error: 'lobby-not-started' };
     return {
       lobby,
@@ -784,6 +1012,7 @@ function buildStoreCore({
   async function getPlayerRoundView(code, playerId, sessionToken) {
     const lobby = await getLobby(code);
     if (!lobby) return { error: 'not-found' };
+    if (lobby.status === 'ended') return { error: 'lobby-ended' };
     if (lobby.status !== 'started') return { error: 'lobby-not-started' };
     if (!lobby.activeRound) return { error: 'round-not-found' };
     const normalizedPlayerId = String(playerId || '').trim();
@@ -807,6 +1036,7 @@ function buildStoreCore({
     getLobby,
     createLobby,
     upsertPlayer,
+    setPlayerReady,
     removePlayer,
     resumePlayer,
     startLobby,
@@ -832,6 +1062,13 @@ export function toClientSnapshot(lobby) {
     updatedAt: lobby.updatedAt,
     startedAt: lobby.startedAt || null,
     startedRevision: lobby.startedRevision || null,
+    endedAt: lobby.endedAt || null,
+    endedReason: String(lobby.endedReason || ''),
+    endedWinnerId: String(lobby.endedWinnerId || ''),
+    endedWinnerName: String(lobby.endedWinnerName || ''),
+    endedWinnerScore: Math.max(0, Number(lobby.endedWinnerScore || 0)),
+    maxPlayers: clampLobbyMaxPlayers(lobby.maxPlayers),
+    settings: sanitizeLobbySettings(lobby.settings),
     players: lobby.players,
     activeRound: toPublicRound(lobby.activeRound),
     activeRoundRevision: lobby.activeRound?.id || null,

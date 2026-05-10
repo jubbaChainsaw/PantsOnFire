@@ -16,7 +16,7 @@
       "imposter": "Shibuya Crossing, Tokyo",
       "mainMediaFile": "city-01-main.jpg",
       "imposterMediaFile": "city-01-imposter.jpg",
-      "previewLabel": "Graphic pack clue from city prompts.",
+      "previewLabel": "Describe this photo clearly without saying the exact prompt text.",
       "sourceMain": {
         "provider": "pixabay",
         "providerId": "1587558",
@@ -45,7 +45,7 @@
       "imposter": "Brooklyn Bridge",
       "mainMediaFile": "city-02-main.jpg",
       "imposterMediaFile": "city-02-imposter.jpg",
-      "previewLabel": "Graphic pack clue from city prompts.",
+      "previewLabel": "Describe this photo clearly without saying the exact prompt text.",
       "sourceMain": {
         "provider": "pixabay",
         "providerId": "2154194",
