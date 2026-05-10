@@ -6,11 +6,14 @@ const repoRoot = path.resolve(__dirname, '..');
 const localKeysPath = path.join(__dirname, 'royaltyFreeApiKeys.local.json');
 const promptsJsonPath = path.join(repoRoot, 'exports', 'persona-avatar-prompts.json');
 const corePromptsJsonPath = path.join(repoRoot, 'exports', 'persona-avatar-prompts-core-themes.json');
+const DEFAULT_FAL_NANO_BANANA_MODEL = 'fal-ai/nano-banana/edit';
+const DEFAULT_FAL_TEXT_MODEL = 'fal-ai/flux/dev';
+const DEFAULT_OPENAI_MODEL = 'gpt-image-1';
 
 function parseArgs(argv) {
   const options = {
-    provider: 'openai',
-    model: 'gpt-image-1',
+    provider: 'fal',
+    model: '',
     size: '1024x1024',
     quality: 'medium',
     theme: '',
@@ -39,15 +42,19 @@ function usage() {
   console.log('Usage: npm run persona:generate-avatars -- [options]');
   console.log('');
   console.log('Options:');
-  console.log('  --provider <openai>       Image provider (default: openai)');
-  console.log('  --api-key <key>           Provider API key (or env OPENAI_API_KEY)');
-  console.log('  --model <name>            OpenAI model (default: gpt-image-1)');
-  console.log('  --size <WxH>              Image size (default: 1024x1024)');
-  console.log('  --quality <low|medium|high> Image quality (default: medium)');
+  console.log('  --provider <fal|flux|openai> Image provider (default: fal; fal/flux use Nano Banana edit)');
+  console.log('  --api-key <key>           Provider API key');
+  console.log(`  --model <name>            Model override (fal edit default: ${DEFAULT_FAL_NANO_BANANA_MODEL}, fal missing-reference default: ${DEFAULT_FAL_TEXT_MODEL}, OpenAI default: ${DEFAULT_OPENAI_MODEL})`);
+  console.log('  --size <WxH>              OpenAI/fal text-to-image size (default: 1024x1024)');
+  console.log('  --quality <low|medium|high> OpenAI image quality (default: medium)');
   console.log('  --theme <themeName>       Limit generation to one theme');
   console.log('  --prompt-file <path>      Override prompts JSON input file');
   console.log('  --overwrite               Regenerate files even if they already exist');
   console.log('  --dry-run                 Print what would be generated without writing files');
+  console.log('');
+  console.log('API keys:');
+  console.log('  fal/flux: --api-key, FAL_KEY, FAL_API_KEY, FLUX_API_KEY, or scripts/royaltyFreeApiKeys.local.json (falApiKey / fluxApiKey)');
+  console.log('  OpenAI:   --api-key, OPENAI_API_KEY, or scripts/royaltyFreeApiKeys.local.json (openaiApiKey)');
 }
 
 function ensureDir(dirPath) {
@@ -69,6 +76,13 @@ function resolveApiKey(provider, cliKey) {
     if (process.env.OPENAI_API_KEY) return process.env.OPENAI_API_KEY;
     const local = readJsonSafe(localKeysPath, {});
     return String(local.openaiApiKey || '').trim();
+  }
+  if (provider === 'fal' || provider === 'flux') {
+    if (process.env.FAL_KEY) return process.env.FAL_KEY;
+    if (process.env.FAL_API_KEY) return process.env.FAL_API_KEY;
+    if (process.env.FLUX_API_KEY) return process.env.FLUX_API_KEY;
+    const local = readJsonSafe(localKeysPath, {});
+    return String(local.falApiKey || local.fluxApiKey || '').trim();
   }
   return '';
 }
@@ -136,20 +150,114 @@ async function generateWithOpenAi({ prompt, apiKey, model, size, quality }) {
   return Buffer.from(imageBase64, 'base64');
 }
 
+function readImageInputForFal(filePath) {
+  if (!fs.existsSync(filePath)) {
+    throw new Error(`Nano Banana edit requires an existing reference image: ${path.relative(repoRoot, filePath)}`);
+  }
+  const ext = path.extname(filePath).toLowerCase();
+  const mime = ext === '.png'
+    ? 'image/png'
+    : ext === '.webp'
+      ? 'image/webp'
+      : 'image/jpeg';
+  const buffer = fs.readFileSync(filePath);
+  return `data:${mime};base64,${buffer.toString('base64')}`;
+}
+
+function parseImageSize(size = '1024x1024') {
+  const match = String(size || '').trim().match(/^(\d+)x(\d+)$/i);
+  if (!match) return { width: 1024, height: 1024 };
+  return {
+    width: Math.max(256, Math.min(1536, Number(match[1]) || 1024)),
+    height: Math.max(256, Math.min(1536, Number(match[2]) || 1024)),
+  };
+}
+
+async function generateWithFal({ prompt, apiKey, model, size, referenceImagePath }) {
+  const hasReference = fs.existsSync(referenceImagePath);
+  const requestedModel = String(model || '').trim().replace(/^\/+/, '');
+  const modelId = requestedModel
+    ? (
+        hasReference && requestedModel === DEFAULT_FAL_TEXT_MODEL
+          ? DEFAULT_FAL_NANO_BANANA_MODEL
+          : (!hasReference && requestedModel === DEFAULT_FAL_NANO_BANANA_MODEL)
+            ? DEFAULT_FAL_TEXT_MODEL
+            : requestedModel
+      )
+    : (hasReference ? DEFAULT_FAL_NANO_BANANA_MODEL : DEFAULT_FAL_TEXT_MODEL);
+  const imageInput = hasReference ? readImageInputForFal(referenceImagePath) : '';
+  const { width, height } = parseImageSize(size);
+  const body = hasReference
+    ? {
+        prompt,
+        image_urls: [imageInput],
+        num_images: 1,
+        aspect_ratio: '1:1',
+        output_format: 'png',
+        sync_mode: false,
+      }
+    : {
+        prompt,
+        image_size: { width, height },
+        num_images: 1,
+        output_format: 'png',
+        enable_safety_checker: true,
+        sync_mode: false,
+      };
+  console.log(
+    `[generatePersonaAvatars] fal.ai mode: ${hasReference ? 'nano-banana-edit' : 'text-to-image'} via ${modelId}`
+  );
+  const response = await fetch(`https://fal.run/${modelId}`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Key ${apiKey}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(body),
+  });
+  if (!response.ok) {
+    const message = await response.text().catch(() => '');
+    throw new Error(`fal.ai Nano Banana edit failed: HTTP ${response.status} ${message}`);
+  }
+  const payload = await response.json();
+  const imageUrl = String(
+    payload
+    && Array.isArray(payload.images)
+    && payload.images[0]
+    && payload.images[0].url
+      ? payload.images[0].url
+      : ''
+  ).trim();
+  if (!imageUrl) {
+    throw new Error(`fal.ai response did not include an image URL: ${JSON.stringify(payload)}`);
+  }
+  const imageResponse = await fetch(imageUrl);
+  if (!imageResponse.ok) {
+    const message = await imageResponse.text().catch(() => '');
+    throw new Error(`fal.ai image download failed: HTTP ${imageResponse.status} ${message}`);
+  }
+  const arrayBuffer = await imageResponse.arrayBuffer();
+  return Buffer.from(arrayBuffer);
+}
+
 async function run() {
   const options = parseArgs(process.argv.slice(2));
   if (options.help) {
     usage();
     return;
   }
-  if (options.provider !== 'openai') {
-    throw new Error(`Unsupported provider "${options.provider}". Currently only "openai" is implemented.`);
+  if (!['fal', 'flux', 'openai'].includes(options.provider)) {
+    throw new Error(`Unsupported provider "${options.provider}". Use "fal", "flux", or "openai".`);
   }
 
   const apiKey = resolveApiKey(options.provider, options.apiKey);
   if (!apiKey && !options.dryRun) {
-    throw new Error('Missing OpenAI API key. Use --api-key, OPENAI_API_KEY, or scripts/royaltyFreeApiKeys.local.json (openaiApiKey).');
+    if (options.provider === 'openai') {
+      throw new Error('Missing OpenAI API key. Use --api-key, OPENAI_API_KEY, or scripts/royaltyFreeApiKeys.local.json (openaiApiKey).');
+    }
+    throw new Error('Missing fal.ai API key. Use --api-key, FAL_KEY, FAL_API_KEY, FLUX_API_KEY, or scripts/royaltyFreeApiKeys.local.json (falApiKey / fluxApiKey).');
   }
+  const model = options.model || (options.provider === 'openai' ? DEFAULT_OPENAI_MODEL : '');
 
   const records = loadPromptRecords({ promptFile: options.promptFile, theme: options.theme });
   if (!records.length) {
@@ -158,6 +266,7 @@ async function run() {
   }
 
   console.log(`[generatePersonaAvatars] Provider: ${options.provider}`);
+  console.log(`[generatePersonaAvatars] Model: ${model || 'automatic'}`);
   console.log(`[generatePersonaAvatars] Records: ${records.length}`);
   if (options.theme) console.log(`[generatePersonaAvatars] Theme filter: ${options.theme}`);
   if (options.dryRun) console.log('[generatePersonaAvatars] Dry run enabled.');
@@ -175,17 +284,28 @@ async function run() {
       continue;
     }
     if (options.dryRun) {
-      console.log(`- [${i + 1}/${records.length}] PLAN ${record.personaId || record.id} -> ${relOutputPath}`);
+      const mode = options.provider === 'openai'
+        ? 'text-to-image'
+        : (exists ? 'nano-banana-edit' : 'fal-text-to-image (no existing reference)');
+      console.log(`- [${i + 1}/${records.length}] PLAN ${record.personaId || record.id} -> ${relOutputPath} [${mode}]`);
       continue;
     }
     ensureDir(path.dirname(outputPath));
-    const imageBuffer = await generateWithOpenAi({
-      prompt: record.prompt,
-      apiKey,
-      model: options.model,
-      size: options.size,
-      quality: options.quality,
-    });
+    const imageBuffer = options.provider === 'openai'
+      ? await generateWithOpenAi({
+          prompt: record.prompt,
+          apiKey,
+          model,
+          size: options.size,
+          quality: options.quality,
+        })
+      : await generateWithFal({
+          prompt: record.prompt,
+          apiKey,
+          model,
+          size: options.size,
+          referenceImagePath: outputPath,
+        });
     fs.writeFileSync(outputPath, imageBuffer);
     created += 1;
     console.log(`- [${i + 1}/${records.length}] WROTE ${record.personaId || record.id} (${relOutputPath})`);
