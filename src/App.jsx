@@ -37,8 +37,8 @@ import { getDefaultHostVoiceSrcCandidatesForLine } from './data/defaultHostVoice
 import {
   DEFAULT_CATEGORIES,
   CHAIN_REACTION_ROUNDS,
-  MEME_DECODER_ROUNDS,
-  SOUND_OFF_ROUNDS,
+  NAME_AND_BLAME_ROUNDS,
+  SOUND_CLUES_ROUNDS,
   OFFTOPIC_DEFENSE_ROUNDS,
   OPINION_ROUNDS,
   MEDIA_ROUNDS,
@@ -163,6 +163,7 @@ const ONLINE_CONNECTION_ACTIVE_SCREENS = new Set([
   'results',
   'final',
 ]);
+const NO_CATEGORY_SELECTION_ROUND_TYPE_IDS = new Set(['noise', 'nameblame']);
 
 function shuffle(arr) {
   const clone = [...arr];
@@ -376,13 +377,13 @@ const VOTING_STINGER_BY_ROUND_TYPE = {
     'Pass the phone and spot the wrong snapshot.',
     'Vote for the player whose details felt staged.',
   ],
-  meme: [
-    'Meme court is open. Point at the poser.',
-    'Pass the phone and vote the fake format out.',
-    'Who forced meme culture the hardest? Vote now.',
+  nameblame: [
+    'Name and Blame verdict time. Who answered the wrong accusation?',
+    'Pass the phone and vote for the player who felt out of sync.',
+    'Someone had a different question. Call them out.',
   ],
   noise: [
-    'Noisy round, quiet judgement. Pass and vote.',
+    'Sound clues complete. Quiet judgement, loud accusations.',
     'Vote for the sound that felt least believable.',
     'Keep it moving: one phone, one vote, one suspect.',
   ],
@@ -620,6 +621,10 @@ function applyPicturePackSelection(
   return weighted.length ? weighted : source;
 }
 
+function usesNoCategorySelection(roundTypeId = '') {
+  return NO_CATEGORY_SELECTION_ROUND_TYPE_IDS.has(String(roundTypeId || '').trim());
+}
+
 function buildLocalRound(
   players,
   category,
@@ -640,18 +645,21 @@ function buildLocalRound(
   const selectedRoundType = selectedRoundTypeId
     ? ROUND_TYPES[selectedRoundTypeId]
     : pickRandom(PASS_THE_PHONE_ROUND_TYPES);
+  const effectiveCategory = usesNoCategorySelection(selectedRoundType?.id)
+    ? { id: 'global', name: selectedRoundType?.name || 'Global', emoji: '🎯' }
+    : category;
   let promptOptions = [];
 
   if (selectedRoundType.id === 'prompt') {
-    promptOptions = (category.prompts || []).map((prompt, index) => ({ prompt, key: `prompt::${category.id}::${index}` }));
+    promptOptions = (effectiveCategory.prompts || []).map((prompt, index) => ({ prompt, key: `prompt::${effectiveCategory.id}::${index}` }));
   } else if (selectedRoundType.id === 'chain') {
-    promptOptions = (CHAIN_REACTION_ROUNDS[category.id] || []).map((prompt, index) => ({ prompt, key: `chain::${category.id}::${index}` }));
-  } else if (selectedRoundType.id === 'meme') {
-    promptOptions = (MEME_DECODER_ROUNDS[category.id] || []).map((prompt, index) => ({ prompt, key: `meme::${category.id}::${index}` }));
+    promptOptions = (CHAIN_REACTION_ROUNDS[effectiveCategory.id] || []).map((prompt, index) => ({ prompt, key: `chain::${effectiveCategory.id}::${index}` }));
+  } else if (selectedRoundType.id === 'nameblame') {
+    promptOptions = NAME_AND_BLAME_ROUNDS.map((prompt, index) => ({ prompt, key: `nameblame::global::${index}` }));
   } else if (selectedRoundType.id === 'noise') {
-    promptOptions = (SOUND_OFF_ROUNDS[category.id] || []).map((prompt, index) => ({ prompt, key: `noise::${category.id}::${index}` }));
+    promptOptions = SOUND_CLUES_ROUNDS.map((prompt, index) => ({ prompt, key: `noise::global::${index}` }));
   } else if (selectedRoundType.id === 'offtopic') {
-    promptOptions = (OFFTOPIC_DEFENSE_ROUNDS[category.id] || []).map((prompt, index) => ({ prompt, key: `offtopic::${category.id}::${index}` }));
+    promptOptions = (OFFTOPIC_DEFENSE_ROUNDS[effectiveCategory.id] || []).map((prompt, index) => ({ prompt, key: `offtopic::${effectiveCategory.id}::${index}` }));
   } else if (selectedRoundType.id === 'opinion') {
     promptOptions = OPINION_ROUNDS.map((prompt, index) => ({ prompt, key: `opinion::global::${index}` }));
   } else if (selectedRoundType.id === 'grill') {
@@ -673,7 +681,13 @@ function buildLocalRound(
   const filteredOptions = ageFilteredOptions.filter((item) => !recentPromptKeys.includes(item.key));
   const selected = pickRandom(filteredOptions.length ? filteredOptions : ageFilteredOptions);
   const liarIds = shuffle(players).slice(0, Math.max(1, Math.min(liarCount, players.length - 1))).map((p) => p.id);
-  const bannedWords = sanitizeBannedWords(category.name, selected.prompt.hint, selected.prompt.main, selected.prompt.imposter, BANNED_WORD_BANK[selected.key] || []);
+  const bannedWords = sanitizeBannedWords(
+    effectiveCategory.name,
+    selected.prompt.hint,
+    selected.prompt.main,
+    selected.prompt.imposter,
+    BANNED_WORD_BANK[selected.key] || []
+  );
   const truthDeck = shuffle(selected.prompt.mainWords || []);
   const liarDeck = shuffle(selected.prompt.imposterWords || []);
   let truthCursor = 0;
@@ -694,9 +708,9 @@ function buildLocalRound(
     roundTypeId: selectedRoundType.id,
     roundTypeName: selectedRoundType.name,
     roundTypeTagline: selectedRoundType.tagline,
-    categoryId: category.id,
-    categoryLabel: category.name,
-    categoryEmoji: category.emoji,
+    categoryId: effectiveCategory.id,
+    categoryLabel: effectiveCategory.name,
+    categoryEmoji: effectiveCategory.emoji,
     promptKey: selected.key,
     hint: selected.prompt.hint,
     commonPrompt: selected.prompt.main,
@@ -1094,8 +1108,8 @@ const MASCOT_BY_ROUND_TYPE = {
   prompt: { name: 'Ian Poster', face: '🎤', blurb: 'Classic chaos host.' },
   opinion: { name: 'Ian Poster', face: '🎭', blurb: 'Debate instigator.' },
   picture: { name: 'Ian Poster', face: '🖼️', blurb: 'Flash-frame ringmaster.' },
-  meme: { name: 'Ian Poster', face: '🧠', blurb: 'Decode the meme vibe, sniff the fake.' },
-  noise: { name: 'Ian Poster', face: '🔊', blurb: 'No words. Pure noise. Maximum suspicion.' },
+  nameblame: { name: 'Ian Poster', face: '🫵', blurb: 'Call out the lobby without getting caught.' },
+  noise: { name: 'Ian Poster', face: '🔊', blurb: 'No words. Pure sound clues. Maximum suspicion.' },
   offtopic: { name: 'Ian Poster', face: '🛡️', blurb: 'Defend the topic like your life depends on it.' },
   chain: { name: 'Ian Poster', face: '🧩', blurb: 'Connect the clues, expose the break.' },
   grill: { name: 'Blaze Byte', face: '🤖', blurb: "AI host for Grill 'Em." },
@@ -1414,11 +1428,11 @@ function getRoundRuleText(roundTypeId = 'prompt') {
   if (roundTypeId === 'opinion') {
     return 'Truth or Twisted: everyone got the same scenario. Liars must ragebait and argue opposite to their natural take.';
   }
-  if (roundTypeId === 'meme') {
-    return 'Meme Decoder: explain your meme format and vibe naturally. Liars got a different template and must fake the culture.';
+  if (roundTypeId === 'nameblame') {
+    return 'Name and Blame: everyone gets a lobby callout question. Liars got a totally different accusation and must blend in.';
   }
   if (roundTypeId === 'noise') {
-    return 'Sound Off: perform your clue as a sound only. No words, no letters, no humming lyrics.';
+    return 'Sound Clues: perform your clue as a sound only. No words, no letters, no humming lyrics.';
   }
   if (roundTypeId === 'offtopic') {
     return 'Off Topic Defense: truth players share one scenario. Liars got an irrelevant prompt and must argue like it still fits.';
@@ -1446,16 +1460,16 @@ function getInstructionHostLines(roundTypeId = 'prompt') {
       'Watch for players forcing random image details that do not fit.',
     ];
   }
-  if (roundTypeId === 'meme') {
+  if (roundTypeId === 'nameblame') {
     return [
-      'This is Meme Decoder. Sell your meme format and vibe naturally.',
-      'Liars get a different meme framing and must fake internet confidence.',
-      'During voting, target whoever explains too hard or sounds off-style.',
+      'This is Name and Blame. Everyone got a player callout question.',
+      'Liars got a completely different accusation and must fake confidence.',
+      'During voting, target whoever answers feel out of sync with the room.',
     ];
   }
   if (roundTypeId === 'noise') {
     return [
-      'Sound Off means clueing with sound only.',
+      'Sound Clues means clueing with sound only.',
       'No words, no spelling, no lyric humming. Commit to your sound.',
       'Find the player whose sound feels most disconnected from the round.',
     ];
@@ -1500,10 +1514,10 @@ function getHostExamplePrompts(roundTypeId = 'prompt') {
       liar: 'Pineapple ruins every pizza',
     };
   }
-  if (roundTypeId === 'meme') {
+  if (roundTypeId === 'nameblame') {
     return {
-      normal: 'Distracted boyfriend format',
-      liar: 'Drake hotline bling format',
+      normal: 'Who is always late to everything?',
+      liar: 'Who is the best cook?',
     };
   }
   if (roundTypeId === 'noise') {
@@ -3163,8 +3177,8 @@ function VotingScreen({ players, round, totalRounds, votesByPlayerId, setVotesBy
     ? "Vote for who sounded like they already knew the AI's hidden prompt."
     : (round.roundTypeId === 'chain'
       ? 'Vote for who sounded like they described the broken link.'
-      : (round.roundTypeId === 'meme'
-        ? 'Vote for who looked like they were faking meme culture.'
+      : (round.roundTypeId === 'nameblame'
+        ? 'Vote for who answered like they had a different accusation.'
         : (round.roundTypeId === 'noise'
           ? 'Vote for whose sound felt most off-topic.'
           : (round.roundTypeId === 'offtopic'
@@ -3412,8 +3426,8 @@ function ResultsScreen({ players, round, totalRounds, tally, roundGains, roundBr
     ? 'AI Hidden Prompt'
     : ((round.roundTypeId === 'chain')
       ? 'Broken Link Topic'
-      : ((round.roundTypeId === 'meme')
-        ? 'Wrong Meme Scenario'
+      : ((round.roundTypeId === 'nameblame')
+        ? 'Different Accusation'
         : ((round.roundTypeId === 'noise')
           ? 'Off-Note Sound Prompt'
           : ((round.roundTypeId === 'offtopic')
@@ -4563,12 +4577,13 @@ export default function App() {
     const basePlayers = seedPlayers && seedPlayers.length ? seedPlayers : players;
     const options = shuffle(activeCategories).slice(0, Math.min(4, activeCategories.length));
     if (!options.length) return;
+    const initialRoundTypeId = pickRandom(PASS_THE_PHONE_ROUND_TYPES)?.id || 'prompt';
     const resetPlayers = basePlayers.map((player) => ({ ...player, score: 0 }));
     setPlayers(resetPlayers);
     setRoundNumber(1);
     setCurrentRoundOwnerIndex(0);
     setPreviousRoundType(null);
-    setSelectedRoundType(null);
+    setSelectedRoundType(initialRoundTypeId);
     setRoundTypeOptions([]);
     setCategoryOptions(options);
     setRound({ chooserId: resetPlayers[0]?.id, roundNumber: 1 });
@@ -4586,7 +4601,7 @@ export default function App() {
   function chooseCategory(categoryId) {
     const category = activeCategories.find((c) => c.id === categoryId);
     if (!category) return;
-    const selectedTypeForRound = roundNumber === 1 ? pickRandom(PASS_THE_PHONE_ROUND_TYPES).id : selectedRoundType;
+    const selectedTypeForRound = selectedRoundType || pickRandom(PASS_THE_PHONE_ROUND_TYPES)?.id || 'prompt';
     const built = buildLocalRound(
       players,
       category,
@@ -4619,6 +4634,14 @@ export default function App() {
     }));
     setScreen('host-intro');
   }
+  useEffect(() => {
+    if (screen !== 'category-choice') return;
+    if (!selectedRoundType || !usesNoCategorySelection(selectedRoundType)) return;
+    const fallbackCategory = categoryOptions[0] || activeCategories[0];
+    if (!fallbackCategory?.id) return;
+    chooseCategory(fallbackCategory.id);
+  }, [screen, selectedRoundType, categoryOptions, activeCategories]);
+
   async function revealResults() {
     if (onlineMode) {
       const syncedRound = await submitOnlineVotes();
@@ -5021,31 +5044,49 @@ export default function App() {
         <div className="mx-auto max-w-3xl space-y-6">
           <GlassPanel className="relative overflow-hidden rounded-[2.5rem] border-fuchsia-400/25 bg-black/25 p-8 text-center">
             <div className="text-xs uppercase tracking-[0.3em] text-white/50">Round owner: {players[currentRoundOwnerIndex]?.name}</div>
-            <h2 className="mt-3 text-4xl font-black text-yellow-300">Choose the next category</h2>
-            <p className="mt-3 text-white/70">{copyState.chooser}</p>
-            <div className="mt-8 grid grid-cols-2 gap-4 items-stretch">
-              {categoryOptions.map((category) => {
-                const categoryCardArtSrc = resolveCategoryChoiceCardArt(category, canonicalThemeName);
-                return (
-                  <div key={category.id} className="flex">
-                    <button
-                      type="button"
-                      className="flex h-full w-full flex-col rounded-[1.8rem] border border-white/20 bg-black/20 p-4 text-center transition-transform duration-200 hover:scale-[1.01] hover:border-cyan-300/40"
-                      onClick={() => chooseCategory(category.id)}
-                    >
-                      <ThemeArt
-                        src={categoryCardArtSrc}
-                        alt={`${category.name} category card`}
-                        className="mx-auto h-40 w-auto rounded-[1.2rem] border border-white/20 bg-black/25 p-1"
-                      />
-                      <div className="mt-4 text-lg sm:text-xl font-black uppercase tracking-[0.04em] text-white leading-tight min-h-[2.6rem] flex items-center justify-center">
-                        {category.name}
-                      </div>
-                    </button>
-                  </div>
-                );
-              })}
-            </div>
+            <h2 className="mt-3 text-4xl font-black text-yellow-300">
+              {selectedRoundType && usesNoCategorySelection(selectedRoundType)
+                ? 'Loading global round deck'
+                : 'Choose the next category'}
+            </h2>
+            <p className="mt-3 text-white/70">
+              {selectedRoundType && usesNoCategorySelection(selectedRoundType)
+                ? 'This round type uses one shared prompt pool for all themes.'
+                : copyState.chooser}
+            </p>
+            {selectedRoundType && usesNoCategorySelection(selectedRoundType) ? (
+              <div className="mt-8 rounded-[1.8rem] border border-cyan-300/35 bg-cyan-500/10 px-6 py-8 text-cyan-100">
+                <div className="text-xs uppercase tracking-[0.25em] text-cyan-200/80">Global prompt deck</div>
+                <div className="mt-2 text-xl font-black text-yellow-200">
+                  {ROUND_TYPES[selectedRoundType]?.name || 'This round type'} skips category selection.
+                </div>
+                <div className="mt-2 text-sm text-cyan-100/90">Loading prompts now...</div>
+              </div>
+            ) : (
+              <div className="mt-8 grid grid-cols-2 gap-4 items-stretch">
+                {categoryOptions.map((category) => {
+                  const categoryCardArtSrc = resolveCategoryChoiceCardArt(category, canonicalThemeName);
+                  return (
+                    <div key={category.id} className="flex">
+                      <button
+                        type="button"
+                        className="flex h-full w-full flex-col rounded-[1.8rem] border border-white/20 bg-black/20 p-4 text-center transition-transform duration-200 hover:scale-[1.01] hover:border-cyan-300/40"
+                        onClick={() => chooseCategory(category.id)}
+                      >
+                        <ThemeArt
+                          src={categoryCardArtSrc}
+                          alt={`${category.name} category card`}
+                          className="mx-auto h-40 w-auto rounded-[1.2rem] border border-white/20 bg-black/25 p-1"
+                        />
+                        <div className="mt-4 text-lg sm:text-xl font-black uppercase tracking-[0.04em] text-white leading-tight min-h-[2.6rem] flex items-center justify-center">
+                          {category.name}
+                        </div>
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </GlassPanel>
         </div>
       </TopFrame>
