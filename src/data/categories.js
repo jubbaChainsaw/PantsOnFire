@@ -17,6 +17,19 @@ export const BANNED_WORD_BANK = {
   'prompt::music::3': ['virtuoso', 'concert', 'legendary', 'solo', 'discography'],
 };
 
+const BANNED_WORD_FILLERS = [
+  'bluff',
+  'sus',
+  'vibe',
+  'nervous',
+  'awkward',
+  'shifty',
+  'dramatic',
+  'sneaky',
+  'confident',
+  'clueless',
+];
+
 export function sanitizeBannedWords(categoryName, hint, main, imposter, words) {
   const forbidden = new Set(
     `${categoryName} ${hint} ${main} ${imposter}`
@@ -25,10 +38,20 @@ export function sanitizeBannedWords(categoryName, hint, main, imposter, words) {
       .split(/\s+/)
       .filter(Boolean)
   );
-  return (words || []).filter((word) => {
-    const parts = word.toLowerCase().replace(/[^a-z0-9\s-]/g, ' ').trim().split(/\s+/).filter(Boolean);
-    return parts.length && !parts.some((part) => forbidden.has(part));
-  }).slice(0, 5);
+  const selected = [];
+  const seen = new Set();
+  const addWord = (word) => {
+    if (selected.length >= 5) return;
+    const normalized = String(word || '').trim().toLowerCase();
+    if (!normalized || seen.has(normalized)) return;
+    const parts = normalized.replace(/[^a-z0-9\s-]/g, ' ').trim().split(/\s+/).filter(Boolean);
+    if (!parts.length || parts.some((part) => forbidden.has(part))) return;
+    seen.add(normalized);
+    selected.push(String(word).trim());
+  };
+  (words || []).forEach(addWord);
+  BANNED_WORD_FILLERS.forEach(addWord);
+  return selected.slice(0, 5);
 }
 
 import {

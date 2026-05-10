@@ -998,7 +998,6 @@ function buildLocalRound(
   roundNumber,
   liarCount = 1,
   recentPromptKeys = [],
-  mode = "classic",
   selectedRoundTypeId = null,
   grillSettings = { micEnabled: true, ttsEnabled: true },
   adultMode = false,
@@ -1118,8 +1117,8 @@ function buildLocalRound(
     mediaPreviewLabel: selected.prompt.previewLabel || null,
     mediaPackId: selected.prompt.picturePackId || null,
     isAdultPrompt: Boolean(selected.prompt.adultOnly),
-    bannedWords: mode === "chaos" ? bannedWords : [],
-    mode,
+    bannedWords,
+    mode: "classic",
     imposterIds: liarIds,
     chooserId: pickRandom(players).id,
     leaderId: pickRandom(players).id,
@@ -2717,7 +2716,7 @@ function HostIntroScreen({ round, stingerLine, onContinue, theme }) {
     </BrandedScreen>
   );
 }
-function RulesSplashScreen({ mode, onContinue, theme, isOnlineMode = false }) {
+function RulesSplashScreen({ onContinue, theme, isOnlineMode = false }) {
   return (
     <TopFrame theme={theme} allowScroll={false}>
       <div className="mx-auto max-w-3xl space-y-6">
@@ -2746,16 +2745,11 @@ function RulesSplashScreen({ mode, onContinue, theme, isOnlineMode = false }) {
             )}
             <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
               You cannot use any words from the{" "}
-              <span className="font-semibold text-cyan-200">category</span> or{" "}
-              <span className="font-semibold text-cyan-200">hint</span> in your
-              clue.
+              <span className="font-semibold text-cyan-200">category</span>,{" "}
+              your exact prompt, or any of the{" "}
+              <span className="font-semibold text-cyan-200">5 banned words</span>{" "}
+              shown on your reveal card.
             </div>
-            {mode === "chaos" && (
-              <div className="rounded-2xl border border-red-400/20 bg-red-500/10 p-4">
-                Chaos mode: you also cannot say any of the 5 banned words shown
-                on your reveal card.
-              </div>
-            )}
             <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
               Vote for the liar. Correct votes score points. Uncaught liars
               score extra.
@@ -3314,8 +3308,6 @@ function OnlineLobbySetupScreen({
   setMaxPlayers,
   nameTheme,
   setNameTheme,
-  mode,
-  setMode,
   winCondition,
   setWinCondition,
   pointsToWin,
@@ -3420,23 +3412,6 @@ function OnlineLobbySetupScreen({
                 }}
                 className="mt-2 rounded-2xl bg-white/5 border border-white/10 text-white"
               />
-            </div>
-            <div>
-              <Label className="text-white/80">Mode</Label>
-              <div className="mt-2 grid grid-cols-2 gap-2">
-                <Button
-                  className={`rounded-2xl px-4 py-3 ${mode === "classic" ? "bg-yellow-300 text-zinc-950" : "border border-white/10 bg-white/5 text-white"}`}
-                  onClick={() => setMode("classic")}
-                >
-                  Classic
-                </Button>
-                <Button
-                  className={`rounded-2xl px-4 py-3 ${mode === "chaos" ? "bg-fuchsia-500 text-white" : "border border-white/10 bg-white/5 text-white"}`}
-                  onClick={() => setMode("chaos")}
-                >
-                  Chaos
-                </Button>
-              </div>
             </div>
             <div>
               <Label className="text-white/80">Win condition</Label>
@@ -3937,8 +3912,6 @@ function SetupScreen(props) {
     setLiarCount,
     nameTheme,
     setNameTheme,
-    mode,
-    setMode,
     winCondition,
     setWinCondition,
     pointsToWin,
@@ -4314,23 +4287,6 @@ function SetupScreen(props) {
                 </div>
               </GlassPanel>
               <GlassPanel className="rounded-[1.5rem] bg-white/5 p-4">
-                <div className="mb-3 font-semibold">Mode</div>
-                <div className="grid grid-cols-2 gap-2">
-                  <Button
-                    className={`rounded-2xl px-4 py-3 ${mode === "classic" ? "bg-yellow-300 text-zinc-950" : "border border-white/10 bg-white/5 text-white"}`}
-                    onClick={() => setMode("classic")}
-                  >
-                    Classic
-                  </Button>
-                  <Button
-                    className={`rounded-2xl px-4 py-3 ${mode === "chaos" ? "bg-fuchsia-500 text-white" : "border border-white/10 bg-white/5 text-white"}`}
-                    onClick={() => setMode("chaos")}
-                  >
-                    Chaos 🔥
-                  </Button>
-                </div>
-              </GlassPanel>
-              <GlassPanel className="rounded-[1.5rem] bg-white/5 p-4">
                 <div className="mb-3 font-semibold">Game Rules</div>
                 <div className="mb-2 text-xs text-white/55">
                   Win condition (choose one)
@@ -4552,6 +4508,11 @@ function RevealScreen({
   const isImposter = onlineMode
     ? Boolean(onlinePrivatePrompt?.isImposter)
     : (round.imposterIds || []).includes(player.id);
+  const bannedWords = Array.isArray(round.bannedWords)
+    ? round.bannedWords
+    : Array.isArray(onlinePrivatePrompt?.bannedWords)
+      ? onlinePrivatePrompt.bannedWords
+      : [];
   const [cardFace, setCardFace] = useState("back");
   const [countdownValue, setCountdownValue] = useState(null);
   const [isCountingDown, setIsCountingDown] = useState(false);
@@ -4781,7 +4742,7 @@ function RevealScreen({
                       aria-hidden="true"
                       className="h-4 w-4 object-contain"
                     />
-                    <span>{isImposter ? "LIAR CARD" : round.hint}</span>
+                    <span>{isImposter ? "LIAR CARD" : "YOUR CARD"}</span>
                   </div>
                   {round.mediaPreviewLabel && (
                     <div className="mt-2 text-sm text-white/85">
@@ -4791,7 +4752,7 @@ function RevealScreen({
                   {mediaSrc && (
                     <img
                       src={mediaSrc}
-                      alt={`${round.hint} visual clue`}
+                      alt="Visual clue"
                       className="mt-2 w-full rounded-2xl"
                     />
                   )}
@@ -4825,13 +4786,13 @@ function RevealScreen({
                   >
                     {isImposter ? `🔥 ${liarLine} 🔥` : normalLine}
                   </div>
-                  {round.mode === "chaos" && round.bannedWords.length > 0 && (
+                  {bannedWords.length > 0 && (
                     <div className="mt-4 rounded-xl border border-fuchsia-200/40 bg-fuchsia-500/35 px-3 py-2">
                       <div className="text-xs uppercase tracking-[0.2em] text-red-300">
                         Banned Words
                       </div>
                       <div className="mt-1 text-xs text-red-200">
-                        {round.bannedWords.join(" • ")}
+                        {bannedWords.join(" • ")}
                       </div>
                     </div>
                   )}
@@ -6732,7 +6693,6 @@ function normalizeThemeSelection(themeName, themeOptions = []) {
 
 function cloneOnlineLobbySettingsTemplate({
   themeName = "Default",
-  mode = "classic",
   winCondition = "rounds",
   pointsToWin = 15,
   roundsPerPlayer = 1,
@@ -6743,7 +6703,7 @@ function cloneOnlineLobbySettingsTemplate({
   const normalizedThemeName = toCanonicalThemeName(themeName || "Default");
   return {
     themeName: normalizedThemeName,
-    mode: mode === "chaos" ? "chaos" : "classic",
+    mode: "classic",
     winCondition: winCondition === "points" ? "points" : "rounds",
     pointsToWin: Number.isFinite(Number(pointsToWin))
       ? Number(pointsToWin)
@@ -7381,7 +7341,6 @@ export default function App() {
   const onlineClientIdRef = useRef(getOrCreatePersistentClientId());
   const onlineSessionRef = useRef(getStoredOnlineSession());
   const onlineClientId = onlineClientIdRef.current;
-  const [mode, setMode] = useState("classic");
   const [winCondition, setWinCondition] = useState("rounds");
   const [pointsToWin, setPointsToWin] = useState(15);
   const [roundsPerPlayer, setRoundsPerPlayer] = useState(1);
@@ -8653,7 +8612,6 @@ export default function App() {
       roundNumber,
       liarCount,
       recentPromptKeys.slice(-4),
-      mode,
       selectedTypeForRound,
       grillSettings,
       adultMode,
@@ -8824,7 +8782,7 @@ export default function App() {
         maxPlayers: onlineLobbyMaxPlayers,
         settings: {
           themeName: canonicalThemeName,
-          mode,
+          mode: "classic",
           winCondition,
           pointsToWin,
           roundsPerPlayer,
@@ -8882,7 +8840,6 @@ export default function App() {
           themeOptions,
         ),
       );
-      setMode(lobbySettings.mode === "chaos" ? "chaos" : "classic");
       setWinCondition(
         lobbySettings.winCondition === "points" ? "points" : "rounds",
       );
@@ -9072,7 +9029,6 @@ export default function App() {
           themeOptions,
         ),
       );
-      setMode(nextSettings.mode === "chaos" ? "chaos" : "classic");
       setWinCondition(
         nextSettings.winCondition === "points" ? "points" : "rounds",
       );
@@ -9288,7 +9244,6 @@ export default function App() {
     setLiarCount(1);
     setNameTheme(normalizeThemeSelection("Default", themeOptions));
     setPersonaOnlyMode(false);
-    setMode("classic");
     setWinCondition("rounds");
     setPointsToWin(15);
     setRoundsPerPlayer(1);
@@ -9414,8 +9369,6 @@ export default function App() {
           setLiarCount={setLiarCount}
           nameTheme={canonicalThemeName}
           setNameTheme={setNameTheme}
-          mode={mode}
-          setMode={setMode}
           winCondition={winCondition}
           setWinCondition={setWinCondition}
           pointsToWin={pointsToWin}
@@ -9450,8 +9403,6 @@ export default function App() {
           setMaxPlayers={setOnlineLobbyMaxPlayers}
           nameTheme={canonicalThemeName}
           setNameTheme={setNameTheme}
-          mode={mode}
-          setMode={setMode}
           winCondition={winCondition}
           setWinCondition={setWinCondition}
           pointsToWin={pointsToWin}
@@ -9674,7 +9625,6 @@ export default function App() {
       )}
       {screen === "rules" && (
         <RulesSplashScreen
-          mode={mode}
           onContinue={() => setScreen("category-choice")}
           theme={canonicalThemeName}
           isOnlineMode={onlineMode}
