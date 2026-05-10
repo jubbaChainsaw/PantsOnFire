@@ -1,0 +1,198 @@
+{
+  "id": "music-albums-complete-v1",
+  "version": 1,
+  "label": "Completed Music Albums Picture Pack",
+  "category": "picture",
+  "releaseChannel": "dlc",
+  "enabled": true,
+  "basePath": "/assets/graphic-packs/picture/music-albums-complete-v1/images",
+  "entries": [
+    {
+      "entryId": "albums-complete-01",
+      "groupId": "music-albums-complete",
+      "groupName": "Music Albums Complete",
+      "hint": "Picture Prompt \u2022 Albums Complete 1",
+      "main": "the Beatles - Sgt Peppers Lonely Hearts Club Band",
+      "imposter": "the Beach Boys - Pet Sounds",
+      "mainMediaFile": "the-beatles---sgt-peppers-lonely-hearts-club-band.png",
+      "imposterMediaFile": "the-beach-boys---pet-sounds.png",
+      "previewLabel": "Describe the completed album-cover parody image clearly without naming the exact album."
+    },
+    {
+      "entryId": "albums-complete-02",
+      "groupId": "music-albums-complete",
+      "groupName": "Music Albums Complete",
+      "hint": "Picture Prompt \u2022 Albums Complete 2",
+      "main": "the Beach Boys - Pet Sounds",
+      "imposter": "the Beatles - Sgt Peppers Lonely Hearts Club Band",
+      "mainMediaFile": "the-beach-boys---pet-sounds.png",
+      "imposterMediaFile": "the-beatles---sgt-peppers-lonely-hearts-club-band.png",
+      "previewLabel": "Describe the completed album-cover parody image clearly without naming the exact album."
+    },
+    {
+      "entryId": "albums-complete-03",
+      "groupId": "music-albums-complete",
+      "groupName": "Music Albums Complete",
+      "hint": "Picture Prompt \u2022 Albums Complete 3",
+      "main": "Blur - Parklife",
+      "imposter": "Oasis - Definitely Maybe",
+      "mainMediaFile": "blur---parklife.png",
+      "imposterMediaFile": "oasis---definitely-maybe.png",
+      "previewLabel": "Describe the completed album-cover parody image clearly without naming the exact album."
+    },
+    {
+      "entryId": "albums-complete-04",
+      "groupId": "music-albums-complete",
+      "groupName": "Music Albums Complete",
+      "hint": "Picture Prompt \u2022 Albums Complete 4",
+      "main": "Oasis - Definitely Maybe",
+      "imposter": "Blur - Parklife",
+      "mainMediaFile": "oasis---definitely-maybe.png",
+      "imposterMediaFile": "blur---parklife.png",
+      "previewLabel": "Describe the completed album-cover parody image clearly without naming the exact album."
+    },
+    {
+      "entryId": "albums-complete-05",
+      "groupId": "music-albums-complete",
+      "groupName": "Music Albums Complete",
+      "hint": "Picture Prompt \u2022 Albums Complete 5",
+      "main": "Radiohead - OK Computer",
+      "imposter": "Nirvana - Nevermind",
+      "mainMediaFile": "radiohead---ok-computer.png",
+      "imposterMediaFile": "nirvana---nevermind.png",
+      "previewLabel": "Describe the completed album-cover parody image clearly without naming the exact album."
+    },
+    {
+      "entryId": "albums-complete-06",
+      "groupId": "music-albums-complete",
+      "groupName": "Music Albums Complete",
+      "hint": "Picture Prompt \u2022 Albums Complete 6",
+      "main": "Nirvana - Nevermind",
+      "imposter": "Radiohead - OK Computer",
+      "mainMediaFile": "nirvana---nevermind.png",
+      "imposterMediaFile": "radiohead---ok-computer.png",
+      "previewLabel": "Describe the completed album-cover parody image clearly without naming the exact album."
+    },
+    {
+      "entryId": "albums-complete-07",
+      "groupId": "music-albums-complete",
+      "groupName": "Music Albums Complete",
+      "hint": "Picture Prompt \u2022 Albums Complete 7",
+      "main": "the Clash - London Calling",
+      "imposter": "the Rolling Stones - Let It Bleed",
+      "mainMediaFile": "the-clash---london-calling.png",
+      "imposterMediaFile": "the-rolling-stones---let-it-bleed.png",
+      "previewLabel": "Describe the completed album-cover parody image clearly without naming the exact album."
+    },
+    {
+      "entryId": "albums-complete-08",
+      "groupId": "music-albums-complete",
+      "groupName": "Music Albums Complete",
+      "hint": "Picture Prompt \u2022 Albums Complete 8",
+      "main": "the Rolling Stones - Let It Bleed",
+      "imposter": "the Clash - London Calling",
+      "mainMediaFile": "the-rolling-stones---let-it-bleed.png",
+      "imposterMediaFile": "the-clash---london-calling.png",
+      "previewLabel": "Describe the completed album-cover parody image clearly without naming the exact album."
+    },
+    {
+      "entryId": "albums-complete-09",
+      "groupId": "music-albums-complete",
+      "groupName": "Music Albums Complete",
+      "hint": "Picture Prompt \u2022 Albums Complete 9",
+      "main": "Metallica - Master of Puppets",
+      "imposter": "Slipknot - Slipknot",
+      "mainMediaFile": "metallica---master-of-puppets.png",
+      "imposterMediaFile": "slipknot---slipknot.png",
+      "previewLabel": "Describe the completed album-cover parody image clearly without naming the exact album."
+    },
+    {
+      "entryId": "albums-complete-10",
+      "groupId": "music-albums-complete",
+      "groupName": "Music Albums Complete",
+      "hint": "Picture Prompt \u2022 Albums Complete 10",
+      "main": "Slipknot - Slipknot",
+      "imposter": "Limp Bizkit - Significant Other",
+      "mainMediaFile": "slipknot---slipknot.png",
+      "imposterMediaFile": "limp-bizkit---significant-other.png",
+      "previewLabel": "Describe the completed album-cover parody image clearly without naming the exact album."
+    },
+    {
+      "entryId": "albums-complete-11",
+      "groupId": "music-albums-complete",
+      "groupName": "Music Albums Complete",
+      "hint": "Picture Prompt \u2022 Albums Complete 11",
+      "main": "No Doubt - Tragic Kingdom",
+      "imposter": "Blondie - Parallel Lines",
+      "mainMediaFile": "no-doubt---tragic-kingdom.png",
+      "imposterMediaFile": "blondie---parallel-lines.png",
+      "previewLabel": "Describe the completed album-cover parody image clearly without naming the exact album."
+    },
+    {
+      "entryId": "albums-complete-12",
+      "groupId": "music-albums-complete",
+      "groupName": "Music Albums Complete",
+      "hint": "Picture Prompt \u2022 Albums Complete 12",
+      "main": "Blondie - Parallel Lines",
+      "imposter": "No Doubt - Tragic Kingdom",
+      "mainMediaFile": "blondie---parallel-lines.png",
+      "imposterMediaFile": "no-doubt---tragic-kingdom.png",
+      "previewLabel": "Describe the completed album-cover parody image clearly without naming the exact album."
+    },
+    {
+      "entryId": "albums-complete-13",
+      "groupId": "music-albums-complete",
+      "groupName": "Music Albums Complete",
+      "hint": "Picture Prompt \u2022 Albums Complete 13",
+      "main": "Aqua - Aquarium",
+      "imposter": "Robbie Williams - Escapology",
+      "mainMediaFile": "aqua---aquarium.png",
+      "imposterMediaFile": "robbie-williams---escapology.png",
+      "previewLabel": "Describe the completed album-cover parody image clearly without naming the exact album."
+    },
+    {
+      "entryId": "albums-complete-14",
+      "groupId": "music-albums-complete",
+      "groupName": "Music Albums Complete",
+      "hint": "Picture Prompt \u2022 Albums Complete 14",
+      "main": "the Smashing Pumpkins - Mellon Collie and the Infinite Sadness",
+      "imposter": "Radiohead - OK Computer",
+      "mainMediaFile": "the-smashing-pumpkins---mellon-collie-and-the-infinite-sadness.png",
+      "imposterMediaFile": "radiohead---ok-computer.png",
+      "previewLabel": "Describe the completed album-cover parody image clearly without naming the exact album."
+    },
+    {
+      "entryId": "albums-complete-15",
+      "groupId": "music-albums-complete",
+      "groupName": "Music Albums Complete",
+      "hint": "Picture Prompt \u2022 Albums Complete 15",
+      "main": "2Pac - All Eyez on Me",
+      "imposter": "Robbie Williams - Escapology",
+      "mainMediaFile": "2pac---all-eyez-on-me.png",
+      "imposterMediaFile": "robbie-williams---escapology.png",
+      "previewLabel": "Describe the completed album-cover parody image clearly without naming the exact album."
+    },
+    {
+      "entryId": "albums-complete-16",
+      "groupId": "music-albums-complete",
+      "groupName": "Music Albums Complete",
+      "hint": "Picture Prompt \u2022 Albums Complete 16",
+      "main": "Robbie Williams - Escapology",
+      "imposter": "2Pac - All Eyez on Me",
+      "mainMediaFile": "robbie-williams---escapology.png",
+      "imposterMediaFile": "2pac---all-eyez-on-me.png",
+      "previewLabel": "Describe the completed album-cover parody image clearly without naming the exact album."
+    },
+    {
+      "entryId": "albums-complete-17",
+      "groupId": "music-albums-complete",
+      "groupName": "Music Albums Complete",
+      "hint": "Picture Prompt \u2022 Albums Complete 17",
+      "main": "Limp Bizkit - Significant Other",
+      "imposter": "Metallica - Master of Puppets",
+      "mainMediaFile": "limp-bizkit---significant-other.png",
+      "imposterMediaFile": "metallica---master-of-puppets.png",
+      "previewLabel": "Describe the completed album-cover parody image clearly without naming the exact album."
+    }
+  ]
+}
