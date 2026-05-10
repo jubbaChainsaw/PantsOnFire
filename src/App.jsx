@@ -65,6 +65,7 @@ import { THEME_META } from "./data/themes";
 import {
   getThemeAssets,
   getThemeHostAssets,
+  THEME_ASSETS,
 } from "./data/themeAssets";
 import { NAME_POOLS, randomNameFromTheme } from "./data/names";
 import { toCanonicalThemeName } from "./data/themeAliases";
@@ -99,6 +100,7 @@ import {
   sanitizeBannedWords,
 } from "./data/categories";
 import { PICTURE_DLC_MANIFESTS } from "./data/pictureDlcManifests";
+import { getDefaultHostVoiceSrcCandidatesForLine } from "./data/defaultHostVoiceLineMap";
 import {
   createLobbyTransport,
   createNextRoundOnServer,
@@ -996,7 +998,6 @@ function buildLocalRound(
   roundNumber,
   liarCount = 1,
   recentPromptKeys = [],
-  mode = "classic",
   selectedRoundTypeId = null,
   grillSettings = { micEnabled: true, ttsEnabled: true },
   adultMode = false,
@@ -1116,8 +1117,8 @@ function buildLocalRound(
     mediaPreviewLabel: selected.prompt.previewLabel || null,
     mediaPackId: selected.prompt.picturePackId || null,
     isAdultPrompt: Boolean(selected.prompt.adultOnly),
-    bannedWords: mode === "chaos" ? bannedWords : [],
-    mode,
+    bannedWords,
+    mode: "classic",
     imposterIds: liarIds,
     chooserId: pickRandom(players).id,
     leaderId: pickRandom(players).id,
@@ -1689,6 +1690,7 @@ function ThemeHostVisual({
     themeName,
   });
   const talkingVideoSrc = hostAssets?.talkingVideo || "";
+  const overlaySrc = hostAssets?.overlay || "";
   const [videoBroken, setVideoBroken] = useState(false);
 
   useEffect(() => {
@@ -1697,22 +1699,46 @@ function ThemeHostVisual({
 
   if (talkingVideoSrc && !videoBroken) {
     return (
-      <MultiSourceVideo
-        src={talkingVideoSrc}
-        className={className}
-        autoPlay={isTalking}
-        loop={isTalking}
-        muted
-        playsInline
-        preload="metadata"
-        poster={animatedHostSrc || undefined}
-        ariaHidden
-        onError={() => setVideoBroken(true)}
-      />
+      <div className={className}>
+        <div className="grid h-full w-full [grid-template-areas:'stack']">
+          <MultiSourceVideo
+            src={talkingVideoSrc}
+            className="[grid-area:stack] h-full w-full object-contain"
+            autoPlay={isTalking}
+            loop={isTalking}
+            muted
+            playsInline
+            preload="metadata"
+            poster={animatedHostSrc || undefined}
+            ariaHidden
+            onError={() => setVideoBroken(true)}
+          />
+          <ThemeArt
+            src={overlaySrc}
+            alt=""
+            className="[grid-area:stack] h-full w-full object-contain pointer-events-none"
+          />
+        </div>
+      </div>
     );
   }
 
-  return <ThemeArt src={animatedHostSrc} alt={alt} className={className} />;
+  return (
+    <div className={className}>
+      <div className="grid h-full w-full [grid-template-areas:'stack']">
+        <ThemeArt
+          src={animatedHostSrc}
+          alt={alt}
+          className="[grid-area:stack] h-full w-full object-contain"
+        />
+        <ThemeArt
+          src={overlaySrc}
+          alt=""
+          className="[grid-area:stack] h-full w-full object-contain pointer-events-none"
+        />
+      </div>
+    </div>
+  );
 }
 function RoundTypeLogo({ src, alt, className = "" }) {
   if (!src) return null;
@@ -1819,6 +1845,132 @@ function useTalkingAnimation({ enabled = false, themeName = "Default" } = {}) {
   }
   return idleFrames[0] || "";
 }
+function normalizeHostVoiceLine(line = "") {
+  return String(line || "")
+    .replace(/\s+/g, " ")
+    .trim()
+    .toLowerCase();
+}
+function useDefaultHostVoicePlayback({
+  enabled = false,
+  line = "",
+  fallbackDurationMs = 6000,
+} = {}) {
+  const [isPlaying, setIsPlaying] = useState(false);
+  const audioRef = useRef(null);
+  const fallbackTimerRef = useRef(null);
+  useEffect(() => {
+    const clearFallbackTimer = () => {
+      if (!fallbackTimerRef.current) return;
+      clearTimeout(fallbackTimerRef.current);
+      fallbackTimerRef.current = null;
+    };
+    const fallbackMs = Math.max(600, Number(fallbackDurationMs) || 6000);
+    const normalized = normalizeHostVoiceLine(line);
+    if (!enabled || !normalized) {
+      clearFallbackTimer();
+      setIsPlaying(false);
+      if (audioRef.current) {
+        try {
+          audioRef.current.pause();
+        } catch {}
+        audioRef.current = null;
+      }
+      return undefined;
+    }
+    const mappedSrcCandidates = getDefaultHostVoiceSrcCandidatesForLine(normalized);
+    if (!mappedSrcCandidates.length) {
+      setIsPlaying(true);
+      clearFallbackTimer();
+      fallbackTimerRef.current = setTimeout(() => {
+        fallbackTimerRef.current = null;
+        setIsPlaying(false);
+      }, fallbackMs);
+      return () => {
+        clearFallbackTimer();
+      };
+    }
+    const audio = new Audio(mappedSrcCandidates[0]);
+    audio.preload = "auto";
+    audioRef.current = audio;
+    setIsPlaying(true);
+    const stopPlayback = () => {
+      clearFallbackTimer();
+      setIsPlaying(false);
+    };
+    const fallbackStopPlayback = () => {
+      clearFallbackTimer();
+      fallbackTimerRef.current = setTimeout(() => {
+        fallbackTimerRef.current = null;
+        setIsPlaying(false);
+      }, fallbackMs);
+    };
+    let activeCandidateIndex = 0;
+    const tryPlayAtIndex = (index) => {
+      activeCandidateIndex = index;
+      audio.src = mappedSrcCandidates[index];
+      audio.load();
+      return audio.play();
+    };
+    const tryNextCandidateOrFallback = () => {
+      const nextIndex = activeCandidateIndex + 1;
+      if (nextIndex < mappedSrcCandidates.length) {
+        tryPlayAtIndex(nextIndex).catch(() => tryNextCandidateOrFallback());
+        return;
+      }
+      fallbackStopPlayback();
+    };
+    audio.addEventListener("ended", stopPlayback);
+    audio.addEventListener("error", tryNextCandidateOrFallback);
+    tryPlayAtIndex(0).catch(() => tryNextCandidateOrFallback());
+    return () => {
+      audio.removeEventListener("ended", stopPlayback);
+      audio.removeEventListener("error", tryNextCandidateOrFallback);
+      clearFallbackTimer();
+      try {
+        audio.pause();
+        audio.currentTime = 0;
+      } catch {}
+      if (audioRef.current === audio) {
+        audioRef.current = null;
+      }
+    };
+  }, [enabled, line, fallbackDurationMs]);
+  return isPlaying;
+}
+function getDefaultThemeVoiceLineForGameIntroLine({
+  line = "",
+  lineIndex = 0,
+  total = 0,
+  isOnlineMode = false,
+  totalRounds = 1,
+  playerCount = 1,
+} = {}) {
+  const currentLine = String(line || "").trim();
+  if (!currentLine) return "";
+  if (lineIndex === 0) {
+    const hour = new Date().getHours();
+    const greeting = hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening";
+    return `${greeting}, and welcome to Pants on Fire! Find the Liar.`;
+  }
+  if (lineIndex === 1) {
+    return DEFAULT_HOST_NAME_LINE;
+  }
+  if (lineIndex === 2) {
+    return Number(isOnlineMode)
+      ? (DEFAULT_HOST.onlinePrompt || currentLine)
+      : (DEFAULT_HOST.passPrompt || currentLine);
+  }
+  if (lineIndex === total - 2) {
+    const safeRounds = Math.max(1, Number(totalRounds) || 1);
+    const safePlayers = Math.max(1, Number(playerCount) || 1);
+    return `Through ${safeRounds} rounds, the ${safePlayers} of you will try to expose the liar without exposing yourselves first.`;
+  }
+  if (lineIndex >= total - 1) {
+    return DEFAULT_HOST_CLOSING_LINE;
+  }
+  return currentLine;
+}
 function fitTextToBubble(
   textElement,
   containerElement,
@@ -1886,17 +2038,33 @@ function GameIntroScreen({
   const introSpeechTextRef = useRef(null);
   const introSpeechBubbleRef = useRef(null);
   const [introLineFontSize, setIntroLineFontSize] = useState(30);
+  const currentLine = introLines[lineIndex] || "";
+  const voicePlaybackEnabled = toCanonicalThemeName(theme) === "Default";
+  const voiceLineForPlayback = getDefaultThemeVoiceLineForGameIntroLine({
+    line: currentLine,
+    lineIndex,
+    total: introLines.length,
+    isOnlineMode,
+    totalRounds: resolvedRoundCount,
+    playerCount: resolvedPlayerCount,
+  });
+  const isVoicePlayingLine = useDefaultHostVoicePlayback({
+    enabled: voicePlaybackEnabled,
+    line: voiceLineForPlayback,
+    fallbackDurationMs: HOST_DIALOGUE_TIMINGS.gameIntroAdvanceMs,
+  });
   const isTalking = lineIndex < introLines.length - 1;
   useEffect(() => {
     setLineIndex(0);
   }, [theme, isOnlineMode]);
   useEffect(() => {
     if (lineIndex >= introLines.length - 1) return undefined;
+    if (isVoicePlayingLine) return undefined;
     const timer = setTimeout(() => {
       setLineIndex((current) => Math.min(current + 1, introLines.length - 1));
     }, HOST_DIALOGUE_TIMINGS.gameIntroAdvanceMs);
     return () => clearTimeout(timer);
-  }, [lineIndex, introLines.length]);
+  }, [lineIndex, introLines.length, isVoicePlayingLine]);
   useLayoutEffect(() => {
     const nextSize = fitTextToBubble(
       introSpeechTextRef.current,
@@ -2060,6 +2228,45 @@ function preloadImageSources(sources = []) {
       image.src = source;
     });
 }
+function preloadImageSourcesWithPromise(
+  sources = [],
+  { perImageTimeoutMs = 2200 } = {},
+) {
+  if (typeof window === "undefined" || typeof window.Image === "undefined") {
+    return Promise.resolve();
+  }
+  const sourceList = Array.from(
+    new Set(
+      (Array.isArray(sources) ? sources : [sources])
+        .map((source) => String(source || "").trim())
+        .filter(Boolean),
+    ),
+  );
+  if (!sourceList.length) return Promise.resolve();
+  const seenCache = (window.__pofPreloadedImageSources =
+    window.__pofPreloadedImageSources || new Set());
+  const waitForSource = (source) =>
+    new Promise((resolve) => {
+      if (seenCache.has(source)) {
+        resolve();
+        return;
+      }
+      seenCache.add(source);
+      const image = new window.Image();
+      image.decoding = "async";
+      const finish = () => {
+        clearTimeout(timeoutRef);
+        image.onload = null;
+        image.onerror = null;
+        resolve();
+      };
+      image.onload = finish;
+      image.onerror = finish;
+      const timeoutRef = setTimeout(finish, perImageTimeoutMs);
+      image.src = source;
+    });
+  return Promise.allSettled(sourceList.map((source) => waitForSource(source)));
+}
 function useCategoryAndModeIconPreload({
   screen = "",
   roundTypeOptions = [],
@@ -2093,6 +2300,103 @@ function useCategoryAndModeIconPreload({
       .filter(Boolean);
     preloadImageSources([...roundTypeIconSources, ...categoryIconSources]);
   }, [screen, roundTypeOptions, categoryOptions, canonicalThemeName]);
+}
+function useGlobalGraphicsPreload() {
+  const [isReady, setIsReady] = useState(() =>
+    typeof window === "undefined",
+  );
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      setIsReady(true);
+      return;
+    }
+    let cancelled = false;
+    const startedAtMs = Date.now();
+    const coreUiSources = [
+      NEW_UI_LOGO_MAIN_SRC,
+      NEW_UI_LOGO_18PLUS_SRC,
+      NEW_UI_WALLPAPER_HOME_SRC,
+      NEW_UI_WALLPAPER_IN_GAME_SRC,
+      NEW_UI_CARD_DEFAULT_FRONT_SRC,
+      NEW_UI_CARD_DEFAULT_BACK_SRC,
+      NEW_UI_CARD_LIAR_FRONT_SRC,
+      ...Object.values(NEW_UI_GAME_MODE_ICON_BY_ID),
+      ...Object.values(NEW_UI_CATEGORY_ICON_BY_ID),
+      ...NEW_UI_CUSTOM_CATEGORY_META.map((entry) => entry?.iconSrc),
+      ...CARD_FIRE_FLAME_SOURCES,
+      UI_ICON_BOXERS_RED_SRC,
+      UI_ICON_BOXERS_GREEN_SRC,
+      UI_ICON_FLAME_RED_SRC,
+      UI_ICON_FLAME_GREEN_SRC,
+      UI_ICON_CROWN_GOLD_SRC,
+      UI_ICON_BADGE_18_PLUS_SRC,
+      UI_ICON_BADGE_LIAR_SRC,
+      UI_ICON_MAGNIFIER_FIRE_SRC,
+    ]
+      .map((source) => String(source || "").trim())
+      .filter(Boolean);
+    const themeSources = Object.values(THEME_ASSETS || {})
+      .flatMap((entry) =>
+        Object.values(entry || {}).map((source) => String(source || "").trim()),
+      )
+      .filter(Boolean);
+    const allSources = [...coreUiSources, ...themeSources];
+    preloadImageSources(allSources);
+    const maxOverlayMs = 3000;
+    const minOverlayMs = 700;
+    Promise.race([
+      preloadImageSourcesWithPromise(allSources),
+      new Promise((resolve) => setTimeout(resolve, maxOverlayMs)),
+    ])
+      .then(async () => {
+        const elapsedMs = Date.now() - startedAtMs;
+        const remainingMinMs = minOverlayMs - elapsedMs;
+        if (remainingMinMs > 0) {
+          await new Promise((resolve) => setTimeout(resolve, remainingMinMs));
+        }
+      })
+      .finally(() => {
+        if (cancelled) return;
+        setIsReady(true);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+  return isReady;
+}
+function StartupPreloadOverlay({ show = false }) {
+  return (
+    <AnimatePresence>
+      {show && (
+        <motion.div
+          key="startup-preload-overlay"
+          initial={{ opacity: 1 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.32, ease: "easeOut" }}
+          className="fixed inset-0 z-[1200] flex items-center justify-center bg-black/85 backdrop-blur-[2px]"
+        >
+          <div className="flex flex-col items-center justify-center gap-5 text-center text-white">
+            <motion.img
+              src={NEW_UI_LOGO_MAIN_SRC}
+              alt="Pants on Fire loading logo"
+              className="h-32 w-32 sm:h-40 sm:w-40 object-contain drop-shadow-[0_10px_30px_rgba(255,120,0,0.55)]"
+              animate={{ rotate: 360 }}
+              transition={{
+                duration: 1.6,
+                ease: "linear",
+                repeat: Infinity,
+              }}
+            />
+            <div className="text-sm sm:text-base font-black uppercase tracking-[0.26em] text-yellow-300">
+              Loading the heat...
+            </div>
+          </div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
 }
 function getCustomCategoryMetaById() {
   return Object.fromEntries(
@@ -2240,6 +2544,13 @@ function HostIntroScreen({ round, stingerLine, onContinue, theme }) {
   const speechBubbleTextRef = useRef(null);
   const speechBubbleFitRef = useRef(null);
   const [speechBubbleFontSize, setSpeechBubbleFontSize] = useState(28);
+  const currentSpeechLine = speechSentences[speechIndex] || "";
+  const voicePlaybackEnabled = toCanonicalThemeName(theme) === "Default";
+  const isVoicePlayingLine = useDefaultHostVoicePlayback({
+    enabled: voicePlaybackEnabled,
+    line: currentSpeechLine,
+    fallbackDurationMs: HOST_DIALOGUE_TIMINGS.roundIntroAdvanceMs,
+  });
   const canContinue = speechIndex >= speechSentences.length - 1;
   const isTalking = speechIndex < speechSentences.length - 1;
   const introLine =
@@ -2251,13 +2562,14 @@ function HostIntroScreen({ round, stingerLine, onContinue, theme }) {
   }, [round.id, round.roundNumber, round.roundTypeId]);
   useEffect(() => {
     if (speechIndex >= speechSentences.length - 1) return undefined;
+    if (isVoicePlayingLine) return undefined;
     const timer = setTimeout(() => {
       setSpeechIndex((current) =>
         Math.min(current + 1, speechSentences.length - 1),
       );
     }, HOST_DIALOGUE_TIMINGS.roundIntroAdvanceMs);
     return () => clearTimeout(timer);
-  }, [speechIndex, speechSentences.length]);
+  }, [speechIndex, speechSentences.length, isVoicePlayingLine]);
   useLayoutEffect(() => {
     const nextSize = fitTextToBubble(
       speechBubbleTextRef.current,
@@ -2404,7 +2716,7 @@ function HostIntroScreen({ round, stingerLine, onContinue, theme }) {
     </BrandedScreen>
   );
 }
-function RulesSplashScreen({ mode, onContinue, theme, isOnlineMode = false }) {
+function RulesSplashScreen({ onContinue, theme, isOnlineMode = false }) {
   return (
     <TopFrame theme={theme} allowScroll={false}>
       <div className="mx-auto max-w-3xl space-y-6">
@@ -2433,16 +2745,11 @@ function RulesSplashScreen({ mode, onContinue, theme, isOnlineMode = false }) {
             )}
             <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
               You cannot use any words from the{" "}
-              <span className="font-semibold text-cyan-200">category</span> or{" "}
-              <span className="font-semibold text-cyan-200">hint</span> in your
-              clue.
+              <span className="font-semibold text-cyan-200">category</span>,{" "}
+              your exact prompt, or any of the{" "}
+              <span className="font-semibold text-cyan-200">5 banned words</span>{" "}
+              shown on your reveal card.
             </div>
-            {mode === "chaos" && (
-              <div className="rounded-2xl border border-red-400/20 bg-red-500/10 p-4">
-                Chaos mode: you also cannot say any of the 5 banned words shown
-                on your reveal card.
-              </div>
-            )}
             <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
               Vote for the liar. Correct votes score points. Uncaught liars
               score extra.
@@ -3001,8 +3308,6 @@ function OnlineLobbySetupScreen({
   setMaxPlayers,
   nameTheme,
   setNameTheme,
-  mode,
-  setMode,
   winCondition,
   setWinCondition,
   pointsToWin,
@@ -3107,23 +3412,6 @@ function OnlineLobbySetupScreen({
                 }}
                 className="mt-2 rounded-2xl bg-white/5 border border-white/10 text-white"
               />
-            </div>
-            <div>
-              <Label className="text-white/80">Mode</Label>
-              <div className="mt-2 grid grid-cols-2 gap-2">
-                <Button
-                  className={`rounded-2xl px-4 py-3 ${mode === "classic" ? "bg-yellow-300 text-zinc-950" : "border border-white/10 bg-white/5 text-white"}`}
-                  onClick={() => setMode("classic")}
-                >
-                  Classic
-                </Button>
-                <Button
-                  className={`rounded-2xl px-4 py-3 ${mode === "chaos" ? "bg-fuchsia-500 text-white" : "border border-white/10 bg-white/5 text-white"}`}
-                  onClick={() => setMode("chaos")}
-                >
-                  Chaos
-                </Button>
-              </div>
             </div>
             <div>
               <Label className="text-white/80">Win condition</Label>
@@ -3624,8 +3912,6 @@ function SetupScreen(props) {
     setLiarCount,
     nameTheme,
     setNameTheme,
-    mode,
-    setMode,
     winCondition,
     setWinCondition,
     pointsToWin,
@@ -4001,23 +4287,6 @@ function SetupScreen(props) {
                 </div>
               </GlassPanel>
               <GlassPanel className="rounded-[1.5rem] bg-white/5 p-4">
-                <div className="mb-3 font-semibold">Mode</div>
-                <div className="grid grid-cols-2 gap-2">
-                  <Button
-                    className={`rounded-2xl px-4 py-3 ${mode === "classic" ? "bg-yellow-300 text-zinc-950" : "border border-white/10 bg-white/5 text-white"}`}
-                    onClick={() => setMode("classic")}
-                  >
-                    Classic
-                  </Button>
-                  <Button
-                    className={`rounded-2xl px-4 py-3 ${mode === "chaos" ? "bg-fuchsia-500 text-white" : "border border-white/10 bg-white/5 text-white"}`}
-                    onClick={() => setMode("chaos")}
-                  >
-                    Chaos 🔥
-                  </Button>
-                </div>
-              </GlassPanel>
-              <GlassPanel className="rounded-[1.5rem] bg-white/5 p-4">
                 <div className="mb-3 font-semibold">Game Rules</div>
                 <div className="mb-2 text-xs text-white/55">
                   Win condition (choose one)
@@ -4239,6 +4508,11 @@ function RevealScreen({
   const isImposter = onlineMode
     ? Boolean(onlinePrivatePrompt?.isImposter)
     : (round.imposterIds || []).includes(player.id);
+  const bannedWords = Array.isArray(round.bannedWords)
+    ? round.bannedWords
+    : Array.isArray(onlinePrivatePrompt?.bannedWords)
+      ? onlinePrivatePrompt.bannedWords
+      : [];
   const [cardFace, setCardFace] = useState("back");
   const [countdownValue, setCountdownValue] = useState(null);
   const [isCountingDown, setIsCountingDown] = useState(false);
@@ -4360,18 +4634,18 @@ function RevealScreen({
             </div>
           )}
 
-          <div className="mt-3 mx-auto w-full max-w-[23.5rem] sm:max-w-[25.25rem] [perspective:1200px]">
+          <div className="mt-3 mx-auto w-full max-w-[24.25rem] sm:max-w-[26rem] [perspective:1200px]">
             <motion.div
               animate={{ rotateY: cardFace === "front" ? 180 : 0 }}
               transition={{ duration: 0.75, ease: "easeInOut" }}
-              className="relative w-full aspect-[2/3] [transform-style:preserve-3d]"
+              className="relative w-full aspect-[2/3] overflow-visible [transform-style:preserve-3d]"
             >
-              <div className="absolute inset-0 overflow-hidden rounded-[1.7rem] border-2 border-white/25 [backface-visibility:hidden]">
+              <div className="absolute inset-0 overflow-visible rounded-[1.7rem] [backface-visibility:hidden]">
                 {cardBackSrc && (
                   <img
                     src={cardBackSrc}
                     alt="Prompt card back"
-                    className="absolute inset-0 h-full w-full scale-[1.07] object-cover bg-black/30"
+                    className="absolute inset-0 h-full w-full object-contain object-center bg-black/30"
                   />
                 )}
                 <div className="absolute inset-0 bg-black/20" />
@@ -4394,13 +4668,13 @@ function RevealScreen({
               </div>
 
               <div
-                className={`absolute inset-0 overflow-hidden rounded-[1.7rem] border-2 [backface-visibility:hidden] [transform:rotateY(180deg)] ${isImposter ? "border-orange-300/90 shadow-[0_0_42px_rgba(255,94,0,0.62)]" : "border-cyan-300/60"}`}
+                className={`absolute inset-0 overflow-visible rounded-[1.7rem] [backface-visibility:hidden] [transform:rotateY(180deg)] ${isImposter ? "shadow-[0_0_42px_rgba(255,94,0,0.62)]" : ""}`}
               >
                 {cardFrontSrc && (
                   <img
                     src={cardFrontSrc}
                     alt="Prompt card front"
-                    className="absolute inset-0 h-full w-full scale-[1.07] object-cover bg-black/30"
+                    className={`absolute inset-0 h-full w-full object-contain object-center bg-black/30 ${isImposter ? "scale-[1.25]" : ""}`}
                   />
                 )}
                 <div
@@ -4468,7 +4742,7 @@ function RevealScreen({
                       aria-hidden="true"
                       className="h-4 w-4 object-contain"
                     />
-                    <span>{isImposter ? "IMPOSTER CARD" : round.hint}</span>
+                    <span>{isImposter ? "LIAR CARD" : "YOUR CARD"}</span>
                   </div>
                   {round.mediaPreviewLabel && (
                     <div className="mt-2 text-sm text-white/85">
@@ -4478,7 +4752,7 @@ function RevealScreen({
                   {mediaSrc && (
                     <img
                       src={mediaSrc}
-                      alt={`${round.hint} visual clue`}
+                      alt="Visual clue"
                       className="mt-2 w-full rounded-2xl"
                     />
                   )}
@@ -4512,13 +4786,13 @@ function RevealScreen({
                   >
                     {isImposter ? `🔥 ${liarLine} 🔥` : normalLine}
                   </div>
-                  {round.mode === "chaos" && round.bannedWords.length > 0 && (
+                  {bannedWords.length > 0 && (
                     <div className="mt-4 rounded-xl border border-fuchsia-200/40 bg-fuchsia-500/35 px-3 py-2">
                       <div className="text-xs uppercase tracking-[0.2em] text-red-300">
                         Banned Words
                       </div>
                       <div className="mt-1 text-xs text-red-200">
-                        {round.bannedWords.join(" • ")}
+                        {bannedWords.join(" • ")}
                       </div>
                     </div>
                   )}
@@ -6419,7 +6693,6 @@ function normalizeThemeSelection(themeName, themeOptions = []) {
 
 function cloneOnlineLobbySettingsTemplate({
   themeName = "Default",
-  mode = "classic",
   winCondition = "rounds",
   pointsToWin = 15,
   roundsPerPlayer = 1,
@@ -6430,7 +6703,7 @@ function cloneOnlineLobbySettingsTemplate({
   const normalizedThemeName = toCanonicalThemeName(themeName || "Default");
   return {
     themeName: normalizedThemeName,
-    mode: mode === "chaos" ? "chaos" : "classic",
+    mode: "classic",
     winCondition: winCondition === "points" ? "points" : "rounds",
     pointsToWin: Number.isFinite(Number(pointsToWin))
       ? Number(pointsToWin)
@@ -6663,7 +6936,7 @@ function SettingsScreen({
               <div>
                 <div className="font-black text-lg">Sound Effects</div>
                 <div className="text-sm text-white/60 mt-1">
-                  Toggle fire, card flip, imposter, and ByteBlitz cue SFX.
+                  Toggle fire, card flip, liar, and ByteBlitz cue SFX.
                 </div>
               </div>
               <Switch
@@ -7068,7 +7341,6 @@ export default function App() {
   const onlineClientIdRef = useRef(getOrCreatePersistentClientId());
   const onlineSessionRef = useRef(getStoredOnlineSession());
   const onlineClientId = onlineClientIdRef.current;
-  const [mode, setMode] = useState("classic");
   const [winCondition, setWinCondition] = useState("rounds");
   const [pointsToWin, setPointsToWin] = useState(15);
   const [roundsPerPlayer, setRoundsPerPlayer] = useState(1);
@@ -8340,7 +8612,6 @@ export default function App() {
       roundNumber,
       liarCount,
       recentPromptKeys.slice(-4),
-      mode,
       selectedTypeForRound,
       grillSettings,
       adultMode,
@@ -8511,7 +8782,7 @@ export default function App() {
         maxPlayers: onlineLobbyMaxPlayers,
         settings: {
           themeName: canonicalThemeName,
-          mode,
+          mode: "classic",
           winCondition,
           pointsToWin,
           roundsPerPlayer,
@@ -8569,7 +8840,6 @@ export default function App() {
           themeOptions,
         ),
       );
-      setMode(lobbySettings.mode === "chaos" ? "chaos" : "classic");
       setWinCondition(
         lobbySettings.winCondition === "points" ? "points" : "rounds",
       );
@@ -8759,7 +9029,6 @@ export default function App() {
           themeOptions,
         ),
       );
-      setMode(nextSettings.mode === "chaos" ? "chaos" : "classic");
       setWinCondition(
         nextSettings.winCondition === "points" ? "points" : "rounds",
       );
@@ -8975,7 +9244,6 @@ export default function App() {
     setLiarCount(1);
     setNameTheme(normalizeThemeSelection("Default", themeOptions));
     setPersonaOnlyMode(false);
-    setMode("classic");
     setWinCondition("rounds");
     setPointsToWin(15);
     setRoundsPerPlayer(1);
@@ -9030,6 +9298,7 @@ export default function App() {
   const categoryChoiceGridClass = isDesktopLandscapeWeb
     ? "mt-8 grid grid-cols-4 gap-4 items-stretch"
     : "mt-8 grid grid-cols-2 gap-4 items-stretch";
+  const startupGraphicsReady = useGlobalGraphicsPreload();
   useCategoryAndModeIconPreload({
     screen,
     roundTypeOptions,
@@ -9100,8 +9369,6 @@ export default function App() {
           setLiarCount={setLiarCount}
           nameTheme={canonicalThemeName}
           setNameTheme={setNameTheme}
-          mode={mode}
-          setMode={setMode}
           winCondition={winCondition}
           setWinCondition={setWinCondition}
           pointsToWin={pointsToWin}
@@ -9136,8 +9403,6 @@ export default function App() {
           setMaxPlayers={setOnlineLobbyMaxPlayers}
           nameTheme={canonicalThemeName}
           setNameTheme={setNameTheme}
-          mode={mode}
-          setMode={setMode}
           winCondition={winCondition}
           setWinCondition={setWinCondition}
           pointsToWin={pointsToWin}
@@ -9360,7 +9625,6 @@ export default function App() {
       )}
       {screen === "rules" && (
         <RulesSplashScreen
-          mode={mode}
           onContinue={() => setScreen("category-choice")}
           theme={canonicalThemeName}
           isOnlineMode={onlineMode}
@@ -9723,6 +9987,7 @@ export default function App() {
         customCategories={customCategories}
         setCustomCategories={setCustomCategories}
       />
+      <StartupPreloadOverlay show={!startupGraphicsReady} />
     </>
   );
 }

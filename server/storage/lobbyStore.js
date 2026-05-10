@@ -18,6 +18,42 @@ const DEFAULT_LOBBY_SETTINGS = {
   },
 };
 
+const SERVER_BANNED_WORD_BANK = {
+  'prompt::sports::0': ['bat', 'pitcher', 'stadium', 'scoreboard', 'coach'],
+  'prompt::sports::1': ['referee', 'supporters', 'captain', 'season', 'training'],
+  'prompt::sports::2': ['tournament', 'singles', 'doubles', 'umpire', 'grip'],
+  'prompt::sports::3': ['champion', 'fitness', 'crowd', 'aggressive', 'professional'],
+  'prompt::food::0': ['crispy', 'restaurant', 'delivery', 'toppings', 'stuffed'],
+  'prompt::food::1': ['mustard', 'barbecue', 'greasy', 'handheld', 'snack'],
+  'prompt::food::2': ['breakfast', 'steaming', 'sugar', 'morning', 'cafe'],
+  'prompt::food::3': ['bakery', 'frosting', 'gooey', 'treat', 'party'],
+  'prompt::movies::0': ['franchise', 'merchandise', 'funny', 'family', 'adventure'],
+  'prompt::movies::1': ['blockbuster', 'director', 'soundtrack', 'suspense', 'iconic'],
+  'prompt::movies::2': ['relationship', 'dramatic', 'emotional', 'chemistry', 'memorable'],
+  'prompt::movies::3': ['cinematography', 'director', 'ambitious', 'complex', 'masterpiece'],
+  'prompt::music::0': ['frontman', 'album', 'touring', 'anthem', 'fans'],
+  'prompt::music::1': ['teenage', 'chorus', 'gigs', 'melody', 'mosh'],
+  'prompt::music::2': ['intense', 'stage', 'headline', 'riffs', 'chaotic'],
+  'prompt::music::3': ['virtuoso', 'concert', 'legendary', 'solo', 'discography'],
+  'prompt::places::0': ['capital', 'landmark', 'tourist', 'rainy', 'commute'],
+  'prompt::places::1': ['passport', 'museum', 'nightlife', 'language', 'metro'],
+  'prompt::places::2': ['queues', 'departure', 'luggage', 'platform', 'delay'],
+  'prompt::places::3': ['sand', 'slides', 'crowded', 'suncream', 'towels'],
+};
+
+const SERVER_BANNED_WORD_FILLERS = [
+  'bluff',
+  'sus',
+  'vibe',
+  'nervous',
+  'awkward',
+  'shifty',
+  'dramatic',
+  'sneaky',
+  'confident',
+  'clueless',
+];
+
 const SERVER_PROMPT_CATEGORIES = [
   {
     id: 'sports',
@@ -125,7 +161,6 @@ function clampLobbyMaxPlayers(rawValue) {
 
 function sanitizeLobbySettings(raw = {}) {
   if (!raw || typeof raw !== 'object') return { ...DEFAULT_LOBBY_SETTINGS };
-  const mode = String(raw.mode || DEFAULT_LOBBY_SETTINGS.mode).trim();
   const winCondition = String(raw.winCondition || DEFAULT_LOBBY_SETTINGS.winCondition).trim();
   const pointsToWin = Number(raw.pointsToWin);
   const roundsPerPlayer = Number(raw.roundsPerPlayer);
@@ -140,7 +175,7 @@ function sanitizeLobbySettings(raw = {}) {
     : [];
   return {
     themeName: String(raw.themeName || DEFAULT_LOBBY_SETTINGS.themeName).trim() || DEFAULT_LOBBY_SETTINGS.themeName,
-    mode: mode === 'chaos' ? 'chaos' : 'classic',
+    mode: 'classic',
     winCondition: winCondition === 'points' ? 'points' : 'rounds',
     pointsToWin: Number.isFinite(pointsToWin)
       ? Math.max(5, Math.min(50, Math.floor(pointsToWin)))
@@ -170,6 +205,30 @@ function shuffle(items = []) {
 function pickRandom(items = []) {
   if (!Array.isArray(items) || items.length === 0) return null;
   return items[Math.floor(Math.random() * items.length)];
+}
+
+function sanitizeServerBannedWords(categoryName, hint, main, imposter, words) {
+  const forbidden = new Set(
+    `${categoryName} ${hint} ${main} ${imposter}`
+      .toLowerCase()
+      .replace(/[^a-z0-9\s-]/g, ' ')
+      .split(/\s+/)
+      .filter(Boolean)
+  );
+  const selected = [];
+  const seen = new Set();
+  const addWord = (word) => {
+    if (selected.length >= 5) return;
+    const normalized = String(word || '').trim().toLowerCase();
+    if (!normalized || seen.has(normalized)) return;
+    const parts = normalized.replace(/[^a-z0-9\s-]/g, ' ').trim().split(/\s+/).filter(Boolean);
+    if (!parts.length || parts.some((part) => forbidden.has(part))) return;
+    seen.add(normalized);
+    selected.push(String(word).trim());
+  };
+  (words || []).forEach(addWord);
+  SERVER_BANNED_WORD_FILLERS.forEach(addWord);
+  return selected.slice(0, 5);
 }
 
 function scoreRoundServer(players, round, votesByPlayerId = {}) {
@@ -305,6 +364,13 @@ function buildAuthoritativeRound(players = [], roundNumber = 1, recentPromptKeys
   const liarIds = shuffle(players)
     .slice(0, Math.max(1, Math.min(1, players.length - 1)))
     .map((player) => player.id);
+  const bannedWords = sanitizeServerBannedWords(
+    category.name,
+    selected.prompt.hint,
+    selected.prompt.main,
+    selected.prompt.imposter,
+    SERVER_BANNED_WORD_BANK[selected.key] || []
+  );
   return {
     id: randomId('round'),
     createdAt: nowIso(),
@@ -323,7 +389,7 @@ function buildAuthoritativeRound(players = [], roundNumber = 1, recentPromptKeys
     mediaPreviewLabel: null,
     mediaPackId: null,
     isAdultPrompt: false,
-    bannedWords: [],
+    bannedWords,
     mode: 'classic',
     imposterIds: liarIds,
     chooserId: pickRandom(players)?.id || players[0].id,
@@ -373,6 +439,7 @@ function toPrivateRoundForPlayer(round, playerId) {
     mediaSrc: round.mediaByPlayerId?.[playerId] || null,
     isImposter: Boolean((round.imposterIds || []).includes(playerId)),
     hint: round.hint,
+    bannedWords: Array.isArray(round.bannedWords) ? round.bannedWords : [],
     roundTypeId: round.roundTypeId,
     roundTypeName: round.roundTypeName,
     categoryLabel: round.categoryLabel,
