@@ -2052,10 +2052,14 @@ const HOST_DIALOGUE_TIMINGS = {
   liarRevealAdvanceMs: 6000,
   liarRevealCompleteMs: 6000,
 };
+const DEFAULT_HOST = getThemeHostPersona("Default");
+const DEFAULT_HOST_NAME_LINE = `${DEFAULT_HOST.name || "Ian Poster"} here, your ${DEFAULT_HOST.role || "professional suspicion stylist"}.`;
+const DEFAULT_HOST_CLOSING_LINE =
+  "Keep clues short, keep confidence high, and keep your poker face alive.";
 const HOST_DIALOGUE_PANEL_CLASS =
-  "rounded-[1.75rem] bg-[#e60096] text-white shadow-[0_18px_38px_rgba(0,0,0,0.55)]";
+  "rounded-[1.5rem] bg-[#e60096] text-white shadow-[0_18px_38px_rgba(0,0,0,0.55)]";
 const HOST_DIALOGUE_BUTTON_CLASS =
-  "h-24 flex-1 rounded-[1.5rem] bg-[#e60096] px-4 text-2xl font-black uppercase tracking-[0.04em] text-white shadow-[0_16px_30px_rgba(0,0,0,0.5)] hover:bg-[#ff16ac]";
+  "h-16 flex-1 rounded-[1.25rem] bg-[#e60096] px-4 text-xl font-black uppercase tracking-[0.04em] text-white shadow-[0_12px_24px_rgba(0,0,0,0.5)] hover:bg-[#ff16ac]";
 
 function GameIntroScreen({
   theme,
@@ -2120,8 +2124,8 @@ function GameIntroScreen({
       introSpeechTextRef.current,
       introSpeechBubbleRef.current,
       {
-        maxSize: 34,
-        minSize: 14,
+        maxSize: 28,
+        minSize: 12,
         lineHeight: 1.12,
       },
     );
@@ -2145,16 +2149,16 @@ function GameIntroScreen({
       wallpaperSrc={NEW_UI_WALLPAPER_IN_GAME_SRC}
       overlayClassName="bg-black/65"
     >
-      <div className="relative mx-auto flex h-[calc(100dvh-2.5rem)] w-full max-w-[28rem] flex-col items-center justify-between gap-4 overflow-hidden py-2">
+      <div className="relative mx-auto flex h-[calc(100dvh-1.25rem)] w-full max-w-[28rem] flex-col items-center justify-between gap-3 overflow-hidden py-1">
         <div
-          className="pointer-events-none absolute inset-x-[-30%] bottom-[10.5rem] h-40 opacity-80 blur-[0.3px]"
+          className="pointer-events-none absolute inset-x-[-30%] bottom-[8.25rem] h-32 opacity-80 blur-[0.3px]"
           style={{
             background:
               "radial-gradient(circle at 50% 100%, rgba(255,130,0,0.95), rgba(255,0,160,0.55) 18%, rgba(0,180,255,0.28) 33%, transparent 62%)",
           }}
         />
-        <div className="relative z-10 w-full max-w-[21rem] rounded-[2rem] bg-[#e60096] p-3 shadow-[0_20px_45px_rgba(0,0,0,0.7)]">
-          <div className="aspect-[2/3] overflow-hidden rounded-[1.35rem] bg-black">
+        <div className="relative z-10 w-full max-w-[18rem] rounded-[1.65rem] bg-[#e60096] p-2.5 shadow-[0_20px_45px_rgba(0,0,0,0.7)] sm:max-w-[20rem]">
+          <div className="aspect-[2/3] overflow-hidden rounded-[1.15rem] bg-black">
             <ThemeHostVisual
               themeName={theme}
               isTalking={isTalking}
@@ -2163,17 +2167,17 @@ function GameIntroScreen({
             />
           </div>
         </div>
-        <div className="relative z-10 flex w-full flex-1 flex-col justify-end gap-5">
+        <div className="relative z-10 flex w-full flex-1 flex-col justify-end gap-3">
           <motion.div
             key={`intro-line-${lineIndex}`}
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.25, ease: "easeOut" }}
-            className={`${HOST_DIALOGUE_PANEL_CLASS} flex min-h-[12rem] items-center justify-center px-6 py-5 text-center`}
+            className={`${HOST_DIALOGUE_PANEL_CLASS} flex min-h-[7.5rem] items-center justify-center px-5 py-4 text-center sm:min-h-[9rem]`}
           >
             <div
               ref={introSpeechBubbleRef}
-              className="flex h-full max-h-[12rem] w-full items-center justify-center overflow-hidden"
+              className="flex h-full max-h-[8.5rem] w-full items-center justify-center overflow-hidden sm:max-h-[9.5rem]"
             >
               <p
                 ref={introSpeechTextRef}
@@ -2192,7 +2196,7 @@ function GameIntroScreen({
               </p>
             </div>
           </motion.div>
-          <div className="flex gap-5">
+          <div className="flex gap-3">
             <Button className={HOST_DIALOGUE_BUTTON_CLASS} onClick={handleNextIntroAction}>
               Next
             </Button>
@@ -2612,7 +2616,7 @@ function HostIntroScreen({ round, stingerLine, onContinue, theme }) {
       speechBubbleTextRef.current,
       speechBubbleFitRef.current,
       {
-        maxSize: 34,
+        maxSize: 28,
         minSize: 12,
         lineHeight: 1.12,
       },
@@ -2638,16 +2642,16 @@ function HostIntroScreen({ round, stingerLine, onContinue, theme }) {
       wallpaperSrc={NEW_UI_WALLPAPER_IN_GAME_SRC}
       overlayClassName="bg-black/65"
     >
-      <div className="relative mx-auto flex h-[calc(100dvh-2.5rem)] w-full max-w-[28rem] flex-col items-center justify-between gap-4 overflow-hidden py-2">
+      <div className="relative mx-auto flex h-[calc(100dvh-1.25rem)] w-full max-w-[28rem] flex-col items-center justify-between gap-3 overflow-hidden py-1">
         <div
-          className="pointer-events-none absolute inset-x-[-30%] bottom-[10.5rem] h-40 opacity-80 blur-[0.3px]"
+          className="pointer-events-none absolute inset-x-[-30%] bottom-[8.25rem] h-32 opacity-80 blur-[0.3px]"
           style={{
             background:
               "radial-gradient(circle at 50% 100%, rgba(255,130,0,0.95), rgba(255,0,160,0.55) 18%, rgba(0,180,255,0.28) 33%, transparent 62%)",
           }}
         />
-        <div className="relative z-10 w-full max-w-[21rem] rounded-[2rem] bg-[#e60096] p-3 shadow-[0_20px_45px_rgba(0,0,0,0.7)]">
-          <div className="aspect-[2/3] overflow-hidden rounded-[1.35rem] bg-black">
+        <div className="relative z-10 w-full max-w-[18rem] rounded-[1.65rem] bg-[#e60096] p-2.5 shadow-[0_20px_45px_rgba(0,0,0,0.7)] sm:max-w-[20rem]">
+          <div className="aspect-[2/3] overflow-hidden rounded-[1.15rem] bg-black">
             <ThemeHostVisual
               themeName={theme}
               isTalking={isTalking}
@@ -2656,17 +2660,17 @@ function HostIntroScreen({ round, stingerLine, onContinue, theme }) {
             />
           </div>
         </div>
-        <div className="relative z-10 flex w-full flex-1 flex-col justify-end gap-5">
+        <div className="relative z-10 flex w-full flex-1 flex-col justify-end gap-3">
           <motion.div
             key={`${round.id || round.roundNumber}-${speechIndex}`}
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.28, ease: "easeOut" }}
-            className={`${HOST_DIALOGUE_PANEL_CLASS} flex min-h-[12rem] items-center justify-center px-6 py-5 text-center`}
+            className={`${HOST_DIALOGUE_PANEL_CLASS} flex min-h-[7.5rem] items-center justify-center px-5 py-4 text-center sm:min-h-[9rem]`}
           >
             <div
               ref={speechBubbleFitRef}
-              className="flex h-full max-h-[12rem] w-full items-center justify-center overflow-hidden"
+              className="flex h-full max-h-[8.5rem] w-full items-center justify-center overflow-hidden sm:max-h-[9.5rem]"
             >
               <p
                 ref={speechBubbleTextRef}
@@ -2685,7 +2689,7 @@ function HostIntroScreen({ round, stingerLine, onContinue, theme }) {
               </p>
             </div>
           </motion.div>
-          <div className="flex gap-5">
+          <div className="flex gap-3">
             <Button className={HOST_DIALOGUE_BUTTON_CLASS} onClick={handleNextSpeechAction}>
               Next
             </Button>
