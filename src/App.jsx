@@ -206,8 +206,8 @@ const UI_ICON_MAGNIFIER_FIRE_SRC = "/assets/images/ui-icons/magnifier-fire.png";
 const NEW_UI_BASE = "/assets/new-ui";
 const NEW_UI_LOGO_MAIN_SRC = `${NEW_UI_BASE}/logos/main-logo.png`;
 const NEW_UI_LOGO_18PLUS_SRC = `${NEW_UI_BASE}/logos/logo-18plus.png`;
-const NEW_UI_WALLPAPER_HOME_SRC = "";
-const NEW_UI_WALLPAPER_IN_GAME_SRC = "";
+const NEW_UI_WALLPAPER_IN_GAME_SRC = `${NEW_UI_BASE}/wallpapers/in-game.png`;
+const NEW_UI_WALLPAPER_HOME_SRC = NEW_UI_WALLPAPER_IN_GAME_SRC;
 const NEW_UI_CARD_BASE = `${NEW_UI_BASE}/cards`;
 const NEW_UI_CATEGORY_ICON_BASE = `${NEW_UI_BASE}/categories`;
 const NEW_UI_ROUND_TYPE_ICON_BASE = `${NEW_UI_BASE}/game-modes`;
@@ -1706,10 +1706,43 @@ function ThemeHostVisual({
   alt = "",
   className = "",
 }) {
+  const hostAssets = useMemo(() => getThemeHostAssets(themeName), [themeName]);
   const animatedHostSrc = useTalkingAnimation({
     enabled: isTalking,
     themeName,
   });
+  const talkingVideoSrc =
+    hostAssets?.talkingVideoWebm ||
+    hostAssets?.talkingVideo ||
+    hostAssets?.talkingVideoMp4 ||
+    "";
+  const [videoBroken, setVideoBroken] = useState(false);
+
+  useEffect(() => {
+    setVideoBroken(false);
+  }, [talkingVideoSrc, themeName]);
+
+  if (talkingVideoSrc && !videoBroken) {
+    return (
+      <div className={className}>
+        <div className="h-full w-full">
+          <MultiSourceVideo
+            src={talkingVideoSrc}
+            className="h-full w-full object-cover"
+            autoPlay={isTalking}
+            loop={isTalking}
+            muted
+            playsInline
+            preload="metadata"
+            poster={animatedHostSrc || undefined}
+            ariaHidden
+            onError={() => setVideoBroken(true)}
+          />
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className={className}>
       <div className="grid h-full w-full [grid-template-areas:'stack']">
@@ -2109,8 +2142,8 @@ function GameIntroScreen({
   }
   return (
     <BrandedScreen
-      wallpaperSrc=""
-      overlayClassName="bg-black"
+      wallpaperSrc={NEW_UI_WALLPAPER_IN_GAME_SRC}
+      overlayClassName="bg-black/65"
     >
       <div className="relative mx-auto flex h-[calc(100dvh-2.5rem)] w-full max-w-[28rem] flex-col items-center justify-between gap-4 overflow-hidden py-2">
         <div
@@ -2602,8 +2635,8 @@ function HostIntroScreen({ round, stingerLine, onContinue, theme }) {
   }
   return (
     <BrandedScreen
-      wallpaperSrc=""
-      overlayClassName="bg-black"
+      wallpaperSrc={NEW_UI_WALLPAPER_IN_GAME_SRC}
+      overlayClassName="bg-black/65"
     >
       <div className="relative mx-auto flex h-[calc(100dvh-2.5rem)] w-full max-w-[28rem] flex-col items-center justify-between gap-4 overflow-hidden py-2">
         <div
