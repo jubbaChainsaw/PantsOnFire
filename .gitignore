@@ -1,7 +1,9 @@
 node_modules
 .local-secrets/
 scripts/royaltyFreeApiKeys.local.json
+scripts/royaltyFreeApiKeys.json
 scripts/personaAvatarApiKeys.local.json
 .tmp/
+exports/generated-host-stills/
 exports/Hosts (1).zip
 exports/hostoverlay.png

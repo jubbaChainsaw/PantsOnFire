@@ -26,7 +26,9 @@
     "host:install-theme-host-packs": "node scripts/installThemeHostPacks.cjs",
     "export:default-host-ssml": "node scripts/exportDefaultHostSsmlCsv.cjs",
     "persona:export-avatar-prompts": "node scripts/exportPersonaAvatarPrompts.cjs",
-    "persona:generate-avatars": "node scripts/generatePersonaAvatars.cjs"
+    "persona:generate-avatars": "node scripts/generatePersonaAvatars.cjs",
+    "host:generate-openai-theme-stills": "node scripts/generateOpenAiThemeHostImages.cjs",
+    "host:generate-openai-theme-stills:defaults": "node scripts/generateOpenAiThemeHostImages.cjs --face ./public/assets/host-generation/host-face.png --style ./public/assets/host-generation/host-default-key-art.png"
   },
   "dependencies": {
     "cors": "^2.8.6",
