@@ -621,6 +621,20 @@ function applyPicturePackSelection(
   return weighted.length ? weighted : source;
 }
 
+const DEFAULT_BANNED_WORD_FILLERS = ['bluff', 'nervous', 'suspicious', 'chaos', 'truth'];
+
+function ensureFiveBannedWords(words = []) {
+  const normalized = (Array.isArray(words) ? words : [])
+    .map((word) => String(word || '').trim().toLowerCase())
+    .filter(Boolean);
+  const unique = [...new Set(normalized)];
+  for (const filler of DEFAULT_BANNED_WORD_FILLERS) {
+    if (unique.length >= 5) break;
+    if (!unique.includes(filler)) unique.push(filler);
+  }
+  return unique.slice(0, 5);
+}
+
 function usesNoCategorySelection(roundTypeId = '') {
   return NO_CATEGORY_SELECTION_ROUND_TYPE_IDS.has(String(roundTypeId || '').trim());
 }
@@ -631,7 +645,6 @@ function buildLocalRound(
   roundNumber,
   liarCount = 1,
   recentPromptKeys = [],
-  mode = 'classic',
   selectedRoundTypeId = null,
   grillSettings = { micEnabled: true, ttsEnabled: true },
   adultMode = false,
@@ -681,12 +694,14 @@ function buildLocalRound(
   const filteredOptions = ageFilteredOptions.filter((item) => !recentPromptKeys.includes(item.key));
   const selected = pickRandom(filteredOptions.length ? filteredOptions : ageFilteredOptions);
   const liarIds = shuffle(players).slice(0, Math.max(1, Math.min(liarCount, players.length - 1))).map((p) => p.id);
-  const bannedWords = sanitizeBannedWords(
-    effectiveCategory.name,
-    selected.prompt.hint,
-    selected.prompt.main,
-    selected.prompt.imposter,
-    BANNED_WORD_BANK[selected.key] || []
+  const bannedWords = ensureFiveBannedWords(
+    sanitizeBannedWords(
+      effectiveCategory.name,
+      selected.prompt.hint,
+      selected.prompt.main,
+      selected.prompt.imposter,
+      BANNED_WORD_BANK[selected.key] || []
+    )
   );
   const truthDeck = shuffle(selected.prompt.mainWords || []);
   const liarDeck = shuffle(selected.prompt.imposterWords || []);
@@ -719,8 +734,7 @@ function buildLocalRound(
     mediaPreviewLabel: selected.prompt.previewLabel || null,
     mediaPackId: selected.prompt.picturePackId || null,
     isAdultPrompt: Boolean(selected.prompt.adultOnly),
-    bannedWords: mode === 'chaos' ? bannedWords : [],
-    mode,
+    bannedWords,
     imposterIds: liarIds,
     chooserId: pickRandom(players).id,
     leaderId: pickRandom(players).id,
@@ -1689,7 +1703,7 @@ function HostIntroScreen({ round, stingerLine, onContinue, theme }) {
     </TopFrame>
   );
 }
-function RulesSplashScreen({ mode, onContinue, theme, isOnlineMode = false }) {
+function RulesSplashScreen({ onContinue, theme, isOnlineMode = false }) {
   return (
     <TopFrame theme={theme} allowScroll={false}>
       <div className="mx-auto max-w-3xl space-y-6">
@@ -1711,9 +1725,11 @@ function RulesSplashScreen({ mode, onContinue, theme, isOnlineMode = false }) {
               </div>
             )}
             <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
-              You cannot use any words from the <span className="font-semibold text-cyan-200">category</span> or <span className="font-semibold text-cyan-200">hint</span> in your clue.
+              You cannot use any of the 5 banned words shown on your reveal card.
             </div>
-            {mode === 'chaos' && <div className="rounded-2xl border border-red-400/20 bg-red-500/10 p-4">Chaos mode: you also cannot say any of the 5 banned words shown on your reveal card.</div>}
+            <div className="rounded-2xl border border-red-400/20 bg-red-500/10 p-4">
+              Every round includes 5 banned words shown on your reveal card.
+            </div>
             <div className="rounded-2xl border border-white/10 bg-white/5 p-4">Vote for the liar. Correct votes score points. Uncaught liars score extra.</div>
           </div>
           <Button className="rounded-[1.5rem] h-14 px-8 mt-8 bg-yellow-300 text-zinc-950 hover:bg-yellow-200 border-2 border-white" onClick={onContinue}>Start Round One</Button>
@@ -1986,7 +2002,7 @@ function OnlineLobbyCodeScreen({ lobbyCode, hostName, players, lobbyStatus, onli
 }
 function SetupScreen(props) {
   const {
-    players, setPlayers, liarCount, setLiarCount, nameTheme, setNameTheme, mode, setMode,
+    players, setPlayers, liarCount, setLiarCount, nameTheme, setNameTheme,
     winCondition, setWinCondition, pointsToWin, setPointsToWin, roundsPerPlayer, setRoundsPerPlayer, enabledCategories, onToggleCategory,
     grillSettings, setGrillSettings, adultMode, categoryCount, onOpenAdmin, onStart, onBack, setupLine,
     personaOnlyMode, setPersonaOnlyMode,
@@ -2229,13 +2245,6 @@ function SetupScreen(props) {
                       <ChevronUp className="h-4 w-4" />
                     </Button>
                   </div>
-                </div>
-              </GlassPanel>
-              <GlassPanel className="rounded-[1.5rem] bg-white/5 p-4">
-                <div className="mb-3 font-semibold">Mode</div>
-                <div className="grid grid-cols-2 gap-2">
-                  <Button className={`rounded-2xl px-4 py-3 ${mode === 'classic' ? 'bg-yellow-300 text-zinc-950' : 'border border-white/10 bg-white/5 text-white'}`} onClick={() => setMode('classic')}>Classic</Button>
-                  <Button className={`rounded-2xl px-4 py-3 ${mode === 'chaos' ? 'bg-fuchsia-500 text-white' : 'border border-white/10 bg-white/5 text-white'}`} onClick={() => setMode('chaos')}>Chaos 🔥</Button>
                 </div>
               </GlassPanel>
               <GlassPanel className="rounded-[1.5rem] bg-white/5 p-4">
@@ -2561,13 +2570,13 @@ function RevealScreen({ players, currentRevealIndex, round, totalRounds, onNext,
                       aria-hidden="true"
                       className="h-4 w-4 object-contain"
                     />
-                    <span>{isImposter ? 'IMPOSTER CARD' : round.hint}</span>
+                    <span>{isImposter ? 'LIAR CARD' : 'TRUTH CARD'}</span>
                   </div>
                   {round.mediaPreviewLabel && (
                     <div className="mt-3 text-sm text-white/85">{round.mediaPreviewLabel}</div>
                   )}
                   {mediaSrc && (
-                    <img src={mediaSrc} alt={`${round.hint} visual clue`} className="mt-3 w-full rounded-2xl" />
+                    <img src={mediaSrc} alt={`${round.roundTypeName} visual clue`} className="mt-3 w-full rounded-2xl" />
                   )}
                   <div ref={promptFitContainerRef} className="mt-4 max-h-[12.5rem] overflow-hidden px-1">
                     <div
@@ -2594,7 +2603,7 @@ function RevealScreen({ players, currentRevealIndex, round, totalRounds, onNext,
                   <div className={`mt-3 text-sm font-semibold ${isImposter ? 'text-orange-200' : 'text-cyan-200'}`}>
                     {isImposter ? `🔥 ${liarLine} 🔥` : normalLine}
                   </div>
-                  {round.mode === 'chaos' && round.bannedWords.length > 0 && (
+                  {round.bannedWords.length > 0 && (
                     <div className="mt-4">
                       <div className="text-xs uppercase tracking-[0.2em] text-red-300">Banned Words</div>
                       <div className="mt-1 text-xs text-red-200">{round.bannedWords.join(' • ')}</div>
@@ -3528,8 +3537,10 @@ function ResultsScreen({ players, round, totalRounds, tally, roundGains, roundBr
           ) : (resultsStage === 'details' ? (
             <div className="grid h-full grid-cols-1 gap-2 sm:grid-cols-2">
               <GlassPanel className="rounded-[1.2rem] border border-white/10 bg-black/25 p-3 text-center">
-                <div className="text-xs font-black uppercase tracking-[0.14em] text-white/55">Hint / Subcategory</div>
-                <div className="mt-1 text-xl sm:text-2xl font-black uppercase leading-tight text-white">{round.hint}</div>
+                <div className="text-xs font-black uppercase tracking-[0.14em] text-white/55">Round / Category</div>
+                <div className="mt-1 text-xl sm:text-2xl font-black uppercase leading-tight text-white">
+                  {round.roundTypeName} • {round.categoryEmoji} {round.categoryLabel}
+                </div>
                 <div className="mx-auto mt-2 max-w-3xl text-sm font-black uppercase leading-tight text-cyan-200/95">{round.roundTypeTagline}</div>
               </GlassPanel>
 
@@ -4047,7 +4058,6 @@ export default function App() {
   const onlineClientIdRef = useRef(getOrCreatePersistentClientId());
   const onlineSessionRef = useRef(getStoredOnlineSession());
   const onlineClientId = onlineClientIdRef.current;
-  const [mode, setMode] = useState('classic');
   const [winCondition, setWinCondition] = useState('rounds');
   const [pointsToWin, setPointsToWin] = useState(15);
   const [roundsPerPlayer, setRoundsPerPlayer] = useState(1);
@@ -4608,7 +4618,6 @@ export default function App() {
       roundNumber,
       liarCount,
       recentPromptKeys.slice(-4),
-      mode,
       selectedTypeForRound,
       grillSettings,
       adultMode,
@@ -4878,7 +4887,7 @@ export default function App() {
     setScreen('home');
   }
   function restartToHome() {
-    setPlayers(createPlayers(3, 'Default')); setLiarCount(1); setNameTheme(normalizeThemeSelection('Default', themeOptions)); setPersonaOnlyMode(false); setMode('classic'); setWinCondition('rounds'); setPointsToWin(15); setRoundsPerPlayer(1); setGrillSettings({ micEnabled: true, ttsEnabled: true }); setRound(null); setRoundNumber(1); setCurrentRoundOwnerIndex(0); setPreviousRoundType(null); setRoundTypeOptions([]); setSelectedRoundType(null); setRevealIndex(0); setVotesByPlayerId({}); setTally({}); setRoundGains({}); setRoundBreakdown({}); setImposterCaught(false); setRecentPromptKeys([]); refreshCopy(['home', 'onlineLobby']);
+    setPlayers(createPlayers(3, 'Default')); setLiarCount(1); setNameTheme(normalizeThemeSelection('Default', themeOptions)); setPersonaOnlyMode(false); setWinCondition('rounds'); setPointsToWin(15); setRoundsPerPlayer(1); setGrillSettings({ micEnabled: true, ttsEnabled: true }); setRound(null); setRoundNumber(1); setCurrentRoundOwnerIndex(0); setPreviousRoundType(null); setRoundTypeOptions([]); setSelectedRoundType(null); setRevealIndex(0); setVotesByPlayerId({}); setTally({}); setRoundGains({}); setRoundBreakdown({}); setImposterCaught(false); setRecentPromptKeys([]); refreshCopy(['home', 'onlineLobby']);
     setOnlinePhasePending(false);
     setOnlineVoteSubmissionPending(false);
     setOnlinePrivatePrompt(null);
@@ -4900,7 +4909,7 @@ export default function App() {
         theme={canonicalThemeName}
       />
     )}
-    {screen === 'setup' && <SetupScreen players={players} setPlayers={setPlayers} liarCount={liarCount} setLiarCount={setLiarCount} nameTheme={canonicalThemeName} setNameTheme={setNameTheme} mode={mode} setMode={setMode} winCondition={winCondition} setWinCondition={setWinCondition} pointsToWin={pointsToWin} setPointsToWin={setPointsToWin} roundsPerPlayer={roundsPerPlayer} setRoundsPerPlayer={setRoundsPerPlayer} grillSettings={grillSettings} setGrillSettings={setGrillSettings} adultMode={adultMode} enabledCategories={enabledCategories} onToggleCategory={(id) => setEnabledCategories((cur) => ({ ...cur, [id]: !cur[id] }))} premiumEnabled={premiumEnabled} setPremiumEnabled={setPremiumEnabled} categoryCount={activeCategories.length} onOpenAdmin={() => setAdminOpen(true)} onStart={startGame} onBack={() => setScreen('intro-video')} setupLine={copyState.setup} themeOptions={themeOptions} personaOnlyMode={personaOnlyMode} setPersonaOnlyMode={setPersonaOnlyMode} />}
+    {screen === 'setup' && <SetupScreen players={players} setPlayers={setPlayers} liarCount={liarCount} setLiarCount={setLiarCount} nameTheme={canonicalThemeName} setNameTheme={setNameTheme} winCondition={winCondition} setWinCondition={setWinCondition} pointsToWin={pointsToWin} setPointsToWin={setPointsToWin} roundsPerPlayer={roundsPerPlayer} setRoundsPerPlayer={setRoundsPerPlayer} grillSettings={grillSettings} setGrillSettings={setGrillSettings} adultMode={adultMode} enabledCategories={enabledCategories} onToggleCategory={(id) => setEnabledCategories((cur) => ({ ...cur, [id]: !cur[id] }))} premiumEnabled={premiumEnabled} setPremiumEnabled={setPremiumEnabled} categoryCount={activeCategories.length} onOpenAdmin={() => setAdminOpen(true)} onStart={startGame} onBack={() => setScreen('intro-video')} setupLine={copyState.setup} themeOptions={themeOptions} personaOnlyMode={personaOnlyMode} setPersonaOnlyMode={setPersonaOnlyMode} />}
     {screen === 'online-setup' && (
       <OnlineLobbySetupScreen
         hostName={onlineHostName}
@@ -4991,7 +5000,7 @@ export default function App() {
         onContinue={() => setScreen('rules')}
       />
     )}
-    {screen === 'rules' && <RulesSplashScreen mode={mode} onContinue={() => setScreen('category-choice')} theme={canonicalThemeName} isOnlineMode={onlineMode} />}
+    {screen === 'rules' && <RulesSplashScreen onContinue={() => setScreen('category-choice')} theme={canonicalThemeName} isOnlineMode={onlineMode} />}
     {screen === 'round-type-choice' && round && (
       <TopFrame theme={canonicalThemeName} allowScroll={false}>
         <div className="mx-auto max-w-3xl space-y-6">
