@@ -319,6 +319,14 @@ export function getThemeHostAssets(themeName = 'Default') {
   const fallbackHostFrames = getHostTalkFrames(fallback);
   const fallbackFrames = fallbackPersonaFrames.length ? fallbackPersonaFrames : fallbackHostFrames;
   const fallbackIdle = fallback.personaHostIdle || fallback.hostIdle || fallback.characterCard || null;
+  const selectedTalkingVideoWebm = String(selected.talkingVideoWebm || selected.hostTalkingVideoWebm || '').trim();
+  const selectedTalkingVideoMp4 = String(
+    selected.talkingVideoMp4 || selected.hostTalkingVideoMp4 || selected.talkingVideo || ''
+  ).trim();
+  const fallbackTalkingVideoWebm = String(fallback.talkingVideoWebm || fallback.hostTalkingVideoWebm || '').trim();
+  const fallbackTalkingVideoMp4 = String(
+    fallback.talkingVideoMp4 || fallback.hostTalkingVideoMp4 || fallback.talkingVideo || ''
+  ).trim();
   const selectedOverlay = selected.hostOverlay || null;
   const fallbackOverlay = fallback.hostOverlay || null;
   const selectedTalkingFrames = selectedFrames.length
@@ -335,6 +343,21 @@ export function getThemeHostAssets(themeName = 'Default') {
           : (fallbackFrames.length ? fallbackFrames : [selected.characterCard || fallback.characterCard].filter(Boolean))
       )
       : selectedTalkingFrames,
+    talkingVideoWebm: isDefaultTheme
+      ? (selectedTalkingVideoWebm || fallbackTalkingVideoWebm || '')
+      : selectedTalkingVideoWebm,
+    talkingVideoMp4: isDefaultTheme
+      ? (selectedTalkingVideoMp4 || fallbackTalkingVideoMp4 || '')
+      : selectedTalkingVideoMp4,
+    talkingVideo: isDefaultTheme
+      ? (
+        selectedTalkingVideoWebm
+        || selectedTalkingVideoMp4
+        || fallbackTalkingVideoWebm
+        || fallbackTalkingVideoMp4
+        || ''
+      )
+      : (selectedTalkingVideoWebm || selectedTalkingVideoMp4 || ''),
     overlay: isDefaultTheme ? (selectedOverlay || fallbackOverlay || null) : selectedOverlay,
   };
 }

@@ -16,7 +16,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Switch } from './components/ui/switch';
 import { PASS_THE_PHONE_ROUND_TYPES, ROUND_TYPES } from './data/roundTypes';
 import { THEME_META } from './data/themes';
-import { getThemeAssets, getThemeHostAssets, ROUND_TYPE_CARD_FRONT_BY_ID } from './data/themeAssets';
+import { getThemeAssets, getThemeHostAssets } from './data/themeAssets';
 import { NAME_POOLS, randomNameFromTheme } from './data/names';
 import { toCanonicalThemeName } from './data/themeAliases';
 import { getThemePersonas, pickRandomThemePersona } from './data/themePersonas';
@@ -1175,45 +1175,81 @@ function IntroVideoScreen({ onDone }) {
     </TopFrame>
   );
 }
-function getThemeHostFrameSources(themeName = 'Default', state = 'idle') {
+function getThemeHostVideoSources(themeName = 'Default') {
   const hostAssets = getThemeHostAssets(themeName);
-  const idleFrame = hostAssets?.idle || '';
-  const talkingFrames = Array.isArray(hostAssets?.talkingFrames)
-    ? hostAssets.talkingFrames.filter(Boolean)
-    : [];
-  if (state !== 'talking') return [idleFrame].filter(Boolean);
-  if (!talkingFrames.length) return [idleFrame].filter(Boolean);
-  return talkingFrames;
+  const webmSrc = String(hostAssets?.talkingVideoWebm || hostAssets?.talkingVideo || '').trim();
+  const mp4Src = String(hostAssets?.talkingVideoMp4 || '').trim();
+  const posterSrc = String(hostAssets?.idle || '').trim();
+  return {
+    webmSrc,
+    mp4Src,
+    posterSrc,
+  };
 }
 function getThemeHostOverlaySrc(themeName = 'Default') {
   const hostAssets = getThemeHostAssets(themeName);
   return String(hostAssets?.overlay || '').trim();
 }
-function useTalkingAnimation({ enabled = false, themeName = 'Default' } = {}) {
-  const [talkIndex, setTalkIndex] = useState(0);
-  const idleFrames = useMemo(
-    () => getThemeHostFrameSources(themeName, 'idle'),
+function ThemeHostTalkingVisual({
+  themeName = 'Default',
+  isTalking = false,
+  alt = 'Theme host',
+  overlaySrc = '',
+  className = '',
+  objectClassName = 'h-full w-full object-cover',
+}) {
+  const { webmSrc, mp4Src, posterSrc } = useMemo(
+    () => getThemeHostVideoSources(themeName),
     [themeName]
   );
-  const talkingFrames = useMemo(
-    () => getThemeHostFrameSources(themeName, 'talking'),
-    [themeName]
+  const videoRef = useRef(null);
+  const hasVideo = Boolean(webmSrc || mp4Src);
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video || !hasVideo) return undefined;
+    if (isTalking) {
+      const playPromise = video.play();
+      if (playPromise && typeof playPromise.catch === 'function') {
+        playPromise.catch(() => {});
+      }
+      return undefined;
+    }
+    try {
+      video.pause();
+      video.currentTime = 0;
+    } catch {}
+    return undefined;
+  }, [hasVideo, isTalking, webmSrc, mp4Src]);
+
+  return (
+    <div className={`relative ${className}`}>
+      {hasVideo ? (
+        <video
+          ref={videoRef}
+          className={objectClassName}
+          muted
+          loop
+          playsInline
+          preload="auto"
+          autoPlay={isTalking}
+          poster={posterSrc || undefined}
+        >
+          {webmSrc ? <source src={webmSrc} type="video/webm" /> : null}
+          {mp4Src ? <source src={mp4Src} type="video/mp4" /> : null}
+        </video>
+      ) : (
+        <ThemeArt src={posterSrc} alt={alt} className={objectClassName} />
+      )}
+      {overlaySrc && (
+        <ThemeArt
+          src={overlaySrc}
+          alt=""
+          className="pointer-events-none absolute inset-0 h-full w-full object-contain"
+        />
+      )}
+    </div>
   );
-  useEffect(() => {
-    setTalkIndex(0);
-  }, [themeName, enabled]);
-  useEffect(() => {
-    if (!enabled) return undefined;
-    if (talkingFrames.length <= 1) return undefined;
-    const timer = setInterval(() => {
-      setTalkIndex((current) => (current + 1) % talkingFrames.length);
-    }, 760);
-    return () => clearInterval(timer);
-  }, [enabled, talkingFrames.length]);
-  if (enabled && talkingFrames.length > 0) {
-    return talkingFrames[talkIndex] || talkingFrames[0];
-  }
-  return idleFrames[0] || '';
 }
 function fitTextToBubble(textElement, containerElement, {
   maxSize = 34,
@@ -1248,7 +1284,6 @@ const HOST_DIALOGUE_TIMINGS = {
   liarRevealCompleteMs: 6000,
 };
 function GameIntroScreen({ theme, onContinue, isOnlineMode = false, totalRounds = 1, playerCount = 0 }) {
-  const hostSizeConfig = useMemo(() => getHostSizeConfig(theme), [theme]);
   const themedHostPersona = useMemo(
     () => getThemeHostPersona(theme),
     [theme]
@@ -1274,7 +1309,7 @@ function GameIntroScreen({ theme, onContinue, isOnlineMode = false, totalRounds 
   const [lineIndex, setLineIndex] = useState(0);
   const introSpeechTextRef = useRef(null);
   const introSpeechBubbleRef = useRef(null);
-  const [introLineFontSize, setIntroLineFontSize] = useState(30);
+  const [introLineFontSize, setIntroLineFontSize] = useState(40);
   const currentIntroLine = introLines[lineIndex] || '';
   const defaultHostVoicePlaying = useDefaultHostVoicePlayback({
     enabled: theme === 'Default',
@@ -1282,101 +1317,92 @@ function GameIntroScreen({ theme, onContinue, isOnlineMode = false, totalRounds 
     fallbackDurationMs: HOST_DIALOGUE_TIMINGS.gameIntroAdvanceMs,
   });
   const hostOverlaySrc = useMemo(() => getThemeHostOverlaySrc(theme), [theme]);
-  const isTalking = theme === 'Default'
-    ? defaultHostVoicePlaying
-    : lineIndex < introLines.length - 1;
-  const animatedHostSrc = useTalkingAnimation({ enabled: isTalking, themeName: theme });
+  const isTalking = theme === 'Default' ? defaultHostVoicePlaying : true;
+
   useEffect(() => {
     setLineIndex(0);
   }, [theme, isOnlineMode]);
-  useEffect(() => {
-    if (lineIndex >= introLines.length - 1) return undefined;
-    if (theme === 'Default' && defaultHostVoicePlaying) return undefined;
-    const timer = setTimeout(() => {
-      setLineIndex((current) => Math.min(current + 1, introLines.length - 1));
-    }, theme === 'Default' ? 220 : HOST_DIALOGUE_TIMINGS.gameIntroAdvanceMs);
-    return () => clearTimeout(timer);
-  }, [lineIndex, introLines.length, theme, defaultHostVoicePlaying]);
+
   useLayoutEffect(() => {
     const nextSize = fitTextToBubble(introSpeechTextRef.current, introSpeechBubbleRef.current, {
-      maxSize: 32,
-      minSize: 14,
-      lineHeight: 1.1,
+      maxSize: 56,
+      minSize: 20,
+      lineHeight: 1.04,
     });
     setIntroLineFontSize((current) => (current === nextSize ? current : nextSize));
   }, [lineIndex, introLines]);
+
   const canContinue = lineIndex >= introLines.length - 1;
   function advanceIntroLine() {
+    if (canContinue) {
+      onContinue();
+      return;
+    }
     setLineIndex((current) => Math.min(current + 1, introLines.length - 1));
   }
+
   return (
     <TopFrame theme={theme} allowScroll={false}>
-      <div className="mx-auto flex h-[calc(100dvh-2rem)] w-full max-w-5xl flex-col justify-center">
-        <GlassPanel className="rounded-[2.5rem] border-cyan-400/20 bg-black/25 p-6 sm:p-8">
+      <div className="mx-auto flex h-[calc(100dvh-2rem)] w-full max-w-[30rem] flex-col justify-center">
+        <GlassPanel className="rounded-[2.5rem] border-fuchsia-300/30 bg-black/30 p-4 sm:p-5">
           <div className="text-center">
-            <div className="text-xs uppercase tracking-[0.35em] text-cyan-200/80">Game intro</div>
-            <h2 className="mt-3 text-4xl font-black text-yellow-300">Host briefing</h2>
-            <p className="mt-2 text-sm text-cyan-100/90">
-              Your host tonight: <span className="font-black text-yellow-200">{themedHostPersona.name}</span>
-            </p>
+            <div className="text-xs uppercase tracking-[0.35em] text-fuchsia-200/80">Game intro</div>
+            <h2 className="mt-2 text-3xl font-black text-white">{themedHostPersona.name}</h2>
           </div>
-          <div className="relative mx-auto mt-6 w-full max-w-3xl min-h-[240px] sm:min-h-[300px]">
-            <div className={`pointer-events-none absolute bottom-0 left-0 ${hostSizeConfig.intro}`}>
-              <ThemeArt
-                src={animatedHostSrc}
-                alt={`${theme} host ${themedHostPersona.name}`}
-                className="h-full w-full object-contain"
-              />
-              {hostOverlaySrc && (
-                <ThemeArt
-                  src={hostOverlaySrc}
-                  alt=""
-                  className="pointer-events-none absolute inset-0 h-full w-full object-contain"
+          <div className="mx-auto mt-4 w-full max-w-[22rem]">
+            <div className="rounded-[2rem] border-[10px] border-fuchsia-500 bg-black/30 p-2 shadow-[0_16px_34px_rgba(0,0,0,0.45)]">
+              <div className="aspect-[3/4] overflow-hidden rounded-[1.45rem] bg-black/50">
+                <ThemeHostTalkingVisual
+                  themeName={theme}
+                  isTalking={isTalking}
+                  alt={`${theme} host ${themedHostPersona.name}`}
+                  overlaySrc={hostOverlaySrc}
+                  className="h-full w-full"
+                  objectClassName="h-full w-full object-cover"
                 />
-              )}
-            </div>
-            <motion.div
-              key={`intro-line-${lineIndex}`}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.25, ease: 'easeOut' }}
-              className={`${hostSizeConfig.introBubbleMargin} h-[10.75rem] sm:h-[11.75rem] pt-2 text-white`}
-            >
-              <div ref={introSpeechBubbleRef} className="relative mx-auto flex h-full max-w-2xl items-center justify-center rounded-[2rem] border-2 border-cyan-200/80 bg-[#1d2376] px-4 py-4 text-center shadow-[0_12px_24px_rgba(0,0,0,0.35)] overflow-hidden">
-                <div className="absolute -left-3 top-[55%] h-6 w-6 -translate-y-1/2 rotate-45 border-b-2 border-l-2 border-cyan-200/80 bg-[#1d2376]" />
-                <p
-                  ref={introSpeechTextRef}
-                  className="text-white/95"
-                  style={{
-                    fontSize: `${introLineFontSize}px`,
-                    lineHeight: 1.1,
-                    whiteSpace: 'normal',
-                    wordBreak: 'normal',
-                    overflowWrap: 'break-word',
-                    hyphens: 'manual',
-                    WebkitHyphens: 'manual',
-                  }}
-                >
-                  {introLines[lineIndex]}
-                </p>
               </div>
-            </motion.div>
+            </div>
           </div>
-          <div className="mt-7 flex flex-wrap justify-center gap-3">
-            {!canContinue && (
-              <Button
-                className="h-14 rounded-[1.5rem] border border-white/25 bg-white/10 px-6 text-white"
-                onClick={advanceIntroLine}
-              >
-                Next line
-              </Button>
-            )}
-            <Button
-              className="h-14 min-w-[16rem] rounded-[1.5rem] border-2 border-white bg-yellow-300 px-8 text-zinc-950"
-              onClick={onContinue}
-              disabled={!canContinue}
+          <motion.div
+            key={`intro-line-${lineIndex}`}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.2, ease: 'easeOut' }}
+            className="mt-5"
+          >
+            <div
+              ref={introSpeechBubbleRef}
+              className="flex min-h-[15.5rem] items-center justify-center rounded-[2.1rem] border border-fuchsia-300/50 bg-fuchsia-600 px-5 py-6 text-center shadow-[0_16px_34px_rgba(0,0,0,0.45)]"
             >
-              {canContinue ? 'Continue to category selection' : 'Host is introducing...'}
+              <p
+                ref={introSpeechTextRef}
+                className="font-black uppercase tracking-[0.05em] text-white [text-shadow:0_3px_8px_rgba(0,0,0,0.45)]"
+                style={{
+                  fontSize: `${introLineFontSize}px`,
+                  lineHeight: 1.04,
+                  whiteSpace: 'normal',
+                  wordBreak: 'normal',
+                  overflowWrap: 'break-word',
+                  hyphens: 'manual',
+                  WebkitHyphens: 'manual',
+                }}
+              >
+                {currentIntroLine}
+              </p>
+            </div>
+          </motion.div>
+          <div className="mt-5 grid grid-cols-2 gap-3">
+            <Button
+              className="h-16 rounded-[1.5rem] border border-fuchsia-300/60 bg-fuchsia-600 text-white"
+              onClick={advanceIntroLine}
+            >
+              {canContinue ? 'Continue' : 'Next'}
+            </Button>
+            <Button
+              className="h-16 rounded-[1.5rem] border border-fuchsia-300/60 bg-fuchsia-600 text-white"
+              onClick={onContinue}
+            >
+              Skip
             </Button>
           </div>
         </GlassPanel>
@@ -1530,21 +1556,10 @@ function resolveCategoryChoiceCardArt(category, themeName = 'Default') {
   );
 }
 function HostIntroScreen({ round, stingerLine, onContinue, theme }) {
-  const hostSizeConfig = useMemo(() => getHostSizeConfig(theme), [theme]);
   const themedHostPersona = useMemo(
     () => getThemeHostPersona(theme),
     [theme]
   );
-  const themeAssets = getThemeAssets(round.roundTypeId === 'grill' ? 'GrillEm' : theme);
-  const defaultThemeAssets = getThemeAssets('Default');
-  const useAdultCardArt = Boolean(round.isAdultPrompt);
-  const defaultTypeCardFront = ROUND_TYPE_CARD_FRONT_BY_ID[round.roundTypeId] || null;
-  const exampleCardSrc = useAdultCardArt
-    ? (themeAssets.adultPromptCardFront || defaultThemeAssets.adultPromptCardFront)
-    : (defaultTypeCardFront || themeAssets.promptCardFront || defaultThemeAssets.promptCardFront);
-  const examplePrompts = getHostExamplePrompts(round.roundTypeId);
-  const normalExamplePrompt = examplePrompts.normal;
-  const liarExamplePrompt = examplePrompts.liar;
   const speechSentences = [
     `${round.roundTypeName} round selected.`,
     getRoundRuleText(round.roundTypeId),
@@ -1563,133 +1578,96 @@ function HostIntroScreen({ round, stingerLine, onContinue, theme }) {
   });
   const hostOverlaySrc = useMemo(() => getThemeHostOverlaySrc(theme), [theme]);
   const canContinue = speechIndex >= speechSentences.length - 1;
-  const isTalking = theme === 'Default'
-    ? defaultHostVoicePlaying
-    : speechIndex < speechSentences.length - 1;
-  const animatedHostSrc = useTalkingAnimation({ enabled: isTalking, themeName: theme });
+  const isTalking = theme === 'Default' ? defaultHostVoicePlaying : true;
   const introLine = round.roundTypeId === 'grill'
     ? `${themedHostPersona.name} is live. Mic up and question the AI.`
     : `${themedHostPersona.name} is in the building. Let the chaos begin.`;
+
   useEffect(() => {
     setSpeechIndex(0);
   }, [round.id, round.roundNumber, round.roundTypeId]);
-  useEffect(() => {
-    if (speechIndex >= speechSentences.length - 1) return undefined;
-    if (theme === 'Default' && defaultHostVoicePlaying) return undefined;
-    const timer = setTimeout(() => {
-      setSpeechIndex((current) => Math.min(current + 1, speechSentences.length - 1));
-    }, theme === 'Default' ? 220 : HOST_DIALOGUE_TIMINGS.roundIntroAdvanceMs);
-    return () => clearTimeout(timer);
-  }, [speechIndex, speechSentences.length, theme, defaultHostVoicePlaying]);
+
   useLayoutEffect(() => {
     const nextSize = fitTextToBubble(speechBubbleTextRef.current, speechBubbleFitRef.current, {
-      maxSize: 28,
-      minSize: 12,
-      lineHeight: 1.16,
+      maxSize: 56,
+      minSize: 20,
+      lineHeight: 1.04,
     });
     setSpeechBubbleFontSize((current) => (current === nextSize ? current : nextSize));
   }, [speechIndex, speechSentences]);
+
   function advanceSpeechLine() {
+    if (canContinue) {
+      onContinue();
+      return;
+    }
     setSpeechIndex((current) => Math.min(current + 1, speechSentences.length - 1));
   }
+
   return (
     <TopFrame theme={theme} allowScroll={false}>
-      <div className="mx-auto flex h-[calc(100dvh-2rem)] w-full max-w-3xl flex-col justify-center">
-        <GlassPanel className="relative overflow-hidden rounded-[2.5rem] border-cyan-400/20 bg-black/25 p-6 sm:p-8 text-center">
-          <div className="text-xs uppercase tracking-[0.35em] text-white/50">Host enters</div>
-          <h2 className="mt-2 text-3xl sm:text-4xl font-black text-yellow-300">{themedHostPersona.name}</h2>
-          <p className="mt-1.5 text-sm sm:text-base font-semibold text-cyan-200">{introLine}</p>
-          <div className="relative mt-4 h-[220px] sm:h-[250px] w-full">
-            <div className="absolute inset-0 flex items-start justify-center gap-3">
-              <div className="relative w-[44%] max-w-[10rem]">
-                <div className="absolute -top-2 left-1/2 z-20 -translate-x-1/2 rounded-full border border-white/35 bg-black/35 px-3 py-1 text-[0.65rem] uppercase tracking-[0.18em] text-cyan-100">
-                  Normal
-                </div>
-                <div className="relative aspect-[2/3] overflow-hidden rounded-[1.2rem] border border-white/25 shadow-lg">
-                  {exampleCardSrc && <img src={exampleCardSrc} alt="" aria-hidden="true" className="absolute inset-0 h-full w-full object-contain" />}
-                  <div className="absolute inset-0 bg-black/25" />
-                  <div className="absolute bottom-3 left-3 right-3 text-xs font-black leading-tight text-white [text-shadow:0_2px_8px_rgba(0,0,0,0.8)]">
-                    {normalExamplePrompt}
-                  </div>
-                </div>
-              </div>
-              <div className="relative w-[44%] max-w-[10rem]">
-                <div className="absolute -top-2 left-1/2 z-20 -translate-x-1/2 rounded-full border border-red-200/60 bg-black/35 px-3 py-1 text-[0.65rem] uppercase tracking-[0.18em] text-red-100">
-                  Liar
-                </div>
-                <div className="relative aspect-[2/3] overflow-hidden rounded-[1.2rem] border border-white/25 shadow-lg">
-                  {exampleCardSrc && <img src={exampleCardSrc} alt="" aria-hidden="true" className="absolute inset-0 h-full w-full object-contain" />}
-                  <div className="absolute inset-0 bg-red-900/30" />
-                  <div className="absolute bottom-3 left-3 right-3 text-xs font-black leading-tight text-yellow-200 [text-shadow:0_2px_8px_rgba(0,0,0,0.8)]">
-                    {liarExamplePrompt}
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div className="relative mx-auto mt-2 w-full max-w-2xl h-[11.5rem] sm:h-[12.5rem]">
-            <div className={`pointer-events-none absolute bottom-0 left-0 ${hostSizeConfig.hostIntro}`}>
-              <ThemeArt
-                src={animatedHostSrc}
-                alt={`${theme} presenter`}
-                className="h-full w-full object-contain"
-              />
-              {hostOverlaySrc && (
-                <ThemeArt
-                  src={hostOverlaySrc}
-                  alt=""
-                  className="absolute inset-0 h-full w-full object-contain pointer-events-none"
+      <div className="mx-auto flex h-[calc(100dvh-2rem)] w-full max-w-[30rem] flex-col justify-center">
+        <GlassPanel className="relative overflow-hidden rounded-[2.5rem] border-fuchsia-300/30 bg-black/30 p-4 sm:p-5 text-center">
+          <div className="text-xs uppercase tracking-[0.35em] text-fuchsia-200/80">{round.roundTypeName}</div>
+          <h2 className="mt-2 text-3xl font-black text-white">{themedHostPersona.name}</h2>
+          <p className="mt-1 text-xs sm:text-sm font-semibold text-fuchsia-100/90">{introLine}</p>
+
+          <div className="mx-auto mt-4 w-full max-w-[22rem]">
+            <div className="rounded-[2rem] border-[10px] border-fuchsia-500 bg-black/30 p-2 shadow-[0_16px_34px_rgba(0,0,0,0.45)]">
+              <div className="aspect-[3/4] overflow-hidden rounded-[1.45rem] bg-black/50">
+                <ThemeHostTalkingVisual
+                  themeName={theme}
+                  isTalking={isTalking}
+                  alt={`${theme} presenter`}
+                  overlaySrc={hostOverlaySrc}
+                  className="h-full w-full"
+                  objectClassName="h-full w-full object-cover"
                 />
-              )}
-            </div>
-            <motion.div
-              key={`${round.id || round.roundNumber}-${speechIndex}`}
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.28, ease: 'easeOut' }}
-              className={`${hostSizeConfig.hostIntroBubbleMargin} h-full p-1 text-white`}
-            >
-              <div ref={speechBubbleFitRef} className="relative mx-auto flex h-full max-w-xl items-center justify-center overflow-hidden rounded-[2rem] border-2 border-cyan-200/80 bg-[#1d2376] px-4 py-4 shadow-[0_12px_24px_rgba(0,0,0,0.35)]">
-                <div className="absolute -left-3 top-[58%] h-6 w-6 -translate-y-1/2 rotate-45 border-b-2 border-l-2 border-cyan-200/80 bg-[#1d2376]" />
-                <p
-                  ref={speechBubbleTextRef}
-                  className="text-white/95"
-                  style={{
-                    fontSize: `${speechBubbleFontSize}px`,
-                    lineHeight: 1.16,
-                    wordBreak: 'normal',
-                    overflowWrap: 'normal',
-                    whiteSpace: 'normal',
-                    hyphens: 'manual',
-                    WebkitHyphens: 'manual',
-                  }}
-                >
-                  {speechSentences[speechIndex]}
-                </p>
               </div>
-            </motion.div>
-            {round.roundTypeId === 'grill' && (
-              <p className="mt-3 text-xs font-semibold text-yellow-200">
-                Each player gets {round.grillData?.questionsPerPlayer || 1} questions this round.
-              </p>
-            )}
-            <div className="mt-3 text-xs text-white/70">{round.roundTypeName} • {round.categoryEmoji} {round.categoryLabel}</div>
+            </div>
           </div>
-          <div className="mt-7 flex flex-wrap justify-center gap-3">
-            {!canContinue && (
-              <Button
-                className="h-14 rounded-[1.5rem] border border-white/25 bg-white/10 px-6 text-white"
-                onClick={advanceSpeechLine}
-              >
-                Next line
-              </Button>
-            )}
-            <Button
-              className="h-14 min-w-[16rem] rounded-[1.5rem] border-2 border-white bg-yellow-300 px-8 text-zinc-950"
-              onClick={onContinue}
-              disabled={!canContinue}
+
+          <motion.div
+            key={`${round.id || round.roundNumber}-${speechIndex}`}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.2, ease: 'easeOut' }}
+            className="mt-5"
+          >
+            <div
+              ref={speechBubbleFitRef}
+              className="flex min-h-[15.5rem] items-center justify-center rounded-[2.1rem] border border-fuchsia-300/50 bg-fuchsia-600 px-5 py-6 text-center shadow-[0_16px_34px_rgba(0,0,0,0.45)]"
             >
-              {canContinue ? 'Deal cards' : 'Host is explaining...'}
+              <p
+                ref={speechBubbleTextRef}
+                className="font-black uppercase tracking-[0.05em] text-white [text-shadow:0_3px_8px_rgba(0,0,0,0.45)]"
+                style={{
+                  fontSize: `${speechBubbleFontSize}px`,
+                  lineHeight: 1.04,
+                  whiteSpace: 'normal',
+                  wordBreak: 'normal',
+                  overflowWrap: 'break-word',
+                  hyphens: 'manual',
+                  WebkitHyphens: 'manual',
+                }}
+              >
+                {speechSentences[speechIndex]}
+              </p>
+            </div>
+          </motion.div>
+
+          <div className="mt-5 grid grid-cols-2 gap-3">
+            <Button
+              className="h-16 rounded-[1.5rem] border border-fuchsia-300/60 bg-fuchsia-600 text-white"
+              onClick={advanceSpeechLine}
+            >
+              {canContinue ? 'Deal cards' : 'Next'}
+            </Button>
+            <Button
+              className="h-16 rounded-[1.5rem] border border-fuchsia-300/60 bg-fuchsia-600 text-white"
+              onClick={onContinue}
+            >
+              Skip
             </Button>
           </div>
         </GlassPanel>
@@ -3309,7 +3287,6 @@ function LiarRevealScreen({ players, round, onComplete, theme, playSfx = () => {
   ];
   const isTalking = announcementIndex < announcementLines.length - 1;
   const hostOverlaySrc = useMemo(() => getThemeHostOverlaySrc(theme), [theme]);
-  const animatedHostSrc = useTalkingAnimation({ enabled: isTalking, themeName: theme });
   const finishReveal = useCallback(() => {
     if (hasCompletedRef.current) return;
     hasCompletedRef.current = true;
@@ -3364,18 +3341,14 @@ function LiarRevealScreen({ players, round, onComplete, theme, playSfx = () => {
             <div className="text-xs uppercase tracking-[0.35em] text-white/50">Final accusation</div>
             <div className="relative mx-auto mt-4 w-full max-w-3xl min-h-[230px] sm:min-h-[280px]">
               <div className={`pointer-events-none absolute bottom-0 left-0 ${hostSizeConfig.liarReveal}`}>
-                <ThemeArt
-                  src={animatedHostSrc}
+                <ThemeHostTalkingVisual
+                  themeName={theme}
+                  isTalking={isTalking}
                   alt={`${theme} presenter`}
-                  className="h-full w-full object-contain"
+                  overlaySrc={hostOverlaySrc}
+                  className="h-full w-full"
+                  objectClassName="h-full w-full object-contain"
                 />
-                {hostOverlaySrc && (
-                  <ThemeArt
-                    src={hostOverlaySrc}
-                    alt=""
-                    className="absolute inset-0 h-full w-full object-contain"
-                  />
-                )}
               </div>
               <motion.div
                 key={`liar-announce-${announcementIndex}`}
