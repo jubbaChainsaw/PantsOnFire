@@ -18,11 +18,11 @@ const DEFAULT_CHROMA_TOLERANCE = 58;
  */
 function isMagentaScreenFringe(r, g, b) {
   const sum = r + g + b;
-  if (sum > 295) return false;
-  if (r < 58 || b < 58) return false;
-  if (g > 92) return false;
-  if (Math.abs(r - b) > 48) return false;
-  return (Math.min(r, b) - g) >= 30;
+  if (sum > 275) return false;
+  if (r < 100 || b < 100) return false;
+  if (g > 85) return false;
+  if (Math.abs(r - b) > 40) return false;
+  return (Math.min(r, b) - g) >= 42;
 }
 
 /**
@@ -32,7 +32,7 @@ function isMagentaScreenFringe(r, g, b) {
  */
 async function applyChromaKeyTransparency(imageBuffer, options = {}) {
   const tolerance = Number.isFinite(options.tolerance) ? options.tolerance : DEFAULT_CHROMA_TOLERANCE;
-  const useFringe = options.fringe !== false;
+  const useFringe = options.fringe === true;
   const keyR = options.keyR ?? DEFAULT_CHROMA_KEY_RGB.r;
   const keyG = options.keyG ?? DEFAULT_CHROMA_KEY_RGB.g;
   const keyB = options.keyB ?? DEFAULT_CHROMA_KEY_RGB.b;

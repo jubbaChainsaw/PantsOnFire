@@ -57,7 +57,7 @@ function parseArgs(argv) {
     overwrite: false,
     chromaKey: true,
     chromaTolerance: DEFAULT_CHROMA_TOLERANCE,
-    chromaFringe: true,
+    chromaFringe: false,
   };
   for (let i = 0; i < argv.length; i += 1) {
     const arg = argv[i];
@@ -78,6 +78,7 @@ function parseArgs(argv) {
     else if (arg === '--overwrite') options.overwrite = true;
     else if (arg === '--no-chroma-key') options.chromaKey = false;
     else if (arg === '--no-chroma-fringe') options.chromaFringe = false;
+    else if (arg === '--chroma-fringe') options.chromaFringe = true;
     else if (arg === '--chroma-tolerance') {
       options.chromaTolerance = Math.max(0, Number.parseInt(String(argv[i + 1] || String(DEFAULT_CHROMA_TOLERANCE)), 10) || DEFAULT_CHROMA_TOLERANCE);
       i += 1;
@@ -104,7 +105,7 @@ function usage() {
   console.log(`  (WAN) Prompts are packed to ${WAN_EDIT_PROMPT_CHAR_LIMIT} chars for fal API; long exports keep style preamble + GENDER LOCK/tailored block.`);
   console.log('  --no-chroma-key           Skip post-process (#FF00FF → alpha via sharp)');
   console.log(`  --chroma-tolerance <0-255> Per-channel distance for strict key box (default: ${DEFAULT_CHROMA_TOLERANCE})`);
-  console.log('  --no-chroma-fringe        Skip extra pass for dark magenta AA halos (stricter box only)');
+  console.log('  --chroma-fringe           Optional second pass for dark magenta AA halos (default off)');
   console.log('  --use-existing-reference  Legacy Nano Banana: use existing output PNG as edit reference (WAN ignores)');
   console.log('  --limit <n>               Limit number of personas processed after filters');
   console.log('  --overwrite               Regenerate files even if they already exist');

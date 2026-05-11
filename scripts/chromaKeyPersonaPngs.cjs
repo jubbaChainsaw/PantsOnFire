@@ -19,7 +19,7 @@ function themeFolderFromName(themeName) {
 function parseArgs(argv) {
   const options = {
     tolerance: DEFAULT_CHROMA_TOLERANCE,
-    fringe: true,
+    fringe: false,
     dryRun: false,
     theme: '',
     limit: 0,
@@ -32,6 +32,7 @@ function parseArgs(argv) {
       options.tolerance = Math.max(0, Number.parseInt(String(argv[i + 1] || String(DEFAULT_CHROMA_TOLERANCE)), 10) || DEFAULT_CHROMA_TOLERANCE);
       i += 1;
     }
+    else if (arg === '--fringe') options.fringe = true;
     else if (arg === '--no-fringe') options.fringe = false;
     else if (arg === '--theme') { options.theme = String(argv[i + 1] || '').trim(); i += 1; }
     else if (arg === '--limit') { options.limit = Math.max(0, Number.parseInt(String(argv[i + 1] || '0'), 10) || 0); i += 1; }
@@ -49,7 +50,8 @@ function usage() {
   console.log('Options:');
   console.log('  --theme <name>     Only this theme folder (e.g. "Default" → default)');
   console.log(`  --tolerance <0-255> Strict per-channel distance (default: ${DEFAULT_CHROMA_TOLERANCE})`);
-  console.log('  --no-fringe        Disable dark-magenta anti-alias halo pass');
+  console.log('  --fringe           Enable dark-magenta AA halo pass (default off; use only if halos remain)');
+  console.log('  --no-fringe        Explicitly disable fringe (default)');
   console.log('  --limit <n>        Stop after n files');
   console.log('  --dry-run          List files only');
 }

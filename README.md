@@ -250,7 +250,7 @@ npm run persona:generate-avatars -- --negative-prompt "photorealistic, 3d render
 npm run persona:generate-avatars -- --model "fal-ai/nano-banana/edit" --reference-image ./path/to/local.png
 npm run persona:generate-avatars -- --no-chroma-key
 npm run persona:generate-avatars -- --chroma-tolerance 72
-npm run persona:generate-avatars -- --no-chroma-fringe
+npm run persona:generate-avatars -- --chroma-fringe
 ```
 
 Re-key existing persona PNGs in `public/` (same **#FF00FF** tolerance logic as the generator):
@@ -258,7 +258,7 @@ Re-key existing persona PNGs in `public/` (same **#FF00FF** tolerance logic as t
 ```bash
 npm run persona:key-chroma -- --dry-run
 npm run persona:key-chroma -- --theme Default
-npm run persona:key-chroma -- --tolerance 72 --no-fringe
+npm run persona:key-chroma -- --tolerance 72 --fringe
 ```
 
 OpenAI instead:
@@ -273,7 +273,7 @@ Notes:
 - Images are saved to each persona `imageSrc` path (under `public/assets/themes/.../personas/`).
 - Use `--dry-run` first to verify prompt coverage and output paths.
 - WAN mode uses the Craiyon URL as **style** reference only (prompt forbids copying the reference subject). Legacy Nano Banana still supports `--reference-image` / `--use-existing-reference`.
-- Models often omit real alpha. Prompts ask for a **flat #FF00FF magenta** field plus a **bold black outer outline** around the character; the generator then runs a **sharp** pass to turn that magenta into transparency. The pass uses a **stricter default per-channel tolerance (58)** plus an optional **fringe rule** for dark magenta anti-alias halos next to the black line (disable with `--no-chroma-fringe` if it ever nibbles costume purples). Tune with `--chroma-tolerance`; skippable with `--no-chroma-key`. **Magenta** is used instead of green so cel-shaded greens in clothing are less likely to punch holes.
+- Models often omit real alpha. Prompts ask for a **flat #FF00FF magenta** field plus a **bold black outer outline** around the character; the generator then runs a **sharp** pass to turn that magenta into transparency (strict RGB box, default tolerance **58**). If the model paints a **white or grey background** instead of magenta, almost nothing will key until you re-run with a better prompt or key a different color. An optional **`--chroma-fringe`** pass can eat thin magenta halos but may false-key **purple-tinted shadows** on dark clothing, so it defaults **off**. Tune with `--chroma-tolerance`; skippable with `--no-chroma-key`. **Magenta** is used instead of green so cel-shaded greens in clothing are less likely to punch holes.
 
 ## Theme host pack installer (10 talking frames + themed overlays)
 
