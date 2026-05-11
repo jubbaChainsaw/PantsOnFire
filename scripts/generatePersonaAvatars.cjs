@@ -18,17 +18,17 @@ const DEFAULT_PERSONA_STYLE_REFERENCE_URL =
 const DEFAULT_PERSONA_NEGATIVE_PROMPT =
   'photorealistic, DSLR, 3D render, CGI, plastic skin, beauty filter, airbrushed, '
   + 'copying the reference person identity, same hair or outfit as reference image, extra faces, second person, '
-  + 'text, typography, lettering, captions, nametags, subtitles, speech bubbles, watermark, logo, '
-  + 'gradient background, vignette, mottled or textured backdrop, scenic background, environment, floor shadow, '
-  + 'white or grey backdrop, '
+  + 'text, captions, nametags, speech bubbles, watermark, logo, '
+  + 'gradient background, vignette, textured backdrop, scenic background, environment, floor shadow, '
+  + 'colored backdrop, grey cast, yellow color cast, mottled off-white, '
   + 'lowres, motion blur, deformed hands, extra limbs, child, underage, nudity, gore';
 /** fal-ai/wan/v2.7/edit validates `prompt` length (HTTP 422 if exceeded). */
 const WAN_EDIT_PROMPT_CHAR_LIMIT = 2000;
 const STANDARD_PERSONA_OUTPUT_SPEC = [
   'MANDATORY OUTPUT SPEC:',
   '- 512x512 square PNG.',
-  '- Background: perfectly flat, uniform SOLID magenta chroma key only — exact hex #FF00FF (R255 G0 B255). No gradients, no texture, no props, no scene, no floor.',
-  '- Bold thick BLACK outer ink outline around the entire character silhouette (and costume edges) separating the figure from the background; outline must be fully opaque black to kill edge bleed when keying.',
+  '- Background: perfectly flat, uniform SOLID pure white (#FFFFFF) from edge to edge. No gradients, no texture, no props, no scene, no cast shadow on the backdrop.',
+  '- Bold thick BLACK outer ink outline around the entire character silhouette (and costume edges); background stays uniformly white outside the figure.',
   '- One character only, centered, head and upper torso visible.',
   '- Standardized pose for every persona: relaxed front-facing bust portrait, shoulders square to camera, head upright, arms and hands out of frame.',
   '- Standardized scale: top of head about 10% from top edge, shoulder line around 62%, torso ending around 85% from top edge (same composition rules at 512px).',
@@ -37,10 +37,10 @@ const STANDARD_PERSONA_OUTPUT_SPEC = [
   '- Preserve the stated gender presentation exactly; do not feminize male or non-binary personas.',
   '- 1990s gritty adult-animation rude-toon style: thick ink lines, bulging eyes with pin pupils, awkward expressive faces, cel-shaded grimy color, not soft or cute.',
   '- Negative style: no cute anime, no chibi, no kawaii, no pretty doll, no generic young woman, no children’s illustration, no glamour portrait.',
-  '- Keep clean padding around the silhouette inside the frame for UI cropping (only magenta #FF00FF outside the black outline).',
+  '- Keep clean padding around the silhouette for circular in-game avatar framing.',
   '- No readable characters anywhere: no letters, numbers, nametags, captions, speech bubbles, subtitles, watermarks, logos, UI, or written names on clothing or props.',
   '- No text, no logo, no watermark, no border, no frame, no floor shadow.',
-  '- Post: magenta is removed in tooling for game-ready transparent PNGs; do not simulate fake transparency in-model.',
+  '- Do not fake transparency (no checkerboard, no alpha holes, no punched-out background).',
 ].join('\n');
 
 function parseArgs(argv) {
@@ -58,7 +58,7 @@ function parseArgs(argv) {
     limit: 0,
     dryRun: false,
     overwrite: false,
-    chromaKey: true,
+    chromaKey: false,
     chromaTolerance: DEFAULT_CHROMA_TOLERANCE,
     chromaFringe: false,
   };
@@ -79,6 +79,7 @@ function parseArgs(argv) {
     else if (arg === '--api-key') { options.apiKey = String(argv[i + 1] || '').trim(); i += 1; }
     else if (arg === '--dry-run') options.dryRun = true;
     else if (arg === '--overwrite') options.overwrite = true;
+    else if (arg === '--chroma-key') options.chromaKey = true;
     else if (arg === '--no-chroma-key') options.chromaKey = false;
     else if (arg === '--no-chroma-fringe') options.chromaFringe = false;
     else if (arg === '--chroma-fringe') options.chromaFringe = true;
@@ -106,7 +107,8 @@ function usage() {
   console.log(`  --style-reference-url <u> Override WAN style-only reference URL (default: ${DEFAULT_PERSONA_STYLE_REFERENCE_URL})`);
   console.log('  --negative-prompt <text>  Override WAN negative prompt (max 500 chars; has a strong default)');
   console.log(`  (WAN) Prompts are packed to ${WAN_EDIT_PROMPT_CHAR_LIMIT} chars for fal API; long exports keep style preamble + GENDER LOCK/tailored block.`);
-  console.log('  --no-chroma-key           Skip post-process (#FF00FF → alpha via sharp)');
+  console.log('  --chroma-key              Legacy: post-process flat #FF00FF field → alpha via sharp (default: off; white plate PNGs)');
+  console.log('  --no-chroma-key           Skip magenta chroma post (same as default)');
   console.log(`  --chroma-tolerance <0-255> Per-channel distance for strict key box (default: ${DEFAULT_CHROMA_TOLERANCE})`);
   console.log('  --chroma-fringe           Optional second pass for dark magenta AA halos (default off)');
   console.log('  --use-existing-reference  Legacy Nano Banana: use existing output PNG as edit reference (WAN ignores)');
@@ -250,7 +252,7 @@ function isWanV27EditModel(modelId = '') {
 function wanEditStylePreamble() {
   return (
     'Img1=style-only (line weight, cel-shade, grit); never copy identity. '
-    + 'Draw subject on flat SOLID #FF00FF magenta only; bold thick BLACK outer outline around full silhouette; '
+    + 'Flat SOLID pure white (#FFFFFF) backdrop only; bold thick BLACK outer outline around full silhouette; '
     + '512 bust, 1 character, zero text/names/captions in-image. Subject: '
   );
 }
@@ -500,11 +502,11 @@ async function run() {
   if (options.dryRun) console.log('[generatePersonaAvatars] Dry run enabled.');
   if (options.chromaKey) {
     console.log(
-      `[generatePersonaAvatars] Chroma post (#FF00FF → alpha): on (strict ±${options.chromaTolerance}`
+      `[generatePersonaAvatars] Magenta chroma post (#FF00FF → alpha): on (strict ±${options.chromaTolerance}`
       + `${options.chromaFringe ? ', + fringe halo pass' : ''})`
     );
   } else {
-    console.log('[generatePersonaAvatars] Chroma post (#FF00FF → alpha): off');
+    console.log('[generatePersonaAvatars] Magenta chroma post: off (default flat white #FFFFFF plate for circular UI masks)');
   }
 
   let created = 0;

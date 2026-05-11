@@ -233,7 +233,7 @@ Set your API key:
 export FAL_KEY=your_key_here
 ```
 
-Run generator (defaults to **`fal-ai/wan/v2.7/edit`**, **512×512** PNG, hosted **style-only** reference image + negative prompt, **#FF00FF** chroma field + **sharp** pass to transparency):
+Run generator (defaults to **`fal-ai/wan/v2.7/edit`**, **512×512** PNG, hosted **style-only** reference image + negative prompt, **flat white #FFFFFF** backdrop; optional **`--chroma-key`** for legacy **#FF00FF → alpha** post-processing):
 
 ```bash
 npm run persona:generate-avatars
@@ -248,12 +248,12 @@ npm run persona:generate-avatars -- --theme "Default"
 npm run persona:generate-avatars -- --style-reference-url "https://example.com/style.webp"
 npm run persona:generate-avatars -- --negative-prompt "photorealistic, 3d render"
 npm run persona:generate-avatars -- --model "fal-ai/nano-banana/edit" --reference-image ./path/to/local.png
-npm run persona:generate-avatars -- --no-chroma-key
+npm run persona:generate-avatars -- --chroma-key
 npm run persona:generate-avatars -- --chroma-tolerance 72
 npm run persona:generate-avatars -- --chroma-fringe
 ```
 
-Re-key existing persona PNGs in `public/` (same **#FF00FF** tolerance logic as the generator):
+Re-key existing persona PNGs in `public/` that still use a **#FF00FF** field (same tolerance logic as **`--chroma-key`**):
 
 ```bash
 npm run persona:key-chroma -- --dry-run
@@ -273,7 +273,7 @@ Notes:
 - Images are saved to each persona `imageSrc` path (under `public/assets/themes/.../personas/`).
 - Use `--dry-run` first to verify prompt coverage and output paths.
 - WAN mode uses the Craiyon URL as **style** reference only (prompt forbids copying the reference subject). Legacy Nano Banana still supports `--reference-image` / `--use-existing-reference`.
-- Models often omit real alpha. Prompts ask for a **flat #FF00FF magenta** field plus a **bold black outer outline** around the character; the generator then runs a **sharp** pass to turn that magenta into transparency (strict RGB box, default tolerance **58**). If the model paints a **white or grey background** instead of magenta, almost nothing will key until you re-run with a better prompt or key a different color. An optional **`--chroma-fringe`** pass can eat thin magenta halos but may false-key **purple-tinted shadows** on dark clothing, so it defaults **off**. Tune with `--chroma-tolerance`; skippable with `--no-chroma-key`. **Magenta** is used instead of green so cel-shaded greens in clothing are less likely to punch holes.
+- Prompts ask for a **flat #FFFFFF white** field plus a **bold black outer outline** so busts read cleanly inside circular avatars. The generator **does not** chroma-key by default; pass **`--chroma-key`** if you still generate on a **#FF00FF** plate and want **sharp** to strip that field to alpha (strict RGB box, default tolerance **58**). An optional **`--chroma-fringe`** pass can eat thin magenta halos but may false-key **purple-tinted shadows** on dark clothing, so it defaults **off**. Tune with **`--chroma-tolerance`**. **Magenta** (when used) is chosen instead of green so cel-shaded greens in clothing are less likely to punch holes.
 
 ## Theme host pack installer (10 talking frames + themed overlays)
 
