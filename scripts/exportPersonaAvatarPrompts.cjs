@@ -204,7 +204,8 @@ function buildAvatarPrompt(persona, themeName, personaIndex = 0, tailoredSegment
     'Pose must be consistent: shoulders square to camera, head upright, arms and hands out of frame, no action pose, no full body.',
     'Consistent framing for every persona: head and upper torso visible, top of head around 10% from the top edge, shoulder line around 62%, torso ending around 85% from the top edge.',
     'Use only #FF00FF outside the black silhouette outline inside the frame; no props or scenery beyond the bust crop.',
-    'No text, no logo, no watermark, no border, no frame.',
+    'CRITICAL — zero readable characters in the image: no letters, numbers, nametags, captions, speech bubbles, watermarks, logos, UI, or any written names (including on clothing, badges, or props).',
+    'No border or frame beyond the illustration itself.',
   ];
 
   if (tailoredLook) {
@@ -219,9 +220,9 @@ function buildAvatarPrompt(persona, themeName, personaIndex = 0, tailoredSegment
       'Avoid realistic photo style; keep the 1990s adult-animation cartoon / grimy cel comic hybrid.',
       'Negative style constraints: not cute, not pretty doll, not kawaii, not chibi, not anime, not wholesome children’s cartoon, not glamour portrait.',
       'Do not include copyrighted characters or recognizable real people.',
-      `Theme: ${canonicalThemeName}.`,
-      `Character name: ${name}.`,
-      `Character vibe: ${bio}`,
+      `Theme context for styling only — never render this theme title as text: ${canonicalThemeName}.`,
+      `Figure identity for your reasoning only — never paint as lettering, badges, or captions: ${name}.`,
+      `Expression and backstory for mood only — never quote or display as text: ${bio}`,
     ].join(' ');
   }
 
@@ -236,9 +237,9 @@ function buildAvatarPrompt(persona, themeName, personaIndex = 0, tailoredSegment
     'Avoid realistic photo style; prefer gritty adult cartoon / punk comic hybrid.',
     'Negative style constraints: not cute, not pretty doll, not kawaii, not chibi, not anime, not wholesome children’s cartoon, not generic young woman, not glamour portrait.',
     'Do not include copyrighted characters or recognizable real people.',
-    `Theme: ${canonicalThemeName}.`,
-    `Character name: ${name}.`,
-    `Character vibe: ${bio}`,
+    `Theme context for styling only — never render this theme title as text: ${canonicalThemeName}.`,
+    `Figure identity for your reasoning only — never paint as lettering, badges, or captions: ${name}.`,
+    `Expression and backstory for mood only — never quote or display as text: ${bio}`,
   ].join(' ');
 }
 
