@@ -28,7 +28,7 @@
     "host:install-mapped-videos": "node scripts/installMappedHostVideos.cjs",
     "export:default-host-ssml": "node scripts/exportDefaultHostSsmlCsv.cjs",
     "persona:export-avatar-prompts": "node scripts/exportPersonaAvatarPrompts.cjs",
-    "persona:generate-avatars": "node scripts/generatePersonaAvatars.cjs",
+    "persona:generate-avatars": "npm run persona:export-avatar-prompts && node scripts/generatePersonaAvatars.cjs",
     "picture:generate-parody-rounds": "node scripts/generateParodyPictureRounds.cjs",
     "picture:generate-animal-set": "node scripts/generateAnimalPictureSet.cjs",
     "host:generate-openai-theme-stills": "node scripts/generateOpenAiThemeHostImages.cjs",
