@@ -199,7 +199,7 @@ function buildAvatarPrompt(persona, themeName, personaIndex = 0, tailoredSegment
     'Create one standardized 512-square persona illustration for a social-deduction party game.',
     STYLE_GUIDE_NOTES,
     'Background: perfectly flat, uniform SOLID magenta chroma key only — exact hex #FF00FF (R255 G0 B255), full-bleed to all edges; no gradients, no texture, no scenery.',
-    'Bold thick BLACK outer ink outline around the entire character (and costume edges) separating the figure from the magenta field; outline must be opaque black to reduce key bleed.',
+    'Bold thick BLACK outer ink stroke only at the silhouette edge against the background—opaque black, never magenta/pink/neon as that outer ring; flat #FF00FF fill exists only outside that black stroke (not as edge glow).',
     'Single character only, centered, facing camera in the same relaxed front-facing bust pose for every persona.',
     'Pose must be consistent: shoulders square to camera, head upright, arms and hands out of frame, no action pose, no full body.',
     'Consistent framing for every persona: head and upper torso visible, top of head around 10% from the top edge, shoulder line around 62%, torso ending around 85% from the top edge.',
