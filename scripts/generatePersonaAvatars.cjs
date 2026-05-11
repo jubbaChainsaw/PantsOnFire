@@ -30,6 +30,7 @@ function parseArgs(argv) {
     theme: '',
     promptFile: '',
     referenceImage: DEFAULT_FAL_REFERENCE_IMAGE,
+    limit: 0,
     dryRun: false,
     overwrite: false,
   };
@@ -43,6 +44,7 @@ function parseArgs(argv) {
     else if (arg === '--theme' || arg === '--only-theme') { options.theme = String(argv[i + 1] || '').trim(); i += 1; }
     else if (arg === '--prompt-file') { options.promptFile = String(argv[i + 1] || '').trim(); i += 1; }
     else if (arg === '--reference-image') { options.referenceImage = path.resolve(repoRoot, String(argv[i + 1] || '').trim()); i += 1; }
+    else if (arg === '--limit') { options.limit = Math.max(0, Number.parseInt(String(argv[i + 1] || '0'), 10) || 0); i += 1; }
     else if (arg === '--api-key') { options.apiKey = String(argv[i + 1] || '').trim(); i += 1; }
     else if (arg === '--dry-run') options.dryRun = true;
     else if (arg === '--overwrite') options.overwrite = true;
@@ -63,6 +65,7 @@ function usage() {
   console.log('  --theme <themeName>       Limit generation to one theme');
   console.log('  --prompt-file <path>      Override prompts JSON input file');
   console.log(`  --reference-image <path>  Fallback image for fal Nano Banana when persona PNG is missing (default: ${path.relative(repoRoot, DEFAULT_FAL_REFERENCE_IMAGE)})`);
+  console.log('  --limit <n>               Limit number of personas processed after filters');
   console.log('  --overwrite               Regenerate files even if they already exist');
   console.log('  --dry-run                 Print what would be generated without writing files');
   console.log('');
@@ -284,7 +287,8 @@ async function run() {
   }
   const model = options.model || (options.provider === 'openai' ? DEFAULT_OPENAI_MODEL : '');
 
-  const records = loadPromptRecords({ promptFile: options.promptFile, theme: options.theme });
+  const allRecords = loadPromptRecords({ promptFile: options.promptFile, theme: options.theme });
+  const records = options.limit > 0 ? allRecords.slice(0, options.limit) : allRecords;
   if (!records.length) {
     console.log('[generatePersonaAvatars] No personas matched filters.');
     return;
@@ -292,7 +296,7 @@ async function run() {
 
   console.log(`[generatePersonaAvatars] Provider: ${options.provider}`);
   console.log(`[generatePersonaAvatars] Model: ${model || 'automatic'}`);
-  console.log(`[generatePersonaAvatars] Records: ${records.length}`);
+  console.log(`[generatePersonaAvatars] Records: ${records.length}${options.limit > 0 ? ` (limited from ${allRecords.length})` : ''}`);
   if (options.provider !== 'openai') {
     console.log(`[generatePersonaAvatars] Fallback reference: ${path.relative(repoRoot, options.referenceImage)}`);
   }
