@@ -196,13 +196,14 @@ function buildAvatarPrompt(persona, themeName, personaIndex = 0, tailoredSegment
   const tailoredLook = typeof tailoredSegments[personaId] === 'string' ? tailoredSegments[personaId].trim() : '';
 
   const framing = [
-    'Create one standardized transparent PNG persona portrait for a social-deduction party game.',
+    'Create one standardized 512-square persona illustration for a social-deduction party game.',
     STYLE_GUIDE_NOTES,
-    'Output must be a 512x512 square transparent-background PNG.',
+    'Background: perfectly flat, uniform SOLID magenta chroma key only — exact hex #FF00FF (R255 G0 B255), full-bleed to all edges; no gradients, no texture, no scenery.',
+    'Bold thick BLACK outer ink outline around the entire character (and costume edges) separating the figure from the magenta field; outline must be opaque black to reduce key bleed.',
     'Single character only, centered, facing camera in the same relaxed front-facing bust pose for every persona.',
     'Pose must be consistent: shoulders square to camera, head upright, arms and hands out of frame, no action pose, no full body.',
     'Consistent framing for every persona: head and upper torso visible, top of head around 10% from the top edge, shoulder line around 62%, torso ending around 85% from the top edge.',
-    'Use transparent empty padding around the character; no environment, no props that extend outside the safe area, no colored backdrop, no shadows on a floor.',
+    'Use only #FF00FF outside the black silhouette outline inside the frame; no props or scenery beyond the bust crop.',
     'No text, no logo, no watermark, no border, no frame.',
   ];
 

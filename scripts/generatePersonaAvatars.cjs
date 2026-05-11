@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 const fs = require('fs');
 const path = require('path');
+const { applyChromaKeyTransparency } = require('./personaChromaKey.cjs');
 
 const repoRoot = path.resolve(__dirname, '..');
 const localKeysPath = path.join(__dirname, 'royaltyFreeApiKeys.local.json');
@@ -17,13 +18,15 @@ const DEFAULT_PERSONA_STYLE_REFERENCE_URL =
 const DEFAULT_PERSONA_NEGATIVE_PROMPT =
   'photorealistic, photograph, DSLR, 3D render, CGI, plastic skin, beauty filter, airbrushed, symmetrical generic same-face, '
   + 'copying the reference person identity, same hair or outfit as reference image, extra faces, second person, text, typography, watermark, logo, '
-  + 'opaque backdrop, scenic background, environment, floor shadow, lowres, motion blur, deformed hands, extra limbs, child, underage, nudity, gore';
+  + 'gradient background, vignette, mottled backdrop, textured backdrop, scenic background, environment, floor shadow, lowres, motion blur, '
+  + 'deformed hands, extra limbs, child, underage, nudity, gore';
 /** fal-ai/wan/v2.7/edit validates `prompt` length (HTTP 422 if exceeded). */
 const WAN_EDIT_PROMPT_CHAR_LIMIT = 2000;
 const STANDARD_PERSONA_OUTPUT_SPEC = [
   'MANDATORY OUTPUT SPEC:',
   '- 512x512 square PNG.',
-  '- Transparent background / alpha channel. No colored background, no scene, no environment.',
+  '- Background: perfectly flat, uniform SOLID magenta chroma key only — exact hex #FF00FF (R255 G0 B255). No gradients, no texture, no props, no scene, no floor.',
+  '- Bold thick BLACK outer ink outline around the entire character silhouette (and costume edges) separating the figure from the background; outline must be fully opaque black to kill edge bleed when keying.',
   '- One character only, centered, head and upper torso visible.',
   '- Standardized pose for every persona: relaxed front-facing bust portrait, shoulders square to camera, head upright, arms and hands out of frame.',
   '- Standardized scale: top of head about 10% from top edge, shoulder line around 62%, torso ending around 85% from top edge (same composition rules at 512px).',
@@ -32,8 +35,9 @@ const STANDARD_PERSONA_OUTPUT_SPEC = [
   '- Preserve the stated gender presentation exactly; do not feminize male or non-binary personas.',
   '- 1990s gritty adult-animation rude-toon style: thick ink lines, bulging eyes with pin pupils, awkward expressive faces, cel-shaded grimy color, not soft or cute.',
   '- Negative style: no cute anime, no chibi, no kawaii, no pretty doll, no generic young woman, no children’s illustration, no glamour portrait.',
-  '- Keep clean transparent padding around the silhouette for UI cropping.',
+  '- Keep clean padding around the silhouette inside the frame for UI cropping (only magenta #FF00FF outside the black outline).',
   '- No text, no logo, no watermark, no border, no frame, no floor shadow.',
+  '- Post: magenta is removed in tooling for game-ready transparent PNGs; do not simulate fake transparency in-model.',
 ].join('\n');
 
 function parseArgs(argv) {
@@ -51,6 +55,8 @@ function parseArgs(argv) {
     limit: 0,
     dryRun: false,
     overwrite: false,
+    chromaKey: true,
+    chromaTolerance: 42,
   };
   for (let i = 0; i < argv.length; i += 1) {
     const arg = argv[i];
@@ -69,6 +75,11 @@ function parseArgs(argv) {
     else if (arg === '--api-key') { options.apiKey = String(argv[i + 1] || '').trim(); i += 1; }
     else if (arg === '--dry-run') options.dryRun = true;
     else if (arg === '--overwrite') options.overwrite = true;
+    else if (arg === '--no-chroma-key') options.chromaKey = false;
+    else if (arg === '--chroma-tolerance') {
+      options.chromaTolerance = Math.max(0, Number.parseInt(String(argv[i + 1] || '42'), 10) || 42);
+      i += 1;
+    }
     else throw new Error(`Unknown argument: ${arg}`);
   }
   return options;
@@ -89,6 +100,8 @@ function usage() {
   console.log(`  --style-reference-url <u> Override WAN style-only reference URL (default: ${DEFAULT_PERSONA_STYLE_REFERENCE_URL})`);
   console.log('  --negative-prompt <text>  Override WAN negative prompt (max 500 chars; has a strong default)');
   console.log(`  (WAN) Prompts are packed to ${WAN_EDIT_PROMPT_CHAR_LIMIT} chars for fal API; long exports keep style preamble + GENDER LOCK/tailored block.`);
+  console.log('  --no-chroma-key           Skip post-process (#FF00FF → alpha via sharp)');
+  console.log('  --chroma-tolerance <0-255> Per-channel distance for keying (default: 42)');
   console.log('  --use-existing-reference  Legacy Nano Banana: use existing output PNG as edit reference (WAN ignores)');
   console.log('  --limit <n>               Limit number of personas processed after filters');
   console.log('  --overwrite               Regenerate files even if they already exist');
@@ -229,9 +242,9 @@ function isWanV27EditModel(modelId = '') {
 
 function wanEditStylePreamble() {
   return (
-    'Image1 = style-only reference: match line weight, cel-shade, and gritty palette from image1. '
-    + 'Forbidden: copying image1 face, hair, clothes, pose, or identity. '
-    + '512 square bust portrait, transparent background, one character, no text. Subject: '
+    'Img1=style-only (line weight, cel-shade, grit); never copy identity. '
+    + 'Draw subject on flat SOLID #FF00FF magenta only; bold thick BLACK outer outline around full silhouette; '
+    + '512 bust, 1 character, no text. Subject: '
   );
 }
 
@@ -478,6 +491,11 @@ async function run() {
   }
   if (options.theme) console.log(`[generatePersonaAvatars] Theme filter: ${options.theme}`);
   if (options.dryRun) console.log('[generatePersonaAvatars] Dry run enabled.');
+  if (options.chromaKey) {
+    console.log(`[generatePersonaAvatars] Chroma post (#FF00FF → alpha): on (tolerance ${options.chromaTolerance})`);
+  } else {
+    console.log('[generatePersonaAvatars] Chroma post (#FF00FF → alpha): off');
+  }
 
   let created = 0;
   let skipped = 0;
@@ -521,7 +539,11 @@ async function run() {
           styleReferenceUrl: options.styleReferenceUrl,
           negativePrompt: options.negativePrompt,
         });
-    fs.writeFileSync(outputPath, imageBuffer);
+    let outBuffer = imageBuffer;
+    if (options.chromaKey) {
+      outBuffer = await applyChromaKeyTransparency(imageBuffer, { tolerance: options.chromaTolerance });
+    }
+    fs.writeFileSync(outputPath, outBuffer);
     created += 1;
     console.log(`- [${i + 1}/${records.length}] WROTE ${record.personaId || record.id} (${relOutputPath})`);
   }
