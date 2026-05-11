@@ -10,6 +10,7 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { DLC_THEME_NAMES } from '../src/data/themeCatalog.js';
+import { buildHyperspecificLook } from './personaHyperspecificLook.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(__dirname, '..');
@@ -29,10 +30,6 @@ const themeFolder = (themeName) =>
     .replace(/&/g, 'and')
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-+|-+$/g, '');
-
-const HAIR = ['jet black', 'bleached bone', 'copper red', 'moss green', 'violet-black', 'rust orange', 'silver grey', 'blue-black'];
-const SKIN = ['weathered tan', 'pale freckled', 'deep brown', 'olive', 'ash grey', 'sunburnt red', 'cool grey', 'warm bronze'];
-const EYES = ['side-eye', 'too-wide manic stare', 'half-lidded calculation', 'nervous darting', 'dead calm', 'smug squint', 'paranoid bulge', 'performative innocence'];
 
 function pick(arr, i, salt = 0) {
   return arr[(i + salt) % arr.length];
@@ -386,40 +383,6 @@ const BIO_ROTATIONS = {
   ],
 };
 
-const COSTUME = {
-  Vikings: 'fur mantle, ring-mail collar suggestion, runic brooch abstract, braided or wild hair, battle-scar cheek, hornless pragmatic gear',
-  Gladiators: 'bronze greaves hint, leather pteruges shoulder, sweat-salt sheen, arena grit, laurel-or-not victory crown optional',
-  Royalty: 'velvet or brocade high collar, jeweled chain abstract, powdered wig OR slick aristocrat hair, haughty chin',
-  'Mythology (Gods & Legends)': 'gold laurel or circlet abstract, draped chiton or toga fold, divine glow as hard cel rim light not soft bloom',
-  'Time Travelers': 'mismatched era jacket lapels, LED strip accents, pocket watch with wrong hands, chronometer pin generic',
-  Spies: 'trench or tailored black coat, earpiece wire, mirrored shades half-down, bruised knuckle optional',
-  Cowboys: 'dusty hat brim, bandana knot, denim or duster collar, sun-leather skin',
-  'Detectives Noir': 'fedora shadow, trench lapel, cigarette prop unlit, five-o-clock grit',
-  Medical: 'scrubs or lab coat, stethoscope, ID badge blank plastic, tired smug eyes',
-  Wrestlers: 'face paint stripes, championship belt buckle abstract shape, sweat sheen, mic cord at neck edge',
-  Cyberpunk: 'neon piping jacket, chrome cheek implant, under-eye HUD glasses blank, cable collar',
-  Aliens: 'slightly green or grey skin, antenna nubs, jumpsuit with triangle insignia abstract, too-many eyelids suggestion',
-  'Wizards & Witches': 'pointed hat brim cut by frame top, cloak clasp crystal, wand tip barely visible at chest line',
-  Ninjas: 'wrapped mask half-down OR hood, throwing knife handle in headband, black gi collar',
-  'Rock Stars': 'spandex, torn fishnet, heavy eyeliner, wild hair, lightning makeup bolt',
-  'Flying Squad': 'flight jacket patches as abstract shapes, headset boom, aviator frames',
-  'Drag Queens': 'big wig volume, lashes to forehead, sequin bustier, contour warpaint',
-  Superheroes: 'spandex suit chevron emblem abstract, cape fold, heroic jaw, mask lines',
-  Medieval: 'chain-mail coif, surcoat with heraldic shape blocks only, mud-splattered cheek, iron pauldron edge',
-  Gangsters: 'pinstripe suit, fedora tilt, cigar stub, gold ring glint, shoulder holster strap suggestion',
-  'Law and Order': 'court blazer or police blues, lapel mic nub, blank badge, stack of folders prop edge',
-  'Sci-Fi': 'jumpsuit with glowing seam lines, chest computer panel abstract, comm badge no text, zero-g hair float',
-  Anime: 'spiky two-tone hair, school-uniform collar OR hero scarf, huge expressive cel eyes still with pin pupils per style guide',
-  Cartoons: 'rubber-hose gloves, polka-dot bow tie, pie-on-face smear optional, oversized shoes collar only',
-  'Under the Sea': 'kelp hair strands, fish-scale makeup pattern, barnacle shoulder speckles, wet sheen',
-  Military: 'camo pattern blocks, dog tags blank, crew cut, rank chevrons abstract shapes',
-  Animals: 'anthro muzzle or ears on humanoid party-game body, collar tag blank, fur tuft at neckline',
-  Sports: 'jersey mesh, team stripe color blocks no logos, sweatband, whistle on lanyard',
-  'Post-Apocalypse': 'goggles on forehead, dust scarf, scrap armor plates, tire tread shoulder pad',
-  Monsters: 'green-grey skin, neck bolts cartoon, stitched cheek, tattered lab coat collar',
-  Carnival: 'ruffled collar, clown nose paint optional, top hat cut by frame, sequin lapels',
-};
-
 function fullName(theme, index) {
   const parts = NAME_PARTS[theme];
   if (!parts) throw new Error(`[generateDlcPersonaRoster] Missing NAME_PARTS for theme: ${theme}`);
@@ -437,19 +400,6 @@ function bioLine(theme, name, index) {
   return `${name} ${line}`;
 }
 
-function lookLine(theme, name, index) {
-  const first = name.split(/\s+/)[0] || name;
-  const hair = pick(HAIR, index, 1);
-  const skin = pick(SKIN, index, 2);
-  const eyeMood = pick(EYES, index, 3);
-  const costume = COSTUME[theme] || 'theme-colored jacket with abstract prop detail at collar, no readable text';
-  return (
-    `1990s rude-toon bust: lanky neck, thick black outlines, grimy cel shading, ${skin} skin, ${hair} messy hair clumps, ${eyeMood}. `
-    + `${first} wears ${costume}. Huge bulging eyes with tiny pin pupils; expression sells shady party-game liar energy. `
-    + `Theme: ${theme}. No readable text on props.`
-  );
-}
-
 function buildTheme(theme) {
   const slug = themeFolder(theme);
   const rows = [];
@@ -465,7 +415,7 @@ function buildTheme(theme) {
     }
     usedSlugs.add(id);
     const bio = bioLine(theme, name, i);
-    const look = lookLine(theme, name, i);
+    const look = buildHyperspecificLook({ id, name, bio, themeName: theme });
     const filename = `${String(i + 1).padStart(2, '0')}-${baseSlug}.png`;
     rows.push({
       id,
