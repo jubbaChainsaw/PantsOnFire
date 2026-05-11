@@ -18,8 +18,9 @@ const DEFAULT_PERSONA_STYLE_REFERENCE_URL =
 const DEFAULT_PERSONA_NEGATIVE_PROMPT =
   'photorealistic, photograph, DSLR, 3D render, CGI, plastic skin, beauty filter, airbrushed, symmetrical generic same-face, '
   + 'copying the reference person identity, same hair or outfit as reference image, extra faces, second person, text, typography, watermark, logo, '
-  + 'gradient background, vignette, mottled backdrop, textured backdrop, scenic background, environment, floor shadow, lowres, motion blur, '
-  + 'deformed hands, extra limbs, child, underage, nudity, gore';
+  + 'gradient background, vignette, mottled backdrop, textured backdrop, scenic background, environment, floor shadow, '
+  + 'white or grey backdrop, '
+  + 'lowres, motion blur, deformed hands, extra limbs, child, underage, nudity, gore';
 /** fal-ai/wan/v2.7/edit validates `prompt` length (HTTP 422 if exceeded). */
 const WAN_EDIT_PROMPT_CHAR_LIMIT = 2000;
 const STANDARD_PERSONA_OUTPUT_SPEC = [
