@@ -6,16 +6,25 @@ const repoRoot = path.resolve(__dirname, '..');
 const localKeysPath = path.join(__dirname, 'royaltyFreeApiKeys.local.json');
 const promptsJsonPath = path.join(repoRoot, 'exports', 'persona-avatar-prompts.json');
 const corePromptsJsonPath = path.join(repoRoot, 'exports', 'persona-avatar-prompts-core-themes.json');
+const DEFAULT_FAL_WAN_EDIT_MODEL = 'fal-ai/wan/v2.7/edit';
 const DEFAULT_FAL_NANO_BANANA_MODEL = 'fal-ai/nano-banana/edit';
 const DEFAULT_FAL_TEXT_MODEL = 'fal-ai/flux/dev';
 const DEFAULT_OPENAI_MODEL = 'gpt-image-1';
+/** Style reference only (not identity); WAN edit uses image_urls[0] as art-style anchor. */
+const DEFAULT_PERSONA_STYLE_REFERENCE_URL =
+  'https://media.craiyon.com/2025-08-06/Kx1Iy3b-RCSGhKhPYW3Aog.webp';
+/** Max 500 chars for fal WAN negative_prompt. */
+const DEFAULT_PERSONA_NEGATIVE_PROMPT =
+  'photorealistic, photograph, DSLR, 3D render, CGI, plastic skin, beauty filter, airbrushed, symmetrical generic same-face, '
+  + 'copying the reference person identity, same hair or outfit as reference image, extra faces, text, typography, watermark, logo, '
+  + 'lowres, motion blur, deformed hands, extra limbs, child, underage, nudity, gore';
 const STANDARD_PERSONA_OUTPUT_SPEC = [
   'MANDATORY OUTPUT SPEC:',
-  '- 1024x1024 square PNG.',
+  '- 512x512 square PNG.',
   '- Transparent background / alpha channel. No colored background, no scene, no environment.',
   '- One character only, centered, head and upper torso visible.',
   '- Standardized pose for every persona: relaxed front-facing bust portrait, shoulders square to camera, head upright, arms and hands out of frame.',
-  '- Standardized scale: top of head about 10% from top edge, shoulder line around 62%, torso ending around 85% from top edge.',
+  '- Standardized scale: top of head about 10% from top edge, shoulder line around 62%, torso ending around 85% from top edge (same composition rules at 512px).',
   '- Consistent camera distance, lighting direction, line weight, and cel-shaded party-game illustration style across every persona.',
   '- Preserve the unique physical traits, clothing, and expression described in the prompt; do not make characters look like the same person.',
   '- Preserve the stated gender presentation exactly; do not feminize male or non-binary personas.',
@@ -29,11 +38,13 @@ function parseArgs(argv) {
   const options = {
     provider: 'fal',
     model: '',
-    size: '1024x1024',
+    size: '512x512',
     quality: 'medium',
     theme: '',
     promptFile: '',
     referenceImage: '',
+    styleReferenceUrl: '',
+    negativePrompt: '',
     useExistingReference: false,
     limit: 0,
     dryRun: false,
@@ -49,6 +60,8 @@ function parseArgs(argv) {
     else if (arg === '--theme' || arg === '--only-theme') { options.theme = String(argv[i + 1] || '').trim(); i += 1; }
     else if (arg === '--prompt-file') { options.promptFile = String(argv[i + 1] || '').trim(); i += 1; }
     else if (arg === '--reference-image') { options.referenceImage = path.resolve(repoRoot, String(argv[i + 1] || '').trim()); i += 1; }
+    else if (arg === '--style-reference-url') { options.styleReferenceUrl = String(argv[i + 1] || '').trim(); i += 1; }
+    else if (arg === '--negative-prompt') { options.negativePrompt = String(argv[i + 1] || '').trim(); i += 1; }
     else if (arg === '--use-existing-reference') options.useExistingReference = true;
     else if (arg === '--limit') { options.limit = Math.max(0, Number.parseInt(String(argv[i + 1] || '0'), 10) || 0); i += 1; }
     else if (arg === '--api-key') { options.apiKey = String(argv[i + 1] || '').trim(); i += 1; }
@@ -63,15 +76,17 @@ function usage() {
   console.log('Usage: npm run persona:generate-avatars -- [options]');
   console.log('');
   console.log('Options:');
-  console.log('  --provider <fal|flux|openai> Image provider (default: fal; fal/flux use Nano Banana edit)');
+  console.log('  --provider <fal|flux|openai> Image provider (default: fal; fal defaults to WAN v2.7 edit)');
   console.log('  --api-key <key>           Provider API key');
-  console.log(`  --model <name>            Model override (fal edit default: ${DEFAULT_FAL_NANO_BANANA_MODEL}, fal missing-reference default: ${DEFAULT_FAL_TEXT_MODEL}, OpenAI default: ${DEFAULT_OPENAI_MODEL})`);
-  console.log('  --size <WxH>              OpenAI/fal text-to-image size (default: 1024x1024)');
+  console.log(`  --model <name>            Model override (fal default: ${DEFAULT_FAL_WAN_EDIT_MODEL}; legacy: ${DEFAULT_FAL_NANO_BANANA_MODEL} / ${DEFAULT_FAL_TEXT_MODEL}; OpenAI: ${DEFAULT_OPENAI_MODEL})`);
+  console.log('  --size <WxH>              Output size (default: 512x512 for fal WAN; OpenAI uses this string)');
   console.log('  --quality <low|medium|high> OpenAI image quality (default: medium)');
   console.log('  --theme <themeName>       Limit generation to one theme');
   console.log('  --prompt-file <path>      Override prompts JSON input file');
-  console.log('  --reference-image <path>  Optional explicit image reference for fal Nano Banana (default: none)');
-  console.log('  --use-existing-reference  Use an existing output PNG as a Nano Banana reference when present (default: off)');
+  console.log('  --reference-image <path>  Legacy: local file for fal Nano Banana edit only (WAN ignores this)');
+  console.log(`  --style-reference-url <u> Override WAN style-only reference URL (default: ${DEFAULT_PERSONA_STYLE_REFERENCE_URL})`);
+  console.log('  --negative-prompt <text>  Override WAN negative prompt (max 500 chars; has a strong default)');
+  console.log('  --use-existing-reference  Legacy Nano Banana: use existing output PNG as edit reference (WAN ignores)');
   console.log('  --limit <n>               Limit number of personas processed after filters');
   console.log('  --overwrite               Regenerate files even if they already exist');
   console.log('  --dry-run                 Print what would be generated without writing files');
@@ -196,21 +211,112 @@ function readImageInputForFal(filePath) {
   return `data:${mime};base64,${buffer.toString('base64')}`;
 }
 
-function parseImageSize(size = '1024x1024') {
+function parseImageSize(size = '512x512') {
   const match = String(size || '').trim().match(/^(\d+)x(\d+)$/i);
-  if (!match) return { width: 1024, height: 1024 };
+  if (!match) return { width: 512, height: 512 };
   return {
-    width: Math.max(256, Math.min(1536, Number(match[1]) || 1024)),
-    height: Math.max(256, Math.min(1536, Number(match[2]) || 1024)),
+    width: Math.max(256, Math.min(1536, Number(match[1]) || 512)),
+    height: Math.max(256, Math.min(1536, Number(match[2]) || 512)),
   };
 }
 
-async function generateWithFal({ prompt, apiKey, model, size, referenceImagePath, fallbackReferenceImagePath, useExistingReference = false }) {
+function isWanV27EditModel(modelId = '') {
+  return String(modelId || '').replace(/^\/+/, '').includes('fal-ai/wan/v2.7/edit');
+}
+
+async function generateWithFalWanEdit({
+  prompt,
+  apiKey,
+  modelId,
+  width,
+  height,
+  styleReferenceUrl,
+  negativePrompt,
+}) {
+  const refUrl = String(styleReferenceUrl || DEFAULT_PERSONA_STYLE_REFERENCE_URL).trim();
+  const neg = String(negativePrompt || DEFAULT_PERSONA_NEGATIVE_PROMPT).trim().slice(0, 500);
+  const stylePreamble =
+    'Image 1 is STRICTLY a NON-SUBJECT style reference only: copy illustration line weight, cel-shading behavior, color grit, caricature proportions, and general graphic art style from image 1. '
+    + 'FORBIDDEN: do NOT transfer any face, hair, pose, clothing, accessories, or recognizable person from image 1. '
+    + 'IGNORE whoever appears in image 1 as an identity; they must not appear in the output. '
+    + 'Create one brand-new character bust exactly as described after the separator.\n\n---\n\n';
+
+  const body = {
+    prompt: stylePreamble + String(prompt || '').trim(),
+    image_urls: [refUrl],
+    negative_prompt: neg,
+    image_size: { width, height },
+    num_images: 1,
+    output_format: 'png',
+    enable_prompt_expansion: false,
+    enable_safety_checker: true,
+  };
+
+  const id = String(modelId || DEFAULT_FAL_WAN_EDIT_MODEL).replace(/^\/+/, '');
+  console.log(`[generatePersonaAvatars] fal.ai WAN v2.7 edit via ${id} (${width}x${height}), style ref URL only (not identity): ${refUrl}`);
+
+  const response = await fetch(`https://fal.run/${id}`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Key ${apiKey}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(body),
+  });
+  if (!response.ok) {
+    const message = await response.text().catch(() => '');
+    throw new Error(`fal.ai WAN edit failed: HTTP ${response.status} ${message}`);
+  }
+  const payload = await response.json();
+  const imageUrl = String(
+    payload
+    && Array.isArray(payload.images)
+    && payload.images[0]
+    && payload.images[0].url
+      ? payload.images[0].url
+      : ''
+  ).trim();
+  if (!imageUrl) {
+    throw new Error(`fal.ai response did not include an image URL: ${JSON.stringify(payload)}`);
+  }
+  const imageResponse = await fetch(imageUrl);
+  if (!imageResponse.ok) {
+    const message = await imageResponse.text().catch(() => '');
+    throw new Error(`fal.ai image download failed: HTTP ${imageResponse.status} ${message}`);
+  }
+  const arrayBuffer = await imageResponse.arrayBuffer();
+  return Buffer.from(arrayBuffer);
+}
+
+async function generateWithFal({
+  prompt,
+  apiKey,
+  model,
+  size,
+  referenceImagePath,
+  fallbackReferenceImagePath,
+  useExistingReference = false,
+  styleReferenceUrl = '',
+  negativePrompt = '',
+}) {
+  const requestedModel = String(model || '').trim().replace(/^\/+/, '');
+  if (isWanV27EditModel(requestedModel)) {
+    const { width, height } = parseImageSize(size);
+    return generateWithFalWanEdit({
+      prompt,
+      apiKey,
+      modelId: requestedModel,
+      width,
+      height,
+      styleReferenceUrl,
+      negativePrompt,
+    });
+  }
+
   const primaryReferenceExists = Boolean(useExistingReference) && fs.existsSync(referenceImagePath);
   const fallbackReferenceExists = Boolean(fallbackReferenceImagePath) && fs.existsSync(fallbackReferenceImagePath);
   const hasReference = primaryReferenceExists || fallbackReferenceExists;
   const selectedReferencePath = primaryReferenceExists ? referenceImagePath : fallbackReferenceImagePath;
-  const requestedModel = String(model || '').trim().replace(/^\/+/, '');
   const modelId = requestedModel
     ? (
         hasReference && requestedModel === DEFAULT_FAL_TEXT_MODEL
@@ -252,7 +358,7 @@ async function generateWithFal({ prompt, apiKey, model, size, referenceImagePath
   });
   if (!response.ok) {
     const message = await response.text().catch(() => '');
-    throw new Error(`fal.ai Nano Banana edit failed: HTTP ${response.status} ${message}`);
+    throw new Error(`fal.ai request failed: HTTP ${response.status} ${message}`);
   }
   const payload = await response.json();
   const imageUrl = String(
@@ -292,7 +398,11 @@ async function run() {
     }
     throw new Error('Missing fal.ai API key. Use --api-key, FAL_KEY, FAL_API_KEY, FLUX_API_KEY, or scripts/royaltyFreeApiKeys.local.json (falApiKey / fluxApiKey).');
   }
-  const model = options.model || (options.provider === 'openai' ? DEFAULT_OPENAI_MODEL : '');
+  const model = options.model || (
+    options.provider === 'openai'
+      ? DEFAULT_OPENAI_MODEL
+      : (options.provider === 'flux' ? '' : DEFAULT_FAL_WAN_EDIT_MODEL)
+  );
 
   const allRecords = loadPromptRecords({ promptFile: options.promptFile, theme: options.theme });
   const records = options.limit > 0 ? allRecords.slice(0, options.limit) : allRecords;
@@ -305,7 +415,8 @@ async function run() {
   console.log(`[generatePersonaAvatars] Model: ${model || 'automatic'}`);
   console.log(`[generatePersonaAvatars] Records: ${records.length}${options.limit > 0 ? ` (limited from ${allRecords.length})` : ''}`);
   if (options.provider !== 'openai') {
-    console.log(`[generatePersonaAvatars] Explicit reference: ${options.referenceImage ? path.relative(repoRoot, options.referenceImage) : 'none'}`);
+    console.log(`[generatePersonaAvatars] Legacy local reference (--reference-image): ${options.referenceImage ? path.relative(repoRoot, options.referenceImage) : 'none'}`);
+    console.log(`[generatePersonaAvatars] WAN style reference URL (--style-reference-url): ${options.styleReferenceUrl || DEFAULT_PERSONA_STYLE_REFERENCE_URL}`);
     console.log(`[generatePersonaAvatars] Existing output references: ${options.useExistingReference ? 'enabled' : 'disabled'}`);
   }
   if (options.theme) console.log(`[generatePersonaAvatars] Theme filter: ${options.theme}`);
@@ -327,7 +438,9 @@ async function run() {
       const fallbackReferenceExists = Boolean(options.referenceImage) && fs.existsSync(options.referenceImage);
       const mode = options.provider === 'openai'
         ? 'text-to-image'
-        : (options.useExistingReference && exists ? 'nano-banana-edit (existing output reference)' : (fallbackReferenceExists ? 'nano-banana-edit (explicit reference)' : 'fal-text-to-image (no reference)'));
+        : (isWanV27EditModel(model)
+          ? 'fal WAN v2.7 edit (hosted style ref + negative prompt)'
+          : (options.useExistingReference && exists ? 'nano-banana-edit (existing output reference)' : (fallbackReferenceExists ? 'nano-banana-edit (explicit reference)' : 'fal text-to-image (no reference)')));
       console.log(`- [${i + 1}/${records.length}] PLAN ${record.personaId || record.id} -> ${relOutputPath} [${mode}]`);
       continue;
     }
@@ -348,6 +461,8 @@ async function run() {
           referenceImagePath: outputPath,
           fallbackReferenceImagePath: options.referenceImage,
           useExistingReference: options.useExistingReference,
+          styleReferenceUrl: options.styleReferenceUrl,
+          negativePrompt: options.negativePrompt,
         });
     fs.writeFileSync(outputPath, imageBuffer);
     created += 1;

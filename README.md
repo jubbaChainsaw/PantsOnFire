@@ -225,15 +225,15 @@ Output:
 - `exports/persona-avatar-prompts.json`
 - `exports/persona-avatar-prompts.csv`
 
-### 2) Generate all persona avatars (OpenAI Images API)
+### 2) Generate all persona avatars (fal.ai WAN edit by default)
 
 Set your API key:
 
 ```bash
-export OPENAI_API_KEY=your_key_here
+export FAL_KEY=your_key_here
 ```
 
-Run generator:
+Run generator (defaults to **`fal-ai/wan/v2.7/edit`**, **512×512** PNG, hosted **style-only** reference image + negative prompt):
 
 ```bash
 npm run persona:generate-avatars
@@ -244,13 +244,24 @@ Optional flags:
 ```bash
 npm run persona:generate-avatars -- --dry-run
 npm run persona:generate-avatars -- --overwrite
-npm run persona:generate-avatars -- --only-theme "Default"
+npm run persona:generate-avatars -- --theme "Default"
+npm run persona:generate-avatars -- --style-reference-url "https://example.com/style.webp"
+npm run persona:generate-avatars -- --negative-prompt "photorealistic, 3d render"
+npm run persona:generate-avatars -- --model "fal-ai/nano-banana/edit" --reference-image ./path/to/local.png
+```
+
+OpenAI instead:
+
+```bash
+export OPENAI_API_KEY=your_key_here
+npm run persona:generate-avatars -- --provider openai
 ```
 
 Notes:
 
 - Images are saved to each persona `imageSrc` path (under `public/assets/themes/.../personas/`).
 - Use `--dry-run` first to verify prompt coverage and output paths.
+- WAN mode uses the Craiyon URL as **style** reference only (prompt forbids copying the reference subject). Legacy Nano Banana still supports `--reference-image` / `--use-existing-reference`.
 
 ## Theme host pack installer (10 talking frames + themed overlays)
 

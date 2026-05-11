@@ -198,7 +198,7 @@ function buildAvatarPrompt(persona, themeName, personaIndex = 0, tailoredSegment
   const framing = [
     'Create one standardized transparent PNG persona portrait for a social-deduction party game.',
     STYLE_GUIDE_NOTES,
-    'Output must be a 1024x1024 square transparent-background PNG.',
+    'Output must be a 512x512 square transparent-background PNG.',
     'Single character only, centered, facing camera in the same relaxed front-facing bust pose for every persona.',
     'Pose must be consistent: shoulders square to camera, head upright, arms and hands out of frame, no action pose, no full body.',
     'Consistent framing for every persona: head and upper torso visible, top of head around 10% from the top edge, shoulder line around 62%, torso ending around 85% from the top edge.',
