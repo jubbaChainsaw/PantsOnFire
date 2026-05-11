@@ -10,7 +10,7 @@ const STYLE_GUIDE_NOTES = [
   'Style guide: 1990s gritty adult-animation cartoon bust portrait (MTV-era rude-toon energy: deliberately awkward, angular, and "ugly-cool", not polished Disney).',
   'Line art: thick, bold, slightly irregular black outlines with hand-inked wobble.',
   'Color: saturated but grimy cel shading—flat fills plus simple hard-edged shadow shapes, muted urban palette with occasional loud accent (neon hair, loud print, brass, blood-red lip).',
-  'Proportions: lanky thin necks, caricatured bony faces, exaggerated jaw and cheek planes.',
+  'Proportions: caricature exaggeration—when a tailored character block is present in this prompt, follow THAT body type, neck length, weight, and posture (do not default every portrait to the same lanky neck or same face template).',
   'Eyes: very large bulging eyes with tiny black pin-prick pupils for manic, vacant, or intense stares.',
   'Hair: big messy clumps, spikes, mullets, unnatural accent colors where it fits the character.',
   'Clothing: subculture costume to mid-chest only—faded graphic tees (no readable logos), punk/metal/streetwear, studs, chains, weathered jackets, theme-appropriate garb.',
@@ -210,7 +210,8 @@ function buildAvatarPrompt(persona, themeName, personaIndex = 0, tailoredSegment
     return [
       ...framing,
       `Specific tailored look for this persona (follow closely; keep them visually distinct from other roster characters): ${tailoredLook}`,
-      'Match the age, ethnicity cues, and gender presentation implied by the description; do not swap gender or default to a generic young woman.',
+      'The tailored block OVERRIDES any generic one-size-fits-all wording elsewhere in this prompt (including default body/neck proportions).',
+      'Match the age, ethnicity cues, and gender presentation implied by the description; obey any GENDER LOCK line literally; do not swap gender or default to a generic young woman.',
       'Do not reuse the same face, hair, clothing, body type, or expression from other personas.',
       'Small name/theme-inspired accessory is allowed only if it stays inside the bust crop; no large props and no background scene.',
       'Expressive face with readable suspicious party-game personality and silhouette-friendly shape language.',

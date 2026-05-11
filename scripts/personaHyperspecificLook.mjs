@@ -8,8 +8,76 @@
 /** Exact overrides — unmistakably different from synthesized faces. */
 export const LOOK_OVERRIDES_BY_ID = {
   'default-barry-side-eye-collins':
-    'White man, chubby, mid-50s, mostly bald crown with gingery-grey hair only around the sides and back; narrow slitty inquisitive eyes deliberately looking sideways under a heavy brow; soft jaw and flushed cheeks; shiny sweat on forehead and upper lip; nervous tight mouth like he is mid-overhear; cheap loose polo shirt with a stretched collar and a faint food stain; silver chain just visible; anxious weight-shift implied in the shoulders; no glasses.',
+    'GENDER LOCK (NON-NEGOTIABLE): adult human man — must read male. White man, chubby, mid-50s, mostly bald crown with gingery-grey hair only around the sides and back; narrow slitty inquisitive eyes deliberately looking sideways under a heavy brow; soft jaw and flushed cheeks; shiny sweat on forehead and upper lip; nervous tight mouth like he is mid-overhear; cheap loose polo shirt with a stretched collar and a faint food stain; silver chain just visible; anxious weight-shift implied in the shoulders; no glasses.',
 };
+
+/** Mirrors `exportPersonaAvatarPrompts.cjs` name hints so gender matches common names. */
+const FEMALE_NAME_HINTS = new Set([
+  'nina', 'edith', 'tasha', 'pixie', 'zara', 'penny', 'chloe', 'rachel', 'jett', 'amy',
+  'ingrid', 'bianca', 'harper', 'sadie', 'cleo', 'lena', 'priya', 'naomi', 'carmen',
+  'agatha', 'lillian', 'margaret', 'vivian', 'clara', 'mabel', 'beatrice', 'nora',
+  'winifred', 'evelyn', 'helena', 'mildred', 'maeve', 'nyx', 'lira', 'elin', 'nettles',
+  'zuri', 'bride', 'annie', 'mel', 'beth', 'hilda', 'mourne', 'floe', 'fang', 'astrid',
+  'sigrid', 'freya', 'matilda', 'cordelia', 'beatrix', 'seraphina', 'henrietta',
+  'gwendolyn', 'adelaide', 'penelope', 'vivienne', 'cassia', 'aurelia', 'octavia',
+]);
+const MALE_NAME_HINTS = new Set([
+  'barry', 'marvin', 'callum', 'gregor', 'leon', 'dave', 'malik', 'ronan', 'colin', 'yusuf',
+  'kyle', 'arthur', 'nico', 'marco', 'oscar', 'dex', 'freddie', 'owen', 'reginald', 'thomas',
+  'harold', 'bernard', 'doyle', 'cedric', 'douglas', 'leonard', 'victor', 'rupert', 'eddie',
+  'stu', 'bill', 'tom', 'redd', 'jenkins', 'burke', 'rami', 'dreg', 'harlan', 'silas', 'donny',
+  'kaito', 'rolf', 'bjorn', 'ulf', 'eirik', 'harald', 'gunnar', 'snorri', 'magnus', 'ivar',
+  'tiber', 'flavius', 'brutus', 'lucius', 'marcellus', 'maximus', 'percival',
+  'alistair', 'felix', 'mortimer', 'clive', 'horace', 'barnaby', 'edmund',
+]);
+const NON_BINARY_NAME_HINTS = new Set(['jules', 'rio', 'reefspawn', 'glim', 'void', 'rook']);
+
+function firstNameToken(name) {
+  const parts = String(name || '')
+    .replace(/["“”'().]/g, '')
+    .split(/\s+/)
+    .filter(Boolean);
+  const titles = new Set(['dr', 'mr', 'mrs', 'ms', 'miss', 'sir', 'lady', 'professor', 'prof', 'captain', 'sgt', 'cpl', 'lt', 'ada', 'cmdr', 'ensign', 'judge', 'detective', 'inspector', 'sergeant', 'major', 'colonel', 'general', 'nurse', 'matron']);
+  if (parts.length > 1 && titles.has(parts[0].toLowerCase().replace(/\.$/, ''))) {
+    return parts[1].toLowerCase();
+  }
+  return (parts[0] || '').toLowerCase();
+}
+
+/** @returns {'female'|'male'|'non-binary'|'unknown'} */
+function inferGenderBucket(name, bio) {
+  const b = String(bio || '').toLowerCase();
+  const first = firstNameToken(name);
+  if (/\b(she|her|hers|woman|girl|lady|queen|bride|mother|mum|granny)\b/.test(b)) return 'female';
+  if (/\b(he|him|his|man|boy|father|king)\b/.test(b)) return 'male';
+  if (/\b(they|them|their|nonbinary|non-binary)\b/.test(b)) return 'non-binary';
+  if (FEMALE_NAME_HINTS.has(first)) return 'female';
+  if (MALE_NAME_HINTS.has(first)) return 'male';
+  if (NON_BINARY_NAME_HINTS.has(first)) return 'non-binary';
+  return 'unknown';
+}
+
+function genderLockPrefix(bucket) {
+  if (bucket === 'female') {
+    return 'GENDER LOCK (NON-NEGOTIABLE): adult human woman — must read unmistakably female; do NOT render as male or masc-androgynous. ';
+  }
+  if (bucket === 'male') {
+    return 'GENDER LOCK (NON-NEGOTIABLE): adult human man — must read unmistakably male; do NOT render as female. ';
+  }
+  if (bucket === 'non-binary') {
+    return 'GENDER LOCK (NON-NEGOTIABLE): adult non-binary / androgynous-presenting person — honor neutral cues; do NOT force binary gender. ';
+  }
+  return '';
+}
+
+function pickGenderPhrase(bucket, id) {
+  if (bucket === 'female') return pick(['adult woman', 'adult woman', 'adult woman', 'person read clearly as femme'], id, 'gf');
+  if (bucket === 'male') return pick(['adult man', 'adult man', 'adult man', 'person read clearly as masc'], id, 'gm');
+  if (bucket === 'non-binary') {
+    return pick(['nonbinary-presenting adult', 'androgynous-presenting adult'], id, 'gn');
+  }
+  return pick(GENDERS, id, 'gen');
+}
 
 /** Theme-local costume steer (bust only, no readable logos/text). */
 export const THEME_BUST_COSTUME_CUE = {
@@ -400,11 +468,14 @@ function pick(arr, id, salt) {
   return arr[fnv1a(`${id}|${salt}`) % arr.length];
 }
 
-function facialHairFor(gen, id) {
-  const g = String(gen || '').toLowerCase();
-  if (g.includes('woman') || g.includes('femme')) return pick(FEMME_FACIAL_HAIR, id, 'fh1');
-  if (g.includes('masc') || g === 'man') return pick(MASC_FACIAL_HAIR, id, 'fh2');
-  return pick(AMBIG_FACIAL_HAIR, id, 'fh3');
+function facialHairFor(genderBucket, genPhrase, id) {
+  if (genderBucket === 'female') return pick(FEMME_FACIAL_HAIR, id, 'fh1');
+  if (genderBucket === 'male') return pick(MASC_FACIAL_HAIR, id, 'fh2');
+  if (genderBucket === 'non-binary') return pick(AMBIG_FACIAL_HAIR, id, 'fh3');
+  const g = String(genPhrase || '').toLowerCase();
+  if (g.includes('woman') || g.includes('femme')) return pick(FEMME_FACIAL_HAIR, id, 'fh1b');
+  if (g.includes('masc') || g.includes('man')) return pick(MASC_FACIAL_HAIR, id, 'fh2b');
+  return pick(AMBIG_FACIAL_HAIR, id, 'fh3b');
 }
 
 /**
@@ -418,18 +489,22 @@ export function buildHyperspecificLook(p) {
   const bio = String(p.bio || '').slice(0, 160);
   const theme = String(p.themeName || '').trim();
 
+  const genderBucket = inferGenderBucket(name, bio);
+  const genderLock = genderLockPrefix(genderBucket);
+  const gen = pickGenderPhrase(genderBucket, id);
+
   const age = pick(AGES, id, 'age');
   const eth = pick(ETHNICITIES, id, 'eth');
-  const gen = pick(GENDERS, id, 'gen');
   const social = pick(SOCIAL_CUES, id, 'soc');
   const build = pick(BUILDS, id, 'build');
   const face = pick(FACE_SHAPES, id, 'face');
   const nose = pick(NOSES, id, 'nose');
   const mouth = pick(MOUTHS, id, 'mouth');
-  const brow = pick(BROWS, id, 'brow');
+  const browList = genderBucket === 'female' ? BROWS.filter((b) => !b.includes('unibrow')) : BROWS;
+  const brow = pick(browList, id, 'brow');
   const eye = pick(EYES, id, 'eye');
   const glasses = pick(GLASSES, id, 'gl');
-  const fh = facialHairFor(gen, id);
+  const fh = facialHairFor(genderBucket, gen, id);
   const makeup = pick(MAKEUP, id, 'mk');
   const scar = pick(SCARS_MARKS, id, 'sc');
   const pierce = pick(PIERCINGS, id, 'pi');
@@ -450,7 +525,7 @@ export function buildHyperspecificLook(p) {
   const glassesPhrase = glasses === 'no glasses' ? 'No glasses.' : `Eyewear: ${glasses}.`;
 
   return [
-    `${age} ${eth} ${gen}, ${build}; social read: ${social}.`,
+    `${genderLock}${age} ${eth} ${gen}, ${build}; social read: ${social}.`,
     `Face: ${face}; nose: ${nose}; mouth: ${mouth}; brows: ${brow}; eyes: ${eye}. ${glassesPhrase}`,
     `Facial hair: ${fh}. Makeup: ${makeup}. Marks: ${scar}. Piercings: ${pierce}. Teeth: ${teeth}.`,
     `Hair: ${hair}. Skin texture: ${skin}; ${sweat}. Torso clothing: ${top}; other jewelry: ${jewelry}.`,
