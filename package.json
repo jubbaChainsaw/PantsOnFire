@@ -29,6 +29,7 @@
     "export:default-host-ssml": "node scripts/exportDefaultHostSsmlCsv.cjs",
     "persona:export-avatar-prompts": "node scripts/exportPersonaAvatarPrompts.cjs",
     "persona:generate-avatars": "npm run persona:export-avatar-prompts && node scripts/generatePersonaAvatars.cjs --provider fal --model fal-ai/wan/v2.7/edit --size 512x512",
+    "persona:key-chroma": "node scripts/chromaKeyPersonaPngs.cjs",
     "picture:generate-parody-rounds": "node scripts/generateParodyPictureRounds.cjs",
     "picture:generate-animal-set": "node scripts/generateAnimalPictureSet.cjs",
     "host:generate-openai-theme-stills": "node scripts/generateOpenAiThemeHostImages.cjs",

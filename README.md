@@ -233,7 +233,7 @@ Set your API key:
 export FAL_KEY=your_key_here
 ```
 
-Run generator (defaults to **`fal-ai/wan/v2.7/edit`**, **512×512** PNG, hosted **style-only** reference image + negative prompt):
+Run generator (defaults to **`fal-ai/wan/v2.7/edit`**, **512×512** PNG, hosted **style-only** reference image + negative prompt, **#FF00FF** chroma field + **sharp** pass to transparency):
 
 ```bash
 npm run persona:generate-avatars
@@ -248,6 +248,15 @@ npm run persona:generate-avatars -- --theme "Default"
 npm run persona:generate-avatars -- --style-reference-url "https://example.com/style.webp"
 npm run persona:generate-avatars -- --negative-prompt "photorealistic, 3d render"
 npm run persona:generate-avatars -- --model "fal-ai/nano-banana/edit" --reference-image ./path/to/local.png
+npm run persona:generate-avatars -- --no-chroma-key
+npm run persona:generate-avatars -- --chroma-tolerance 36
+```
+
+Re-key existing persona PNGs in `public/` (same **#FF00FF** tolerance logic as the generator):
+
+```bash
+npm run persona:key-chroma -- --dry-run
+npm run persona:key-chroma -- --theme Default
 ```
 
 OpenAI instead:
@@ -262,6 +271,7 @@ Notes:
 - Images are saved to each persona `imageSrc` path (under `public/assets/themes/.../personas/`).
 - Use `--dry-run` first to verify prompt coverage and output paths.
 - WAN mode uses the Craiyon URL as **style** reference only (prompt forbids copying the reference subject). Legacy Nano Banana still supports `--reference-image` / `--use-existing-reference`.
+- Models often omit real alpha. Prompts ask for a **flat #FF00FF magenta** field plus a **bold black outer outline** around the character; the generator then runs a **sharp** pass to turn that magenta into transparency (tunable with `--chroma-tolerance`, skippable with `--no-chroma-key`). **Magenta** is used instead of green so cel-shaded greens in clothing are less likely to punch holes.
 
 ## Theme host pack installer (10 talking frames + themed overlays)
 
