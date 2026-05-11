@@ -16,11 +16,12 @@ const DEFAULT_PERSONA_STYLE_REFERENCE_URL =
   'https://media.craiyon.com/2025-08-06/Kx1Iy3b-RCSGhKhPYW3Aog.webp';
 /** Max 500 chars for fal WAN negative_prompt. */
 const DEFAULT_PERSONA_NEGATIVE_PROMPT =
-  'photorealistic, DSLR, 3D render, CGI, plastic skin, beauty filter, airbrushed, '
-  + 'copying the reference person identity, same hair or outfit as reference image, extra faces, second person, '
+  'photorealistic, DSLR, 3D render, CGI, airbrushed, '
+  + 'copying reference identity, same hair or outfit as reference image, extra faces, second person, '
   + 'text, captions, nametags, speech bubbles, watermark, logo, '
-  + 'gradient background, vignette, textured backdrop, scenic background, environment, floor shadow, '
+  + 'gradient background, vignette, textured backdrop, environment, floor shadow, '
   + 'colored backdrop, grey cast, yellow color cast, mottled off-white, '
+  + 'mud stains, filthy clothes, grease smears, yellow teeth, '
   + 'lowres, motion blur, deformed hands, extra limbs, child, underage, nudity, gore';
 /** fal-ai/wan/v2.7/edit validates `prompt` length (HTTP 422 if exceeded). */
 const WAN_EDIT_PROMPT_CHAR_LIMIT = 2000;
@@ -35,7 +36,8 @@ const STANDARD_PERSONA_OUTPUT_SPEC = [
   '- Consistent camera distance, lighting direction, line weight, and cel-shaded party-game illustration style across every persona.',
   '- Preserve the unique physical traits, clothing, and expression described in the prompt; do not make characters look like the same person.',
   '- Preserve the stated gender presentation exactly; do not feminize male or non-binary personas.',
-  '- 1990s gritty adult-animation rude-toon style: thick ink lines, bulging eyes with pin pupils, awkward expressive faces, cel-shaded grimy color, not soft or cute.',
+  '- 1990s adult-animation rude-toon style: thick ink lines, bulging eyes with pin pupils, awkward faces, cel-shaded readable color—not mud, grease smears, or filthy clothing.',
+  '- Teeth: neutral off-white or lips closed; avoid yellow nicotine stains or rotten-teeth shock.',
   '- Negative style: no cute anime, no chibi, no kawaii, no pretty doll, no generic young woman, no children’s illustration, no glamour portrait.',
   '- Keep clean padding around the silhouette for circular in-game avatar framing.',
   '- No readable characters anywhere: no letters, numbers, nametags, captions, speech bubbles, subtitles, watermarks, logos, UI, or written names on clothing or props.',
@@ -251,7 +253,7 @@ function isWanV27EditModel(modelId = '') {
 
 function wanEditStylePreamble() {
   return (
-    'Img1=style-only (line weight, cel-shade, grit); never copy identity. '
+    'Img1=style-only (bold ink, cel-shade, readable color); never copy identity. '
     + 'Flat SOLID pure white (#FFFFFF) backdrop only; bold thick BLACK outer outline around full silhouette; '
     + '512 bust, 1 character, zero text/names/captions in-image. Subject: '
   );
@@ -268,31 +270,50 @@ function stripWanDuplicateOutputSpec(promptText) {
 
 /**
  * fal WAN edit allows at most WAN_EDIT_PROMPT_CHAR_LIMIT characters on `prompt`.
- * `preamble` is fixed (style / output constraints); trim the exported core from GENDER LOCK or tailored block when needed.
+ * TITLE COSTUME MANDATE must survive truncation (it lives near the end of exports).
  */
+const TITLE_COSTUME_MARK = 'TITLE COSTUME MANDATE (NON-NEGOTIABLE):';
+const THEME_CONTEXT_MARK = '\nTheme context for styling only';
+
+function extractTitleCostumeMandateBlock(fullPrompt) {
+  const s = String(fullPrompt || '');
+  const i = s.indexOf(TITLE_COSTUME_MARK);
+  if (i === -1) return { title: '', withoutTitle: s.trim() };
+  const j = s.indexOf(THEME_CONTEXT_MARK, i);
+  const title = (j === -1 ? s.slice(i) : s.slice(i, j)).trim();
+  const before = s.slice(0, i).trimEnd();
+  const after = j === -1 ? '' : s.slice(j).trimStart();
+  const withoutTitle = [before, after].filter(Boolean).join('\n').trim();
+  return { title, withoutTitle };
+}
+
 function fitWanEditPromptToLimit(preamble, corePrompt) {
   const max = WAN_EDIT_PROMPT_CHAR_LIMIT;
   const p = String(preamble || '');
-  let core = String(corePrompt || '').trim();
-  let full = `${p}${core}`;
+  const stripped = String(corePrompt || '').trim();
+  const { title, withoutTitle } = extractTitleCostumeMandateBlock(stripped);
+  const prefix = title ? `${p}${title}\n` : p;
+  const maxCore = max - prefix.length;
+
+  let core = withoutTitle.trim();
+  let full = `${prefix}${core}`;
   if (full.length <= max) return { text: full, truncated: false };
 
   const genderIdx = core.indexOf('GENDER LOCK');
   const tailoredIdx = core.indexOf('Specific tailored look for this persona');
   if (genderIdx >= 0) core = core.slice(genderIdx).trimStart();
   else if (tailoredIdx >= 0) core = core.slice(tailoredIdx).trimStart();
-  else core = core.slice(Math.max(0, core.length - (max - p.length))).trimStart();
+  else core = core.slice(Math.max(0, core.length - maxCore)).trimStart();
 
-  full = `${p}${core}`;
+  full = `${prefix}${core}`;
   if (full.length <= max) return { text: full, truncated: true };
 
-  const budget = max - p.length;
   const ellipsis = '…';
-  if (budget < 48) {
-    return { text: p.slice(0, max).trimEnd(), truncated: true };
+  if (maxCore < ellipsis.length + 8) {
+    return { text: prefix.slice(0, max).trimEnd(), truncated: true };
   }
-  core = `${core.slice(0, budget - ellipsis.length).trimEnd()}${ellipsis}`;
-  return { text: `${p}${core}`, truncated: true };
+  core = `${core.slice(0, maxCore - ellipsis.length).trimEnd()}${ellipsis}`;
+  return { text: `${prefix}${core}`, truncated: true };
 }
 
 async function generateWithFalWanEdit({

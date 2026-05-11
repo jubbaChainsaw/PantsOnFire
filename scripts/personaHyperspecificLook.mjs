@@ -375,10 +375,12 @@ const PIERCINGS = [
 
 const TEETH = [
   'teeth normal closed mouth',
+  'teeth normal closed mouth',
+  'teeth normal closed mouth',
+  'teeth normal closed mouth',
   'slight overjet buck teeth visible talking',
   'grillz gold glint abstract shapes no letters',
   'missing one lateral incisor gap when grinning',
-  'yellow smoker stain visible',
   'perfect veneers uncanny white',
 ];
 
@@ -418,6 +420,8 @@ const SKIN = [
 
 const SWEAT = [
   'clean dry skin',
+  'clean dry skin',
+  'clean dry skin',
   'beads of sweat at hairline',
   'upper lip sweat mustache',
   'neck damp with nervous perspiration',
@@ -426,14 +430,14 @@ const SWEAT = [
 
 const TOPS = [
   'faded black tee with stretched collar',
-  'tight ribbed tank with pit stains',
+  'tight ribbed tank top',
   'wrinkled flannel half-buttoned wrong',
   'cheap nylon windbreaker zipped to chin',
   'cropped denim jacket with fray threads',
   'oversized hoodie swallowing neck',
-  'stained white chef-style shirt',
+  'crisp white chef-style shirt with creases',
   'leopard tube top under open shirt',
-  'corporate polo with coffee ring',
+  'corporate polo with faint ring at collar',
   'silk blouse button straining',
   'denim vest over bare shoulders',
   'track jacket shiny polyester',
