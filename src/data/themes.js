@@ -115,4 +115,13 @@ export const THEME_META = {
   'Wizards & Witches': { gradient: 'from-purple-800 via-indigo-600 to-emerald-500', accent: 'text-purple-100', musicPack: 'arcane_spellcast', sfxPack: 'magic_pop', tone: 'arcane-whimsical', hostStyle: 'archmage' },
   'Time Travelers': { gradient: 'from-cyan-500 via-violet-600 to-yellow-400', accent: 'text-cyan-100', musicPack: 'chrono_synth', sfxPack: 'time_warp', tone: 'paradox-hype', hostStyle: 'time-guide' },
   Gladiators: { gradient: 'from-red-700 via-orange-500 to-yellow-400', accent: 'text-yellow-100', musicPack: 'colosseum_drums', sfxPack: 'arena_roar', tone: 'battle-glory', hostStyle: 'arena-herald' },
+  Medieval: { gradient: 'from-stone-600 via-amber-700 to-red-900', accent: 'text-amber-100', musicPack: 'viking_war_drums', sfxPack: 'shield_clang', tone: 'castle-intrigue', hostStyle: 'herald' },
+  'Law and Order': { gradient: 'from-slate-900 via-blue-900 to-amber-500', accent: 'text-blue-100', musicPack: 'noir_jazz', sfxPack: 'camera_shutter', tone: 'courtroom-tension', hostStyle: 'inspector' },
+  'Sci-Fi': { gradient: 'from-cyan-500 via-violet-600 to-slate-900', accent: 'text-cyan-100', musicPack: 'alien_synth', sfxPack: 'neon_glitch', tone: 'future-paranoia', hostStyle: 'mothership-ai' },
+  Anime: { gradient: 'from-pink-500 via-fuchsia-600 to-cyan-400', accent: 'text-pink-100', musicPack: 'rock_arena', sfxPack: 'sparkle_pop', tone: 'hyper-dramatic', hostStyle: 'showstopper' },
+  Cartoons: { gradient: 'from-yellow-400 via-orange-500 to-rose-500', accent: 'text-yellow-100', musicPack: 'carnival_calliope', sfxPack: 'crowd_cheer', tone: 'rubber-hose-chaos', hostStyle: 'ringmaster' },
+  'Under the Sea': { gradient: 'from-cyan-600 via-blue-700 to-indigo-900', accent: 'text-cyan-100', musicPack: 'wasteland_pulse', sfxPack: 'metal_scrape', tone: 'deep-blue-mystery', hostStyle: 'oracle' },
+  Military: { gradient: 'from-lime-800 via-zinc-800 to-amber-700', accent: 'text-lime-100', musicPack: 'raf_march', sfxPack: 'radio_click', tone: 'command-deck', hostStyle: 'commander' },
+  Animals: { gradient: 'from-amber-600 via-orange-600 to-lime-700', accent: 'text-amber-100', musicPack: 'monster_creep', sfxPack: 'monster_growl', tone: 'wild-kingdom', hostStyle: 'crypt-host' },
+  Sports: { gradient: 'from-orange-500 via-red-600 to-zinc-900', accent: 'text-orange-100', musicPack: 'wrestling_entrance', sfxPack: 'crowd_cheer', tone: 'stadium-hype', hostStyle: 'ring-announcer' },
 };

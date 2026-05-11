@@ -5,5 +5,17 @@ export const FUTURE_AND_FANTASY_THEME_PACK = {
   unlockType: 'store-purchase',
   pricePence: 99,
   priceLabel: '99p',
-  themes: ['Cyberpunk', 'Aliens', 'Wizards & Witches', 'Ninjas'],
+  themes: [
+    'Cyberpunk',
+    'Aliens',
+    'Sci-Fi',
+    'Wizards & Witches',
+    'Ninjas',
+    'Post-Apocalypse',
+    'Monsters',
+    'Carnival',
+    'Under the Sea',
+    'Animals',
+    'Sports',
+  ],
 };

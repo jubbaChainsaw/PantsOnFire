@@ -455,6 +455,158 @@
       "imageSrc": "/assets/themes/royalty/personas/25-barnaby-highcourt.png"
     }
   ],
+  "Medieval": [
+    {
+      "id": "medieval-aldric-greymoor",
+      "name": "Aldric Greymoor",
+      "bio": "Aldric Greymoor quotes chivalry while dodging inconvenient facts.",
+      "imageSrc": "/assets/themes/medieval/personas/01-aldric-greymoor.png"
+    },
+    {
+      "id": "medieval-morwen-ironwall",
+      "name": "Morwen Ironwall",
+      "bio": "Morwen Ironwall insists the tapestry tells a different story—curiously always theirs.",
+      "imageSrc": "/assets/themes/medieval/personas/02-morwen-ironwall.png"
+    },
+    {
+      "id": "medieval-percival-ashkeep",
+      "name": "Percival Ashkeep",
+      "bio": "Percival Ashkeep blames bandits for anything missing from the treasury.",
+      "imageSrc": "/assets/themes/medieval/personas/03-percival-ashkeep.png"
+    },
+    {
+      "id": "medieval-gwen-stonehall",
+      "name": "Gwen Stonehall",
+      "bio": "Gwen Stonehall swears oaths on relics nobody is allowed to inspect.",
+      "imageSrc": "/assets/themes/medieval/personas/04-gwen-stonehall.png"
+    },
+    {
+      "id": "medieval-roland-ravensden",
+      "name": "Roland Ravensden",
+      "bio": "Roland Ravensden calls doubt \"treason to the crown.\"",
+      "imageSrc": "/assets/themes/medieval/personas/05-roland-ravensden.png"
+    },
+    {
+      "id": "medieval-ysolt-thornwick",
+      "name": "Ysolt Thornwick",
+      "bio": "Ysolt Thornwick quotes chivalry while dodging inconvenient facts.",
+      "imageSrc": "/assets/themes/medieval/personas/06-ysolt-thornwick.png"
+    },
+    {
+      "id": "medieval-bedivere-northmere",
+      "name": "Bedivere Northmere",
+      "bio": "Bedivere Northmere insists the tapestry tells a different story—curiously always theirs.",
+      "imageSrc": "/assets/themes/medieval/personas/07-bedivere-northmere.png"
+    },
+    {
+      "id": "medieval-elaine-coldchester",
+      "name": "Elaine Coldchester",
+      "bio": "Elaine Coldchester blames bandits for anything missing from the treasury.",
+      "imageSrc": "/assets/themes/medieval/personas/08-elaine-coldchester.png"
+    },
+    {
+      "id": "medieval-tristan-eastvale",
+      "name": "Tristan Eastvale",
+      "bio": "Tristan Eastvale swears oaths on relics nobody is allowed to inspect.",
+      "imageSrc": "/assets/themes/medieval/personas/09-tristan-eastvale.png"
+    },
+    {
+      "id": "medieval-isolde-westbarrow",
+      "name": "Isolde Westbarrow",
+      "bio": "Isolde Westbarrow calls doubt \"treason to the crown.\"",
+      "imageSrc": "/assets/themes/medieval/personas/10-isolde-westbarrow.png"
+    },
+    {
+      "id": "medieval-gawain-highfen",
+      "name": "Gawain Highfen",
+      "bio": "Gawain Highfen quotes chivalry while dodging inconvenient facts.",
+      "imageSrc": "/assets/themes/medieval/personas/11-gawain-highfen.png"
+    },
+    {
+      "id": "medieval-bors-lowcroft",
+      "name": "Bors Lowcroft",
+      "bio": "Bors Lowcroft insists the tapestry tells a different story—curiously always theirs.",
+      "imageSrc": "/assets/themes/medieval/personas/12-bors-lowcroft.png"
+    },
+    {
+      "id": "medieval-lamorak-blackmere",
+      "name": "Lamorak Blackmere",
+      "bio": "Lamorak Blackmere blames bandits for anything missing from the treasury.",
+      "imageSrc": "/assets/themes/medieval/personas/13-lamorak-blackmere.png"
+    },
+    {
+      "id": "medieval-kay-whitewall",
+      "name": "Kay Whitewall",
+      "bio": "Kay Whitewall swears oaths on relics nobody is allowed to inspect.",
+      "imageSrc": "/assets/themes/medieval/personas/14-kay-whitewall.png"
+    },
+    {
+      "id": "medieval-ector-redbailey",
+      "name": "Ector Redbailey",
+      "bio": "Ector Redbailey calls doubt \"treason to the crown.\"",
+      "imageSrc": "/assets/themes/medieval/personas/15-ector-redbailey.png"
+    },
+    {
+      "id": "medieval-uther-goldborough",
+      "name": "Uther Goldborough",
+      "bio": "Uther Goldborough quotes chivalry while dodging inconvenient facts.",
+      "imageSrc": "/assets/themes/medieval/personas/16-uther-goldborough.png"
+    },
+    {
+      "id": "medieval-morgause-silverfen",
+      "name": "Morgause Silverfen",
+      "bio": "Morgause Silverfen insists the tapestry tells a different story—curiously always theirs.",
+      "imageSrc": "/assets/themes/medieval/personas/17-morgause-silverfen.png"
+    },
+    {
+      "id": "medieval-igraine-oakshield",
+      "name": "Igraine Oakshield",
+      "bio": "Igraine Oakshield blames bandits for anything missing from the treasury.",
+      "imageSrc": "/assets/themes/medieval/personas/18-igraine-oakshield.png"
+    },
+    {
+      "id": "medieval-leodegrance-rowancrest",
+      "name": "Leodegrance Rowancrest",
+      "bio": "Leodegrance Rowancrest swears oaths on relics nobody is allowed to inspect.",
+      "imageSrc": "/assets/themes/medieval/personas/19-leodegrance-rowancrest.png"
+    },
+    {
+      "id": "medieval-ban-hawkhurst",
+      "name": "Ban Hawkhurst",
+      "bio": "Ban Hawkhurst calls doubt \"treason to the crown.\"",
+      "imageSrc": "/assets/themes/medieval/personas/20-ban-hawkhurst.png"
+    },
+    {
+      "id": "medieval-urien-foxden",
+      "name": "Urien Foxden",
+      "bio": "Urien Foxden quotes chivalry while dodging inconvenient facts.",
+      "imageSrc": "/assets/themes/medieval/personas/21-urien-foxden.png"
+    },
+    {
+      "id": "medieval-lot-wolfmoor",
+      "name": "Lot Wolfmoor",
+      "bio": "Lot Wolfmoor insists the tapestry tells a different story—curiously always theirs.",
+      "imageSrc": "/assets/themes/medieval/personas/22-lot-wolfmoor.png"
+    },
+    {
+      "id": "medieval-pellinore-bearford",
+      "name": "Pellinore Bearford",
+      "bio": "Pellinore Bearford blames bandits for anything missing from the treasury.",
+      "imageSrc": "/assets/themes/medieval/personas/23-pellinore-bearford.png"
+    },
+    {
+      "id": "medieval-blanche-stagwell",
+      "name": "Blanche Stagwell",
+      "bio": "Blanche Stagwell swears oaths on relics nobody is allowed to inspect.",
+      "imageSrc": "/assets/themes/medieval/personas/24-blanche-stagwell.png"
+    },
+    {
+      "id": "medieval-gareth-crowcross",
+      "name": "Gareth Crowcross",
+      "bio": "Gareth Crowcross calls doubt \"treason to the crown.\"",
+      "imageSrc": "/assets/themes/medieval/personas/25-gareth-crowcross.png"
+    }
+  ],
   "Mythology (Gods & Legends)": [
     {
       "id": "mythology-gods-and-legends-orion-stormbringer",
@@ -1519,6 +1671,462 @@
       "imageSrc": "/assets/themes/wrestlers/personas/25-miss-mayhem.png"
     }
   ],
+  "Gangsters": [
+    {
+      "id": "gangsters-vinny-two-times",
+      "name": "Vinny Two-Times",
+      "bio": "Vinny Two-Times says nobody saw nothing—especially not them.",
+      "imageSrc": "/assets/themes/gangsters/personas/01-vinny-two-times.png"
+    },
+    {
+      "id": "gangsters-sal-knife",
+      "name": "Sal Knife",
+      "bio": "Sal Knife offers protection from problems they invented.",
+      "imageSrc": "/assets/themes/gangsters/personas/02-sal-knife.png"
+    },
+    {
+      "id": "gangsters-frankie-brass",
+      "name": "Frankie Brass",
+      "bio": "Frankie Brass keeps two sets of books and three sets of eyebrows.",
+      "imageSrc": "/assets/themes/gangsters/personas/03-frankie-brass.png"
+    },
+    {
+      "id": "gangsters-tony-mouth",
+      "name": "Tony Mouth",
+      "bio": "Tony Mouth calls loyalty a handshake and evidence a misunderstanding.",
+      "imageSrc": "/assets/themes/gangsters/personas/04-tony-mouth.png"
+    },
+    {
+      "id": "gangsters-lucky-fixer",
+      "name": "Lucky Fixer",
+      "bio": "Lucky Fixer remembers favors you never agreed to.",
+      "imageSrc": "/assets/themes/gangsters/personas/05-lucky-fixer.png"
+    },
+    {
+      "id": "gangsters-rico-rackets",
+      "name": "Rico Rackets",
+      "bio": "Rico Rackets says nobody saw nothing—especially not them.",
+      "imageSrc": "/assets/themes/gangsters/personas/06-rico-rackets.png"
+    },
+    {
+      "id": "gangsters-joey-iceberg",
+      "name": "Joey Iceberg",
+      "bio": "Joey Iceberg offers protection from problems they invented.",
+      "imageSrc": "/assets/themes/gangsters/personas/07-joey-iceberg.png"
+    },
+    {
+      "id": "gangsters-benny-stacks",
+      "name": "Benny Stacks",
+      "bio": "Benny Stacks keeps two sets of books and three sets of eyebrows.",
+      "imageSrc": "/assets/themes/gangsters/personas/08-benny-stacks.png"
+    },
+    {
+      "id": "gangsters-mickey-cage",
+      "name": "Mickey Cage",
+      "bio": "Mickey Cage calls loyalty a handshake and evidence a misunderstanding.",
+      "imageSrc": "/assets/themes/gangsters/personas/09-mickey-cage.png"
+    },
+    {
+      "id": "gangsters-johnny-broadway",
+      "name": "Johnny Broadway",
+      "bio": "Johnny Broadway remembers favors you never agreed to.",
+      "imageSrc": "/assets/themes/gangsters/personas/10-johnny-broadway.png"
+    },
+    {
+      "id": "gangsters-donny-wharf",
+      "name": "Donny Wharf",
+      "bio": "Donny Wharf says nobody saw nothing—especially not them.",
+      "imageSrc": "/assets/themes/gangsters/personas/11-donny-wharf.png"
+    },
+    {
+      "id": "gangsters-esco-tunnel",
+      "name": "Esco Tunnel",
+      "bio": "Esco Tunnel offers protection from problems they invented.",
+      "imageSrc": "/assets/themes/gangsters/personas/12-esco-tunnel.png"
+    },
+    {
+      "id": "gangsters-nico-vault",
+      "name": "Nico Vault",
+      "bio": "Nico Vault keeps two sets of books and three sets of eyebrows.",
+      "imageSrc": "/assets/themes/gangsters/personas/13-nico-vault.png"
+    },
+    {
+      "id": "gangsters-vito-ledger",
+      "name": "Vito Ledger",
+      "bio": "Vito Ledger calls loyalty a handshake and evidence a misunderstanding.",
+      "imageSrc": "/assets/themes/gangsters/personas/14-vito-ledger.png"
+    },
+    {
+      "id": "gangsters-gino-nose",
+      "name": "Gino Nose",
+      "bio": "Gino Nose remembers favors you never agreed to.",
+      "imageSrc": "/assets/themes/gangsters/personas/15-gino-nose.png"
+    },
+    {
+      "id": "gangsters-carmine-shark",
+      "name": "Carmine Shark",
+      "bio": "Carmine Shark says nobody saw nothing—especially not them.",
+      "imageSrc": "/assets/themes/gangsters/personas/16-carmine-shark.png"
+    },
+    {
+      "id": "gangsters-angelo-hammer",
+      "name": "Angelo Hammer",
+      "bio": "Angelo Hammer offers protection from problems they invented.",
+      "imageSrc": "/assets/themes/gangsters/personas/17-angelo-hammer.png"
+    },
+    {
+      "id": "gangsters-enzo-spats",
+      "name": "Enzo Spats",
+      "bio": "Enzo Spats keeps two sets of books and three sets of eyebrows.",
+      "imageSrc": "/assets/themes/gangsters/personas/18-enzo-spats.png"
+    },
+    {
+      "id": "gangsters-paulie-cigar",
+      "name": "Paulie Cigar",
+      "bio": "Paulie Cigar calls loyalty a handshake and evidence a misunderstanding.",
+      "imageSrc": "/assets/themes/gangsters/personas/19-paulie-cigar.png"
+    },
+    {
+      "id": "gangsters-sonny-furs",
+      "name": "Sonny Furs",
+      "bio": "Sonny Furs remembers favors you never agreed to.",
+      "imageSrc": "/assets/themes/gangsters/personas/20-sonny-furs.png"
+    },
+    {
+      "id": "gangsters-augie-tracks",
+      "name": "Augie Tracks",
+      "bio": "Augie Tracks says nobody saw nothing—especially not them.",
+      "imageSrc": "/assets/themes/gangsters/personas/21-augie-tracks.png"
+    },
+    {
+      "id": "gangsters-marco-deal",
+      "name": "Marco Deal",
+      "bio": "Marco Deal offers protection from problems they invented.",
+      "imageSrc": "/assets/themes/gangsters/personas/22-marco-deal.png"
+    },
+    {
+      "id": "gangsters-lou-contract",
+      "name": "Lou Contract",
+      "bio": "Lou Contract keeps two sets of books and three sets of eyebrows.",
+      "imageSrc": "/assets/themes/gangsters/personas/23-lou-contract.png"
+    },
+    {
+      "id": "gangsters-patsy-witness",
+      "name": "Patsy Witness",
+      "bio": "Patsy Witness calls loyalty a handshake and evidence a misunderstanding.",
+      "imageSrc": "/assets/themes/gangsters/personas/24-patsy-witness.png"
+    },
+    {
+      "id": "gangsters-fredo-court",
+      "name": "Fredo Court",
+      "bio": "Fredo Court remembers favors you never agreed to.",
+      "imageSrc": "/assets/themes/gangsters/personas/25-fredo-court.png"
+    }
+  ],
+  "Military": [
+    {
+      "id": "military-sgt-brick",
+      "name": "Sgt Brick",
+      "bio": "Sgt Brick reports \"negative contact\" with the truth.",
+      "imageSrc": "/assets/themes/military/personas/01-sgt-brick.png"
+    },
+    {
+      "id": "military-cpl-steel",
+      "name": "Cpl Steel",
+      "bio": "Cpl Steel cites operational security for civilian questions.",
+      "imageSrc": "/assets/themes/military/personas/02-cpl-steel.png"
+    },
+    {
+      "id": "military-lt-iron",
+      "name": "Lt Iron",
+      "bio": "Lt Iron says the mission changed—retroactively.",
+      "imageSrc": "/assets/themes/military/personas/03-lt-iron.png"
+    },
+    {
+      "id": "military-captain-hawk",
+      "name": "Captain Hawk",
+      "bio": "Captain Hawk claims radio discipline prevents confirming details.",
+      "imageSrc": "/assets/themes/military/personas/04-captain-hawk.png"
+    },
+    {
+      "id": "military-major-wolf",
+      "name": "Major Wolf",
+      "bio": "Major Wolf calls confusion \"tactical misinformation.\"",
+      "imageSrc": "/assets/themes/military/personas/05-major-wolf.png"
+    },
+    {
+      "id": "military-colonel-fox",
+      "name": "Colonel Fox",
+      "bio": "Colonel Fox reports \"negative contact\" with the truth.",
+      "imageSrc": "/assets/themes/military/personas/06-colonel-fox.png"
+    },
+    {
+      "id": "military-general-bear",
+      "name": "General Bear",
+      "bio": "General Bear cites operational security for civilian questions.",
+      "imageSrc": "/assets/themes/military/personas/07-general-bear.png"
+    },
+    {
+      "id": "military-chief-eagle",
+      "name": "Chief Eagle",
+      "bio": "Chief Eagle says the mission changed—retroactively.",
+      "imageSrc": "/assets/themes/military/personas/08-chief-eagle.png"
+    },
+    {
+      "id": "military-gunny-storm",
+      "name": "Gunny Storm",
+      "bio": "Gunny Storm claims radio discipline prevents confirming details.",
+      "imageSrc": "/assets/themes/military/personas/09-gunny-storm.png"
+    },
+    {
+      "id": "military-admiral-forge",
+      "name": "Admiral Forge",
+      "bio": "Admiral Forge calls confusion \"tactical misinformation.\"",
+      "imageSrc": "/assets/themes/military/personas/10-admiral-forge.png"
+    },
+    {
+      "id": "military-pilot-ridge",
+      "name": "Pilot Ridge",
+      "bio": "Pilot Ridge reports \"negative contact\" with the truth.",
+      "imageSrc": "/assets/themes/military/personas/11-pilot-ridge.png"
+    },
+    {
+      "id": "military-ranger-tanker",
+      "name": "Ranger Tanker",
+      "bio": "Ranger Tanker cites operational security for civilian questions.",
+      "imageSrc": "/assets/themes/military/personas/12-ranger-tanker.png"
+    },
+    {
+      "id": "military-sniper-grit",
+      "name": "Sniper Grit",
+      "bio": "Sniper Grit says the mission changed—retroactively.",
+      "imageSrc": "/assets/themes/military/personas/13-sniper-grit.png"
+    },
+    {
+      "id": "military-medic-hardline",
+      "name": "Medic Hardline",
+      "bio": "Medic Hardline claims radio discipline prevents confirming details.",
+      "imageSrc": "/assets/themes/military/personas/14-medic-hardline.png"
+    },
+    {
+      "id": "military-engineer-overwatch",
+      "name": "Engineer Overwatch",
+      "bio": "Engineer Overwatch calls confusion \"tactical misinformation.\"",
+      "imageSrc": "/assets/themes/military/personas/15-engineer-overwatch.png"
+    },
+    {
+      "id": "military-quarter-dogtag",
+      "name": "Quarter Dogtag",
+      "bio": "Quarter Dogtag reports \"negative contact\" with the truth.",
+      "imageSrc": "/assets/themes/military/personas/16-quarter-dogtag.png"
+    },
+    {
+      "id": "military-signal-grid",
+      "name": "Signal Grid",
+      "bio": "Signal Grid cites operational security for civilian questions.",
+      "imageSrc": "/assets/themes/military/personas/17-signal-grid.png"
+    },
+    {
+      "id": "military-intel-tracer",
+      "name": "Intel Tracer",
+      "bio": "Intel Tracer says the mission changed—retroactively.",
+      "imageSrc": "/assets/themes/military/personas/18-intel-tracer.png"
+    },
+    {
+      "id": "military-ops-lockstep",
+      "name": "Ops Lockstep",
+      "bio": "Ops Lockstep claims radio discipline prevents confirming details.",
+      "imageSrc": "/assets/themes/military/personas/19-ops-lockstep.png"
+    },
+    {
+      "id": "military-recon-ironclad",
+      "name": "Recon Ironclad",
+      "bio": "Recon Ironclad calls confusion \"tactical misinformation.\"",
+      "imageSrc": "/assets/themes/military/personas/20-recon-ironclad.png"
+    },
+    {
+      "id": "military-drill-sandbag",
+      "name": "Drill Sandbag",
+      "bio": "Drill Sandbag reports \"negative contact\" with the truth.",
+      "imageSrc": "/assets/themes/military/personas/21-drill-sandbag.png"
+    },
+    {
+      "id": "military-supply-hardshell",
+      "name": "Supply Hardshell",
+      "bio": "Supply Hardshell cites operational security for civilian questions.",
+      "imageSrc": "/assets/themes/military/personas/22-supply-hardshell.png"
+    },
+    {
+      "id": "military-armor-foxtrot",
+      "name": "Armor Foxtrot",
+      "bio": "Armor Foxtrot says the mission changed—retroactively.",
+      "imageSrc": "/assets/themes/military/personas/23-armor-foxtrot.png"
+    },
+    {
+      "id": "military-battery-bravo",
+      "name": "Battery Bravo",
+      "bio": "Battery Bravo claims radio discipline prevents confirming details.",
+      "imageSrc": "/assets/themes/military/personas/24-battery-bravo.png"
+    },
+    {
+      "id": "military-wing-tango",
+      "name": "Wing Tango",
+      "bio": "Wing Tango calls confusion \"tactical misinformation.\"",
+      "imageSrc": "/assets/themes/military/personas/25-wing-tango.png"
+    }
+  ],
+  "Law and Order": [
+    {
+      "id": "law-and-order-ada-hargrove",
+      "name": "ADA Hargrove",
+      "bio": "ADA Hargrove objects to questions on grounds of drama.",
+      "imageSrc": "/assets/themes/law-and-order/personas/01-ada-hargrove.png"
+    },
+    {
+      "id": "law-and-order-detective-sterling",
+      "name": "Detective Sterling",
+      "bio": "Detective Sterling cites procedure only when it blocks the truth.",
+      "imageSrc": "/assets/themes/law-and-order/personas/02-detective-sterling.png"
+    },
+    {
+      "id": "law-and-order-sergeant-whitaker",
+      "name": "Sergeant Whitaker",
+      "bio": "Sergeant Whitaker treats timelines like opening statements—editable.",
+      "imageSrc": "/assets/themes/law-and-order/personas/03-sergeant-whitaker.png"
+    },
+    {
+      "id": "law-and-order-captain-delgado",
+      "name": "Captain Delgado",
+      "bio": "Captain Delgado claims the record is sealed—and so is their memory.",
+      "imageSrc": "/assets/themes/law-and-order/personas/04-captain-delgado.png"
+    },
+    {
+      "id": "law-and-order-judge-kincaid",
+      "name": "Judge Kincaid",
+      "bio": "Judge Kincaid asks for a sidebar whenever facts arrive.",
+      "imageSrc": "/assets/themes/law-and-order/personas/05-judge-kincaid.png"
+    },
+    {
+      "id": "law-and-order-bailiff-morales",
+      "name": "Bailiff Morales",
+      "bio": "Bailiff Morales objects to questions on grounds of drama.",
+      "imageSrc": "/assets/themes/law-and-order/personas/06-bailiff-morales.png"
+    },
+    {
+      "id": "law-and-order-clerk-pritchard",
+      "name": "Clerk Pritchard",
+      "bio": "Clerk Pritchard cites procedure only when it blocks the truth.",
+      "imageSrc": "/assets/themes/law-and-order/personas/07-clerk-pritchard.png"
+    },
+    {
+      "id": "law-and-order-paralegal-hayes",
+      "name": "Paralegal Hayes",
+      "bio": "Paralegal Hayes treats timelines like opening statements—editable.",
+      "imageSrc": "/assets/themes/law-and-order/personas/08-paralegal-hayes.png"
+    },
+    {
+      "id": "law-and-order-inspector-langford",
+      "name": "Inspector Langford",
+      "bio": "Inspector Langford claims the record is sealed—and so is their memory.",
+      "imageSrc": "/assets/themes/law-and-order/personas/09-inspector-langford.png"
+    },
+    {
+      "id": "law-and-order-counsel-ruiz",
+      "name": "Counsel Ruiz",
+      "bio": "Counsel Ruiz asks for a sidebar whenever facts arrive.",
+      "imageSrc": "/assets/themes/law-and-order/personas/10-counsel-ruiz.png"
+    },
+    {
+      "id": "law-and-order-marshal-carmichael",
+      "name": "Marshal Carmichael",
+      "bio": "Marshal Carmichael objects to questions on grounds of drama.",
+      "imageSrc": "/assets/themes/law-and-order/personas/11-marshal-carmichael.png"
+    },
+    {
+      "id": "law-and-order-reporter-bishop",
+      "name": "Reporter Bishop",
+      "bio": "Reporter Bishop cites procedure only when it blocks the truth.",
+      "imageSrc": "/assets/themes/law-and-order/personas/12-reporter-bishop.png"
+    },
+    {
+      "id": "law-and-order-witness-navarro",
+      "name": "Witness Navarro",
+      "bio": "Witness Navarro treats timelines like opening statements—editable.",
+      "imageSrc": "/assets/themes/law-and-order/personas/13-witness-navarro.png"
+    },
+    {
+      "id": "law-and-order-patrol-ellis",
+      "name": "Patrol Ellis",
+      "bio": "Patrol Ellis claims the record is sealed—and so is their memory.",
+      "imageSrc": "/assets/themes/law-and-order/personas/14-patrol-ellis.png"
+    },
+    {
+      "id": "law-and-order-evidence-graves",
+      "name": "Evidence Graves",
+      "bio": "Evidence Graves asks for a sidebar whenever facts arrive.",
+      "imageSrc": "/assets/themes/law-and-order/personas/15-evidence-graves.png"
+    },
+    {
+      "id": "law-and-order-brief-monroe",
+      "name": "Brief Monroe",
+      "bio": "Brief Monroe objects to questions on grounds of drama.",
+      "imageSrc": "/assets/themes/law-and-order/personas/16-brief-monroe.png"
+    },
+    {
+      "id": "law-and-order-motion-vance",
+      "name": "Motion Vance",
+      "bio": "Motion Vance cites procedure only when it blocks the truth.",
+      "imageSrc": "/assets/themes/law-and-order/personas/17-motion-vance.png"
+    },
+    {
+      "id": "law-and-order-summons-dalton",
+      "name": "Summons Dalton",
+      "bio": "Summons Dalton treats timelines like opening statements—editable.",
+      "imageSrc": "/assets/themes/law-and-order/personas/18-summons-dalton.png"
+    },
+    {
+      "id": "law-and-order-docket-reeves",
+      "name": "Docket Reeves",
+      "bio": "Docket Reeves claims the record is sealed—and so is their memory.",
+      "imageSrc": "/assets/themes/law-and-order/personas/19-docket-reeves.png"
+    },
+    {
+      "id": "law-and-order-arraign-cross",
+      "name": "Arraign Cross",
+      "bio": "Arraign Cross asks for a sidebar whenever facts arrive.",
+      "imageSrc": "/assets/themes/law-and-order/personas/20-arraign-cross.png"
+    },
+    {
+      "id": "law-and-order-probable-porter",
+      "name": "Probable Porter",
+      "bio": "Probable Porter objects to questions on grounds of drama.",
+      "imageSrc": "/assets/themes/law-and-order/personas/21-probable-porter.png"
+    },
+    {
+      "id": "law-and-order-custody-yates",
+      "name": "Custody Yates",
+      "bio": "Custody Yates cites procedure only when it blocks the truth.",
+      "imageSrc": "/assets/themes/law-and-order/personas/22-custody-yates.png"
+    },
+    {
+      "id": "law-and-order-appeal-ingram",
+      "name": "Appeal Ingram",
+      "bio": "Appeal Ingram treats timelines like opening statements—editable.",
+      "imageSrc": "/assets/themes/law-and-order/personas/23-appeal-ingram.png"
+    },
+    {
+      "id": "law-and-order-verdict-frost",
+      "name": "Verdict Frost",
+      "bio": "Verdict Frost claims the record is sealed—and so is their memory.",
+      "imageSrc": "/assets/themes/law-and-order/personas/24-verdict-frost.png"
+    },
+    {
+      "id": "law-and-order-sidebar-lane",
+      "name": "Sidebar Lane",
+      "bio": "Sidebar Lane asks for a sidebar whenever facts arrive.",
+      "imageSrc": "/assets/themes/law-and-order/personas/25-sidebar-lane.png"
+    }
+  ],
   "Cyberpunk": [
     {
       "id": "cyberpunk-neon-runner",
@@ -1823,6 +2431,158 @@
       "imageSrc": "/assets/themes/aliens/personas/25-senn-tox.png"
     }
   ],
+  "Sci-Fi": [
+    {
+      "id": "sci-fi-cmdr-vega",
+      "name": "Cmdr Vega",
+      "bio": "Cmdr Vega blames sensor calibration whenever the story shifts.",
+      "imageSrc": "/assets/themes/sci-fi/personas/01-cmdr-vega.png"
+    },
+    {
+      "id": "sci-fi-lt-orion",
+      "name": "Lt Orion",
+      "bio": "Lt Orion insists the log was corrupted by solar flares—selectively.",
+      "imageSrc": "/assets/themes/sci-fi/personas/02-lt-orion.png"
+    },
+    {
+      "id": "sci-fi-ensign-andromeda",
+      "name": "Ensign Andromeda",
+      "bio": "Ensign Andromeda quotes regulations from a handbook page that never loads.",
+      "imageSrc": "/assets/themes/sci-fi/personas/03-ensign-andromeda.png"
+    },
+    {
+      "id": "sci-fi-pilot-proxima",
+      "name": "Pilot Proxima",
+      "bio": "Pilot Proxima says the AI misheard human intent—again.",
+      "imageSrc": "/assets/themes/sci-fi/personas/04-pilot-proxima.png"
+    },
+    {
+      "id": "sci-fi-navigator-kepler",
+      "name": "Navigator Kepler",
+      "bio": "Navigator Kepler calls classified anything inconvenient.",
+      "imageSrc": "/assets/themes/sci-fi/personas/05-navigator-kepler.png"
+    },
+    {
+      "id": "sci-fi-engineer-titan",
+      "name": "Engineer Titan",
+      "bio": "Engineer Titan blames sensor calibration whenever the story shifts.",
+      "imageSrc": "/assets/themes/sci-fi/personas/06-engineer-titan.png"
+    },
+    {
+      "id": "sci-fi-bot-rigel",
+      "name": "Bot Rigel",
+      "bio": "Bot Rigel insists the log was corrupted by solar flares—selectively.",
+      "imageSrc": "/assets/themes/sci-fi/personas/07-bot-rigel.png"
+    },
+    {
+      "id": "sci-fi-cyborg-lyra",
+      "name": "Cyborg Lyra",
+      "bio": "Cyborg Lyra quotes regulations from a handbook page that never loads.",
+      "imageSrc": "/assets/themes/sci-fi/personas/08-cyborg-lyra.png"
+    },
+    {
+      "id": "sci-fi-colony-cygnus",
+      "name": "Colony Cygnus",
+      "bio": "Colony Cygnus says the AI misheard human intent—again.",
+      "imageSrc": "/assets/themes/sci-fi/personas/09-colony-cygnus.png"
+    },
+    {
+      "id": "sci-fi-void-axiom",
+      "name": "Void Axiom",
+      "bio": "Void Axiom calls classified anything inconvenient.",
+      "imageSrc": "/assets/themes/sci-fi/personas/10-void-axiom.png"
+    },
+    {
+      "id": "sci-fi-star-nebula",
+      "name": "Star Nebula",
+      "bio": "Star Nebula blames sensor calibration whenever the story shifts.",
+      "imageSrc": "/assets/themes/sci-fi/personas/11-star-nebula.png"
+    },
+    {
+      "id": "sci-fi-nova-pulsar",
+      "name": "Nova Pulsar",
+      "bio": "Nova Pulsar insists the log was corrupted by solar flares—selectively.",
+      "imageSrc": "/assets/themes/sci-fi/personas/12-nova-pulsar.png"
+    },
+    {
+      "id": "sci-fi-warden-quasar",
+      "name": "Warden Quasar",
+      "bio": "Warden Quasar quotes regulations from a handbook page that never loads.",
+      "imageSrc": "/assets/themes/sci-fi/personas/13-warden-quasar.png"
+    },
+    {
+      "id": "sci-fi-signal-eclipse",
+      "name": "Signal Eclipse",
+      "bio": "Signal Eclipse says the AI misheard human intent—again.",
+      "imageSrc": "/assets/themes/sci-fi/personas/14-signal-eclipse.png"
+    },
+    {
+      "id": "sci-fi-orbit-solstice",
+      "name": "Orbit Solstice",
+      "bio": "Orbit Solstice calls classified anything inconvenient.",
+      "imageSrc": "/assets/themes/sci-fi/personas/15-orbit-solstice.png"
+    },
+    {
+      "id": "sci-fi-dock-zenith",
+      "name": "Dock Zenith",
+      "bio": "Dock Zenith blames sensor calibration whenever the story shifts.",
+      "imageSrc": "/assets/themes/sci-fi/personas/16-dock-zenith.png"
+    },
+    {
+      "id": "sci-fi-probe-nadir",
+      "name": "Probe Nadir",
+      "bio": "Probe Nadir insists the log was corrupted by solar flares—selectively.",
+      "imageSrc": "/assets/themes/sci-fi/personas/17-probe-nadir.png"
+    },
+    {
+      "id": "sci-fi-relay-corona",
+      "name": "Relay Corona",
+      "bio": "Relay Corona quotes regulations from a handbook page that never loads.",
+      "imageSrc": "/assets/themes/sci-fi/personas/18-relay-corona.png"
+    },
+    {
+      "id": "sci-fi-vector-drift",
+      "name": "Vector Drift",
+      "bio": "Vector Drift says the AI misheard human intent—again.",
+      "imageSrc": "/assets/themes/sci-fi/personas/19-vector-drift.png"
+    },
+    {
+      "id": "sci-fi-phase-parsec",
+      "name": "Phase Parsec",
+      "bio": "Phase Parsec calls classified anything inconvenient.",
+      "imageSrc": "/assets/themes/sci-fi/personas/20-phase-parsec.png"
+    },
+    {
+      "id": "sci-fi-shift-lumen",
+      "name": "Shift Lumen",
+      "bio": "Shift Lumen blames sensor calibration whenever the story shifts.",
+      "imageSrc": "/assets/themes/sci-fi/personas/21-shift-lumen.png"
+    },
+    {
+      "id": "sci-fi-deck-arc",
+      "name": "Deck Arc",
+      "bio": "Deck Arc insists the log was corrupted by solar flares—selectively.",
+      "imageSrc": "/assets/themes/sci-fi/personas/22-deck-arc.png"
+    },
+    {
+      "id": "sci-fi-bay-flux",
+      "name": "Bay Flux",
+      "bio": "Bay Flux quotes regulations from a handbook page that never loads.",
+      "imageSrc": "/assets/themes/sci-fi/personas/23-bay-flux.png"
+    },
+    {
+      "id": "sci-fi-core-helix",
+      "name": "Core Helix",
+      "bio": "Core Helix says the AI misheard human intent—again.",
+      "imageSrc": "/assets/themes/sci-fi/personas/24-core-helix.png"
+    },
+    {
+      "id": "sci-fi-array-matrix",
+      "name": "Array Matrix",
+      "bio": "Array Matrix calls classified anything inconvenient.",
+      "imageSrc": "/assets/themes/sci-fi/personas/25-array-matrix.png"
+    }
+  ],
   "Wizards & Witches": [
     {
       "id": "wizards-and-witches-arcane-moonspell",
@@ -2125,6 +2885,918 @@
       "name": "Ember Depth",
       "bio": "Ember Depth insists silence is an answer—it just depends who hears it.",
       "imageSrc": "/assets/themes/ninjas/personas/25-ember-depth.png"
+    }
+  ],
+  "Post-Apocalypse": [
+    {
+      "id": "post-apocalypse-dust-runner",
+      "name": "Dust Runner",
+      "bio": "Dust Runner trades water for silence—and overcharges.",
+      "imageSrc": "/assets/themes/post-apocalypse/personas/01-dust-runner.png"
+    },
+    {
+      "id": "post-apocalypse-rust-walker",
+      "name": "Rust Walker",
+      "bio": "Rust Walker says the wasteland ate the alibi.",
+      "imageSrc": "/assets/themes/post-apocalypse/personas/02-rust-walker.png"
+    },
+    {
+      "id": "post-apocalypse-scav-forge",
+      "name": "Scav Forge",
+      "bio": "Scav Forge carries a map with blank spots where blame should be.",
+      "imageSrc": "/assets/themes/post-apocalypse/personas/03-scav-forge.png"
+    },
+    {
+      "id": "post-apocalypse-warden-rift",
+      "name": "Warden Rift",
+      "bio": "Warden Rift insists radiation made the details fuzzy.",
+      "imageSrc": "/assets/themes/post-apocalypse/personas/04-warden-rift.png"
+    },
+    {
+      "id": "post-apocalypse-havoc-cage",
+      "name": "Havoc Cage",
+      "bio": "Havoc Cage calls trust a luxury item they cannot afford.",
+      "imageSrc": "/assets/themes/post-apocalypse/personas/05-havoc-cage.png"
+    },
+    {
+      "id": "post-apocalypse-ash-drifter",
+      "name": "Ash Drifter",
+      "bio": "Ash Drifter trades water for silence—and overcharges.",
+      "imageSrc": "/assets/themes/post-apocalypse/personas/06-ash-drifter.png"
+    },
+    {
+      "id": "post-apocalypse-nomad-lock",
+      "name": "Nomad Lock",
+      "bio": "Nomad Lock says the wasteland ate the alibi.",
+      "imageSrc": "/assets/themes/post-apocalypse/personas/07-nomad-lock.png"
+    },
+    {
+      "id": "post-apocalypse-patch-silo",
+      "name": "Patch Silo",
+      "bio": "Patch Silo carries a map with blank spots where blame should be.",
+      "imageSrc": "/assets/themes/post-apocalypse/personas/08-patch-silo.png"
+    },
+    {
+      "id": "post-apocalypse-scrap-grit",
+      "name": "Scrap Grit",
+      "bio": "Scrap Grit insists radiation made the details fuzzy.",
+      "imageSrc": "/assets/themes/post-apocalypse/personas/09-scrap-grit.png"
+    },
+    {
+      "id": "post-apocalypse-rad-wreck",
+      "name": "Rad Wreck",
+      "bio": "Rad Wreck calls trust a luxury item they cannot afford.",
+      "imageSrc": "/assets/themes/post-apocalypse/personas/10-rad-wreck.png"
+    },
+    {
+      "id": "post-apocalypse-rogue-hollow",
+      "name": "Rogue Hollow",
+      "bio": "Rogue Hollow trades water for silence—and overcharges.",
+      "imageSrc": "/assets/themes/post-apocalypse/personas/11-rogue-hollow.png"
+    },
+    {
+      "id": "post-apocalypse-breaker-spike",
+      "name": "Breaker Spike",
+      "bio": "Breaker Spike says the wasteland ate the alibi.",
+      "imageSrc": "/assets/themes/post-apocalypse/personas/12-breaker-spike.png"
+    },
+    {
+      "id": "post-apocalypse-tank-rust",
+      "name": "Tank Rust",
+      "bio": "Tank Rust carries a map with blank spots where blame should be.",
+      "imageSrc": "/assets/themes/post-apocalypse/personas/13-tank-rust.png"
+    },
+    {
+      "id": "post-apocalypse-spike-ash",
+      "name": "Spike Ash",
+      "bio": "Spike Ash insists radiation made the details fuzzy.",
+      "imageSrc": "/assets/themes/post-apocalypse/personas/14-spike-ash.png"
+    },
+    {
+      "id": "post-apocalypse-grit-rad",
+      "name": "Grit Rad",
+      "bio": "Grit Rad calls trust a luxury item they cannot afford.",
+      "imageSrc": "/assets/themes/post-apocalypse/personas/15-grit-rad.png"
+    },
+    {
+      "id": "post-apocalypse-cinder-scrap",
+      "name": "Cinder Scrap",
+      "bio": "Cinder Scrap trades water for silence—and overcharges.",
+      "imageSrc": "/assets/themes/post-apocalypse/personas/16-cinder-scrap.png"
+    },
+    {
+      "id": "post-apocalypse-bolt-patch",
+      "name": "Bolt Patch",
+      "bio": "Bolt Patch says the wasteland ate the alibi.",
+      "imageSrc": "/assets/themes/post-apocalypse/personas/17-bolt-patch.png"
+    },
+    {
+      "id": "post-apocalypse-junk-nomad",
+      "name": "Junk Nomad",
+      "bio": "Junk Nomad carries a map with blank spots where blame should be.",
+      "imageSrc": "/assets/themes/post-apocalypse/personas/18-junk-nomad.png"
+    },
+    {
+      "id": "post-apocalypse-rattle-rogue",
+      "name": "Rattle Rogue",
+      "bio": "Rattle Rogue insists radiation made the details fuzzy.",
+      "imageSrc": "/assets/themes/post-apocalypse/personas/19-rattle-rogue.png"
+    },
+    {
+      "id": "post-apocalypse-silo-breaker",
+      "name": "Silo Breaker",
+      "bio": "Silo Breaker calls trust a luxury item they cannot afford.",
+      "imageSrc": "/assets/themes/post-apocalypse/personas/20-silo-breaker.png"
+    },
+    {
+      "id": "post-apocalypse-cage-tank",
+      "name": "Cage Tank",
+      "bio": "Cage Tank trades water for silence—and overcharges.",
+      "imageSrc": "/assets/themes/post-apocalypse/personas/21-cage-tank.png"
+    },
+    {
+      "id": "post-apocalypse-drifter-warden",
+      "name": "Drifter Warden",
+      "bio": "Drifter Warden says the wasteland ate the alibi.",
+      "imageSrc": "/assets/themes/post-apocalypse/personas/22-drifter-warden.png"
+    },
+    {
+      "id": "post-apocalypse-lock-havoc",
+      "name": "Lock Havoc",
+      "bio": "Lock Havoc carries a map with blank spots where blame should be.",
+      "imageSrc": "/assets/themes/post-apocalypse/personas/23-lock-havoc.png"
+    },
+    {
+      "id": "post-apocalypse-wreck-dust",
+      "name": "Wreck Dust",
+      "bio": "Wreck Dust insists radiation made the details fuzzy.",
+      "imageSrc": "/assets/themes/post-apocalypse/personas/24-wreck-dust.png"
+    },
+    {
+      "id": "post-apocalypse-hollow-scav",
+      "name": "Hollow Scav",
+      "bio": "Hollow Scav calls trust a luxury item they cannot afford.",
+      "imageSrc": "/assets/themes/post-apocalypse/personas/25-hollow-scav.png"
+    }
+  ],
+  "Monsters": [
+    {
+      "id": "monsters-count-dracula",
+      "name": "Count Dracula",
+      "bio": "Count Dracula growls that mirrors lie.",
+      "imageSrc": "/assets/themes/monsters/personas/01-count-dracula.png"
+    },
+    {
+      "id": "monsters-ghoul-maw",
+      "name": "Ghoul Maw",
+      "bio": "Ghoul Maw insists hunger explains the missing facts.",
+      "imageSrc": "/assets/themes/monsters/personas/02-ghoul-maw.png"
+    },
+    {
+      "id": "monsters-fang-nora",
+      "name": "Fang Nora",
+      "bio": "Fang Nora claims moonlight invalidates the timeline.",
+      "imageSrc": "/assets/themes/monsters/personas/03-fang-nora.png"
+    },
+    {
+      "id": "monsters-mummy-bones",
+      "name": "Mummy Bones",
+      "bio": "Mummy Bones says stitches hold the story together—barely.",
+      "imageSrc": "/assets/themes/monsters/personas/04-mummy-bones.png"
+    },
+    {
+      "id": "monsters-banshee-stitch",
+      "name": "Banshee Stitch",
+      "bio": "Banshee Stitch blames villagers for overreacting.",
+      "imageSrc": "/assets/themes/monsters/personas/05-banshee-stitch.png"
+    },
+    {
+      "id": "monsters-sludge-rot",
+      "name": "Sludge Rot",
+      "bio": "Sludge Rot growls that mirrors lie.",
+      "imageSrc": "/assets/themes/monsters/personas/06-sludge-rot.png"
+    },
+    {
+      "id": "monsters-rotfang-wailer",
+      "name": "Rotfang Wailer",
+      "bio": "Rotfang Wailer insists hunger explains the missing facts.",
+      "imageSrc": "/assets/themes/monsters/personas/07-rotfang-wailer.png"
+    },
+    {
+      "id": "monsters-howler-claw",
+      "name": "Howler Claw",
+      "bio": "Howler Claw claims moonlight invalidates the timeline.",
+      "imageSrc": "/assets/themes/monsters/personas/08-howler-claw.png"
+    },
+    {
+      "id": "monsters-creep-tooth",
+      "name": "Creep Tooth",
+      "bio": "Creep Tooth says stitches hold the story together—barely.",
+      "imageSrc": "/assets/themes/monsters/personas/09-creep-tooth.png"
+    },
+    {
+      "id": "monsters-bog-lurker",
+      "name": "Bog Lurker",
+      "bio": "Bog Lurker blames villagers for overreacting.",
+      "imageSrc": "/assets/themes/monsters/personas/10-bog-lurker.png"
+    },
+    {
+      "id": "monsters-crypt-mire",
+      "name": "Crypt Mire",
+      "bio": "Crypt Mire growls that mirrors lie.",
+      "imageSrc": "/assets/themes/monsters/personas/11-crypt-mire.png"
+    },
+    {
+      "id": "monsters-witch-hex",
+      "name": "Witch Hex",
+      "bio": "Witch Hex insists hunger explains the missing facts.",
+      "imageSrc": "/assets/themes/monsters/personas/12-witch-hex.png"
+    },
+    {
+      "id": "monsters-beast-groan",
+      "name": "Beast Groan",
+      "bio": "Beast Groan claims moonlight invalidates the timeline.",
+      "imageSrc": "/assets/themes/monsters/personas/13-beast-groan.png"
+    },
+    {
+      "id": "monsters-shade-shriek",
+      "name": "Shade Shriek",
+      "bio": "Shade Shriek says stitches hold the story together—barely.",
+      "imageSrc": "/assets/themes/monsters/personas/14-shade-shriek.png"
+    },
+    {
+      "id": "monsters-vile-ooze",
+      "name": "Vile Ooze",
+      "bio": "Vile Ooze blames villagers for overreacting.",
+      "imageSrc": "/assets/themes/monsters/personas/15-vile-ooze.png"
+    },
+    {
+      "id": "monsters-grim-gnash",
+      "name": "Grim Gnash",
+      "bio": "Grim Gnash growls that mirrors lie.",
+      "imageSrc": "/assets/themes/monsters/personas/16-grim-gnash.png"
+    },
+    {
+      "id": "monsters-mire-rattle",
+      "name": "Mire Rattle",
+      "bio": "Mire Rattle insists hunger explains the missing facts.",
+      "imageSrc": "/assets/themes/monsters/personas/17-mire-rattle.png"
+    },
+    {
+      "id": "monsters-slime-chomp",
+      "name": "Slime Chomp",
+      "bio": "Slime Chomp claims moonlight invalidates the timeline.",
+      "imageSrc": "/assets/themes/monsters/personas/18-slime-chomp.png"
+    },
+    {
+      "id": "monsters-bone-slither",
+      "name": "Bone Slither",
+      "bio": "Bone Slither says stitches hold the story together—barely.",
+      "imageSrc": "/assets/themes/monsters/personas/19-bone-slither.png"
+    },
+    {
+      "id": "monsters-claw-creak",
+      "name": "Claw Creak",
+      "bio": "Claw Creak blames villagers for overreacting.",
+      "imageSrc": "/assets/themes/monsters/personas/20-claw-creak.png"
+    },
+    {
+      "id": "monsters-maw-moan",
+      "name": "Maw Moan",
+      "bio": "Maw Moan growls that mirrors lie.",
+      "imageSrc": "/assets/themes/monsters/personas/21-maw-moan.png"
+    },
+    {
+      "id": "monsters-hex-hiss",
+      "name": "Hex Hiss",
+      "bio": "Hex Hiss insists hunger explains the missing facts.",
+      "imageSrc": "/assets/themes/monsters/personas/22-hex-hiss.png"
+    },
+    {
+      "id": "monsters-wailer-fester",
+      "name": "Wailer Fester",
+      "bio": "Wailer Fester claims moonlight invalidates the timeline.",
+      "imageSrc": "/assets/themes/monsters/personas/23-wailer-fester.png"
+    },
+    {
+      "id": "monsters-lurk-grumble",
+      "name": "Lurk Grumble",
+      "bio": "Lurk Grumble says stitches hold the story together—barely.",
+      "imageSrc": "/assets/themes/monsters/personas/24-lurk-grumble.png"
+    },
+    {
+      "id": "monsters-dread-snarl",
+      "name": "Dread Snarl",
+      "bio": "Dread Snarl blames villagers for overreacting.",
+      "imageSrc": "/assets/themes/monsters/personas/25-dread-snarl.png"
+    }
+  ],
+  "Carnival": [
+    {
+      "id": "carnival-ringmaster-blaze",
+      "name": "Ringmaster Blaze",
+      "bio": "Ringmaster Blaze sells certainty like rigged ring toss.",
+      "imageSrc": "/assets/themes/carnival/personas/01-ringmaster-blaze.png"
+    },
+    {
+      "id": "carnival-jester-bell",
+      "name": "Jester Bell",
+      "bio": "Jester Bell insists the house always wins—especially in arguments.",
+      "imageSrc": "/assets/themes/carnival/personas/02-jester-bell.png"
+    },
+    {
+      "id": "carnival-glitter-rumble",
+      "name": "Glitter Rumble",
+      "bio": "Glitter Rumble smiles wide while palming the truth.",
+      "imageSrc": "/assets/themes/carnival/personas/03-glitter-rumble.png"
+    },
+    {
+      "id": "carnival-trixie-flare",
+      "name": "Trixie Flare",
+      "bio": "Trixie Flare calls panic part of the show package.",
+      "imageSrc": "/assets/themes/carnival/personas/04-trixie-flare.png"
+    },
+    {
+      "id": "carnival-barker-flip",
+      "name": "Barker Flip",
+      "bio": "Barker Flip offers a free ride that goes nowhere useful.",
+      "imageSrc": "/assets/themes/carnival/personas/05-barker-flip.png"
+    },
+    {
+      "id": "carnival-sparky-whirl",
+      "name": "Sparky Whirl",
+      "bio": "Sparky Whirl sells certainty like rigged ring toss.",
+      "imageSrc": "/assets/themes/carnival/personas/06-sparky-whirl.png"
+    },
+    {
+      "id": "carnival-fizz-wonder",
+      "name": "Fizz Wonder",
+      "bio": "Fizz Wonder insists the house always wins—especially in arguments.",
+      "imageSrc": "/assets/themes/carnival/personas/07-fizz-wonder.png"
+    },
+    {
+      "id": "carnival-confetti-flash",
+      "name": "Confetti Flash",
+      "bio": "Confetti Flash smiles wide while palming the truth.",
+      "imageSrc": "/assets/themes/carnival/personas/08-confetti-flash.png"
+    },
+    {
+      "id": "carnival-jumbo-boom",
+      "name": "Jumbo Boom",
+      "bio": "Jumbo Boom calls panic part of the show package.",
+      "imageSrc": "/assets/themes/carnival/personas/09-jumbo-boom.png"
+    },
+    {
+      "id": "carnival-twinkle-bounce",
+      "name": "Twinkle Bounce",
+      "bio": "Twinkle Bounce offers a free ride that goes nowhere useful.",
+      "imageSrc": "/assets/themes/carnival/personas/10-twinkle-bounce.png"
+    },
+    {
+      "id": "carnival-bubbles-dazzle",
+      "name": "Bubbles Dazzle",
+      "bio": "Bubbles Dazzle sells certainty like rigged ring toss.",
+      "imageSrc": "/assets/themes/carnival/personas/11-bubbles-dazzle.png"
+    },
+    {
+      "id": "carnival-carousel-whistle",
+      "name": "Carousel Whistle",
+      "bio": "Carousel Whistle insists the house always wins—especially in arguments.",
+      "imageSrc": "/assets/themes/carnival/personas/12-carousel-whistle.png"
+    },
+    {
+      "id": "carnival-popcorn-spin",
+      "name": "Popcorn Spin",
+      "bio": "Popcorn Spin smiles wide while palming the truth.",
+      "imageSrc": "/assets/themes/carnival/personas/13-popcorn-spin.png"
+    },
+    {
+      "id": "carnival-cotton-loop",
+      "name": "Cotton Loop",
+      "bio": "Cotton Loop calls panic part of the show package.",
+      "imageSrc": "/assets/themes/carnival/personas/14-cotton-loop.png"
+    },
+    {
+      "id": "carnival-ferris-twirl",
+      "name": "Ferris Twirl",
+      "bio": "Ferris Twirl offers a free ride that goes nowhere useful.",
+      "imageSrc": "/assets/themes/carnival/personas/15-ferris-twirl.png"
+    },
+    {
+      "id": "carnival-ticket-zip",
+      "name": "Ticket Zip",
+      "bio": "Ticket Zip sells certainty like rigged ring toss.",
+      "imageSrc": "/assets/themes/carnival/personas/16-ticket-zip.png"
+    },
+    {
+      "id": "carnival-midway-zap",
+      "name": "Midway Zap",
+      "bio": "Midway Zap insists the house always wins—especially in arguments.",
+      "imageSrc": "/assets/themes/carnival/personas/17-midway-zap.png"
+    },
+    {
+      "id": "carnival-clown-pop",
+      "name": "Clown Pop",
+      "bio": "Clown Pop smiles wide while palming the truth.",
+      "imageSrc": "/assets/themes/carnival/personas/18-clown-pop.png"
+    },
+    {
+      "id": "carnival-acrobat-snap",
+      "name": "Acrobat Snap",
+      "bio": "Acrobat Snap calls panic part of the show package.",
+      "imageSrc": "/assets/themes/carnival/personas/19-acrobat-snap.png"
+    },
+    {
+      "id": "carnival-strong-crackle",
+      "name": "Strong Crackle",
+      "bio": "Strong Crackle offers a free ride that goes nowhere useful.",
+      "imageSrc": "/assets/themes/carnival/personas/20-strong-crackle.png"
+    },
+    {
+      "id": "carnival-bearded-fizz",
+      "name": "Bearded Fizz",
+      "bio": "Bearded Fizz sells certainty like rigged ring toss.",
+      "imageSrc": "/assets/themes/carnival/personas/21-bearded-fizz.png"
+    },
+    {
+      "id": "carnival-snake-bang",
+      "name": "Snake Bang",
+      "bio": "Snake Bang insists the house always wins—especially in arguments.",
+      "imageSrc": "/assets/themes/carnival/personas/22-snake-bang.png"
+    },
+    {
+      "id": "carnival-mirror-clang",
+      "name": "Mirror Clang",
+      "bio": "Mirror Clang smiles wide while palming the truth.",
+      "imageSrc": "/assets/themes/carnival/personas/23-mirror-clang.png"
+    },
+    {
+      "id": "carnival-house-honk",
+      "name": "House Honk",
+      "bio": "House Honk calls panic part of the show package.",
+      "imageSrc": "/assets/themes/carnival/personas/24-house-honk.png"
+    },
+    {
+      "id": "carnival-fun-toot",
+      "name": "Fun Toot",
+      "bio": "Fun Toot offers a free ride that goes nowhere useful.",
+      "imageSrc": "/assets/themes/carnival/personas/25-fun-toot.png"
+    }
+  ],
+  "Under the Sea": [
+    {
+      "id": "under-the-sea-coral-deep",
+      "name": "Coral Deep",
+      "bio": "Coral Deep claims currents moved the evidence somewhere else.",
+      "imageSrc": "/assets/themes/under-the-sea/personas/01-coral-deep.png"
+    },
+    {
+      "id": "under-the-sea-marina-blue",
+      "name": "Marina Blue",
+      "bio": "Marina Blue speaks in bubbles when pressed for specifics.",
+      "imageSrc": "/assets/themes/under-the-sea/personas/02-marina-blue.png"
+    },
+    {
+      "id": "under-the-sea-finn-foam",
+      "name": "Finn Foam",
+      "bio": "Finn Foam insists depth pressure distorted what everyone heard.",
+      "imageSrc": "/assets/themes/under-the-sea/personas/03-finn-foam.png"
+    },
+    {
+      "id": "under-the-sea-shelly-salt",
+      "name": "Shelly Salt",
+      "bio": "Shelly Salt says the kraken ate the receipt.",
+      "imageSrc": "/assets/themes/under-the-sea/personas/04-shelly-salt.png"
+    },
+    {
+      "id": "under-the-sea-barnacle-pearl",
+      "name": "Barnacle Pearl",
+      "bio": "Barnacle Pearl floats excuses that never quite surface.",
+      "imageSrc": "/assets/themes/under-the-sea/personas/05-barnacle-pearl.png"
+    },
+    {
+      "id": "under-the-sea-krill-abyss",
+      "name": "Krill Abyss",
+      "bio": "Krill Abyss claims currents moved the evidence somewhere else.",
+      "imageSrc": "/assets/themes/under-the-sea/personas/06-krill-abyss.png"
+    },
+    {
+      "id": "under-the-sea-squid-kelp",
+      "name": "Squid Kelp",
+      "bio": "Squid Kelp speaks in bubbles when pressed for specifics.",
+      "imageSrc": "/assets/themes/under-the-sea/personas/07-squid-kelp.png"
+    },
+    {
+      "id": "under-the-sea-ray-drift",
+      "name": "Ray Drift",
+      "bio": "Ray Drift insists depth pressure distorted what everyone heard.",
+      "imageSrc": "/assets/themes/under-the-sea/personas/08-ray-drift.png"
+    },
+    {
+      "id": "under-the-sea-anchor-surge",
+      "name": "Anchor Surge",
+      "bio": "Anchor Surge says the kraken ate the receipt.",
+      "imageSrc": "/assets/themes/under-the-sea/personas/09-anchor-surge.png"
+    },
+    {
+      "id": "under-the-sea-reef-bubble",
+      "name": "Reef Bubble",
+      "bio": "Reef Bubble floats excuses that never quite surface.",
+      "imageSrc": "/assets/themes/under-the-sea/personas/10-reef-bubble.png"
+    },
+    {
+      "id": "under-the-sea-tide-current",
+      "name": "Tide Current",
+      "bio": "Tide Current claims currents moved the evidence somewhere else.",
+      "imageSrc": "/assets/themes/under-the-sea/personas/11-tide-current.png"
+    },
+    {
+      "id": "under-the-sea-brine-whirlpool",
+      "name": "Brine Whirlpool",
+      "bio": "Brine Whirlpool speaks in bubbles when pressed for specifics.",
+      "imageSrc": "/assets/themes/under-the-sea/personas/12-brine-whirlpool.png"
+    },
+    {
+      "id": "under-the-sea-kelp-trench",
+      "name": "Kelp Trench",
+      "bio": "Kelp Trench insists depth pressure distorted what everyone heard.",
+      "imageSrc": "/assets/themes/under-the-sea/personas/13-kelp-trench.png"
+    },
+    {
+      "id": "under-the-sea-naut-shoal",
+      "name": "Naut Shoal",
+      "bio": "Naut Shoal says the kraken ate the receipt.",
+      "imageSrc": "/assets/themes/under-the-sea/personas/14-naut-shoal.png"
+    },
+    {
+      "id": "under-the-sea-pearl-lagoon",
+      "name": "Pearl Lagoon",
+      "bio": "Pearl Lagoon floats excuses that never quite surface.",
+      "imageSrc": "/assets/themes/under-the-sea/personas/15-pearl-lagoon.png"
+    },
+    {
+      "id": "under-the-sea-siren-harbor",
+      "name": "Siren Harbor",
+      "bio": "Siren Harbor claims currents moved the evidence somewhere else.",
+      "imageSrc": "/assets/themes/under-the-sea/personas/16-siren-harbor.png"
+    },
+    {
+      "id": "under-the-sea-gully-bay",
+      "name": "Gully Bay",
+      "bio": "Gully Bay speaks in bubbles when pressed for specifics.",
+      "imageSrc": "/assets/themes/under-the-sea/personas/17-gully-bay.png"
+    },
+    {
+      "id": "under-the-sea-depth-cove",
+      "name": "Depth Cove",
+      "bio": "Depth Cove insists depth pressure distorted what everyone heard.",
+      "imageSrc": "/assets/themes/under-the-sea/personas/18-depth-cove.png"
+    },
+    {
+      "id": "under-the-sea-foam-reef",
+      "name": "Foam Reef",
+      "bio": "Foam Reef says the kraken ate the receipt.",
+      "imageSrc": "/assets/themes/under-the-sea/personas/19-foam-reef.png"
+    },
+    {
+      "id": "under-the-sea-spray-tide",
+      "name": "Spray Tide",
+      "bio": "Spray Tide floats excuses that never quite surface.",
+      "imageSrc": "/assets/themes/under-the-sea/personas/20-spray-tide.png"
+    },
+    {
+      "id": "under-the-sea-surge-brine",
+      "name": "Surge Brine",
+      "bio": "Surge Brine claims currents moved the evidence somewhere else.",
+      "imageSrc": "/assets/themes/under-the-sea/personas/21-surge-brine.png"
+    },
+    {
+      "id": "under-the-sea-bubble-foam",
+      "name": "Bubble Foam",
+      "bio": "Bubble Foam speaks in bubbles when pressed for specifics.",
+      "imageSrc": "/assets/themes/under-the-sea/personas/22-bubble-foam.png"
+    },
+    {
+      "id": "under-the-sea-current-spray",
+      "name": "Current Spray",
+      "bio": "Current Spray insists depth pressure distorted what everyone heard.",
+      "imageSrc": "/assets/themes/under-the-sea/personas/23-current-spray.png"
+    },
+    {
+      "id": "under-the-sea-whirl-swell",
+      "name": "Whirl Swell",
+      "bio": "Whirl Swell says the kraken ate the receipt.",
+      "imageSrc": "/assets/themes/under-the-sea/personas/24-whirl-swell.png"
+    },
+    {
+      "id": "under-the-sea-abyss-ripple",
+      "name": "Abyss Ripple",
+      "bio": "Abyss Ripple floats excuses that never quite surface.",
+      "imageSrc": "/assets/themes/under-the-sea/personas/25-abyss-ripple.png"
+    }
+  ],
+  "Animals": [
+    {
+      "id": "animals-chip-paws",
+      "name": "Chip Paws",
+      "bio": "Chip Paws plays dumb like it is an Olympic sport.",
+      "imageSrc": "/assets/themes/animals/personas/01-chip-paws.png"
+    },
+    {
+      "id": "animals-bandit-whiskers",
+      "name": "Bandit Whiskers",
+      "bio": "Bandit Whiskers wags through denials and hopes you melt.",
+      "imageSrc": "/assets/themes/animals/personas/02-bandit-whiskers.png"
+    },
+    {
+      "id": "animals-patches-snout",
+      "name": "Patches Snout",
+      "bio": "Patches Snout pretends not to hear commands—only suggestions.",
+      "imageSrc": "/assets/themes/animals/personas/03-patches-snout.png"
+    },
+    {
+      "id": "animals-mittens-tail",
+      "name": "Mittens Tail",
+      "bio": "Mittens Tail hides behind cute until the story cracks.",
+      "imageSrc": "/assets/themes/animals/personas/04-mittens-tail.png"
+    },
+    {
+      "id": "animals-scooter-furball",
+      "name": "Scooter Furball",
+      "bio": "Scooter Furball demands treats as attorney fees.",
+      "imageSrc": "/assets/themes/animals/personas/05-scooter-furball.png"
+    },
+    {
+      "id": "animals-peanut-claw",
+      "name": "Peanut Claw",
+      "bio": "Peanut Claw plays dumb like it is an Olympic sport.",
+      "imageSrc": "/assets/themes/animals/personas/06-peanut-claw.png"
+    },
+    {
+      "id": "animals-biscuit-howler",
+      "name": "Biscuit Howler",
+      "bio": "Biscuit Howler wags through denials and hopes you melt.",
+      "imageSrc": "/assets/themes/animals/personas/07-biscuit-howler.png"
+    },
+    {
+      "id": "animals-noodle-squeak",
+      "name": "Noodle Squeak",
+      "bio": "Noodle Squeak pretends not to hear commands—only suggestions.",
+      "imageSrc": "/assets/themes/animals/personas/08-noodle-squeak.png"
+    },
+    {
+      "id": "animals-pickles-chirp",
+      "name": "Pickles Chirp",
+      "bio": "Pickles Chirp hides behind cute until the story cracks.",
+      "imageSrc": "/assets/themes/animals/personas/09-pickles-chirp.png"
+    },
+    {
+      "id": "animals-waffles-burrow",
+      "name": "Waffles Burrow",
+      "bio": "Waffles Burrow demands treats as attorney fees.",
+      "imageSrc": "/assets/themes/animals/personas/10-waffles-burrow.png"
+    },
+    {
+      "id": "animals-mochi-den",
+      "name": "Mochi Den",
+      "bio": "Mochi Den plays dumb like it is an Olympic sport.",
+      "imageSrc": "/assets/themes/animals/personas/11-mochi-den.png"
+    },
+    {
+      "id": "animals-tofu-nest",
+      "name": "Tofu Nest",
+      "bio": "Tofu Nest wags through denials and hopes you melt.",
+      "imageSrc": "/assets/themes/animals/personas/12-tofu-nest.png"
+    },
+    {
+      "id": "animals-oliver-cage",
+      "name": "Oliver Cage",
+      "bio": "Oliver Cage pretends not to hear commands—only suggestions.",
+      "imageSrc": "/assets/themes/animals/personas/13-oliver-cage.png"
+    },
+    {
+      "id": "animals-luna-fetch",
+      "name": "Luna Fetch",
+      "bio": "Luna Fetch hides behind cute until the story cracks.",
+      "imageSrc": "/assets/themes/animals/personas/14-luna-fetch.png"
+    },
+    {
+      "id": "animals-bella-treat",
+      "name": "Bella Treat",
+      "bio": "Bella Treat demands treats as attorney fees.",
+      "imageSrc": "/assets/themes/animals/personas/15-bella-treat.png"
+    },
+    {
+      "id": "animals-max-zoomies",
+      "name": "Max Zoomies",
+      "bio": "Max Zoomies plays dumb like it is an Olympic sport.",
+      "imageSrc": "/assets/themes/animals/personas/16-max-zoomies.png"
+    },
+    {
+      "id": "animals-charlie-yarn",
+      "name": "Charlie Yarn",
+      "bio": "Charlie Yarn wags through denials and hopes you melt.",
+      "imageSrc": "/assets/themes/animals/personas/17-charlie-yarn.png"
+    },
+    {
+      "id": "animals-daisy-scratch",
+      "name": "Daisy Scratch",
+      "bio": "Daisy Scratch pretends not to hear commands—only suggestions.",
+      "imageSrc": "/assets/themes/animals/personas/18-daisy-scratch.png"
+    },
+    {
+      "id": "animals-rocky-fluff",
+      "name": "Rocky Fluff",
+      "bio": "Rocky Fluff hides behind cute until the story cracks.",
+      "imageSrc": "/assets/themes/animals/personas/19-rocky-fluff.png"
+    },
+    {
+      "id": "animals-coco-sniff",
+      "name": "Coco Sniff",
+      "bio": "Coco Sniff demands treats as attorney fees.",
+      "imageSrc": "/assets/themes/animals/personas/20-coco-sniff.png"
+    },
+    {
+      "id": "animals-ziggy-woof",
+      "name": "Ziggy Woof",
+      "bio": "Ziggy Woof plays dumb like it is an Olympic sport.",
+      "imageSrc": "/assets/themes/animals/personas/21-ziggy-woof.png"
+    },
+    {
+      "id": "animals-pepper-meow",
+      "name": "Pepper Meow",
+      "bio": "Pepper Meow wags through denials and hopes you melt.",
+      "imageSrc": "/assets/themes/animals/personas/22-pepper-meow.png"
+    },
+    {
+      "id": "animals-rusty-chomp",
+      "name": "Rusty Chomp",
+      "bio": "Rusty Chomp pretends not to hear commands—only suggestions.",
+      "imageSrc": "/assets/themes/animals/personas/23-rusty-chomp.png"
+    },
+    {
+      "id": "animals-ginger-nibble",
+      "name": "Ginger Nibble",
+      "bio": "Ginger Nibble hides behind cute until the story cracks.",
+      "imageSrc": "/assets/themes/animals/personas/24-ginger-nibble.png"
+    },
+    {
+      "id": "animals-shadow-wiggle",
+      "name": "Shadow Wiggle",
+      "bio": "Shadow Wiggle demands treats as attorney fees.",
+      "imageSrc": "/assets/themes/animals/personas/25-shadow-wiggle.png"
+    }
+  ],
+  "Sports": [
+    {
+      "id": "sports-coach-johnson",
+      "name": "Coach Johnson",
+      "bio": "Coach Johnson reviews the tape and sees only what helps.",
+      "imageSrc": "/assets/themes/sports/personas/01-coach-johnson.png"
+    },
+    {
+      "id": "sports-rookie-martinez",
+      "name": "Rookie Martinez",
+      "bio": "Rookie Martinez fouls the question and argues the ref.",
+      "imageSrc": "/assets/themes/sports/personas/02-rookie-martinez.png"
+    },
+    {
+      "id": "sports-veteran-okafor",
+      "name": "Veteran Okafor",
+      "bio": "Veteran Okafor claims they were offsides from the incident.",
+      "imageSrc": "/assets/themes/sports/personas/03-veteran-okafor.png"
+    },
+    {
+      "id": "sports-captain-silva",
+      "name": "Captain Silva",
+      "bio": "Captain Silva stats their way out of accountability.",
+      "imageSrc": "/assets/themes/sports/personas/04-captain-silva.png"
+    },
+    {
+      "id": "sports-striker-park",
+      "name": "Striker Park",
+      "bio": "Striker Park calls it gamesmanship when caught.",
+      "imageSrc": "/assets/themes/sports/personas/05-striker-park.png"
+    },
+    {
+      "id": "sports-goalie-nguyen",
+      "name": "Goalie Nguyen",
+      "bio": "Goalie Nguyen reviews the tape and sees only what helps.",
+      "imageSrc": "/assets/themes/sports/personas/06-goalie-nguyen.png"
+    },
+    {
+      "id": "sports-point-kowalski",
+      "name": "Point Kowalski",
+      "bio": "Point Kowalski fouls the question and argues the ref.",
+      "imageSrc": "/assets/themes/sports/personas/07-point-kowalski.png"
+    },
+    {
+      "id": "sports-center-patel",
+      "name": "Center Patel",
+      "bio": "Center Patel claims they were offsides from the incident.",
+      "imageSrc": "/assets/themes/sports/personas/08-center-patel.png"
+    },
+    {
+      "id": "sports-slugger-hernandez",
+      "name": "Slugger Hernandez",
+      "bio": "Slugger Hernandez stats their way out of accountability.",
+      "imageSrc": "/assets/themes/sports/personas/09-slugger-hernandez.png"
+    },
+    {
+      "id": "sports-ace-brooks",
+      "name": "Ace Brooks",
+      "bio": "Ace Brooks calls it gamesmanship when caught.",
+      "imageSrc": "/assets/themes/sports/personas/10-ace-brooks.png"
+    },
+    {
+      "id": "sports-relay-diaz",
+      "name": "Relay Diaz",
+      "bio": "Relay Diaz reviews the tape and sees only what helps.",
+      "imageSrc": "/assets/themes/sports/personas/11-relay-diaz.png"
+    },
+    {
+      "id": "sports-draft-campbell",
+      "name": "Draft Campbell",
+      "bio": "Draft Campbell fouls the question and argues the ref.",
+      "imageSrc": "/assets/themes/sports/personas/12-draft-campbell.png"
+    },
+    {
+      "id": "sports-scout-reed",
+      "name": "Scout Reed",
+      "bio": "Scout Reed claims they were offsides from the incident.",
+      "imageSrc": "/assets/themes/sports/personas/13-scout-reed.png"
+    },
+    {
+      "id": "sports-bench-cook",
+      "name": "Bench Cook",
+      "bio": "Bench Cook stats their way out of accountability.",
+      "imageSrc": "/assets/themes/sports/personas/14-bench-cook.png"
+    },
+    {
+      "id": "sports-timeout-bell",
+      "name": "Timeout Bell",
+      "bio": "Timeout Bell calls it gamesmanship when caught.",
+      "imageSrc": "/assets/themes/sports/personas/15-timeout-bell.png"
+    },
+    {
+      "id": "sports-overtime-murphy",
+      "name": "Overtime Murphy",
+      "bio": "Overtime Murphy reviews the tape and sees only what helps.",
+      "imageSrc": "/assets/themes/sports/personas/16-overtime-murphy.png"
+    },
+    {
+      "id": "sports-penalty-bailey",
+      "name": "Penalty Bailey",
+      "bio": "Penalty Bailey fouls the question and argues the ref.",
+      "imageSrc": "/assets/themes/sports/personas/17-penalty-bailey.png"
+    },
+    {
+      "id": "sports-playoff-rivera",
+      "name": "Playoff Rivera",
+      "bio": "Playoff Rivera claims they were offsides from the incident.",
+      "imageSrc": "/assets/themes/sports/personas/18-playoff-rivera.png"
+    },
+    {
+      "id": "sports-wildcard-cooper",
+      "name": "Wildcard Cooper",
+      "bio": "Wildcard Cooper stats their way out of accountability.",
+      "imageSrc": "/assets/themes/sports/personas/19-wildcard-cooper.png"
+    },
+    {
+      "id": "sports-mvp-richardson",
+      "name": "MVP Richardson",
+      "bio": "MVP Richardson calls it gamesmanship when caught.",
+      "imageSrc": "/assets/themes/sports/personas/20-mvp-richardson.png"
+    },
+    {
+      "id": "sports-clip-cox",
+      "name": "Clip Cox",
+      "bio": "Clip Cox reviews the tape and sees only what helps.",
+      "imageSrc": "/assets/themes/sports/personas/21-clip-cox.png"
+    },
+    {
+      "id": "sports-hype-howard",
+      "name": "Hype Howard",
+      "bio": "Hype Howard fouls the question and argues the ref.",
+      "imageSrc": "/assets/themes/sports/personas/22-hype-howard.png"
+    },
+    {
+      "id": "sports-streak-ward",
+      "name": "Streak Ward",
+      "bio": "Streak Ward claims they were offsides from the incident.",
+      "imageSrc": "/assets/themes/sports/personas/23-streak-ward.png"
+    },
+    {
+      "id": "sports-trade-torres",
+      "name": "Trade Torres",
+      "bio": "Trade Torres stats their way out of accountability.",
+      "imageSrc": "/assets/themes/sports/personas/24-trade-torres.png"
+    },
+    {
+      "id": "sports-stats-peterson",
+      "name": "Stats Peterson",
+      "bio": "Stats Peterson calls it gamesmanship when caught.",
+      "imageSrc": "/assets/themes/sports/personas/25-stats-peterson.png"
     }
   ],
   "Rock Stars": [
@@ -2733,6 +4405,310 @@
       "name": "Apex Core",
       "bio": "Apex Core swears the villain started it—every time, everywhere.",
       "imageSrc": "/assets/themes/superheroes/personas/25-apex-core.png"
+    }
+  ],
+  "Anime": [
+    {
+      "id": "anime-sakura-senpai",
+      "name": "Sakura Senpai",
+      "bio": "Sakura Senpai declares power levels irrelevant—except theirs.",
+      "imageSrc": "/assets/themes/anime/personas/01-sakura-senpai.png"
+    },
+    {
+      "id": "anime-ren-kohai",
+      "name": "Ren Kohai",
+      "bio": "Ren Kohai insists this arc is not filler—it is strategic misdirection.",
+      "imageSrc": "/assets/themes/anime/personas/02-ren-kohai.png"
+    },
+    {
+      "id": "anime-yuki-sensei",
+      "name": "Yuki Sensei",
+      "bio": "Yuki Sensei summons flashbacks that rewrite last round.",
+      "imageSrc": "/assets/themes/anime/personas/03-yuki-sensei.png"
+    },
+    {
+      "id": "anime-kai-voltage",
+      "name": "Kai Voltage",
+      "bio": "Kai Voltage claims the subtitle mistranslated their innocence.",
+      "imageSrc": "/assets/themes/anime/personas/04-kai-voltage.png"
+    },
+    {
+      "id": "anime-miko-starlight",
+      "name": "Miko Starlight",
+      "bio": "Miko Starlight dramatic gasp first, answers second.",
+      "imageSrc": "/assets/themes/anime/personas/05-miko-starlight.png"
+    },
+    {
+      "id": "anime-hana-thunder",
+      "name": "Hana Thunder",
+      "bio": "Hana Thunder declares power levels irrelevant—except theirs.",
+      "imageSrc": "/assets/themes/anime/personas/06-hana-thunder.png"
+    },
+    {
+      "id": "anime-ryo-blade",
+      "name": "Ryo Blade",
+      "bio": "Ryo Blade insists this arc is not filler—it is strategic misdirection.",
+      "imageSrc": "/assets/themes/anime/personas/07-ryo-blade.png"
+    },
+    {
+      "id": "anime-aki-spirit",
+      "name": "Aki Spirit",
+      "bio": "Aki Spirit summons flashbacks that rewrite last round.",
+      "imageSrc": "/assets/themes/anime/personas/08-aki-spirit.png"
+    },
+    {
+      "id": "anime-kenji-storm",
+      "name": "Kenji Storm",
+      "bio": "Kenji Storm claims the subtitle mistranslated their innocence.",
+      "imageSrc": "/assets/themes/anime/personas/09-kenji-storm.png"
+    },
+    {
+      "id": "anime-mei-echo",
+      "name": "Mei Echo",
+      "bio": "Mei Echo dramatic gasp first, answers second.",
+      "imageSrc": "/assets/themes/anime/personas/10-mei-echo.png"
+    },
+    {
+      "id": "anime-taro-nova",
+      "name": "Taro Nova",
+      "bio": "Taro Nova declares power levels irrelevant—except theirs.",
+      "imageSrc": "/assets/themes/anime/personas/11-taro-nova.png"
+    },
+    {
+      "id": "anime-nana-pulse",
+      "name": "Nana Pulse",
+      "bio": "Nana Pulse insists this arc is not filler—it is strategic misdirection.",
+      "imageSrc": "/assets/themes/anime/personas/12-nana-pulse.png"
+    },
+    {
+      "id": "anime-hiro-static",
+      "name": "Hiro Static",
+      "bio": "Hiro Static summons flashbacks that rewrite last round.",
+      "imageSrc": "/assets/themes/anime/personas/13-hiro-static.png"
+    },
+    {
+      "id": "anime-emi-neon",
+      "name": "Emi Neon",
+      "bio": "Emi Neon claims the subtitle mistranslated their innocence.",
+      "imageSrc": "/assets/themes/anime/personas/14-emi-neon.png"
+    },
+    {
+      "id": "anime-daiki-pixel",
+      "name": "Daiki Pixel",
+      "bio": "Daiki Pixel dramatic gasp first, answers second.",
+      "imageSrc": "/assets/themes/anime/personas/15-daiki-pixel.png"
+    },
+    {
+      "id": "anime-yui-vector",
+      "name": "Yui Vector",
+      "bio": "Yui Vector declares power levels irrelevant—except theirs.",
+      "imageSrc": "/assets/themes/anime/personas/16-yui-vector.png"
+    },
+    {
+      "id": "anime-kenta-cipher",
+      "name": "Kenta Cipher",
+      "bio": "Kenta Cipher insists this arc is not filler—it is strategic misdirection.",
+      "imageSrc": "/assets/themes/anime/personas/17-kenta-cipher.png"
+    },
+    {
+      "id": "anime-rei-rift",
+      "name": "Rei Rift",
+      "bio": "Rei Rift summons flashbacks that rewrite last round.",
+      "imageSrc": "/assets/themes/anime/personas/18-rei-rift.png"
+    },
+    {
+      "id": "anime-sora-bloom",
+      "name": "Sora Bloom",
+      "bio": "Sora Bloom claims the subtitle mistranslated their innocence.",
+      "imageSrc": "/assets/themes/anime/personas/19-sora-bloom.png"
+    },
+    {
+      "id": "anime-asuka-flash",
+      "name": "Asuka Flash",
+      "bio": "Asuka Flash dramatic gasp first, answers second.",
+      "imageSrc": "/assets/themes/anime/personas/20-asuka-flash.png"
+    },
+    {
+      "id": "anime-shin-drift",
+      "name": "Shin Drift",
+      "bio": "Shin Drift declares power levels irrelevant—except theirs.",
+      "imageSrc": "/assets/themes/anime/personas/21-shin-drift.png"
+    },
+    {
+      "id": "anime-mai-surge",
+      "name": "Mai Surge",
+      "bio": "Mai Surge insists this arc is not filler—it is strategic misdirection.",
+      "imageSrc": "/assets/themes/anime/personas/22-mai-surge.png"
+    },
+    {
+      "id": "anime-jun-haze",
+      "name": "Jun Haze",
+      "bio": "Jun Haze summons flashbacks that rewrite last round.",
+      "imageSrc": "/assets/themes/anime/personas/23-jun-haze.png"
+    },
+    {
+      "id": "anime-kaede-spark",
+      "name": "Kaede Spark",
+      "bio": "Kaede Spark claims the subtitle mistranslated their innocence.",
+      "imageSrc": "/assets/themes/anime/personas/24-kaede-spark.png"
+    },
+    {
+      "id": "anime-riku-glitch",
+      "name": "Riku Glitch",
+      "bio": "Riku Glitch dramatic gasp first, answers second.",
+      "imageSrc": "/assets/themes/anime/personas/25-riku-glitch.png"
+    }
+  ],
+  "Cartoons": [
+    {
+      "id": "cartoons-bongo-mcgee",
+      "name": "Bongo McGee",
+      "bio": "Bongo McGee drops anvils of confidence on thin alibis.",
+      "imageSrc": "/assets/themes/cartoons/personas/01-bongo-mcgee.png"
+    },
+    {
+      "id": "cartoons-zippy-oops",
+      "name": "Zippy Oops",
+      "bio": "Zippy Oops says the rules of physics do not apply to their story.",
+      "imageSrc": "/assets/themes/cartoons/personas/02-zippy-oops.png"
+    },
+    {
+      "id": "cartoons-slapstick-kaboom",
+      "name": "Slapstick Kaboom",
+      "bio": "Slapstick Kaboom pulls a clue from a pocket dimension behind the back.",
+      "imageSrc": "/assets/themes/cartoons/personas/03-slapstick-kaboom.png"
+    },
+    {
+      "id": "cartoons-boffo-whammo",
+      "name": "Boffo Whammo",
+      "bio": "Boffo Whammo blames the wacky neighbor for everything—including silence.",
+      "imageSrc": "/assets/themes/cartoons/personas/04-boffo-whammo.png"
+    },
+    {
+      "id": "cartoons-loopy-bonk",
+      "name": "Loopy Bonk",
+      "bio": "Loopy Bonk turns guilt into a sight gag and hopes you laugh.",
+      "imageSrc": "/assets/themes/cartoons/personas/05-loopy-bonk.png"
+    },
+    {
+      "id": "cartoons-dizzy-boing",
+      "name": "Dizzy Boing",
+      "bio": "Dizzy Boing drops anvils of confidence on thin alibis.",
+      "imageSrc": "/assets/themes/cartoons/personas/06-dizzy-boing.png"
+    },
+    {
+      "id": "cartoons-wacky-zoink",
+      "name": "Wacky Zoink",
+      "bio": "Wacky Zoink says the rules of physics do not apply to their story.",
+      "imageSrc": "/assets/themes/cartoons/personas/07-wacky-zoink.png"
+    },
+    {
+      "id": "cartoons-goofy-kapow",
+      "name": "Goofy Kapow",
+      "bio": "Goofy Kapow pulls a clue from a pocket dimension behind the back.",
+      "imageSrc": "/assets/themes/cartoons/personas/08-goofy-kapow.png"
+    },
+    {
+      "id": "cartoons-bouncy-thunk",
+      "name": "Bouncy Thunk",
+      "bio": "Bouncy Thunk blames the wacky neighbor for everything—including silence.",
+      "imageSrc": "/assets/themes/cartoons/personas/09-bouncy-thunk.png"
+    },
+    {
+      "id": "cartoons-zany-wibble",
+      "name": "Zany Wibble",
+      "bio": "Zany Wibble turns guilt into a sight gag and hopes you laugh.",
+      "imageSrc": "/assets/themes/cartoons/personas/10-zany-wibble.png"
+    },
+    {
+      "id": "cartoons-pratfall-noodle",
+      "name": "Pratfall Noodle",
+      "bio": "Pratfall Noodle drops anvils of confidence on thin alibis.",
+      "imageSrc": "/assets/themes/cartoons/personas/11-pratfall-noodle.png"
+    },
+    {
+      "id": "cartoons-splat-jelly",
+      "name": "Splat Jelly",
+      "bio": "Splat Jelly says the rules of physics do not apply to their story.",
+      "imageSrc": "/assets/themes/cartoons/personas/12-splat-jelly.png"
+    },
+    {
+      "id": "cartoons-boing-pickle",
+      "name": "Boing Pickle",
+      "bio": "Boing Pickle pulls a clue from a pocket dimension behind the back.",
+      "imageSrc": "/assets/themes/cartoons/personas/13-boing-pickle.png"
+    },
+    {
+      "id": "cartoons-thunk-muffin",
+      "name": "Thunk Muffin",
+      "bio": "Thunk Muffin blames the wacky neighbor for everything—including silence.",
+      "imageSrc": "/assets/themes/cartoons/personas/14-thunk-muffin.png"
+    },
+    {
+      "id": "cartoons-whiz-waffle",
+      "name": "Whiz Waffle",
+      "bio": "Whiz Waffle turns guilt into a sight gag and hopes you laugh.",
+      "imageSrc": "/assets/themes/cartoons/personas/15-whiz-waffle.png"
+    },
+    {
+      "id": "cartoons-pop-pancake",
+      "name": "Pop Pancake",
+      "bio": "Pop Pancake drops anvils of confidence on thin alibis.",
+      "imageSrc": "/assets/themes/cartoons/personas/16-pop-pancake.png"
+    },
+    {
+      "id": "cartoons-snap-sprocket",
+      "name": "Snap Sprocket",
+      "bio": "Snap Sprocket says the rules of physics do not apply to their story.",
+      "imageSrc": "/assets/themes/cartoons/personas/17-snap-sprocket.png"
+    },
+    {
+      "id": "cartoons-crackle-gizmo",
+      "name": "Crackle Gizmo",
+      "bio": "Crackle Gizmo pulls a clue from a pocket dimension behind the back.",
+      "imageSrc": "/assets/themes/cartoons/personas/18-crackle-gizmo.png"
+    },
+    {
+      "id": "cartoons-fizz-widget",
+      "name": "Fizz Widget",
+      "bio": "Fizz Widget blames the wacky neighbor for everything—including silence.",
+      "imageSrc": "/assets/themes/cartoons/personas/19-fizz-widget.png"
+    },
+    {
+      "id": "cartoons-buzz-doodad",
+      "name": "Buzz Doodad",
+      "bio": "Buzz Doodad turns guilt into a sight gag and hopes you laugh.",
+      "imageSrc": "/assets/themes/cartoons/personas/20-buzz-doodad.png"
+    },
+    {
+      "id": "cartoons-honk-thingy",
+      "name": "Honk Thingy",
+      "bio": "Honk Thingy drops anvils of confidence on thin alibis.",
+      "imageSrc": "/assets/themes/cartoons/personas/21-honk-thingy.png"
+    },
+    {
+      "id": "cartoons-toot-whatcha",
+      "name": "Toot Whatcha",
+      "bio": "Toot Whatcha says the rules of physics do not apply to their story.",
+      "imageSrc": "/assets/themes/cartoons/personas/22-toot-whatcha.png"
+    },
+    {
+      "id": "cartoons-clang-dingle",
+      "name": "Clang Dingle",
+      "bio": "Clang Dingle pulls a clue from a pocket dimension behind the back.",
+      "imageSrc": "/assets/themes/cartoons/personas/23-clang-dingle.png"
+    },
+    {
+      "id": "cartoons-bonk-floop",
+      "name": "Bonk Floop",
+      "bio": "Bonk Floop blames the wacky neighbor for everything—including silence.",
+      "imageSrc": "/assets/themes/cartoons/personas/24-bonk-floop.png"
+    },
+    {
+      "id": "cartoons-zoink-zorp",
+      "name": "Zoink Zorp",
+      "bio": "Zoink Zorp turns guilt into a sight gag and hopes you laugh.",
+      "imageSrc": "/assets/themes/cartoons/personas/25-zoink-zorp.png"
     }
   ]
 }

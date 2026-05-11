@@ -10,6 +10,7 @@ export const WORST_LIARS_IN_HISTORY_THEME_PACK = {
     'Vikings',
     'Gladiators',
     'Royalty',
+    'Medieval',
     'Mythology (Gods & Legends)',
     'Time Travelers',
   ],

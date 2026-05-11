@@ -9,6 +9,7 @@
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { DLC_THEME_NAMES } from '../src/data/themeCatalog.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(__dirname, '..');
@@ -37,28 +38,7 @@ function pick(arr, i, salt = 0) {
   return arr[(i + salt) % arr.length];
 }
 
-const DLC_THEMES = [
-  'Vikings',
-  'Gladiators',
-  'Royalty',
-  'Mythology (Gods & Legends)',
-  'Time Travelers',
-  'Spies',
-  'Cowboys',
-  'Detectives Noir',
-  'Medical',
-  'Wrestlers',
-  'Cyberpunk',
-  'Aliens',
-  'Wizards & Witches',
-  'Ninjas',
-  'Rock Stars',
-  'Flying Squad',
-  'Drag Queens',
-  'Superheroes',
-];
-
-/** First + last name parts — combined uniquely per index */
+/** Source of truth: `themeCatalog.js` DLC packs (see `src/data/dlc/themePacks/`). */
 const NAME_PARTS = {
   Vikings: {
     first: ['Rolf', 'Astrid', 'Bjorn', 'Sigrid', 'Leif', 'Ulf', 'Freya', 'Harald', 'Ingrid', 'Gunnar', 'Solveig', 'Eirik', 'Thora', 'Halfdan', 'Katla', 'Oddvar', 'Yrsa', 'Torstein', 'Helga', 'Snorri', 'Frida', 'Magnus', 'Liv', 'Runa', 'Ivar'],
@@ -131,6 +111,58 @@ const NAME_PARTS = {
   Superheroes: {
     first: ['Captain', 'Mega', 'Ultra', 'Shadow', 'Star', 'Iron', 'Cosmic', 'Mighty', 'Turbo', 'Thunder', 'Quantum', 'Nova', 'Pulse', 'Vortex', 'Sentinel', 'Phantom', 'Blaze', 'Falcon', 'Titan', 'Comet', 'Bolt', 'Shield', 'Burst', 'Eclipse', 'Apex'],
     last: ['Nova', 'Shield', 'Blaze', 'Bolt', 'Falcon', 'Comet', 'Titan', 'Pulse', 'Vortex', 'Phantom', 'Sentinel', 'Surge', 'Strike', 'Force', 'Guard', 'Watch', 'Prime', 'Rush', 'Flash', 'Storm', 'Mind', 'Steel', 'Wing', 'Ray', 'Core'],
+  },
+  Medieval: {
+    first: ['Aldric', 'Morwen', 'Percival', 'Gwen', 'Roland', 'Ysolt', 'Bedivere', 'Elaine', 'Tristan', 'Isolde', 'Gawain', 'Bors', 'Lamorak', 'Kay', 'Ector', 'Uther', 'Morgause', 'Igraine', 'Leodegrance', 'Ban', 'Urien', 'Lot', 'Pellinore', 'Blanche', 'Gareth'],
+    last: ['Greymoor', 'Ironwall', 'Ashkeep', 'Stonehall', 'Ravensden', 'Thornwick', 'Northmere', 'Coldchester', 'Eastvale', 'Westbarrow', 'Highfen', 'Lowcroft', 'Blackmere', 'Whitewall', 'Redbailey', 'Goldborough', 'Silverfen', 'Oakshield', 'Rowancrest', 'Hawkhurst', 'Foxden', 'Wolfmoor', 'Bearford', 'Stagwell', 'Crowcross'],
+  },
+  Gangsters: {
+    first: ['Vinny', 'Sal', 'Frankie', 'Tony', 'Lucky', 'Rico', 'Joey', 'Benny', 'Mickey', 'Johnny', 'Donny', 'Esco', 'Nico', 'Vito', 'Gino', 'Carmine', 'Angelo', 'Enzo', 'Paulie', 'Sonny', 'Augie', 'Marco', 'Lou', 'Patsy', 'Fredo'],
+    last: ['Two-Times', 'Knife', 'Brass', 'Mouth', 'Fixer', 'Rackets', 'Iceberg', 'Stacks', 'Cage', 'Broadway', 'Wharf', 'Tunnel', 'Vault', 'Ledger', 'Nose', 'Shark', 'Hammer', 'Spats', 'Cigar', 'Furs', 'Tracks', 'Deal', 'Contract', 'Witness', 'Court'],
+  },
+  'Law and Order': {
+    first: ['ADA', 'Detective', 'Sergeant', 'Captain', 'Judge', 'Bailiff', 'Clerk', 'Paralegal', 'Inspector', 'Counsel', 'Marshal', 'Reporter', 'Witness', 'Patrol', 'Evidence', 'Brief', 'Motion', 'Summons', 'Docket', 'Arraign', 'Probable', 'Custody', 'Appeal', 'Verdict', 'Sidebar'],
+    last: ['Hargrove', 'Sterling', 'Whitaker', 'Delgado', 'Kincaid', 'Morales', 'Pritchard', 'Hayes', 'Langford', 'Ruiz', 'Carmichael', 'Bishop', 'Navarro', 'Ellis', 'Graves', 'Monroe', 'Vance', 'Dalton', 'Reeves', 'Cross', 'Porter', 'Yates', 'Ingram', 'Frost', 'Lane'],
+  },
+  'Sci-Fi': {
+    first: ['Cmdr', 'Lt', 'Ensign', 'Pilot', 'Navigator', 'Engineer', 'Bot', 'Cyborg', 'Colony', 'Void', 'Star', 'Nova', 'Warden', 'Signal', 'Orbit', 'Dock', 'Probe', 'Relay', 'Vector', 'Phase', 'Shift', 'Deck', 'Bay', 'Core', 'Array'],
+    last: ['Vega', 'Orion', 'Andromeda', 'Proxima', 'Kepler', 'Titan', 'Rigel', 'Lyra', 'Cygnus', 'Axiom', 'Nebula', 'Pulsar', 'Quasar', 'Eclipse', 'Solstice', 'Zenith', 'Nadir', 'Corona', 'Drift', 'Parsec', 'Lumen', 'Arc', 'Flux', 'Helix', 'Matrix'],
+  },
+  Anime: {
+    first: ['Sakura', 'Ren', 'Yuki', 'Kai', 'Miko', 'Hana', 'Ryo', 'Aki', 'Kenji', 'Mei', 'Taro', 'Nana', 'Hiro', 'Emi', 'Daiki', 'Yui', 'Kenta', 'Rei', 'Sora', 'Asuka', 'Shin', 'Mai', 'Jun', 'Kaede', 'Riku'],
+    last: ['Senpai', 'Kohai', 'Sensei', 'Voltage', 'Starlight', 'Thunder', 'Blade', 'Spirit', 'Storm', 'Echo', 'Nova', 'Pulse', 'Static', 'Neon', 'Pixel', 'Vector', 'Cipher', 'Rift', 'Bloom', 'Flash', 'Drift', 'Surge', 'Haze', 'Spark', 'Glitch'],
+  },
+  Cartoons: {
+    first: ['Bongo', 'Zippy', 'Slapstick', 'Boffo', 'Loopy', 'Dizzy', 'Wacky', 'Goofy', 'Bouncy', 'Zany', 'Pratfall', 'Splat', 'Boing', 'Thunk', 'Whiz', 'Pop', 'Snap', 'Crackle', 'Fizz', 'Buzz', 'Honk', 'Toot', 'Clang', 'Bonk', 'Zoink'],
+    last: ['McGee', 'Oops', 'Kaboom', 'Whammo', 'Bonk', 'Boing', 'Zoink', 'Kapow', 'Thunk', 'Wibble', 'Noodle', 'Jelly', 'Pickle', 'Muffin', 'Waffle', 'Pancake', 'Sprocket', 'Gizmo', 'Widget', 'Doodad', 'Thingy', 'Whatcha', 'Dingle', 'Floop', 'Zorp'],
+  },
+  'Under the Sea': {
+    first: ['Coral', 'Marina', 'Finn', 'Shelly', 'Barnacle', 'Krill', 'Squid', 'Ray', 'Anchor', 'Reef', 'Tide', 'Brine', 'Kelp', 'Naut', 'Pearl', 'Siren', 'Gully', 'Depth', 'Foam', 'Spray', 'Surge', 'Bubble', 'Current', 'Whirl', 'Abyss'],
+    last: ['Deep', 'Blue', 'Foam', 'Salt', 'Pearl', 'Abyss', 'Kelp', 'Drift', 'Surge', 'Bubble', 'Current', 'Whirlpool', 'Trench', 'Shoal', 'Lagoon', 'Harbor', 'Bay', 'Cove', 'Reef', 'Tide', 'Brine', 'Foam', 'Spray', 'Swell', 'Ripple'],
+  },
+  Military: {
+    first: ['Sgt', 'Cpl', 'Lt', 'Captain', 'Major', 'Colonel', 'General', 'Chief', 'Gunny', 'Admiral', 'Pilot', 'Ranger', 'Sniper', 'Medic', 'Engineer', 'Quarter', 'Signal', 'Intel', 'Ops', 'Recon', 'Drill', 'Supply', 'Armor', 'Battery', 'Wing'],
+    last: ['Brick', 'Steel', 'Iron', 'Hawk', 'Wolf', 'Fox', 'Bear', 'Eagle', 'Storm', 'Forge', 'Ridge', 'Tanker', 'Grit', 'Hardline', 'Overwatch', 'Dogtag', 'Grid', 'Tracer', 'Lockstep', 'Ironclad', 'Sandbag', 'Hardshell', 'Foxtrot', 'Bravo', 'Tango'],
+  },
+  Animals: {
+    first: ['Chip', 'Bandit', 'Patches', 'Mittens', 'Scooter', 'Peanut', 'Biscuit', 'Noodle', 'Pickles', 'Waffles', 'Mochi', 'Tofu', 'Oliver', 'Luna', 'Bella', 'Max', 'Charlie', 'Daisy', 'Rocky', 'Coco', 'Ziggy', 'Pepper', 'Rusty', 'Ginger', 'Shadow'],
+    last: ['Paws', 'Whiskers', 'Snout', 'Tail', 'Furball', 'Claw', 'Howler', 'Squeak', 'Chirp', 'Burrow', 'Den', 'Nest', 'Cage', 'Fetch', 'Treat', 'Zoomies', 'Yarn', 'Scratch', 'Fluff', 'Sniff', 'Woof', 'Meow', 'Chomp', 'Nibble', 'Wiggle'],
+  },
+  Sports: {
+    first: ['Coach', 'Rookie', 'Veteran', 'Captain', 'Striker', 'Goalie', 'Point', 'Center', 'Slugger', 'Ace', 'Relay', 'Draft', 'Scout', 'Bench', 'Timeout', 'Overtime', 'Penalty', 'Playoff', 'Wildcard', 'MVP', 'Clip', 'Hype', 'Streak', 'Trade', 'Stats'],
+    last: ['Johnson', 'Martinez', 'Okafor', 'Silva', 'Park', 'Nguyen', 'Kowalski', 'Patel', 'Hernandez', 'Brooks', 'Diaz', 'Campbell', 'Reed', 'Cook', 'Bell', 'Murphy', 'Bailey', 'Rivera', 'Cooper', 'Richardson', 'Cox', 'Howard', 'Ward', 'Torres', 'Peterson'],
+  },
+  'Post-Apocalypse': {
+    first: ['Dust', 'Rust', 'Scav', 'Warden', 'Havoc', 'Ash', 'Nomad', 'Patch', 'Scrap', 'Rad', 'Rogue', 'Breaker', 'Tank', 'Spike', 'Grit', 'Cinder', 'Bolt', 'Junk', 'Rattle', 'Silo', 'Cage', 'Drifter', 'Lock', 'Wreck', 'Hollow'],
+    last: ['Runner', 'Walker', 'Forge', 'Rift', 'Cage', 'Drifter', 'Lock', 'Silo', 'Grit', 'Wreck', 'Hollow', 'Spike', 'Rust', 'Ash', 'Rad', 'Scrap', 'Patch', 'Nomad', 'Rogue', 'Breaker', 'Tank', 'Warden', 'Havoc', 'Dust', 'Scav'],
+  },
+  Monsters: {
+    first: ['Count', 'Ghoul', 'Fang', 'Mummy', 'Banshee', 'Sludge', 'Rotfang', 'Howler', 'Creep', 'Bog', 'Crypt', 'Witch', 'Beast', 'Shade', 'Vile', 'Grim', 'Mire', 'Slime', 'Bone', 'Claw', 'Maw', 'Hex', 'Wailer', 'Lurk', 'Dread'],
+    last: ['Dracula', 'Maw', 'Nora', 'Bones', 'Stitch', 'Rot', 'Wailer', 'Claw', 'Tooth', 'Lurker', 'Mire', 'Hex', 'Groan', 'Shriek', 'Ooze', 'Gnash', 'Rattle', 'Chomp', 'Slither', 'Creak', 'Moan', 'Hiss', 'Fester', 'Grumble', 'Snarl'],
+  },
+  Carnival: {
+    first: ['Ringmaster', 'Jester', 'Glitter', 'Trixie', 'Barker', 'Sparky', 'Fizz', 'Confetti', 'Jumbo', 'Twinkle', 'Bubbles', 'Carousel', 'Popcorn', 'Cotton', 'Ferris', 'Ticket', 'Midway', 'Clown', 'Acrobat', 'Strong', 'Bearded', 'Snake', 'Mirror', 'House', 'Fun'],
+    last: ['Blaze', 'Bell', 'Rumble', 'Flare', 'Flip', 'Whirl', 'Wonder', 'Flash', 'Boom', 'Bounce', 'Dazzle', 'Whistle', 'Spin', 'Loop', 'Twirl', 'Zip', 'Zap', 'Pop', 'Snap', 'Crackle', 'Fizz', 'Bang', 'Clang', 'Honk', 'Toot'],
   },
 };
 
@@ -261,6 +293,97 @@ const BIO_ROTATIONS = {
     'gives hero speeches that relocate blame skyward.',
     'swears the villain started it—every time, everywhere.',
   ],
+  Medieval: [
+    'quotes chivalry while dodging inconvenient facts.',
+    'insists the tapestry tells a different story—curiously always theirs.',
+    'blames bandits for anything missing from the treasury.',
+    'swears oaths on relics nobody is allowed to inspect.',
+    'calls doubt "treason to the crown."',
+  ],
+  Gangsters: [
+    'says nobody saw nothing—especially not them.',
+    'offers protection from problems they invented.',
+    'keeps two sets of books and three sets of eyebrows.',
+    'calls loyalty a handshake and evidence a misunderstanding.',
+    'remembers favors you never agreed to.',
+  ],
+  'Law and Order': [
+    'objects to questions on grounds of drama.',
+    'cites procedure only when it blocks the truth.',
+    'treats timelines like opening statements—editable.',
+    'claims the record is sealed—and so is their memory.',
+    'asks for a sidebar whenever facts arrive.',
+  ],
+  'Sci-Fi': [
+    'blames sensor calibration whenever the story shifts.',
+    'insists the log was corrupted by solar flares—selectively.',
+    'quotes regulations from a handbook page that never loads.',
+    'says the AI misheard human intent—again.',
+    'calls classified anything inconvenient.',
+  ],
+  Anime: [
+    'declares power levels irrelevant—except theirs.',
+    'insists this arc is not filler—it is strategic misdirection.',
+    'summons flashbacks that rewrite last round.',
+    'claims the subtitle mistranslated their innocence.',
+    'dramatic gasp first, answers second.',
+  ],
+  Cartoons: [
+    'drops anvils of confidence on thin alibis.',
+    'says the rules of physics do not apply to their story.',
+    'pulls a clue from a pocket dimension behind the back.',
+    'blames the wacky neighbor for everything—including silence.',
+    'turns guilt into a sight gag and hopes you laugh.',
+  ],
+  'Under the Sea': [
+    'claims currents moved the evidence somewhere else.',
+    'speaks in bubbles when pressed for specifics.',
+    'insists depth pressure distorted what everyone heard.',
+    'says the kraken ate the receipt.',
+    'floats excuses that never quite surface.',
+  ],
+  Military: [
+    'reports "negative contact" with the truth.',
+    'cites operational security for civilian questions.',
+    'says the mission changed—retroactively.',
+    'claims radio discipline prevents confirming details.',
+    'calls confusion "tactical misinformation."',
+  ],
+  Animals: [
+    'plays dumb like it is an Olympic sport.',
+    'wags through denials and hopes you melt.',
+    'pretends not to hear commands—only suggestions.',
+    'hides behind cute until the story cracks.',
+    'demands treats as attorney fees.',
+  ],
+  Sports: [
+    'reviews the tape and sees only what helps.',
+    'fouls the question and argues the ref.',
+    'claims they were offsides from the incident.',
+    'stats their way out of accountability.',
+    'calls it gamesmanship when caught.',
+  ],
+  'Post-Apocalypse': [
+    'trades water for silence—and overcharges.',
+    'says the wasteland ate the alibi.',
+    'carries a map with blank spots where blame should be.',
+    'insists radiation made the details fuzzy.',
+    'calls trust a luxury item they cannot afford.',
+  ],
+  Monsters: [
+    'growls that mirrors lie.',
+    'insists hunger explains the missing facts.',
+    'claims moonlight invalidates the timeline.',
+    'says stitches hold the story together—barely.',
+    'blames villagers for overreacting.',
+  ],
+  Carnival: [
+    'sells certainty like rigged ring toss.',
+    'insists the house always wins—especially in arguments.',
+    'smiles wide while palming the truth.',
+    'calls panic part of the show package.',
+    'offers a free ride that goes nowhere useful.',
+  ],
 };
 
 const COSTUME = {
@@ -282,10 +405,25 @@ const COSTUME = {
   'Flying Squad': 'flight jacket patches as abstract shapes, headset boom, aviator frames',
   'Drag Queens': 'big wig volume, lashes to forehead, sequin bustier, contour warpaint',
   Superheroes: 'spandex suit chevron emblem abstract, cape fold, heroic jaw, mask lines',
+  Medieval: 'chain-mail coif, surcoat with heraldic shape blocks only, mud-splattered cheek, iron pauldron edge',
+  Gangsters: 'pinstripe suit, fedora tilt, cigar stub, gold ring glint, shoulder holster strap suggestion',
+  'Law and Order': 'court blazer or police blues, lapel mic nub, blank badge, stack of folders prop edge',
+  'Sci-Fi': 'jumpsuit with glowing seam lines, chest computer panel abstract, comm badge no text, zero-g hair float',
+  Anime: 'spiky two-tone hair, school-uniform collar OR hero scarf, huge expressive cel eyes still with pin pupils per style guide',
+  Cartoons: 'rubber-hose gloves, polka-dot bow tie, pie-on-face smear optional, oversized shoes collar only',
+  'Under the Sea': 'kelp hair strands, fish-scale makeup pattern, barnacle shoulder speckles, wet sheen',
+  Military: 'camo pattern blocks, dog tags blank, crew cut, rank chevrons abstract shapes',
+  Animals: 'anthro muzzle or ears on humanoid party-game body, collar tag blank, fur tuft at neckline',
+  Sports: 'jersey mesh, team stripe color blocks no logos, sweatband, whistle on lanyard',
+  'Post-Apocalypse': 'goggles on forehead, dust scarf, scrap armor plates, tire tread shoulder pad',
+  Monsters: 'green-grey skin, neck bolts cartoon, stitched cheek, tattered lab coat collar',
+  Carnival: 'ruffled collar, clown nose paint optional, top hat cut by frame, sequin lapels',
 };
 
 function fullName(theme, index) {
-  const { first, last } = NAME_PARTS[theme];
+  const parts = NAME_PARTS[theme];
+  if (!parts) throw new Error(`[generateDlcPersonaRoster] Missing NAME_PARTS for theme: ${theme}`);
+  const { first, last } = parts;
   const f = first[index % first.length];
   const l = last[index % last.length];
   if (!l) return f;
@@ -294,6 +432,7 @@ function fullName(theme, index) {
 
 function bioLine(theme, name, index) {
   const lines = BIO_ROTATIONS[theme];
+  if (!lines?.length) throw new Error(`[generateDlcPersonaRoster] Missing BIO_ROTATIONS for theme: ${theme}`);
   const line = lines[index % lines.length];
   return `${name} ${line}`;
 }
@@ -303,7 +442,7 @@ function lookLine(theme, name, index) {
   const hair = pick(HAIR, index, 1);
   const skin = pick(SKIN, index, 2);
   const eyeMood = pick(EYES, index, 3);
-  const costume = COSTUME[theme];
+  const costume = COSTUME[theme] || 'theme-colored jacket with abstract prop detail at collar, no readable text';
   return (
     `1990s rude-toon bust: lanky neck, thick black outlines, grimy cel shading, ${skin} skin, ${hair} messy hair clumps, ${eyeMood}. `
     + `${first} wears ${costume}. Huge bulging eyes with tiny pin pupils; expression sells shady party-game liar energy. `
@@ -342,7 +481,7 @@ function buildTheme(theme) {
 const roster = {};
 const tailoredFlat = {};
 
-for (const theme of DLC_THEMES) {
+for (const theme of DLC_THEME_NAMES) {
   const rows = buildTheme(theme);
   roster[theme] = rows.map(({ look, ...rest }) => rest);
   for (const row of rows) {
@@ -360,6 +499,6 @@ fs.writeFileSync(rosterPath, `${JSON.stringify(roster, null, 2)}\n`, 'utf8');
 fs.writeFileSync(tailoredPath, `${JSON.stringify(tailoredFlat, null, 2)}\n`, 'utf8');
 
 const total = Object.values(roster).reduce((n, a) => n + a.length, 0);
-console.log(`[generateDlcPersonaRoster] Wrote ${total} personas across ${DLC_THEMES.length} themes.`);
+console.log(`[generateDlcPersonaRoster] Wrote ${total} personas across ${DLC_THEME_NAMES.length} themes.`);
 console.log(`- ${rosterPath}`);
 console.log(`- ${tailoredPath}`);

@@ -12,5 +12,8 @@ export const HIGH_STAKES_CASES_THEME_PACK = {
     'Detectives Noir',
     'Medical',
     'Wrestlers',
+    'Gangsters',
+    'Military',
+    'Law and Order',
   ],
 };
