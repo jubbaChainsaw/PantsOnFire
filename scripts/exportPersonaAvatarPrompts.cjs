@@ -6,15 +6,48 @@ const { pathToFileURL } = require('url');
 const repoRoot = path.resolve(__dirname, '..');
 const outputDir = path.join(repoRoot, 'exports');
 
-const STYLE_REFERENCE_URL = 'https://media.craiyon.com/2025-08-06/Kx1Iy3b-RCSGhKhPYW3Aog.webp';
-
 const STYLE_GUIDE_NOTES = [
-  `Use this style reference: ${STYLE_REFERENCE_URL}.`,
-  'Match that look with polished digital illustration, clean comic-influenced linework, soft studio-style lighting, and rich but balanced color.',
+  'Use polished digital illustration, clean comic-influenced linework, soft studio-style lighting, and rich but balanced color.',
   'Use one consistent portrait system for every persona: same camera distance, same body scale, same lighting angle, same clean edge treatment.',
   'Aim for expressive faces, strong silhouette readability, and smooth cel-shaded rendering suitable for party game persona cards.',
   'Keep it original artwork (no logos, no text, no recognizable real person likeness).',
 ].join(' ');
+
+const FACE_SHAPES = ['square jaw', 'round face', 'long narrow face', 'heart-shaped face', 'broad cheekbones', 'soft oval face', 'angular cheekbones', 'wide friendly face'];
+const HAIR_STYLES = ['short cropped hair', 'messy medium hair', 'curly shoulder-length hair', 'sleek bob', 'high ponytail', 'shaved sides with textured top', 'wavy side part', 'long tied-back hair'];
+const HAIR_COLORS = ['black', 'dark brown', 'warm brown', 'auburn', 'copper red', 'ash blonde', 'platinum blonde', 'deep blue-black'];
+const SKIN_TONES = ['deep brown skin', 'rich dark skin', 'medium brown skin', 'olive skin', 'warm tan skin', 'light brown skin', 'fair skin with freckles', 'pale skin with rosy cheeks'];
+const BODY_TYPES = ['slim build', 'broad-shouldered build', 'stocky build', 'tall lanky build', 'compact athletic build', 'soft rounded build', 'strong square build', 'petite build'];
+const CLOTHING = ['sharp blazer over a plain tee', 'oversized hoodie', 'patterned bomber jacket', 'button-up shirt with rolled sleeves', 'leather jacket', 'chunky knit jumper', 'denim jacket', 'bright tracksuit top'];
+const ACCESSORIES = ['round glasses', 'small hoop earrings', 'thick eyebrows and no accessories', 'thin rectangular glasses', 'single ear cuff', 'neat scarf at the neck', 'baseball cap worn forward', 'statement necklace'];
+const EXPRESSIONS = ['side-eye suspicion', 'wide-eyed innocence', 'smug half-smile', 'nervous grin', 'deadpan stare', 'raised-eyebrow doubt', 'playful smirk', 'caught-in-the-act surprise'];
+
+function hashString(value = '') {
+  let hash = 2166136261;
+  const input = String(value || '');
+  for (let index = 0; index < input.length; index += 1) {
+    hash ^= input.charCodeAt(index);
+    hash = Math.imul(hash, 16777619);
+  }
+  return hash >>> 0;
+}
+
+function pickFrom(list, hash, salt = 0) {
+  return list[(hash + salt) % list.length];
+}
+
+function buildUniqueAppearance(persona, themeName) {
+  const seed = `${themeName}:${persona?.id || ''}:${persona?.name || ''}:${persona?.bio || ''}`;
+  const hash = hashString(seed);
+  return [
+    `${pickFrom(SKIN_TONES, hash, 3)}, ${pickFrom(FACE_SHAPES, hash, 11)}`,
+    `${pickFrom(HAIR_COLORS, hash, 19)} ${pickFrom(HAIR_STYLES, hash, 29)}`,
+    `${pickFrom(BODY_TYPES, hash, 37)}`,
+    `wearing a ${pickFrom(CLOTHING, hash, 43)}`,
+    `${pickFrom(ACCESSORIES, hash, 53)}`,
+    `expression: ${pickFrom(EXPRESSIONS, hash, 61)}`,
+  ].join('; ');
+}
 
 function csvEscape(value) {
   return `"${String(value || '').replaceAll('"', '""')}"`;
@@ -42,14 +75,18 @@ function buildAvatarPrompt(persona, themeName) {
   const name = String(persona?.name || 'Unknown Persona').trim();
   const bio = String(persona?.bio || '').trim();
   const canonicalThemeName = String(themeName || 'Default').trim();
+  const uniqueAppearance = buildUniqueAppearance(persona, canonicalThemeName);
   return [
     'Create one standardized transparent PNG persona portrait for a social-deduction party game.',
     STYLE_GUIDE_NOTES,
     'Output must be a 1024x1024 square transparent-background PNG.',
-    'Single character only, centered, facing camera or slight 3/4 view.',
-    'Consistent framing for every persona: head and upper torso visible, top of head around 10% from the top edge, torso ending around 85% from the top edge.',
+    'Single character only, centered, facing camera in the same relaxed front-facing bust pose for every persona.',
+    'Pose must be consistent: shoulders square to camera, head upright, arms and hands out of frame, no action pose, no full body.',
+    'Consistent framing for every persona: head and upper torso visible, top of head around 10% from the top edge, shoulder line around 62%, torso ending around 85% from the top edge.',
     'Use transparent empty padding around the character; no environment, no props that extend outside the safe area, no colored backdrop, no shadows on a floor.',
     'No text, no logo, no watermark, no border, no frame.',
+    `Unique visual design for this persona: ${uniqueAppearance}.`,
+    'Do not reuse the same face, hair, clothing, body type, or expression from other personas.',
     'Expressive face with readable personality and silhouette-friendly shape language.',
     'Avoid realistic photo style; prefer vivid illustration/rendered-comic hybrid.',
     'Do not include copyrighted characters or recognizable real people.',

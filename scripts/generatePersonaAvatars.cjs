@@ -9,14 +9,15 @@ const corePromptsJsonPath = path.join(repoRoot, 'exports', 'persona-avatar-promp
 const DEFAULT_FAL_NANO_BANANA_MODEL = 'fal-ai/nano-banana/edit';
 const DEFAULT_FAL_TEXT_MODEL = 'fal-ai/flux/dev';
 const DEFAULT_OPENAI_MODEL = 'gpt-image-1';
-const DEFAULT_FAL_REFERENCE_IMAGE = path.join(repoRoot, 'public', 'assets', 'new-ui', 'hosts', 'default', 'talk-01.png');
 const STANDARD_PERSONA_OUTPUT_SPEC = [
   'MANDATORY OUTPUT SPEC:',
   '- 1024x1024 square PNG.',
   '- Transparent background / alpha channel. No colored background, no scene, no environment.',
   '- One character only, centered, head and upper torso visible.',
-  '- Standardized scale: top of head about 10% from top edge, torso ending around 85% from top edge.',
+  '- Standardized pose for every persona: relaxed front-facing bust portrait, shoulders square to camera, head upright, arms and hands out of frame.',
+  '- Standardized scale: top of head about 10% from top edge, shoulder line around 62%, torso ending around 85% from top edge.',
   '- Consistent camera distance, lighting direction, line weight, and cel-shaded party-game illustration style across every persona.',
+  '- Preserve the unique physical traits, clothing, and expression described in the prompt; do not make characters look like the same person.',
   '- Keep clean transparent padding around the silhouette for UI cropping.',
   '- No text, no logo, no watermark, no border, no frame, no floor shadow.',
 ].join('\n');
@@ -29,7 +30,8 @@ function parseArgs(argv) {
     quality: 'medium',
     theme: '',
     promptFile: '',
-    referenceImage: DEFAULT_FAL_REFERENCE_IMAGE,
+    referenceImage: '',
+    useExistingReference: false,
     limit: 0,
     dryRun: false,
     overwrite: false,
@@ -44,6 +46,7 @@ function parseArgs(argv) {
     else if (arg === '--theme' || arg === '--only-theme') { options.theme = String(argv[i + 1] || '').trim(); i += 1; }
     else if (arg === '--prompt-file') { options.promptFile = String(argv[i + 1] || '').trim(); i += 1; }
     else if (arg === '--reference-image') { options.referenceImage = path.resolve(repoRoot, String(argv[i + 1] || '').trim()); i += 1; }
+    else if (arg === '--use-existing-reference') options.useExistingReference = true;
     else if (arg === '--limit') { options.limit = Math.max(0, Number.parseInt(String(argv[i + 1] || '0'), 10) || 0); i += 1; }
     else if (arg === '--api-key') { options.apiKey = String(argv[i + 1] || '').trim(); i += 1; }
     else if (arg === '--dry-run') options.dryRun = true;
@@ -64,7 +67,8 @@ function usage() {
   console.log('  --quality <low|medium|high> OpenAI image quality (default: medium)');
   console.log('  --theme <themeName>       Limit generation to one theme');
   console.log('  --prompt-file <path>      Override prompts JSON input file');
-  console.log(`  --reference-image <path>  Fallback image for fal Nano Banana when persona PNG is missing (default: ${path.relative(repoRoot, DEFAULT_FAL_REFERENCE_IMAGE)})`);
+  console.log('  --reference-image <path>  Optional explicit image reference for fal Nano Banana (default: none)');
+  console.log('  --use-existing-reference  Use an existing output PNG as a Nano Banana reference when present (default: off)');
   console.log('  --limit <n>               Limit number of personas processed after filters');
   console.log('  --overwrite               Regenerate files even if they already exist');
   console.log('  --dry-run                 Print what would be generated without writing files');
@@ -198,8 +202,8 @@ function parseImageSize(size = '1024x1024') {
   };
 }
 
-async function generateWithFal({ prompt, apiKey, model, size, referenceImagePath, fallbackReferenceImagePath }) {
-  const primaryReferenceExists = fs.existsSync(referenceImagePath);
+async function generateWithFal({ prompt, apiKey, model, size, referenceImagePath, fallbackReferenceImagePath, useExistingReference = false }) {
+  const primaryReferenceExists = Boolean(useExistingReference) && fs.existsSync(referenceImagePath);
   const fallbackReferenceExists = Boolean(fallbackReferenceImagePath) && fs.existsSync(fallbackReferenceImagePath);
   const hasReference = primaryReferenceExists || fallbackReferenceExists;
   const selectedReferencePath = primaryReferenceExists ? referenceImagePath : fallbackReferenceImagePath;
@@ -298,7 +302,8 @@ async function run() {
   console.log(`[generatePersonaAvatars] Model: ${model || 'automatic'}`);
   console.log(`[generatePersonaAvatars] Records: ${records.length}${options.limit > 0 ? ` (limited from ${allRecords.length})` : ''}`);
   if (options.provider !== 'openai') {
-    console.log(`[generatePersonaAvatars] Fallback reference: ${path.relative(repoRoot, options.referenceImage)}`);
+    console.log(`[generatePersonaAvatars] Explicit reference: ${options.referenceImage ? path.relative(repoRoot, options.referenceImage) : 'none'}`);
+    console.log(`[generatePersonaAvatars] Existing output references: ${options.useExistingReference ? 'enabled' : 'disabled'}`);
   }
   if (options.theme) console.log(`[generatePersonaAvatars] Theme filter: ${options.theme}`);
   if (options.dryRun) console.log('[generatePersonaAvatars] Dry run enabled.');
@@ -319,7 +324,7 @@ async function run() {
       const fallbackReferenceExists = Boolean(options.referenceImage) && fs.existsSync(options.referenceImage);
       const mode = options.provider === 'openai'
         ? 'text-to-image'
-        : (exists ? 'nano-banana-edit' : (fallbackReferenceExists ? 'nano-banana-edit (fallback reference)' : 'fal-text-to-image (no reference)'));
+        : (options.useExistingReference && exists ? 'nano-banana-edit (existing output reference)' : (fallbackReferenceExists ? 'nano-banana-edit (explicit reference)' : 'fal-text-to-image (no reference)'));
       console.log(`- [${i + 1}/${records.length}] PLAN ${record.personaId || record.id} -> ${relOutputPath} [${mode}]`);
       continue;
     }
@@ -339,6 +344,7 @@ async function run() {
           size: options.size,
           referenceImagePath: outputPath,
           fallbackReferenceImagePath: options.referenceImage,
+          useExistingReference: options.useExistingReference,
         });
     fs.writeFileSync(outputPath, imageBuffer);
     created += 1;
