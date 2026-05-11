@@ -5,6 +5,11 @@
  * Used by scripts/rewriteTailoredSegments.mjs and scripts/generateDlcPersonaRoster.mjs.
  */
 
+import { createRequire } from 'module';
+
+const require = createRequire(import.meta.url);
+const { extractDisplayNameVisualSteer } = require('./personaNameVisualCues.cjs');
+
 /** Exact overrides — unmistakably different from synthesized faces. */
 export const LOOK_OVERRIDES_BY_ID = {
   'default-barry-side-eye-collins':
@@ -503,16 +508,17 @@ export function buildHyperspecificLook(p) {
   const browList = genderBucket === 'female' ? BROWS.filter((b) => !b.includes('unibrow')) : BROWS;
   const brow = pick(browList, id, 'brow');
   const eye = pick(EYES, id, 'eye');
+  const nameSteer = extractDisplayNameVisualSteer(name);
+  const hair = nameSteer.hair || pick(HAIRS, id, 'hair');
+  const top = nameSteer.top || pick(TOPS, id, 'top');
   const glasses = pick(GLASSES, id, 'gl');
   const fh = facialHairFor(genderBucket, gen, id);
   const makeup = pick(MAKEUP, id, 'mk');
   const scar = pick(SCARS_MARKS, id, 'sc');
   const pierce = pick(PIERCINGS, id, 'pi');
   const teeth = pick(TEETH, id, 'te');
-  const hair = pick(HAIRS, id, 'hair');
   const skin = pick(SKIN, id, 'skin');
   const sweat = pick(SWEAT, id, 'sweat');
-  const top = pick(TOPS, id, 'top');
   const jewelry = pick(EXTRA_JEWELRY, id, 'jw');
   const sil = pick(SILHOUETTE, id, 'sil');
 
@@ -522,10 +528,17 @@ export function buildHyperspecificLook(p) {
     ? `Acting vibe from bio (never render text): ${bio.replace(/"/g, "'")}.`
     : 'Party-game liar energy: shifty confidence.';
 
-  const glassesPhrase = glasses === 'no glasses' ? 'No glasses.' : `Eyewear: ${glasses}.`;
+  let glassesPhrase = nameSteer.glassesOverride
+    ? nameSteer.glassesOverride
+    : (glasses === 'no glasses' ? 'No glasses.' : `Eyewear: ${glasses}.`);
+  if (nameSteer.neckAccessory) {
+    glassesPhrase = `${glassesPhrase} Neck/head gear: ${nameSteer.neckAccessory}.`;
+  }
+
+  const expressionSteer = nameSteer.expression ? `Name expression steer: ${nameSteer.expression}. ` : '';
 
   return [
-    `${genderLock}${age} ${eth} ${gen}, ${build}; social read: ${social}.`,
+    `${genderLock}${expressionSteer}${age} ${eth} ${gen}, ${build}; social read: ${social}.`,
     `Face: ${face}; nose: ${nose}; mouth: ${mouth}; brows: ${brow}; eyes: ${eye}. ${glassesPhrase}`,
     `Facial hair: ${fh}. Makeup: ${makeup}. Marks: ${scar}. Piercings: ${pierce}. Teeth: ${teeth}.`,
     `Hair: ${hair}. Skin texture: ${skin}; ${sweat}. Torso clothing: ${top}; other jewelry: ${jewelry}.`,

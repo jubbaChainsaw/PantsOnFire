@@ -2,6 +2,7 @@
 const fs = require('fs');
 const path = require('path');
 const { pathToFileURL } = require('url');
+const { extractDisplayNameVisualSteer, formatNameVisualMandateBlock } = require('./personaNameVisualCues.cjs');
 
 const repoRoot = path.resolve(__dirname, '..');
 const outputDir = path.join(repoRoot, 'exports');
@@ -45,43 +46,6 @@ const FEMALE_NAME_HINTS = new Set([
   'zuri', 'bride', 'annie', 'mel', 'beth', 'hilda', 'mourne', 'sadie', 'floe', 'fang'
 ]);
 const NON_BINARY_NAME_HINTS = new Set(['jules', 'rio', 'reefspawn', 'glim', 'void', 'rook']);
-const NAME_DETAIL_HINTS = [
-  [/side[-\s]?eye/i, 'one eyebrow cocked, eyes cutting sideways suspiciously'],
-  [/nightshift/i, 'tired eye bags and a battered takeaway coffee cup tucked close to the chest'],
-  [/double[-\s]?check/i, 'two small checklist ticks tattooed on one wrist'],
-  [/not impressed/i, 'deep frown lines and unimpressed downturned mouth'],
-  [/mullet/i, 'dramatic scruffy mullet silhouette'],
-  [/leopard/i, 'leopard-print jacket collar'],
-  [/overthink/i, 'tense forehead wrinkles and bitten fingernails'],
-  [/two[-\s]?buns/i, 'two messy hair buns'],
-  [/low battery/i, 'tired drooping eyelids and tiny low-battery pin badge'],
-  [/glance[-\s]?back/i, 'head slightly turned while eyes still face camera'],
-  [/probably fine/i, 'forced grin with a tiny plaster on one cheek'],
-  [/specs/i, 'oversized glasses with thick frames'],
-  [/headphones/i, 'chunky headphones around the neck'],
-  [/pink[-\s]?fur/i, 'loud pink faux-fur collar'],
-  [/stoneface/i, 'stony blank expression and rigid jaw'],
-  [/seen it all/i, 'world-weary eyelids and knowing stare'],
-  [/grumble/i, 'muttering mouth shape and heavy brow'],
-  [/greenhair/i, 'bright green hair'],
-  [/curious/i, 'leaning-in eyes and inquisitive raised brow'],
-  [/whisper/i, 'one finger near lips but still inside the bust crop'],
-  [/watchful/i, 'wide watchful eyes with tiny crow’s-feet'],
-  [/precision/i, 'neat razor-straight haircut and tidy collar'],
-  [/backwards cap/i, 'backwards baseball cap'],
-  [/red blazer/i, 'bright red blazer'],
-  [/old tricks/i, 'older face, sly wrinkles, vintage waistcoat'],
-  [/highlighter/i, 'neon highlighter clipped to jacket pocket'],
-  [/last[-\s]?minute/i, 'messy rushed hair and crooked collar'],
-  [/sticker/i, 'small sticker patches on jacket'],
-  [/soft launch/i, 'phone-shaped pin badge and secretive smirk'],
-  [/checkmate/i, 'chess-piece lapel pin'],
-  [/half truths/i, 'one side of smile lifted, one eye squinting'],
-  [/late reply/i, 'tired eyes and phone notification badge on jacket'],
-  [/overfriendly/i, 'too-wide grin and intense eye contact'],
-  [/plot twist/i, 'dramatic raised eyebrow and theatre-like collar'],
-  [/pocket alibi/i, 'folded paper note peeking from jacket pocket'],
-];
 
 function hashString(value = '') {
   let hash = 2166136261;
@@ -120,18 +84,15 @@ function inferGenderPresentation(persona, hash) {
 
 function buildNameSpecificDetails(persona, themeName, hash) {
   const name = String(persona?.name || '').trim();
-  const bio = String(persona?.bio || '').trim();
-  const haystack = `${name} ${bio}`;
-  const matches = NAME_DETAIL_HINTS
-    .filter(([pattern]) => pattern.test(haystack))
-    .map(([, detail]) => detail);
+  const steer = extractDisplayNameVisualSteer(name);
+  const fromName = steer.mandateLines.slice(0, 4);
   const themeDetail = `${String(themeName || 'Default').trim()} theme influence in clothing color and attitude only, not background`;
   const seed = `${themeName}:${persona?.id || ''}:${persona?.name || ''}:details`;
   const fallback = [
     `${pickFrom(['small scar through one eyebrow', 'chipped tooth', 'asymmetrical grin', 'heavy under-eye shadows', 'sharp hooked nose', 'freckled cheeks', 'crooked ears', 'prominent chin'], seed, 'facial-mark')}`,
     `${pickFrom(['jacket pin', 'frayed collar', 'torn sleeve cuff', 'patched shoulder', 'scuffed lapel', 'loose neck scarf', 'worn hoodie strings', 'creased shirt pocket'], seed, 'name-detail')} inspired by the name`,
   ];
-  return [...matches.slice(0, 3), themeDetail, ...fallback].slice(0, 5).join('; ');
+  return [...fromName, themeDetail, ...fallback].slice(0, 6).join('; ');
 }
 
 function buildUniqueAppearance(persona, themeName, personaIndex = 0) {
@@ -191,6 +152,7 @@ function loadTailoredSegmentMap() {
 function buildAvatarPrompt(persona, themeName, personaIndex = 0, tailoredSegments = {}) {
   const name = String(persona?.name || 'Unknown Persona').trim();
   const bio = String(persona?.bio || '').trim();
+  const nameVisualMandate = formatNameVisualMandateBlock(name);
   const canonicalThemeName = String(themeName || 'Default').trim();
   const personaId = String(persona?.id || '').trim();
   const tailoredLook = typeof tailoredSegments[personaId] === 'string' ? tailoredSegments[personaId].trim() : '';
@@ -206,13 +168,14 @@ function buildAvatarPrompt(persona, themeName, personaIndex = 0, tailoredSegment
     'Use only flat white (#FFFFFF) outside the black silhouette outline inside the frame; no props or scenery beyond the bust crop.',
     'CRITICAL — zero readable characters in the image: no letters, numbers, nametags, captions, speech bubbles, watermarks, logos, UI, or any written names (including on clothing, badges, or props).',
     'No border or frame beyond the illustration itself.',
+    'Roster display titles carry locked costume cues: when the TITLE COSTUME MANDATE block appears later, those hair, garment, and prop choices are authoritative on the bust (do not swap them for unrelated generic wardrobe).',
   ];
 
   if (tailoredLook) {
     return [
       ...framing,
       `Specific tailored look for this persona (follow closely; keep them visually distinct from other roster characters): ${tailoredLook}`,
-      'The tailored block OVERRIDES any generic one-size-fits-all wording elsewhere in this prompt (including default body/neck proportions).',
+      'The tailored block OVERRIDES generic defaults elsewhere in this prompt (including default body/neck proportions), except the TITLE COSTUME MANDATE block (when present below) always wins for title costume keywords—prints, fur, hair silhouette, headphones, hats, blazers, glasses, etc.',
       'Match the age, ethnicity cues, and gender presentation implied by the description; obey any GENDER LOCK line literally; do not swap gender or default to a generic young woman.',
       'Do not reuse the same face, hair, clothing, body type, or expression from other personas.',
       'Small name/theme-inspired accessory is allowed only if it stays inside the bust crop; no large props and no background scene.',
@@ -220,6 +183,7 @@ function buildAvatarPrompt(persona, themeName, personaIndex = 0, tailoredSegment
       'Avoid realistic photo style; keep the 1990s adult-animation cartoon / grimy cel comic hybrid.',
       'Negative style constraints: not cute, not pretty doll, not kawaii, not chibi, not anime, not wholesome children’s cartoon, not glamour portrait.',
       'Do not include copyrighted characters or recognizable real people.',
+      ...(nameVisualMandate ? [nameVisualMandate] : []),
       `Theme context for styling only — never render this theme title as text: ${canonicalThemeName}.`,
       `Figure identity for your reasoning only — never paint as lettering, badges, or captions: ${name}.`,
       `Expression and backstory for mood only — never quote or display as text: ${bio}`,
@@ -237,6 +201,7 @@ function buildAvatarPrompt(persona, themeName, personaIndex = 0, tailoredSegment
     'Avoid realistic photo style; prefer gritty adult cartoon / punk comic hybrid.',
     'Negative style constraints: not cute, not pretty doll, not kawaii, not chibi, not anime, not wholesome children’s cartoon, not generic young woman, not glamour portrait.',
     'Do not include copyrighted characters or recognizable real people.',
+    ...(nameVisualMandate ? [nameVisualMandate] : []),
     `Theme context for styling only — never render this theme title as text: ${canonicalThemeName}.`,
     `Figure identity for your reasoning only — never paint as lettering, badges, or captions: ${name}.`,
     `Expression and backstory for mood only — never quote or display as text: ${bio}`,
