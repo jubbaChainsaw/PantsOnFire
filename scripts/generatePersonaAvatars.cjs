@@ -16,8 +16,10 @@ const DEFAULT_PERSONA_STYLE_REFERENCE_URL =
 /** Max 500 chars for fal WAN negative_prompt. */
 const DEFAULT_PERSONA_NEGATIVE_PROMPT =
   'photorealistic, photograph, DSLR, 3D render, CGI, plastic skin, beauty filter, airbrushed, symmetrical generic same-face, '
-  + 'copying the reference person identity, same hair or outfit as reference image, extra faces, text, typography, watermark, logo, '
-  + 'lowres, motion blur, deformed hands, extra limbs, child, underage, nudity, gore';
+  + 'copying the reference person identity, same hair or outfit as reference image, extra faces, second person, text, typography, watermark, logo, '
+  + 'opaque backdrop, scenic background, environment, floor shadow, lowres, motion blur, deformed hands, extra limbs, child, underage, nudity, gore';
+/** fal-ai/wan/v2.7/edit validates `prompt` length (HTTP 422 if exceeded). */
+const WAN_EDIT_PROMPT_CHAR_LIMIT = 2000;
 const STANDARD_PERSONA_OUTPUT_SPEC = [
   'MANDATORY OUTPUT SPEC:',
   '- 512x512 square PNG.',
@@ -86,6 +88,7 @@ function usage() {
   console.log('  --reference-image <path>  Legacy: local file for fal Nano Banana edit only (WAN ignores this)');
   console.log(`  --style-reference-url <u> Override WAN style-only reference URL (default: ${DEFAULT_PERSONA_STYLE_REFERENCE_URL})`);
   console.log('  --negative-prompt <text>  Override WAN negative prompt (max 500 chars; has a strong default)');
+  console.log(`  (WAN) Prompts are packed to ${WAN_EDIT_PROMPT_CHAR_LIMIT} chars for fal API; long exports keep style preamble + GENDER LOCK/tailored block.`);
   console.log('  --use-existing-reference  Legacy Nano Banana: use existing output PNG as edit reference (WAN ignores)');
   console.log('  --limit <n>               Limit number of personas processed after filters');
   console.log('  --overwrite               Regenerate files even if they already exist');
@@ -224,6 +227,52 @@ function isWanV27EditModel(modelId = '') {
   return String(modelId || '').replace(/^\/+/, '').includes('fal-ai/wan/v2.7/edit');
 }
 
+function wanEditStylePreamble() {
+  return (
+    'Image1 = style-only reference: match line weight, cel-shade, and gritty palette from image1. '
+    + 'Forbidden: copying image1 face, hair, clothes, pose, or identity. '
+    + '512 square bust portrait, transparent background, one character, no text. Subject: '
+  );
+}
+
+/** WAN appends MANDATORY OUTPUT SPEC via standardizePrompt(); that duplicates negatives and blows the 2k cap—drop it here. */
+function stripWanDuplicateOutputSpec(promptText) {
+  const s = String(promptText || '');
+  const marker = '\nMANDATORY OUTPUT SPEC:';
+  const idx = s.indexOf(marker);
+  if (idx === -1) return s.trim();
+  return s.slice(0, idx).trimEnd();
+}
+
+/**
+ * fal WAN edit allows at most WAN_EDIT_PROMPT_CHAR_LIMIT characters on `prompt`.
+ * `preamble` is fixed (style / output constraints); trim the exported core from GENDER LOCK or tailored block when needed.
+ */
+function fitWanEditPromptToLimit(preamble, corePrompt) {
+  const max = WAN_EDIT_PROMPT_CHAR_LIMIT;
+  const p = String(preamble || '');
+  let core = String(corePrompt || '').trim();
+  let full = `${p}${core}`;
+  if (full.length <= max) return { text: full, truncated: false };
+
+  const genderIdx = core.indexOf('GENDER LOCK');
+  const tailoredIdx = core.indexOf('Specific tailored look for this persona');
+  if (genderIdx >= 0) core = core.slice(genderIdx).trimStart();
+  else if (tailoredIdx >= 0) core = core.slice(tailoredIdx).trimStart();
+  else core = core.slice(Math.max(0, core.length - (max - p.length))).trimStart();
+
+  full = `${p}${core}`;
+  if (full.length <= max) return { text: full, truncated: true };
+
+  const budget = max - p.length;
+  const ellipsis = '…';
+  if (budget < 48) {
+    return { text: p.slice(0, max).trimEnd(), truncated: true };
+  }
+  core = `${core.slice(0, budget - ellipsis.length).trimEnd()}${ellipsis}`;
+  return { text: `${p}${core}`, truncated: true };
+}
+
 async function generateWithFalWanEdit({
   prompt,
   apiKey,
@@ -235,14 +284,22 @@ async function generateWithFalWanEdit({
 }) {
   const refUrl = String(styleReferenceUrl || DEFAULT_PERSONA_STYLE_REFERENCE_URL).trim();
   const neg = String(negativePrompt || DEFAULT_PERSONA_NEGATIVE_PROMPT).trim().slice(0, 500);
-  const stylePreamble =
-    'Image 1 is STRICTLY a NON-SUBJECT style reference only: copy illustration line weight, cel-shading behavior, color grit, caricature proportions, and general graphic art style from image 1. '
-    + 'FORBIDDEN: do NOT transfer any face, hair, pose, clothing, accessories, or recognizable person from image 1. '
-    + 'IGNORE whoever appears in image 1 as an identity; they must not appear in the output. '
-    + 'Create one brand-new character bust exactly as described after the separator.\n\n---\n\n';
+  const preamble = wanEditStylePreamble();
+  const withoutDupSpec = stripWanDuplicateOutputSpec(String(prompt || '').trim());
+  const beforeFitLen = `${preamble}${withoutDupSpec}`.length;
+  const fit = fitWanEditPromptToLimit(preamble, withoutDupSpec);
+  if (fit.truncated) {
+    console.warn(
+      `[generatePersonaAvatars] WAN prompt packed to ${WAN_EDIT_PROMPT_CHAR_LIMIT} chars (fal API limit). `
+      + `Length before packing (after dropping duplicate output spec): ${beforeFitLen}.`
+    );
+  }
+  const combined = fit.text.length > WAN_EDIT_PROMPT_CHAR_LIMIT
+    ? fit.text.slice(0, WAN_EDIT_PROMPT_CHAR_LIMIT)
+    : fit.text;
 
   const body = {
-    prompt: stylePreamble + String(prompt || '').trim(),
+    prompt: combined,
     image_urls: [refUrl],
     negative_prompt: neg,
     image_size: { width, height },
