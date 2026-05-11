@@ -11,5 +11,7 @@ export const STAGE_AND_SPECTACLE_THEME_PACK = {
     'Flying Squad',
     'Drag Queens',
     'Superheroes',
+    'Anime',
+    'Cartoons',
   ],
 };

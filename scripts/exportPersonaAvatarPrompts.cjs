@@ -176,14 +176,13 @@ function filenameFromImageSrc(imageSrc, fallbackId) {
 
 function loadTailoredSegmentMap() {
   const dir = path.join(__dirname, 'data');
-  const files = [
-    'personaAvatarTailored-part-default.json',
-    'personaAvatarTailored-part-mystery-cops.json',
-    'personaAvatarTailored-part-ghosts-pirates.json',
-  ];
+  if (!fs.existsSync(dir)) return {};
+  const files = fs
+    .readdirSync(dir)
+    .filter((filename) => filename.startsWith('personaAvatarTailored') && filename.endsWith('.json'));
+  files.sort();
   return files.reduce((acc, filename) => {
     const fullPath = path.join(dir, filename);
-    if (!fs.existsSync(fullPath)) return acc;
     const parsed = JSON.parse(fs.readFileSync(fullPath, 'utf8'));
     return { ...acc, ...parsed };
   }, {});
@@ -301,6 +300,7 @@ async function main() {
   if (!fs.existsSync(outputDir)) fs.mkdirSync(outputDir, { recursive: true });
 
   const tailoredSegments = loadTailoredSegmentMap();
+  console.log(`[exportPersonaAvatarPrompts] Loaded ${Object.keys(tailoredSegments).length} tailored prompt overrides from scripts/data.`);
 
   const personasModule = await import(pathToFileURL(path.join(repoRoot, 'src', 'data', 'themePersonas.js')).href);
   const catalogModule = await import(pathToFileURL(path.join(repoRoot, 'src', 'data', 'themeCatalog.js')).href);

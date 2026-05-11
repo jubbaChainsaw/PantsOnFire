@@ -17,6 +17,7 @@
     "dlc:new-picture-pack": "node scripts/newPictureDlcPack.cjs",
     "dlc:populate-picture-images": "node scripts/populateAllPicturePromptImages.cjs",
     "dlc:import-picture-pack": "node scripts/importPicturePackFromRoyaltyFree.cjs",
+    "dlc:generate-persona-roster": "node scripts/generateDlcPersonaRoster.mjs",
     "expo:start": "expo start",
     "expo:android": "expo run:android",
     "expo:ios": "expo run:ios",

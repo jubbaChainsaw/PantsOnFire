@@ -432,6 +432,141 @@ export const THEME_HOST_PERSONAS = {
       'Fight smart, not loud. Precision wins the crowd.',
     ],
   },
+  Medieval: {
+    name: 'Sir Bluffalot',
+    role: 'castle steward of suspicious testimony',
+    introHooks: [
+      'The court demands honor, brevity, and fewer fairy tales.',
+      'One clue each, and no bardic padding.',
+    ],
+    onlinePrompt: 'Online keep is sealed: private scrolls, public judgement.',
+    passPrompt: 'Pass the phone like a sealed royal writ.',
+    roundStingers: [
+      "{roundTypeName} in the great hall. One clue, no epic monologues.",
+      "In {roundTypeFlavor}, liars hide behind heraldry.",
+      'Keep your tale tight as chain mail.',
+    ],
+  },
+  'Law and Order': {
+    name: 'Judge Side-I',
+    role: 'bench boss of inconvenient facts',
+    introHooks: [
+      'Order in the court—and in your clues.',
+      'One statement each, sworn on your poker face.',
+    ],
+    onlinePrompt: 'Online docket live: private exhibits, public crossfire.',
+    passPrompt: 'Pass the phone like evidence under seal.',
+    roundStingers: [
+      "{roundTypeName} is on the record. One clue, no mistrial energy.",
+      "In {roundTypeFlavor}, liars object to everything except the truth.",
+      'Keep it factual. Drama is for closing arguments.',
+    ],
+  },
+  'Sci-Fi': {
+    name: 'Cmdr. Paradox Prime',
+    role: 'bridge officer of questionable telemetry',
+    introHooks: [
+      'Ship logs do not lie—unless someone edits them mid-sentence.',
+      'One clue each, before the anomaly spreads.',
+    ],
+    onlinePrompt: 'Online bridge linked: private subspace channels, public scans.',
+    passPrompt: 'Pass the phone like a black-box recorder.',
+    roundStingers: [
+      "{roundTypeName} logged. One clue, no technobabble shields.",
+      "In {roundTypeFlavor}, liars blame instruments first.",
+      'Stay calibrated. Suspicion spikes are easy to read.',
+    ],
+  },
+  Anime: {
+    name: 'Host-sama Ultra',
+    role: 'episode director of dramatic denials',
+    introHooks: [
+      'Your clue is your transformation sequence—make it count.',
+      'No filler arcs. One truthy line and a clean finish.',
+    ],
+    onlinePrompt: 'Online simulcast: private prompts, public plot twists.',
+    passPrompt: 'Pass the phone like a sacred contract scroll.',
+    roundStingers: [
+      "{roundTypeName} begins now. One clue, maximum intensity.",
+      "In {roundTypeFlavor}, liars power up their excuses too early.",
+      'Keep it sharp. The audience can smell filler.',
+    ],
+  },
+  Cartoons: {
+    name: 'Biff Boingmeister',
+    role: 'toon referee of impossible alibis',
+    introHooks: [
+      'If your story stretches physics, it should at least be funny.',
+      'One clue each—no anvil drops mid-confession.',
+    ],
+    onlinePrompt: 'Online Saturday mode: private gags, public chaos.',
+    passPrompt: 'Pass the phone like a hot potato with fuse lit.',
+    roundStingers: [
+      "{roundTypeName} is live. One clue, no fourth-wall excuses.",
+      "In {roundTypeFlavor}, liars go wobbly when the music stops.",
+      'Keep it bouncy, keep it brief, keep it believable-ish.',
+    ],
+  },
+  'Under the Sea': {
+    name: 'Captain Kelp Truth',
+    role: 'deep-sea auditor of fishy stories',
+    introHooks: [
+      'Pressure reveals weak tales faster than depth.',
+      'One clue each—no kraken red herrings.',
+    ],
+    onlinePrompt: 'Online sonar ping: private prompts, public surfacing.',
+    passPrompt: 'Pass the phone like a message in a bottle.',
+    roundStingers: [
+      "{roundTypeName} from the depths. One clue, no murky rambling.",
+      "In {roundTypeFlavor}, liars float excuses that do not match tides.",
+      'Stay buoyant, stay honest-ish.',
+    ],
+  },
+  Military: {
+    name: 'General Hoo-Rah Halftrue',
+    role: 'briefing officer of selective intel',
+    introHooks: [
+      'Mission brief: one clue, zero friendly fire on facts.',
+      'If your story needs a convoy, it is probably lying.',
+    ],
+    onlinePrompt: 'Online comms secured: private orders, public debrief.',
+    passPrompt: 'Pass the phone like classified orders.',
+    roundStingers: [
+      "{roundTypeName} mission start. One clue, tight formation.",
+      "In {roundTypeFlavor}, liars break ranks under follow-ups.",
+      'Stay disciplined. Panic is not protocol.',
+    ],
+  },
+  Animals: {
+    name: 'Bark Gable',
+    role: 'critter commentator of cute chaos',
+    introHooks: [
+      'Big eyes, short clues, zero fake fetch.',
+      'One clue each—no chasing your own tail in circles.',
+    ],
+    onlinePrompt: 'Online kennel cam: private treats, public accusations.',
+    passPrompt: 'Pass the phone gently—no bite marks on evidence.',
+    roundStingers: [
+      "{roundTypeName} unleashed. One clue, no squeaky-toy diversions.",
+      "In {roundTypeFlavor}, liars wag too hard or freeze up.",
+      'Stay adorable, stay accountable-ish.',
+    ],
+  },
+  Sports: {
+    name: 'Coach Blitz Callout',
+    role: 'locker-room lie detector with a whistle',
+    introHooks: [
+      'Leave it all on the field—except the fake facts.',
+      'One play each: short, sharp, reviewable.',
+    ],
+    onlinePrompt: 'Online stadium feed: private playbooks, public boos.',
+    passPrompt: 'Pass the phone like a game ball under review.',
+    roundStingers: [
+      "{roundTypeName} whistle blows. One clue, no overtime whining.",
+      "In {roundTypeFlavor}, liars trip on instant replay.",
+      'Play clean. The crowd is ruthless.',
+    ],
+  },
 };
 
 const FALLBACK_PERSONA = THEME_HOST_PERSONAS.Default;
@@ -520,6 +655,15 @@ const THEME_GRILL_GUEST_HOST_NAMES = {
   'Wizards & Witches': 'Pyromancer Puck',
   'Time Travelers': 'Chrono Coal',
   Gladiators: 'Ignis Max',
+  Medieval: 'Sir Emberlot',
+  'Law and Order': 'Judge Char',
+  'Sci-Fi': 'Nova Cinder',
+  Anime: 'Pyro-tan',
+  Cartoons: 'Zap Zoodle',
+  'Under the Sea': 'Captain Coralflare',
+  Military: 'Colonel Blaze',
+  Animals: 'Furricane',
+  Sports: 'Scorch Johnson',
 };
 
 export function pickThemeGuestHostName(themeName = 'Default', roundTypeId = 'prompt') {
