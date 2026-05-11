@@ -16,11 +16,12 @@ const DEFAULT_PERSONA_STYLE_REFERENCE_URL =
   'https://media.craiyon.com/2025-08-06/Kx1Iy3b-RCSGhKhPYW3Aog.webp';
 /** Max 500 chars for fal WAN negative_prompt. */
 const DEFAULT_PERSONA_NEGATIVE_PROMPT =
-  'photorealistic, DSLR, 3D render, CGI, plastic skin, beauty filter, airbrushed, '
+  'photorealistic, DSLR, 3D render, CGI, beauty filter, airbrushed, '
   + 'copying the reference person identity, same hair or outfit as reference image, extra faces, second person, '
-  + 'text, typography, lettering, captions, nametags, subtitles, speech bubbles, watermark, logo, '
-  + 'gradient background, vignette, mottled or textured backdrop, scenic background, environment, floor shadow, '
+  + 'text, captions, nametags, speech bubbles, watermark, logo, '
+  + 'gradient background, vignette, mottled or textured backdrop, environment, floor shadow, '
   + 'white or grey backdrop, '
+  + 'magenta outer rim stroke, pink silhouette glow, neon edge halo on figure, '
   + 'lowres, motion blur, deformed hands, extra limbs, child, underage, nudity, gore';
 /** fal-ai/wan/v2.7/edit validates `prompt` length (HTTP 422 if exceeded). */
 const WAN_EDIT_PROMPT_CHAR_LIMIT = 2000;
@@ -28,7 +29,7 @@ const STANDARD_PERSONA_OUTPUT_SPEC = [
   'MANDATORY OUTPUT SPEC:',
   '- 512x512 square PNG.',
   '- Background: perfectly flat, uniform SOLID magenta chroma key only — exact hex #FF00FF (R255 G0 B255). No gradients, no texture, no props, no scene, no floor.',
-  '- Bold thick BLACK outer ink outline around the entire character silhouette (and costume edges) separating the figure from the background; outline must be fully opaque black to kill edge bleed when keying.',
+  '- Bold thick BLACK outer ink stroke is the ONLY boundary between character and background: fully opaque black, no magenta/pink/neon used as that outer ring, no outer glow in screen colors; flat #FF00FF exists only outside that black stroke.',
   '- One character only, centered, head and upper torso visible.',
   '- Standardized pose for every persona: relaxed front-facing bust portrait, shoulders square to camera, head upright, arms and hands out of frame.',
   '- Standardized scale: top of head about 10% from top edge, shoulder line around 62%, torso ending around 85% from top edge (same composition rules at 512px).',
@@ -250,7 +251,7 @@ function isWanV27EditModel(modelId = '') {
 function wanEditStylePreamble() {
   return (
     'Img1=style-only (line weight, cel-shade, grit); never copy identity. '
-    + 'Draw subject on flat SOLID #FF00FF magenta only; bold thick BLACK outer outline around full silhouette; '
+    + 'Flat SOLID #FF00FF only outside a bold BLACK outer silhouette stroke—no pink/magenta rim glow as that stroke; '
     + '512 bust, 1 character, zero text/names/captions in-image. Subject: '
   );
 }
