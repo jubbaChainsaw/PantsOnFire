@@ -16,9 +16,10 @@ const DEFAULT_PERSONA_STYLE_REFERENCE_URL =
   'https://media.craiyon.com/2025-08-06/Kx1Iy3b-RCSGhKhPYW3Aog.webp';
 /** Max 500 chars for fal WAN negative_prompt. */
 const DEFAULT_PERSONA_NEGATIVE_PROMPT =
-  'photorealistic, photograph, DSLR, 3D render, CGI, plastic skin, beauty filter, airbrushed, symmetrical generic same-face, '
-  + 'copying the reference person identity, same hair or outfit as reference image, extra faces, second person, text, typography, watermark, logo, '
-  + 'gradient background, vignette, mottled backdrop, textured backdrop, scenic background, environment, floor shadow, '
+  'photorealistic, DSLR, 3D render, CGI, plastic skin, beauty filter, airbrushed, '
+  + 'copying the reference person identity, same hair or outfit as reference image, extra faces, second person, '
+  + 'text, typography, lettering, captions, nametags, subtitles, speech bubbles, watermark, logo, '
+  + 'gradient background, vignette, mottled or textured backdrop, scenic background, environment, floor shadow, '
   + 'white or grey backdrop, '
   + 'lowres, motion blur, deformed hands, extra limbs, child, underage, nudity, gore';
 /** fal-ai/wan/v2.7/edit validates `prompt` length (HTTP 422 if exceeded). */
@@ -37,6 +38,7 @@ const STANDARD_PERSONA_OUTPUT_SPEC = [
   '- 1990s gritty adult-animation rude-toon style: thick ink lines, bulging eyes with pin pupils, awkward expressive faces, cel-shaded grimy color, not soft or cute.',
   '- Negative style: no cute anime, no chibi, no kawaii, no pretty doll, no generic young woman, no children’s illustration, no glamour portrait.',
   '- Keep clean padding around the silhouette inside the frame for UI cropping (only magenta #FF00FF outside the black outline).',
+  '- No readable characters anywhere: no letters, numbers, nametags, captions, speech bubbles, subtitles, watermarks, logos, UI, or written names on clothing or props.',
   '- No text, no logo, no watermark, no border, no frame, no floor shadow.',
   '- Post: magenta is removed in tooling for game-ready transparent PNGs; do not simulate fake transparency in-model.',
 ].join('\n');
@@ -249,7 +251,7 @@ function wanEditStylePreamble() {
   return (
     'Img1=style-only (line weight, cel-shade, grit); never copy identity. '
     + 'Draw subject on flat SOLID #FF00FF magenta only; bold thick BLACK outer outline around full silhouette; '
-    + '512 bust, 1 character, no text. Subject: '
+    + '512 bust, 1 character, zero text/names/captions in-image. Subject: '
   );
 }
 
