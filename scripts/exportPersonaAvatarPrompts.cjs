@@ -11,6 +11,7 @@ const STYLE_REFERENCE_URL = 'https://media.craiyon.com/2025-08-06/Kx1Iy3b-RCSGhK
 const STYLE_GUIDE_NOTES = [
   `Use this style reference: ${STYLE_REFERENCE_URL}.`,
   'Match that look with polished digital illustration, clean comic-influenced linework, soft studio-style lighting, and rich but balanced color.',
+  'Use one consistent portrait system for every persona: same camera distance, same body scale, same lighting angle, same clean edge treatment.',
   'Aim for expressive faces, strong silhouette readability, and smooth cel-shaded rendering suitable for party game persona cards.',
   'Keep it original artwork (no logos, no text, no recognizable real person likeness).',
 ].join(' ');
@@ -42,12 +43,14 @@ function buildAvatarPrompt(persona, themeName) {
   const bio = String(persona?.bio || '').trim();
   const canonicalThemeName = String(themeName || 'Default').trim();
   return [
-    'Create a polished, stylized 2D game avatar portrait for a social-deduction party game.',
+    'Create one standardized transparent PNG persona portrait for a social-deduction party game.',
     STYLE_GUIDE_NOTES,
-    'Bust portrait only (head and shoulders), centered, facing camera.',
-    'Transparent background, no text, no logo, no watermark.',
+    'Output must be a 1024x1024 square transparent-background PNG.',
+    'Single character only, centered, facing camera or slight 3/4 view.',
+    'Consistent framing for every persona: head and upper torso visible, top of head around 10% from the top edge, torso ending around 85% from the top edge.',
+    'Use transparent empty padding around the character; no environment, no props that extend outside the safe area, no colored backdrop, no shadows on a floor.',
+    'No text, no logo, no watermark, no border, no frame.',
     'Expressive face with readable personality and silhouette-friendly shape language.',
-    'Square composition (1024x1024) with safe padding for UI crop.',
     'Avoid realistic photo style; prefer vivid illustration/rendered-comic hybrid.',
     'Do not include copyrighted characters or recognizable real people.',
     `Theme: ${canonicalThemeName}.`,

@@ -9,6 +9,17 @@ const corePromptsJsonPath = path.join(repoRoot, 'exports', 'persona-avatar-promp
 const DEFAULT_FAL_NANO_BANANA_MODEL = 'fal-ai/nano-banana/edit';
 const DEFAULT_FAL_TEXT_MODEL = 'fal-ai/flux/dev';
 const DEFAULT_OPENAI_MODEL = 'gpt-image-1';
+const DEFAULT_FAL_REFERENCE_IMAGE = path.join(repoRoot, 'public', 'assets', 'new-ui', 'hosts', 'default', 'talk-01.png');
+const STANDARD_PERSONA_OUTPUT_SPEC = [
+  'MANDATORY OUTPUT SPEC:',
+  '- 1024x1024 square PNG.',
+  '- Transparent background / alpha channel. No colored background, no scene, no environment.',
+  '- One character only, centered, head and upper torso visible.',
+  '- Standardized scale: top of head about 10% from top edge, torso ending around 85% from top edge.',
+  '- Consistent camera distance, lighting direction, line weight, and cel-shaded party-game illustration style across every persona.',
+  '- Keep clean transparent padding around the silhouette for UI cropping.',
+  '- No text, no logo, no watermark, no border, no frame, no floor shadow.',
+].join('\n');
 
 function parseArgs(argv) {
   const options = {
@@ -18,6 +29,7 @@ function parseArgs(argv) {
     quality: 'medium',
     theme: '',
     promptFile: '',
+    referenceImage: DEFAULT_FAL_REFERENCE_IMAGE,
     dryRun: false,
     overwrite: false,
   };
@@ -30,6 +42,7 @@ function parseArgs(argv) {
     else if (arg === '--quality') { options.quality = String(argv[i + 1] || '').trim(); i += 1; }
     else if (arg === '--theme' || arg === '--only-theme') { options.theme = String(argv[i + 1] || '').trim(); i += 1; }
     else if (arg === '--prompt-file') { options.promptFile = String(argv[i + 1] || '').trim(); i += 1; }
+    else if (arg === '--reference-image') { options.referenceImage = path.resolve(repoRoot, String(argv[i + 1] || '').trim()); i += 1; }
     else if (arg === '--api-key') { options.apiKey = String(argv[i + 1] || '').trim(); i += 1; }
     else if (arg === '--dry-run') options.dryRun = true;
     else if (arg === '--overwrite') options.overwrite = true;
@@ -49,6 +62,7 @@ function usage() {
   console.log('  --quality <low|medium|high> OpenAI image quality (default: medium)');
   console.log('  --theme <themeName>       Limit generation to one theme');
   console.log('  --prompt-file <path>      Override prompts JSON input file');
+  console.log(`  --reference-image <path>  Fallback image for fal Nano Banana when persona PNG is missing (default: ${path.relative(repoRoot, DEFAULT_FAL_REFERENCE_IMAGE)})`);
   console.log('  --overwrite               Regenerate files even if they already exist');
   console.log('  --dry-run                 Print what would be generated without writing files');
   console.log('');
@@ -121,6 +135,14 @@ function getPersonaOutputPath(record) {
   return path.join(repoRoot, 'public', normalized);
 }
 
+function standardizePrompt(prompt = '') {
+  return [
+    String(prompt || '').trim(),
+    '',
+    STANDARD_PERSONA_OUTPUT_SPEC,
+  ].filter(Boolean).join('\n');
+}
+
 async function generateWithOpenAi({ prompt, apiKey, model, size, quality }) {
   const response = await fetch('https://api.openai.com/v1/images/generations', {
     method: 'POST',
@@ -173,8 +195,11 @@ function parseImageSize(size = '1024x1024') {
   };
 }
 
-async function generateWithFal({ prompt, apiKey, model, size, referenceImagePath }) {
-  const hasReference = fs.existsSync(referenceImagePath);
+async function generateWithFal({ prompt, apiKey, model, size, referenceImagePath, fallbackReferenceImagePath }) {
+  const primaryReferenceExists = fs.existsSync(referenceImagePath);
+  const fallbackReferenceExists = Boolean(fallbackReferenceImagePath) && fs.existsSync(fallbackReferenceImagePath);
+  const hasReference = primaryReferenceExists || fallbackReferenceExists;
+  const selectedReferencePath = primaryReferenceExists ? referenceImagePath : fallbackReferenceImagePath;
   const requestedModel = String(model || '').trim().replace(/^\/+/, '');
   const modelId = requestedModel
     ? (
@@ -185,7 +210,7 @@ async function generateWithFal({ prompt, apiKey, model, size, referenceImagePath
             : requestedModel
       )
     : (hasReference ? DEFAULT_FAL_NANO_BANANA_MODEL : DEFAULT_FAL_TEXT_MODEL);
-  const imageInput = hasReference ? readImageInputForFal(referenceImagePath) : '';
+  const imageInput = hasReference ? readImageInputForFal(selectedReferencePath) : '';
   const { width, height } = parseImageSize(size);
   const body = hasReference
     ? {
@@ -205,7 +230,7 @@ async function generateWithFal({ prompt, apiKey, model, size, referenceImagePath
         sync_mode: false,
       };
   console.log(
-    `[generatePersonaAvatars] fal.ai mode: ${hasReference ? 'nano-banana-edit' : 'text-to-image'} via ${modelId}`
+    `[generatePersonaAvatars] fal.ai mode: ${hasReference ? 'nano-banana-edit' : 'text-to-image'} via ${modelId}${primaryReferenceExists ? '' : ' (fallback reference)'}`
   );
   const response = await fetch(`https://fal.run/${modelId}`, {
     method: 'POST',
@@ -268,6 +293,9 @@ async function run() {
   console.log(`[generatePersonaAvatars] Provider: ${options.provider}`);
   console.log(`[generatePersonaAvatars] Model: ${model || 'automatic'}`);
   console.log(`[generatePersonaAvatars] Records: ${records.length}`);
+  if (options.provider !== 'openai') {
+    console.log(`[generatePersonaAvatars] Fallback reference: ${path.relative(repoRoot, options.referenceImage)}`);
+  }
   if (options.theme) console.log(`[generatePersonaAvatars] Theme filter: ${options.theme}`);
   if (options.dryRun) console.log('[generatePersonaAvatars] Dry run enabled.');
 
@@ -284,27 +312,29 @@ async function run() {
       continue;
     }
     if (options.dryRun) {
+      const fallbackReferenceExists = Boolean(options.referenceImage) && fs.existsSync(options.referenceImage);
       const mode = options.provider === 'openai'
         ? 'text-to-image'
-        : (exists ? 'nano-banana-edit' : 'fal-text-to-image (no existing reference)');
+        : (exists ? 'nano-banana-edit' : (fallbackReferenceExists ? 'nano-banana-edit (fallback reference)' : 'fal-text-to-image (no reference)'));
       console.log(`- [${i + 1}/${records.length}] PLAN ${record.personaId || record.id} -> ${relOutputPath} [${mode}]`);
       continue;
     }
     ensureDir(path.dirname(outputPath));
     const imageBuffer = options.provider === 'openai'
       ? await generateWithOpenAi({
-          prompt: record.prompt,
+          prompt: standardizePrompt(record.prompt),
           apiKey,
           model,
           size: options.size,
           quality: options.quality,
         })
       : await generateWithFal({
-          prompt: record.prompt,
+          prompt: standardizePrompt(record.prompt),
           apiKey,
           model,
           size: options.size,
           referenceImagePath: outputPath,
+          fallbackReferenceImagePath: options.referenceImage,
         });
     fs.writeFileSync(outputPath, imageBuffer);
     created += 1;
