@@ -1,6 +1,7 @@
 import { toCanonicalThemeName } from './themeAliases.js';
 import { NAME_POOLS } from './names.js';
 import { ALL_THEME_NAMES } from './themeCatalog.js';
+import { DLC_CURATED_THEME_PERSONA_POOLS } from './dlcCuratedPersonas.js';
 
 const DEFAULT_THEME_PERSONAS = [
   {
@@ -1008,6 +1009,7 @@ const CURATED_THEME_PERSONA_POOLS = {
   'Cops and Robbers': COPS_AND_ROBBERS_THEME_PERSONAS,
   'Ghosts and Ghouls': GHOSTS_AND_GHOULS_THEME_PERSONAS,
   Pirates: PIRATES_THEME_PERSONAS,
+  ...DLC_CURATED_THEME_PERSONA_POOLS,
 };
 
 const ALL_KNOWN_THEME_NAMES = [

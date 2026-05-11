@@ -1,0 +1,2738 @@
+{
+  "Vikings": [
+    {
+      "id": "vikings-rolf-icefang",
+      "name": "Rolf Icefang",
+      "bio": "Rolf Icefang swears the sagas left out the boring parts—conveniently the parts that contradict them.",
+      "imageSrc": "/assets/themes/vikings/personas/01-rolf-icefang.png"
+    },
+    {
+      "id": "vikings-astrid-longbraid",
+      "name": "Astrid Longbraid",
+      "bio": "Astrid Longbraid keeps \"finding\" treasure maps that always point toward someone else's hoard.",
+      "imageSrc": "/assets/themes/vikings/personas/02-astrid-longbraid.png"
+    },
+    {
+      "id": "vikings-bjorn-saltbeard",
+      "name": "Bjorn Saltbeard",
+      "bio": "Bjorn Saltbeard claims every storm is a sign—and every sign agrees with their story.",
+      "imageSrc": "/assets/themes/vikings/personas/03-bjorn-saltbeard.png"
+    },
+    {
+      "id": "vikings-sigrid-raveneye",
+      "name": "Sigrid Raveneye",
+      "bio": "Sigrid Raveneye mutters about oaths like contracts written in disappearing ink.",
+      "imageSrc": "/assets/themes/vikings/personas/04-sigrid-raveneye.png"
+    },
+    {
+      "id": "vikings-leif-shorebreaker",
+      "name": "Leif Shorebreaker",
+      "bio": "Leif Shorebreaker laughs loudest when the blame drifts toward tourists.",
+      "imageSrc": "/assets/themes/vikings/personas/05-leif-shorebreaker.png"
+    },
+    {
+      "id": "vikings-ulf-grimhollow",
+      "name": "Ulf Grimhollow",
+      "bio": "Ulf Grimhollow swears the sagas left out the boring parts—conveniently the parts that contradict them.",
+      "imageSrc": "/assets/themes/vikings/personas/06-ulf-grimhollow.png"
+    },
+    {
+      "id": "vikings-freya-stormborn",
+      "name": "Freya Stormborn",
+      "bio": "Freya Stormborn keeps \"finding\" treasure maps that always point toward someone else's hoard.",
+      "imageSrc": "/assets/themes/vikings/personas/07-freya-stormborn.png"
+    },
+    {
+      "id": "vikings-harald-forkbeard",
+      "name": "Harald Forkbeard",
+      "bio": "Harald Forkbeard claims every storm is a sign—and every sign agrees with their story.",
+      "imageSrc": "/assets/themes/vikings/personas/08-harald-forkbeard.png"
+    },
+    {
+      "id": "vikings-ingrid-battleborn",
+      "name": "Ingrid Battleborn",
+      "bio": "Ingrid Battleborn mutters about oaths like contracts written in disappearing ink.",
+      "imageSrc": "/assets/themes/vikings/personas/09-ingrid-battleborn.png"
+    },
+    {
+      "id": "vikings-gunnar-threetongues",
+      "name": "Gunnar Threetongues",
+      "bio": "Gunnar Threetongues laughs loudest when the blame drifts toward tourists.",
+      "imageSrc": "/assets/themes/vikings/personas/10-gunnar-threetongues.png"
+    },
+    {
+      "id": "vikings-solveig-frosthair",
+      "name": "Solveig Frosthair",
+      "bio": "Solveig Frosthair swears the sagas left out the boring parts—conveniently the parts that contradict them.",
+      "imageSrc": "/assets/themes/vikings/personas/11-solveig-frosthair.png"
+    },
+    {
+      "id": "vikings-eirik-bloodoar",
+      "name": "Eirik Bloodoar",
+      "bio": "Eirik Bloodoar keeps \"finding\" treasure maps that always point toward someone else's hoard.",
+      "imageSrc": "/assets/themes/vikings/personas/12-eirik-bloodoar.png"
+    },
+    {
+      "id": "vikings-thora-shieldmaiden",
+      "name": "Thora Shieldmaiden",
+      "bio": "Thora Shieldmaiden claims every storm is a sign—and every sign agrees with their story.",
+      "imageSrc": "/assets/themes/vikings/personas/13-thora-shieldmaiden.png"
+    },
+    {
+      "id": "vikings-halfdan-limpfoot",
+      "name": "Halfdan Limpfoot",
+      "bio": "Halfdan Limpfoot mutters about oaths like contracts written in disappearing ink.",
+      "imageSrc": "/assets/themes/vikings/personas/14-halfdan-limpfoot.png"
+    },
+    {
+      "id": "vikings-katla-runeforge",
+      "name": "Katla Runeforge",
+      "bio": "Katla Runeforge laughs loudest when the blame drifts toward tourists.",
+      "imageSrc": "/assets/themes/vikings/personas/15-katla-runeforge.png"
+    },
+    {
+      "id": "vikings-oddvar-shipwatcher",
+      "name": "Oddvar Shipwatcher",
+      "bio": "Oddvar Shipwatcher swears the sagas left out the boring parts—conveniently the parts that contradict them.",
+      "imageSrc": "/assets/themes/vikings/personas/16-oddvar-shipwatcher.png"
+    },
+    {
+      "id": "vikings-yrsa-nightwave",
+      "name": "Yrsa Nightwave",
+      "bio": "Yrsa Nightwave keeps \"finding\" treasure maps that always point toward someone else's hoard.",
+      "imageSrc": "/assets/themes/vikings/personas/17-yrsa-nightwave.png"
+    },
+    {
+      "id": "vikings-torstein-brokenaxe",
+      "name": "Torstein Brokenaxe",
+      "bio": "Torstein Brokenaxe claims every storm is a sign—and every sign agrees with their story.",
+      "imageSrc": "/assets/themes/vikings/personas/18-torstein-brokenaxe.png"
+    },
+    {
+      "id": "vikings-helga-meadsong",
+      "name": "Helga Meadsong",
+      "bio": "Helga Meadsong mutters about oaths like contracts written in disappearing ink.",
+      "imageSrc": "/assets/themes/vikings/personas/19-helga-meadsong.png"
+    },
+    {
+      "id": "vikings-snorri-falsesaga",
+      "name": "Snorri Falsesaga",
+      "bio": "Snorri Falsesaga laughs loudest when the blame drifts toward tourists.",
+      "imageSrc": "/assets/themes/vikings/personas/20-snorri-falsesaga.png"
+    },
+    {
+      "id": "vikings-frida-krakentooth",
+      "name": "Frida Krakentooth",
+      "bio": "Frida Krakentooth swears the sagas left out the boring parts—conveniently the parts that contradict them.",
+      "imageSrc": "/assets/themes/vikings/personas/21-frida-krakentooth.png"
+    },
+    {
+      "id": "vikings-magnus-mapstealer",
+      "name": "Magnus Mapstealer",
+      "bio": "Magnus Mapstealer keeps \"finding\" treasure maps that always point toward someone else's hoard.",
+      "imageSrc": "/assets/themes/vikings/personas/22-magnus-mapstealer.png"
+    },
+    {
+      "id": "vikings-liv-quietflame",
+      "name": "Liv Quietflame",
+      "bio": "Liv Quietflame claims every storm is a sign—and every sign agrees with their story.",
+      "imageSrc": "/assets/themes/vikings/personas/23-liv-quietflame.png"
+    },
+    {
+      "id": "vikings-runa-oathbreaker",
+      "name": "Runa Oathbreaker",
+      "bio": "Runa Oathbreaker mutters about oaths like contracts written in disappearing ink.",
+      "imageSrc": "/assets/themes/vikings/personas/24-runa-oathbreaker.png"
+    },
+    {
+      "id": "vikings-ivar-undersail",
+      "name": "Ivar Undersail",
+      "bio": "Ivar Undersail laughs loudest when the blame drifts toward tourists.",
+      "imageSrc": "/assets/themes/vikings/personas/25-ivar-undersail.png"
+    }
+  ],
+  "Gladiators": [
+    {
+      "id": "gladiators-cassia-lionheart",
+      "name": "Cassia Lionheart",
+      "bio": "Cassia Lionheart insists the crowd saw a clean win—just not which side paid them.",
+      "imageSrc": "/assets/themes/gladiators/personas/01-cassia-lionheart.png"
+    },
+    {
+      "id": "gladiators-tiber-ironhelm",
+      "name": "Tiber Ironhelm",
+      "bio": "Tiber Ironhelm adjusts their story every time the sand shifts underfoot.",
+      "imageSrc": "/assets/themes/gladiators/personas/02-tiber-ironhelm.png"
+    },
+    {
+      "id": "gladiators-flavius-bloodsand",
+      "name": "Flavius Bloodsand",
+      "bio": "Flavius Bloodsand quotes \"honor\" like a shield, then hides behind it.",
+      "imageSrc": "/assets/themes/gladiators/personas/03-flavius-bloodsand.png"
+    },
+    {
+      "id": "gladiators-aurelia-redshield",
+      "name": "Aurelia Redshield",
+      "bio": "Aurelia Redshield remembers every wound except the one that matters.",
+      "imageSrc": "/assets/themes/gladiators/personas/04-aurelia-redshield.png"
+    },
+    {
+      "id": "gladiators-marcellus-arena",
+      "name": "Marcellus Arena",
+      "bio": "Marcellus Arena acts like the arena clock is always on their side.",
+      "imageSrc": "/assets/themes/gladiators/personas/05-marcellus-arena.png"
+    },
+    {
+      "id": "gladiators-drusus-thunderarm",
+      "name": "Drusus Thunderarm",
+      "bio": "Drusus Thunderarm insists the crowd saw a clean win—just not which side paid them.",
+      "imageSrc": "/assets/themes/gladiators/personas/06-drusus-thunderarm.png"
+    },
+    {
+      "id": "gladiators-lucius-sunspear",
+      "name": "Lucius Sunspear",
+      "bio": "Lucius Sunspear adjusts their story every time the sand shifts underfoot.",
+      "imageSrc": "/assets/themes/gladiators/personas/07-lucius-sunspear.png"
+    },
+    {
+      "id": "gladiators-octavia-dawnguard",
+      "name": "Octavia Dawnguard",
+      "bio": "Octavia Dawnguard quotes \"honor\" like a shield, then hides behind it.",
+      "imageSrc": "/assets/themes/gladiators/personas/08-octavia-dawnguard.png"
+    },
+    {
+      "id": "gladiators-varro-warcry",
+      "name": "Varro Warcry",
+      "bio": "Varro Warcry remembers every wound except the one that matters.",
+      "imageSrc": "/assets/themes/gladiators/personas/09-varro-warcry.png"
+    },
+    {
+      "id": "gladiators-brutus-bronzefang",
+      "name": "Brutus Bronzefang",
+      "bio": "Brutus Bronzefang acts like the arena clock is always on their side.",
+      "imageSrc": "/assets/themes/gladiators/personas/10-brutus-bronzefang.png"
+    },
+    {
+      "id": "gladiators-maximus-stoneblade",
+      "name": "Maximus Stoneblade",
+      "bio": "Maximus Stoneblade insists the crowd saw a clean win—just not which side paid them.",
+      "imageSrc": "/assets/themes/gladiators/personas/11-maximus-stoneblade.png"
+    },
+    {
+      "id": "gladiators-aelia-netfighter",
+      "name": "Aelia Netfighter",
+      "bio": "Aelia Netfighter adjusts their story every time the sand shifts underfoot.",
+      "imageSrc": "/assets/themes/gladiators/personas/12-aelia-netfighter.png"
+    },
+    {
+      "id": "gladiators-gaius-trident",
+      "name": "Gaius Trident",
+      "bio": "Gaius Trident quotes \"honor\" like a shield, then hides behind it.",
+      "imageSrc": "/assets/themes/gladiators/personas/13-gaius-trident.png"
+    },
+    {
+      "id": "gladiators-livia-beastbait",
+      "name": "Livia Beastbait",
+      "bio": "Livia Beastbait remembers every wound except the one that matters.",
+      "imageSrc": "/assets/themes/gladiators/personas/14-livia-beastbait.png"
+    },
+    {
+      "id": "gladiators-quintus-crowdcheat",
+      "name": "Quintus Crowdcheat",
+      "bio": "Quintus Crowdcheat acts like the arena clock is always on their side.",
+      "imageSrc": "/assets/themes/gladiators/personas/15-quintus-crowdcheat.png"
+    },
+    {
+      "id": "gladiators-servius-chainmail",
+      "name": "Servius Chainmail",
+      "bio": "Servius Chainmail insists the crowd saw a clean win—just not which side paid them.",
+      "imageSrc": "/assets/themes/gladiators/personas/16-servius-chainmail.png"
+    },
+    {
+      "id": "gladiators-helva-savage",
+      "name": "Helva Savage",
+      "bio": "Helva Savage adjusts their story every time the sand shifts underfoot.",
+      "imageSrc": "/assets/themes/gladiators/personas/17-helva-savage.png"
+    },
+    {
+      "id": "gladiators-nero-victory",
+      "name": "Nero Victory",
+      "bio": "Nero Victory quotes \"honor\" like a shield, then hides behind it.",
+      "imageSrc": "/assets/themes/gladiators/personas/18-nero-victory.png"
+    },
+    {
+      "id": "gladiators-prisca-fixedmatch",
+      "name": "Prisca Fixedmatch",
+      "bio": "Prisca Fixedmatch remembers every wound except the one that matters.",
+      "imageSrc": "/assets/themes/gladiators/personas/19-prisca-fixedmatch.png"
+    },
+    {
+      "id": "gladiators-remus-brokennet",
+      "name": "Remus Brokennet",
+      "bio": "Remus Brokennet acts like the arena clock is always on their side.",
+      "imageSrc": "/assets/themes/gladiators/personas/20-remus-brokennet.png"
+    },
+    {
+      "id": "gladiators-secunda-sandmask",
+      "name": "Secunda Sandmask",
+      "bio": "Secunda Sandmask insists the crowd saw a clean win—just not which side paid them.",
+      "imageSrc": "/assets/themes/gladiators/personas/21-secunda-sandmask.png"
+    },
+    {
+      "id": "gladiators-titus-colosseum",
+      "name": "Titus Colosseum",
+      "bio": "Titus Colosseum adjusts their story every time the sand shifts underfoot.",
+      "imageSrc": "/assets/themes/gladiators/personas/22-titus-colosseum.png"
+    },
+    {
+      "id": "gladiators-vibia-gloryhog",
+      "name": "Vibia Gloryhog",
+      "bio": "Vibia Gloryhog quotes \"honor\" like a shield, then hides behind it.",
+      "imageSrc": "/assets/themes/gladiators/personas/23-vibia-gloryhog.png"
+    },
+    {
+      "id": "gladiators-spartacus-cheapshot",
+      "name": "Spartacus Cheapshot",
+      "bio": "Spartacus Cheapshot remembers every wound except the one that matters.",
+      "imageSrc": "/assets/themes/gladiators/personas/24-spartacus-cheapshot.png"
+    },
+    {
+      "id": "gladiators-cornelius-laststand",
+      "name": "Cornelius Laststand",
+      "bio": "Cornelius Laststand acts like the arena clock is always on their side.",
+      "imageSrc": "/assets/themes/gladiators/personas/25-cornelius-laststand.png"
+    }
+  ],
+  "Royalty": [
+    {
+      "id": "royalty-edmund-ashbury",
+      "name": "Edmund Ashbury",
+      "bio": "Edmund Ashbury speaks in velvet threats and calls it diplomacy.",
+      "imageSrc": "/assets/themes/royalty/personas/01-edmund-ashbury.png"
+    },
+    {
+      "id": "royalty-cordelia-goldcrest",
+      "name": "Cordelia Goldcrest",
+      "bio": "Cordelia Goldcrest knows the family tree—and prunes it when questioned.",
+      "imageSrc": "/assets/themes/royalty/personas/02-cordelia-goldcrest.png"
+    },
+    {
+      "id": "royalty-percival-montrose",
+      "name": "Percival Montrose",
+      "bio": "Percival Montrose claims scandal is \"below them\" while standing in it.",
+      "imageSrc": "/assets/themes/royalty/personas/03-percival-montrose.png"
+    },
+    {
+      "id": "royalty-isadora-rosemere",
+      "name": "Isadora Rosemere",
+      "bio": "Isadora Rosemere smiles like a portrait and blinks like a ledger.",
+      "imageSrc": "/assets/themes/royalty/personas/04-isadora-rosemere.png"
+    },
+    {
+      "id": "royalty-reginald-thornwick",
+      "name": "Reginald Thornwick",
+      "bio": "Reginald Thornwick insists protocol forbids the truth, but not convenient lies.",
+      "imageSrc": "/assets/themes/royalty/personas/05-reginald-thornwick.png"
+    },
+    {
+      "id": "royalty-matilda-ivoryhall",
+      "name": "Matilda Ivoryhall",
+      "bio": "Matilda Ivoryhall speaks in velvet threats and calls it diplomacy.",
+      "imageSrc": "/assets/themes/royalty/personas/06-matilda-ivoryhall.png"
+    },
+    {
+      "id": "royalty-alistair-valmont",
+      "name": "Alistair Valmont",
+      "bio": "Alistair Valmont knows the family tree—and prunes it when questioned.",
+      "imageSrc": "/assets/themes/royalty/personas/07-alistair-valmont.png"
+    },
+    {
+      "id": "royalty-genevieve-windsor",
+      "name": "Genevieve Windsor",
+      "bio": "Genevieve Windsor claims scandal is \"below them\" while standing in it.",
+      "imageSrc": "/assets/themes/royalty/personas/08-genevieve-windsor.png"
+    },
+    {
+      "id": "royalty-cedric-blackmere",
+      "name": "Cedric Blackmere",
+      "bio": "Cedric Blackmere smiles like a portrait and blinks like a ledger.",
+      "imageSrc": "/assets/themes/royalty/personas/09-cedric-blackmere.png"
+    },
+    {
+      "id": "royalty-ophelia-crownleigh",
+      "name": "Ophelia Crownleigh",
+      "bio": "Ophelia Crownleigh insists protocol forbids the truth, but not convenient lies.",
+      "imageSrc": "/assets/themes/royalty/personas/10-ophelia-crownleigh.png"
+    },
+    {
+      "id": "royalty-rupert-fairfax",
+      "name": "Rupert Fairfax",
+      "bio": "Rupert Fairfax speaks in velvet threats and calls it diplomacy.",
+      "imageSrc": "/assets/themes/royalty/personas/11-rupert-fairfax.png"
+    },
+    {
+      "id": "royalty-beatrix-redgrave",
+      "name": "Beatrix Redgrave",
+      "bio": "Beatrix Redgrave knows the family tree—and prunes it when questioned.",
+      "imageSrc": "/assets/themes/royalty/personas/12-beatrix-redgrave.png"
+    },
+    {
+      "id": "royalty-archibald-pemberton",
+      "name": "Archibald Pemberton",
+      "bio": "Archibald Pemberton claims scandal is \"below them\" while standing in it.",
+      "imageSrc": "/assets/themes/royalty/personas/13-archibald-pemberton.png"
+    },
+    {
+      "id": "royalty-seraphina-strathmore",
+      "name": "Seraphina Strathmore",
+      "bio": "Seraphina Strathmore smiles like a portrait and blinks like a ledger.",
+      "imageSrc": "/assets/themes/royalty/personas/14-seraphina-strathmore.png"
+    },
+    {
+      "id": "royalty-lionel-kingsley",
+      "name": "Lionel Kingsley",
+      "bio": "Lionel Kingsley insists protocol forbids the truth, but not convenient lies.",
+      "imageSrc": "/assets/themes/royalty/personas/15-lionel-kingsley.png"
+    },
+    {
+      "id": "royalty-henrietta-norwood",
+      "name": "Henrietta Norwood",
+      "bio": "Henrietta Norwood speaks in velvet threats and calls it diplomacy.",
+      "imageSrc": "/assets/themes/royalty/personas/16-henrietta-norwood.png"
+    },
+    {
+      "id": "royalty-felix-ellingford",
+      "name": "Felix Ellingford",
+      "bio": "Felix Ellingford knows the family tree—and prunes it when questioned.",
+      "imageSrc": "/assets/themes/royalty/personas/17-felix-ellingford.png"
+    },
+    {
+      "id": "royalty-gwendolyn-hartwell",
+      "name": "Gwendolyn Hartwell",
+      "bio": "Gwendolyn Hartwell claims scandal is \"below them\" while standing in it.",
+      "imageSrc": "/assets/themes/royalty/personas/18-gwendolyn-hartwell.png"
+    },
+    {
+      "id": "royalty-mortimer-whitmore",
+      "name": "Mortimer Whitmore",
+      "bio": "Mortimer Whitmore smiles like a portrait and blinks like a ledger.",
+      "imageSrc": "/assets/themes/royalty/personas/19-mortimer-whitmore.png"
+    },
+    {
+      "id": "royalty-adelaide-lockewood",
+      "name": "Adelaide Lockewood",
+      "bio": "Adelaide Lockewood insists protocol forbids the truth, but not convenient lies.",
+      "imageSrc": "/assets/themes/royalty/personas/20-adelaide-lockewood.png"
+    },
+    {
+      "id": "royalty-clive-draycott",
+      "name": "Clive Draycott",
+      "bio": "Clive Draycott speaks in velvet threats and calls it diplomacy.",
+      "imageSrc": "/assets/themes/royalty/personas/21-clive-draycott.png"
+    },
+    {
+      "id": "royalty-penelope-belvoir",
+      "name": "Penelope Belvoir",
+      "bio": "Penelope Belvoir knows the family tree—and prunes it when questioned.",
+      "imageSrc": "/assets/themes/royalty/personas/22-penelope-belvoir.png"
+    },
+    {
+      "id": "royalty-horace-ashford",
+      "name": "Horace Ashford",
+      "bio": "Horace Ashford claims scandal is \"below them\" while standing in it.",
+      "imageSrc": "/assets/themes/royalty/personas/23-horace-ashford.png"
+    },
+    {
+      "id": "royalty-vivienne-ravenspur",
+      "name": "Vivienne Ravenspur",
+      "bio": "Vivienne Ravenspur smiles like a portrait and blinks like a ledger.",
+      "imageSrc": "/assets/themes/royalty/personas/24-vivienne-ravenspur.png"
+    },
+    {
+      "id": "royalty-barnaby-highcourt",
+      "name": "Barnaby Highcourt",
+      "bio": "Barnaby Highcourt insists protocol forbids the truth, but not convenient lies.",
+      "imageSrc": "/assets/themes/royalty/personas/25-barnaby-highcourt.png"
+    }
+  ],
+  "Mythology (Gods & Legends)": [
+    {
+      "id": "mythology-gods-and-legends-orion-stormbringer",
+      "name": "Orion Stormbringer",
+      "bio": "Orion Stormbringer quotes prophecy like a weather report—always retroactively accurate.",
+      "imageSrc": "/assets/themes/mythology-gods-and-legends/personas/01-orion-stormbringer.png"
+    },
+    {
+      "id": "mythology-gods-and-legends-selene-moonveil",
+      "name": "Selene Moonveil",
+      "bio": "Selene Moonveil swears mortals misheard the oracle; oddly, always in their favor.",
+      "imageSrc": "/assets/themes/mythology-gods-and-legends/personas/02-selene-moonveil.png"
+    },
+    {
+      "id": "mythology-gods-and-legends-atlas-sunfire",
+      "name": "Atlas Sunfire",
+      "bio": "Atlas Sunfire treats fate like a suggestion until it isn't.",
+      "imageSrc": "/assets/themes/mythology-gods-and-legends/personas/03-atlas-sunfire.png"
+    },
+    {
+      "id": "mythology-gods-and-legends-nyx-nightward",
+      "name": "Nyx Nightward",
+      "bio": "Nyx Nightward claims thunder is just applause for their version.",
+      "imageSrc": "/assets/themes/mythology-gods-and-legends/personas/04-nyx-nightward.png"
+    },
+    {
+      "id": "mythology-gods-and-legends-perseus-starhelm",
+      "name": "Perseus Starhelm",
+      "bio": "Perseus Starhelm warns you not to look—then asks why you flinched.",
+      "imageSrc": "/assets/themes/mythology-gods-and-legends/personas/05-perseus-starhelm.png"
+    },
+    {
+      "id": "mythology-gods-and-legends-hecate-thunderborn",
+      "name": "Hecate Thunderborn",
+      "bio": "Hecate Thunderborn quotes prophecy like a weather report—always retroactively accurate.",
+      "imageSrc": "/assets/themes/mythology-gods-and-legends/personas/06-hecate-thunderborn.png"
+    },
+    {
+      "id": "mythology-gods-and-legends-zephyr-tidecaller",
+      "name": "Zephyr Tidecaller",
+      "bio": "Zephyr Tidecaller swears mortals misheard the oracle; oddly, always in their favor.",
+      "imageSrc": "/assets/themes/mythology-gods-and-legends/personas/07-zephyr-tidecaller.png"
+    },
+    {
+      "id": "mythology-gods-and-legends-brigid-flameheart",
+      "name": "Brigid Flameheart",
+      "bio": "Brigid Flameheart treats fate like a suggestion until it isn't.",
+      "imageSrc": "/assets/themes/mythology-gods-and-legends/personas/08-brigid-flameheart.png"
+    },
+    {
+      "id": "mythology-gods-and-legends-ra-goldleaf",
+      "name": "Ra Goldleaf",
+      "bio": "Ra Goldleaf claims thunder is just applause for their version.",
+      "imageSrc": "/assets/themes/mythology-gods-and-legends/personas/09-ra-goldleaf.png"
+    },
+    {
+      "id": "mythology-gods-and-legends-freya-earthshaper",
+      "name": "Freya Earthshaper",
+      "bio": "Freya Earthshaper warns you not to look—then asks why you flinched.",
+      "imageSrc": "/assets/themes/mythology-gods-and-legends/personas/10-freya-earthshaper.png"
+    },
+    {
+      "id": "mythology-gods-and-legends-pan-skyforge",
+      "name": "Pan Skyforge",
+      "bio": "Pan Skyforge quotes prophecy like a weather report—always retroactively accurate.",
+      "imageSrc": "/assets/themes/mythology-gods-and-legends/personas/11-pan-skyforge.png"
+    },
+    {
+      "id": "mythology-gods-and-legends-medea-dawnspear",
+      "name": "Medea Dawnspear",
+      "bio": "Medea Dawnspear swears mortals misheard the oracle; oddly, always in their favor.",
+      "imageSrc": "/assets/themes/mythology-gods-and-legends/personas/12-medea-dawnspear.png"
+    },
+    {
+      "id": "mythology-gods-and-legends-castor-oracle",
+      "name": "Castor Oracle",
+      "bio": "Castor Oracle treats fate like a suggestion until it isn't.",
+      "imageSrc": "/assets/themes/mythology-gods-and-legends/personas/13-castor-oracle.png"
+    },
+    {
+      "id": "mythology-gods-and-legends-electra-fatespin",
+      "name": "Electra Fatespin",
+      "bio": "Electra Fatespin claims thunder is just applause for their version.",
+      "imageSrc": "/assets/themes/mythology-gods-and-legends/personas/14-electra-fatespin.png"
+    },
+    {
+      "id": "mythology-gods-and-legends-argus-serpent",
+      "name": "Argus Serpent",
+      "bio": "Argus Serpent warns you not to look—then asks why you flinched.",
+      "imageSrc": "/assets/themes/mythology-gods-and-legends/personas/15-argus-serpent.png"
+    },
+    {
+      "id": "mythology-gods-and-legends-cassandra-thunderclap",
+      "name": "Cassandra Thunderclap",
+      "bio": "Cassandra Thunderclap quotes prophecy like a weather report—always retroactively accurate.",
+      "imageSrc": "/assets/themes/mythology-gods-and-legends/personas/16-cassandra-thunderclap.png"
+    },
+    {
+      "id": "mythology-gods-and-legends-hyperion-cloudwalker",
+      "name": "Hyperion Cloudwalker",
+      "bio": "Hyperion Cloudwalker swears mortals misheard the oracle; oddly, always in their favor.",
+      "imageSrc": "/assets/themes/mythology-gods-and-legends/personas/17-hyperion-cloudwalker.png"
+    },
+    {
+      "id": "mythology-gods-and-legends-isis-riverbend",
+      "name": "Isis Riverbend",
+      "bio": "Isis Riverbend treats fate like a suggestion until it isn't.",
+      "imageSrc": "/assets/themes/mythology-gods-and-legends/personas/18-isis-riverbend.png"
+    },
+    {
+      "id": "mythology-gods-and-legends-daedalus-ashprophet",
+      "name": "Daedalus Ashprophet",
+      "bio": "Daedalus Ashprophet claims thunder is just applause for their version.",
+      "imageSrc": "/assets/themes/mythology-gods-and-legends/personas/19-daedalus-ashprophet.png"
+    },
+    {
+      "id": "mythology-gods-and-legends-andromeda-wolfborn",
+      "name": "Andromeda Wolfborn",
+      "bio": "Andromeda Wolfborn warns you not to look—then asks why you flinched.",
+      "imageSrc": "/assets/themes/mythology-gods-and-legends/personas/20-andromeda-wolfborn.png"
+    },
+    {
+      "id": "mythology-gods-and-legends-icarus-ravencloak",
+      "name": "Icarus Ravencloak",
+      "bio": "Icarus Ravencloak quotes prophecy like a weather report—always retroactively accurate.",
+      "imageSrc": "/assets/themes/mythology-gods-and-legends/personas/21-icarus-ravencloak.png"
+    },
+    {
+      "id": "mythology-gods-and-legends-minerva-ironbloom",
+      "name": "Minerva Ironbloom",
+      "bio": "Minerva Ironbloom swears mortals misheard the oracle; oddly, always in their favor.",
+      "imageSrc": "/assets/themes/mythology-gods-and-legends/personas/22-minerva-ironbloom.png"
+    },
+    {
+      "id": "mythology-gods-and-legends-odin-shadowoak",
+      "name": "Odin Shadowoak",
+      "bio": "Odin Shadowoak treats fate like a suggestion until it isn't.",
+      "imageSrc": "/assets/themes/mythology-gods-and-legends/personas/23-odin-shadowoak.png"
+    },
+    {
+      "id": "mythology-gods-and-legends-helios-lightning",
+      "name": "Helios Lightning",
+      "bio": "Helios Lightning claims thunder is just applause for their version.",
+      "imageSrc": "/assets/themes/mythology-gods-and-legends/personas/24-helios-lightning.png"
+    },
+    {
+      "id": "mythology-gods-and-legends-echo-dreamforge",
+      "name": "Echo Dreamforge",
+      "bio": "Echo Dreamforge warns you not to look—then asks why you flinched.",
+      "imageSrc": "/assets/themes/mythology-gods-and-legends/personas/25-echo-dreamforge.png"
+    }
+  ],
+  "Time Travelers": [
+    {
+      "id": "time-travelers-chrono-walker",
+      "name": "Chrono Walker",
+      "bio": "Chrono Walker remembers tomorrow differently depending who asks.",
+      "imageSrc": "/assets/themes/time-travelers/personas/01-chrono-walker.png"
+    },
+    {
+      "id": "time-travelers-epoch-jumper",
+      "name": "Epoch Jumper",
+      "bio": "Epoch Jumper carries three timelines and pockets the fourth.",
+      "imageSrc": "/assets/themes/time-travelers/personas/02-epoch-jumper.png"
+    },
+    {
+      "id": "time-travelers-paradox-spinner",
+      "name": "Paradox Spinner",
+      "bio": "Paradox Spinner blames paradox whenever the details wobble.",
+      "imageSrc": "/assets/themes/time-travelers/personas/03-paradox-spinner.png"
+    },
+    {
+      "id": "time-travelers-delta-keeper",
+      "name": "Delta Keeper",
+      "bio": "Delta Keeper insists clocks lie—but only when inconvenient.",
+      "imageSrc": "/assets/themes/time-travelers/personas/04-delta-keeper.png"
+    },
+    {
+      "id": "time-travelers-minute-pilot",
+      "name": "Minute Pilot",
+      "bio": "Minute Pilot says the future is \"mostly stable\" like a bad foundation.",
+      "imageSrc": "/assets/themes/time-travelers/personas/05-minute-pilot.png"
+    },
+    {
+      "id": "time-travelers-quantum-voyager",
+      "name": "Quantum Voyager",
+      "bio": "Quantum Voyager remembers tomorrow differently depending who asks.",
+      "imageSrc": "/assets/themes/time-travelers/personas/06-quantum-voyager.png"
+    },
+    {
+      "id": "time-travelers-flux-looper",
+      "name": "Flux Looper",
+      "bio": "Flux Looper carries three timelines and pockets the fourth.",
+      "imageSrc": "/assets/themes/time-travelers/personas/07-flux-looper.png"
+    },
+    {
+      "id": "time-travelers-orbit-rider",
+      "name": "Orbit Rider",
+      "bio": "Orbit Rider blames paradox whenever the details wobble.",
+      "imageSrc": "/assets/themes/time-travelers/personas/08-orbit-rider.png"
+    },
+    {
+      "id": "time-travelers-vector-watcher",
+      "name": "Vector Watcher",
+      "bio": "Vector Watcher insists clocks lie—but only when inconvenient.",
+      "imageSrc": "/assets/themes/time-travelers/personas/09-vector-watcher.png"
+    },
+    {
+      "id": "time-travelers-phase-guard",
+      "name": "Phase Guard",
+      "bio": "Phase Guard says the future is \"mostly stable\" like a bad foundation.",
+      "imageSrc": "/assets/themes/time-travelers/personas/10-phase-guard.png"
+    },
+    {
+      "id": "time-travelers-anchor-binder",
+      "name": "Anchor Binder",
+      "bio": "Anchor Binder remembers tomorrow differently depending who asks.",
+      "imageSrc": "/assets/themes/time-travelers/personas/11-anchor-binder.png"
+    },
+    {
+      "id": "time-travelers-drift-strider",
+      "name": "Drift Strider",
+      "bio": "Drift Strider carries three timelines and pockets the fourth.",
+      "imageSrc": "/assets/themes/time-travelers/personas/12-drift-strider.png"
+    },
+    {
+      "id": "time-travelers-skip-hopper",
+      "name": "Skip Hopper",
+      "bio": "Skip Hopper blames paradox whenever the details wobble.",
+      "imageSrc": "/assets/themes/time-travelers/personas/13-skip-hopper.png"
+    },
+    {
+      "id": "time-travelers-loop-fixer",
+      "name": "Loop Fixer",
+      "bio": "Loop Fixer insists clocks lie—but only when inconvenient.",
+      "imageSrc": "/assets/themes/time-travelers/personas/14-loop-fixer.png"
+    },
+    {
+      "id": "time-travelers-prime-breaker",
+      "name": "Prime Breaker",
+      "bio": "Prime Breaker says the future is \"mostly stable\" like a bad foundation.",
+      "imageSrc": "/assets/themes/time-travelers/personas/15-prime-breaker.png"
+    },
+    {
+      "id": "time-travelers-shift-anchor",
+      "name": "Shift Anchor",
+      "bio": "Shift Anchor remembers tomorrow differently depending who asks.",
+      "imageSrc": "/assets/themes/time-travelers/personas/16-shift-anchor.png"
+    },
+    {
+      "id": "time-travelers-tachyon-drifter",
+      "name": "Tachyon Drifter",
+      "bio": "Tachyon Drifter carries three timelines and pockets the fourth.",
+      "imageSrc": "/assets/themes/time-travelers/personas/17-tachyon-drifter.png"
+    },
+    {
+      "id": "time-travelers-continuum-echo",
+      "name": "Continuum Echo",
+      "bio": "Continuum Echo blames paradox whenever the details wobble.",
+      "imageSrc": "/assets/themes/time-travelers/personas/18-continuum-echo.png"
+    },
+    {
+      "id": "time-travelers-meridian-chrono",
+      "name": "Meridian Chrono",
+      "bio": "Meridian Chrono insists clocks lie—but only when inconvenient.",
+      "imageSrc": "/assets/themes/time-travelers/personas/19-meridian-chrono.png"
+    },
+    {
+      "id": "time-travelers-pulse-skipper",
+      "name": "Pulse Skipper",
+      "bio": "Pulse Skipper says the future is \"mostly stable\" like a bad foundation.",
+      "imageSrc": "/assets/themes/time-travelers/personas/20-pulse-skipper.png"
+    },
+    {
+      "id": "time-travelers-retro-rewind",
+      "name": "Retro Rewind",
+      "bio": "Retro Rewind remembers tomorrow differently depending who asks.",
+      "imageSrc": "/assets/themes/time-travelers/personas/21-retro-rewind.png"
+    },
+    {
+      "id": "time-travelers-forward-fastlane",
+      "name": "Forward Fastlane",
+      "bio": "Forward Fastlane carries three timelines and pockets the fourth.",
+      "imageSrc": "/assets/themes/time-travelers/personas/22-forward-fastlane.png"
+    },
+    {
+      "id": "time-travelers-split-slowburn",
+      "name": "Split Slowburn",
+      "bio": "Split Slowburn blames paradox whenever the details wobble.",
+      "imageSrc": "/assets/themes/time-travelers/personas/23-split-slowburn.png"
+    },
+    {
+      "id": "time-travelers-sync-paradox",
+      "name": "Sync Paradox",
+      "bio": "Sync Paradox insists clocks lie—but only when inconvenient.",
+      "imageSrc": "/assets/themes/time-travelers/personas/24-sync-paradox.png"
+    },
+    {
+      "id": "time-travelers-warden-clockhand",
+      "name": "Warden Clockhand",
+      "bio": "Warden Clockhand says the future is \"mostly stable\" like a bad foundation.",
+      "imageSrc": "/assets/themes/time-travelers/personas/25-warden-clockhand.png"
+    }
+  ],
+  "Spies": [
+    {
+      "id": "spies-silas-black",
+      "name": "Silas Black",
+      "bio": "Silas Black answers in riddles, then grades your translation.",
+      "imageSrc": "/assets/themes/spies/personas/01-silas-black.png"
+    },
+    {
+      "id": "spies-vesper-vane",
+      "name": "Vesper Vane",
+      "bio": "Vesper Vane burns cover stories slower than evidence.",
+      "imageSrc": "/assets/themes/spies/personas/02-vesper-vane.png"
+    },
+    {
+      "id": "spies-orion-wire",
+      "name": "Orion Wire",
+      "bio": "Orion Wire claims \"need to know\" includes knowing your secrets first.",
+      "imageSrc": "/assets/themes/spies/personas/03-orion-wire.png"
+    },
+    {
+      "id": "spies-nadia-pike",
+      "name": "Nadia Pike",
+      "bio": "Nadia Pike smiles like a briefing and vanishes like a footnote.",
+      "imageSrc": "/assets/themes/spies/personas/04-nadia-pike.png"
+    },
+    {
+      "id": "spies-cipher-mercer",
+      "name": "Cipher Mercer",
+      "bio": "Cipher Mercer calls it tradecraft when they dodge a straight answer.",
+      "imageSrc": "/assets/themes/spies/personas/05-cipher-mercer.png"
+    },
+    {
+      "id": "spies-mara-locke",
+      "name": "Mara Locke",
+      "bio": "Mara Locke answers in riddles, then grades your translation.",
+      "imageSrc": "/assets/themes/spies/personas/06-mara-locke.png"
+    },
+    {
+      "id": "spies-phoenix-static",
+      "name": "Phoenix Static",
+      "bio": "Phoenix Static burns cover stories slower than evidence.",
+      "imageSrc": "/assets/themes/spies/personas/07-phoenix-static.png"
+    },
+    {
+      "id": "spies-ivan-malone",
+      "name": "Ivan Malone",
+      "bio": "Ivan Malone claims \"need to know\" includes knowing your secrets first.",
+      "imageSrc": "/assets/themes/spies/personas/08-ivan-malone.png"
+    },
+    {
+      "id": "spies-sable-switch",
+      "name": "Sable Switch",
+      "bio": "Sable Switch smiles like a briefing and vanishes like a footnote.",
+      "imageSrc": "/assets/themes/spies/personas/09-sable-switch.png"
+    },
+    {
+      "id": "spies-ren-reed",
+      "name": "Ren Reed",
+      "bio": "Ren Reed calls it tradecraft when they dodge a straight answer.",
+      "imageSrc": "/assets/themes/spies/personas/10-ren-reed.png"
+    },
+    {
+      "id": "spies-lyra-knox",
+      "name": "Lyra Knox",
+      "bio": "Lyra Knox answers in riddles, then grades your translation.",
+      "imageSrc": "/assets/themes/spies/personas/11-lyra-knox.png"
+    },
+    {
+      "id": "spies-damian-cross",
+      "name": "Damian Cross",
+      "bio": "Damian Cross burns cover stories slower than evidence.",
+      "imageSrc": "/assets/themes/spies/personas/12-damian-cross.png"
+    },
+    {
+      "id": "spies-cleo-vale",
+      "name": "Cleo Vale",
+      "bio": "Cleo Vale claims \"need to know\" includes knowing your secrets first.",
+      "imageSrc": "/assets/themes/spies/personas/13-cleo-vale.png"
+    },
+    {
+      "id": "spies-felix-frost",
+      "name": "Felix Frost",
+      "bio": "Felix Frost smiles like a briefing and vanishes like a footnote.",
+      "imageSrc": "/assets/themes/spies/personas/14-felix-frost.png"
+    },
+    {
+      "id": "spies-zara-harrow",
+      "name": "Zara Harrow",
+      "bio": "Zara Harrow calls it tradecraft when they dodge a straight answer.",
+      "imageSrc": "/assets/themes/spies/personas/15-zara-harrow.png"
+    },
+    {
+      "id": "spies-jonas-quill",
+      "name": "Jonas Quill",
+      "bio": "Jonas Quill answers in riddles, then grades your translation.",
+      "imageSrc": "/assets/themes/spies/personas/16-jonas-quill.png"
+    },
+    {
+      "id": "spies-iris-rook",
+      "name": "Iris Rook",
+      "bio": "Iris Rook burns cover stories slower than evidence.",
+      "imageSrc": "/assets/themes/spies/personas/17-iris-rook.png"
+    },
+    {
+      "id": "spies-viktor-shade",
+      "name": "Viktor Shade",
+      "bio": "Viktor Shade claims \"need to know\" includes knowing your secrets first.",
+      "imageSrc": "/assets/themes/spies/personas/18-viktor-shade.png"
+    },
+    {
+      "id": "spies-nova-cipher",
+      "name": "Nova Cipher",
+      "bio": "Nova Cipher smiles like a briefing and vanishes like a footnote.",
+      "imageSrc": "/assets/themes/spies/personas/19-nova-cipher.png"
+    },
+    {
+      "id": "spies-elliot-ghost",
+      "name": "Elliot Ghost",
+      "bio": "Elliot Ghost calls it tradecraft when they dodge a straight answer.",
+      "imageSrc": "/assets/themes/spies/personas/20-elliot-ghost.png"
+    },
+    {
+      "id": "spies-yuki-echo",
+      "name": "Yuki Echo",
+      "bio": "Yuki Echo answers in riddles, then grades your translation.",
+      "imageSrc": "/assets/themes/spies/personas/21-yuki-echo.png"
+    },
+    {
+      "id": "spies-marcus-viper",
+      "name": "Marcus Viper",
+      "bio": "Marcus Viper burns cover stories slower than evidence.",
+      "imageSrc": "/assets/themes/spies/personas/22-marcus-viper.png"
+    },
+    {
+      "id": "spies-asha-raven",
+      "name": "Asha Raven",
+      "bio": "Asha Raven claims \"need to know\" includes knowing your secrets first.",
+      "imageSrc": "/assets/themes/spies/personas/23-asha-raven.png"
+    },
+    {
+      "id": "spies-leo-stone",
+      "name": "Leo Stone",
+      "bio": "Leo Stone smiles like a briefing and vanishes like a footnote.",
+      "imageSrc": "/assets/themes/spies/personas/24-leo-stone.png"
+    },
+    {
+      "id": "spies-quinn-blade",
+      "name": "Quinn Blade",
+      "bio": "Quinn Blade calls it tradecraft when they dodge a straight answer.",
+      "imageSrc": "/assets/themes/spies/personas/25-quinn-blade.png"
+    }
+  ],
+  "Cowboys": [
+    {
+      "id": "cowboys-dusty-mcgraw",
+      "name": "Dusty McGraw",
+      "bio": "Dusty McGraw spits truth like tobacco—aimed, timed, and rarely accidental.",
+      "imageSrc": "/assets/themes/cowboys/personas/01-dusty-mcgraw.png"
+    },
+    {
+      "id": "cowboys-calamity-holloway",
+      "name": "Calamity Holloway",
+      "bio": "Calamity Holloway swears the horizon moves when their alibi needs space.",
+      "imageSrc": "/assets/themes/cowboys/personas/02-calamity-holloway.png"
+    },
+    {
+      "id": "cowboys-buckshot-cartwright",
+      "name": "Buckshot Cartwright",
+      "bio": "Buckshot Cartwright talks slow and thinks sideways.",
+      "imageSrc": "/assets/themes/cowboys/personas/03-buckshot-cartwright.png"
+    },
+    {
+      "id": "cowboys-cactus-dalton",
+      "name": "Cactus Dalton",
+      "bio": "Cactus Dalton remembers brands, not faces—until the bill comes due.",
+      "imageSrc": "/assets/themes/cowboys/personas/04-cactus-dalton.png"
+    },
+    {
+      "id": "cowboys-trigger-rivers",
+      "name": "Trigger Rivers",
+      "bio": "Trigger Rivers calls it frontier justice when the math works out for them.",
+      "imageSrc": "/assets/themes/cowboys/personas/05-trigger-rivers.png"
+    },
+    {
+      "id": "cowboys-whiskey-blackwood",
+      "name": "Whiskey Blackwood",
+      "bio": "Whiskey Blackwood spits truth like tobacco—aimed, timed, and rarely accidental.",
+      "imageSrc": "/assets/themes/cowboys/personas/06-whiskey-blackwood.png"
+    },
+    {
+      "id": "cowboys-rattlesnake-creek",
+      "name": "Rattlesnake Creek",
+      "bio": "Rattlesnake Creek swears the horizon moves when their alibi needs space.",
+      "imageSrc": "/assets/themes/cowboys/personas/07-rattlesnake-creek.png"
+    },
+    {
+      "id": "cowboys-prairie-dryden",
+      "name": "Prairie Dryden",
+      "bio": "Prairie Dryden talks slow and thinks sideways.",
+      "imageSrc": "/assets/themes/cowboys/personas/08-prairie-dryden.png"
+    },
+    {
+      "id": "cowboys-lasso-hollis",
+      "name": "Lasso Hollis",
+      "bio": "Lasso Hollis remembers brands, not faces—until the bill comes due.",
+      "imageSrc": "/assets/themes/cowboys/personas/09-lasso-hollis.png"
+    },
+    {
+      "id": "cowboys-bandit-langtry",
+      "name": "Bandit Langtry",
+      "bio": "Bandit Langtry calls it frontier justice when the math works out for them.",
+      "imageSrc": "/assets/themes/cowboys/personas/10-bandit-langtry.png"
+    },
+    {
+      "id": "cowboys-tumbleweed-masterson",
+      "name": "Tumbleweed Masterson",
+      "bio": "Tumbleweed Masterson spits truth like tobacco—aimed, timed, and rarely accidental.",
+      "imageSrc": "/assets/themes/cowboys/personas/11-tumbleweed-masterson.png"
+    },
+    {
+      "id": "cowboys-jesse-oakley",
+      "name": "Jesse Oakley",
+      "bio": "Jesse Oakley swears the horizon moves when their alibi needs space.",
+      "imageSrc": "/assets/themes/cowboys/personas/12-jesse-oakley.png"
+    },
+    {
+      "id": "cowboys-rosie-pecos",
+      "name": "Rosie Pecos",
+      "bio": "Rosie Pecos talks slow and thinks sideways.",
+      "imageSrc": "/assets/themes/cowboys/personas/13-rosie-pecos.png"
+    },
+    {
+      "id": "cowboys-clay-rawlins",
+      "name": "Clay Rawlins",
+      "bio": "Clay Rawlins remembers brands, not faces—until the bill comes due.",
+      "imageSrc": "/assets/themes/cowboys/personas/14-clay-rawlins.png"
+    },
+    {
+      "id": "cowboys-annie-sundown",
+      "name": "Annie Sundown",
+      "bio": "Annie Sundown calls it frontier justice when the math works out for them.",
+      "imageSrc": "/assets/themes/cowboys/personas/15-annie-sundown.png"
+    },
+    {
+      "id": "cowboys-hank-tanner",
+      "name": "Hank Tanner",
+      "bio": "Hank Tanner spits truth like tobacco—aimed, timed, and rarely accidental.",
+      "imageSrc": "/assets/themes/cowboys/personas/16-hank-tanner.png"
+    },
+    {
+      "id": "cowboys-ruby-vance",
+      "name": "Ruby Vance",
+      "bio": "Ruby Vance swears the horizon moves when their alibi needs space.",
+      "imageSrc": "/assets/themes/cowboys/personas/17-ruby-vance.png"
+    },
+    {
+      "id": "cowboys-deputy-wylie",
+      "name": "Deputy Wylie",
+      "bio": "Deputy Wylie talks slow and thinks sideways.",
+      "imageSrc": "/assets/themes/cowboys/personas/18-deputy-wylie.png"
+    },
+    {
+      "id": "cowboys-reno-yates",
+      "name": "Reno Yates",
+      "bio": "Reno Yates remembers brands, not faces—until the bill comes due.",
+      "imageSrc": "/assets/themes/cowboys/personas/19-reno-yates.png"
+    },
+    {
+      "id": "cowboys-sierra-zane",
+      "name": "Sierra Zane",
+      "bio": "Sierra Zane calls it frontier justice when the math works out for them.",
+      "imageSrc": "/assets/themes/cowboys/personas/20-sierra-zane.png"
+    },
+    {
+      "id": "cowboys-colt-ashford",
+      "name": "Colt Ashford",
+      "bio": "Colt Ashford spits truth like tobacco—aimed, timed, and rarely accidental.",
+      "imageSrc": "/assets/themes/cowboys/personas/21-colt-ashford.png"
+    },
+    {
+      "id": "cowboys-jolene-briscoe",
+      "name": "Jolene Briscoe",
+      "bio": "Jolene Briscoe swears the horizon moves when their alibi needs space.",
+      "imageSrc": "/assets/themes/cowboys/personas/22-jolene-briscoe.png"
+    },
+    {
+      "id": "cowboys-ranger-cassidy",
+      "name": "Ranger Cassidy",
+      "bio": "Ranger Cassidy talks slow and thinks sideways.",
+      "imageSrc": "/assets/themes/cowboys/personas/23-ranger-cassidy.png"
+    },
+    {
+      "id": "cowboys-tex-durango",
+      "name": "Tex Durango",
+      "bio": "Tex Durango remembers brands, not faces—until the bill comes due.",
+      "imageSrc": "/assets/themes/cowboys/personas/24-tex-durango.png"
+    },
+    {
+      "id": "cowboys-mara-ellsworth",
+      "name": "Mara Ellsworth",
+      "bio": "Mara Ellsworth calls it frontier justice when the math works out for them.",
+      "imageSrc": "/assets/themes/cowboys/personas/25-mara-ellsworth.png"
+    }
+  ],
+  "Detectives Noir": [
+    {
+      "id": "detectives-noir-marlowe-blackwood",
+      "name": "Marlowe Blackwood",
+      "bio": "Marlowe Blackwood lights a match for drama—and burns the timeline.",
+      "imageSrc": "/assets/themes/detectives-noir/personas/01-marlowe-blackwood.png"
+    },
+    {
+      "id": "detectives-noir-vera-noir",
+      "name": "Vera Noir",
+      "bio": "Vera Noir reads guilt like braille on a clean conscience.",
+      "imageSrc": "/assets/themes/detectives-noir/personas/02-vera-noir.png"
+    },
+    {
+      "id": "detectives-noir-sterling-frost",
+      "name": "Sterling Frost",
+      "bio": "Sterling Frost calls it intuition when it is selective memory.",
+      "imageSrc": "/assets/themes/detectives-noir/personas/03-sterling-frost.png"
+    },
+    {
+      "id": "detectives-noir-iris-voss",
+      "name": "Iris Voss",
+      "bio": "Iris Voss keeps fog in the alley and fog in the answers.",
+      "imageSrc": "/assets/themes/detectives-noir/personas/04-iris-voss.png"
+    },
+    {
+      "id": "detectives-noir-gideon-crowe",
+      "name": "Gideon Crowe",
+      "bio": "Gideon Crowe asks one question that breaks three alibis.",
+      "imageSrc": "/assets/themes/detectives-noir/personas/05-gideon-crowe.png"
+    },
+    {
+      "id": "detectives-noir-lola-locke",
+      "name": "Lola Locke",
+      "bio": "Lola Locke lights a match for drama—and burns the timeline.",
+      "imageSrc": "/assets/themes/detectives-noir/personas/06-lola-locke.png"
+    },
+    {
+      "id": "detectives-noir-felix-harlow",
+      "name": "Felix Harlow",
+      "bio": "Felix Harlow reads guilt like braille on a clean conscience.",
+      "imageSrc": "/assets/themes/detectives-noir/personas/07-felix-harlow.png"
+    },
+    {
+      "id": "detectives-noir-mavis-sinclair",
+      "name": "Mavis Sinclair",
+      "bio": "Mavis Sinclair calls it intuition when it is selective memory.",
+      "imageSrc": "/assets/themes/detectives-noir/personas/08-mavis-sinclair.png"
+    },
+    {
+      "id": "detectives-noir-orson-quill",
+      "name": "Orson Quill",
+      "bio": "Orson Quill keeps fog in the alley and fog in the answers.",
+      "imageSrc": "/assets/themes/detectives-noir/personas/09-orson-quill.png"
+    },
+    {
+      "id": "detectives-noir-rita-vale",
+      "name": "Rita Vale",
+      "bio": "Rita Vale asks one question that breaks three alibis.",
+      "imageSrc": "/assets/themes/detectives-noir/personas/10-rita-vale.png"
+    },
+    {
+      "id": "detectives-noir-silas-ashcroft",
+      "name": "Silas Ashcroft",
+      "bio": "Silas Ashcroft lights a match for drama—and burns the timeline.",
+      "imageSrc": "/assets/themes/detectives-noir/personas/11-silas-ashcroft.png"
+    },
+    {
+      "id": "detectives-noir-delia-raven",
+      "name": "Delia Raven",
+      "bio": "Delia Raven reads guilt like braille on a clean conscience.",
+      "imageSrc": "/assets/themes/detectives-noir/personas/12-delia-raven.png"
+    },
+    {
+      "id": "detectives-noir-cyrus-stonecipher",
+      "name": "Cyrus Stonecipher",
+      "bio": "Cyrus Stonecipher calls it intuition when it is selective memory.",
+      "imageSrc": "/assets/themes/detectives-noir/personas/13-cyrus-stonecipher.png"
+    },
+    {
+      "id": "detectives-noir-faye-nightshade",
+      "name": "Faye Nightshade",
+      "bio": "Faye Nightshade keeps fog in the alley and fog in the answers.",
+      "imageSrc": "/assets/themes/detectives-noir/personas/14-faye-nightshade.png"
+    },
+    {
+      "id": "detectives-noir-hugo-grimm",
+      "name": "Hugo Grimm",
+      "bio": "Hugo Grimm asks one question that breaks three alibis.",
+      "imageSrc": "/assets/themes/detectives-noir/personas/15-hugo-grimm.png"
+    },
+    {
+      "id": "detectives-noir-greta-hollow",
+      "name": "Greta Hollow",
+      "bio": "Greta Hollow lights a match for drama—and burns the timeline.",
+      "imageSrc": "/assets/themes/detectives-noir/personas/16-greta-hollow.png"
+    },
+    {
+      "id": "detectives-noir-vincent-cross",
+      "name": "Vincent Cross",
+      "bio": "Vincent Cross reads guilt like braille on a clean conscience.",
+      "imageSrc": "/assets/themes/detectives-noir/personas/17-vincent-cross.png"
+    },
+    {
+      "id": "detectives-noir-nora-marrow",
+      "name": "Nora Marrow",
+      "bio": "Nora Marrow calls it intuition when it is selective memory.",
+      "imageSrc": "/assets/themes/detectives-noir/personas/18-nora-marrow.png"
+    },
+    {
+      "id": "detectives-noir-roland-spade",
+      "name": "Roland Spade",
+      "bio": "Roland Spade keeps fog in the alley and fog in the answers.",
+      "imageSrc": "/assets/themes/detectives-noir/personas/19-roland-spade.png"
+    },
+    {
+      "id": "detectives-noir-pearl-wexler",
+      "name": "Pearl Wexler",
+      "bio": "Pearl Wexler asks one question that breaks three alibis.",
+      "imageSrc": "/assets/themes/detectives-noir/personas/20-pearl-wexler.png"
+    },
+    {
+      "id": "detectives-noir-dexter-drift",
+      "name": "Dexter Drift",
+      "bio": "Dexter Drift lights a match for drama—and burns the timeline.",
+      "imageSrc": "/assets/themes/detectives-noir/personas/21-dexter-drift.png"
+    },
+    {
+      "id": "detectives-noir-vivian-maltese",
+      "name": "Vivian Maltese",
+      "bio": "Vivian Maltese reads guilt like braille on a clean conscience.",
+      "imageSrc": "/assets/themes/detectives-noir/personas/22-vivian-maltese.png"
+    },
+    {
+      "id": "detectives-noir-archer-fogarty",
+      "name": "Archer Fogarty",
+      "bio": "Archer Fogarty calls it intuition when it is selective memory.",
+      "imageSrc": "/assets/themes/detectives-noir/personas/23-archer-fogarty.png"
+    },
+    {
+      "id": "detectives-noir-mae-rains",
+      "name": "Mae Rains",
+      "bio": "Mae Rains keeps fog in the alley and fog in the answers.",
+      "imageSrc": "/assets/themes/detectives-noir/personas/24-mae-rains.png"
+    },
+    {
+      "id": "detectives-noir-quentin-sterling",
+      "name": "Quentin Sterling",
+      "bio": "Quentin Sterling asks one question that breaks three alibis.",
+      "imageSrc": "/assets/themes/detectives-noir/personas/25-quentin-sterling.png"
+    }
+  ],
+  "Medical": [
+    {
+      "id": "medical-dr-payne",
+      "name": "Dr. Payne",
+      "bio": "Dr. Payne charts symptoms like poetry—heavy on metaphor, light on facts.",
+      "imageSrc": "/assets/themes/medical/personas/01-dr-payne.png"
+    },
+    {
+      "id": "medical-nurse-hart",
+      "name": "Nurse Hart",
+      "bio": "Nurse Hart recommends rest whenever the questions get sharp.",
+      "imageSrc": "/assets/themes/medical/personas/02-nurse-hart.png"
+    },
+    {
+      "id": "medical-dr-stitches",
+      "name": "Dr. Stitches",
+      "bio": "Dr. Stitches calls it bedside manner when they redirect blame.",
+      "imageSrc": "/assets/themes/medical/personas/03-dr-stitches.png"
+    },
+    {
+      "id": "medical-dr-grey",
+      "name": "Dr. Grey",
+      "bio": "Dr. Grey knows the dosage of silence perfectly.",
+      "imageSrc": "/assets/themes/medical/personas/04-dr-grey.png"
+    },
+    {
+      "id": "medical-matron-bloom",
+      "name": "Matron Bloom",
+      "bio": "Matron Bloom insists the chart is confidential—especially from the patient.",
+      "imageSrc": "/assets/themes/medical/personas/05-matron-bloom.png"
+    },
+    {
+      "id": "medical-dr-wells",
+      "name": "Dr. Wells",
+      "bio": "Dr. Wells charts symptoms like poetry—heavy on metaphor, light on facts.",
+      "imageSrc": "/assets/themes/medical/personas/06-dr-wells.png"
+    },
+    {
+      "id": "medical-dr-swift",
+      "name": "Dr. Swift",
+      "bio": "Dr. Swift recommends rest whenever the questions get sharp.",
+      "imageSrc": "/assets/themes/medical/personas/07-dr-swift.png"
+    },
+    {
+      "id": "medical-dr-stone",
+      "name": "Dr. Stone",
+      "bio": "Dr. Stone calls it bedside manner when they redirect blame.",
+      "imageSrc": "/assets/themes/medical/personas/08-dr-stone.png"
+    },
+    {
+      "id": "medical-dr-pulse",
+      "name": "Dr. Pulse",
+      "bio": "Dr. Pulse knows the dosage of silence perfectly.",
+      "imageSrc": "/assets/themes/medical/personas/09-dr-pulse.png"
+    },
+    {
+      "id": "medical-dr-murky",
+      "name": "Dr. Murky",
+      "bio": "Dr. Murky insists the chart is confidential—especially from the patient.",
+      "imageSrc": "/assets/themes/medical/personas/10-dr-murky.png"
+    },
+    {
+      "id": "medical-dr-calm",
+      "name": "Dr. Calm",
+      "bio": "Dr. Calm charts symptoms like poetry—heavy on metaphor, light on facts.",
+      "imageSrc": "/assets/themes/medical/personas/11-dr-calm.png"
+    },
+    {
+      "id": "medical-nurse-rook",
+      "name": "Nurse Rook",
+      "bio": "Nurse Rook recommends rest whenever the questions get sharp.",
+      "imageSrc": "/assets/themes/medical/personas/12-nurse-rook.png"
+    },
+    {
+      "id": "medical-dr-sharp",
+      "name": "Dr. Sharp",
+      "bio": "Dr. Sharp calls it bedside manner when they redirect blame.",
+      "imageSrc": "/assets/themes/medical/personas/13-dr-sharp.png"
+    },
+    {
+      "id": "medical-dr-vein",
+      "name": "Dr. Vein",
+      "bio": "Dr. Vein knows the dosage of silence perfectly.",
+      "imageSrc": "/assets/themes/medical/personas/14-dr-vein.png"
+    },
+    {
+      "id": "medical-dr-quiet",
+      "name": "Dr. Quiet",
+      "bio": "Dr. Quiet insists the chart is confidential—especially from the patient.",
+      "imageSrc": "/assets/themes/medical/personas/15-dr-quiet.png"
+    },
+    {
+      "id": "medical-dr-loud",
+      "name": "Dr. Loud",
+      "bio": "Dr. Loud charts symptoms like poetry—heavy on metaphor, light on facts.",
+      "imageSrc": "/assets/themes/medical/personas/16-dr-loud.png"
+    },
+    {
+      "id": "medical-dr-frost",
+      "name": "Dr. Frost",
+      "bio": "Dr. Frost recommends rest whenever the questions get sharp.",
+      "imageSrc": "/assets/themes/medical/personas/17-dr-frost.png"
+    },
+    {
+      "id": "medical-dr-ember",
+      "name": "Dr. Ember",
+      "bio": "Dr. Ember calls it bedside manner when they redirect blame.",
+      "imageSrc": "/assets/themes/medical/personas/18-dr-ember.png"
+    },
+    {
+      "id": "medical-dr-knot",
+      "name": "Dr. Knot",
+      "bio": "Dr. Knot knows the dosage of silence perfectly.",
+      "imageSrc": "/assets/themes/medical/personas/19-dr-knot.png"
+    },
+    {
+      "id": "medical-dr-plain",
+      "name": "Dr. Plain",
+      "bio": "Dr. Plain insists the chart is confidential—especially from the patient.",
+      "imageSrc": "/assets/themes/medical/personas/20-dr-plain.png"
+    },
+    {
+      "id": "medical-dr-rush",
+      "name": "Dr. Rush",
+      "bio": "Dr. Rush charts symptoms like poetry—heavy on metaphor, light on facts.",
+      "imageSrc": "/assets/themes/medical/personas/21-dr-rush.png"
+    },
+    {
+      "id": "medical-dr-slow",
+      "name": "Dr. Slow",
+      "bio": "Dr. Slow recommends rest whenever the questions get sharp.",
+      "imageSrc": "/assets/themes/medical/personas/22-dr-slow.png"
+    },
+    {
+      "id": "medical-dr-vial",
+      "name": "Dr. Vial",
+      "bio": "Dr. Vial calls it bedside manner when they redirect blame.",
+      "imageSrc": "/assets/themes/medical/personas/23-dr-vial.png"
+    },
+    {
+      "id": "medical-dr-mask",
+      "name": "Dr. Mask",
+      "bio": "Dr. Mask knows the dosage of silence perfectly.",
+      "imageSrc": "/assets/themes/medical/personas/24-dr-mask.png"
+    },
+    {
+      "id": "medical-dr-chart",
+      "name": "Dr. Chart",
+      "bio": "Dr. Chart insists the chart is confidential—especially from the patient.",
+      "imageSrc": "/assets/themes/medical/personas/25-dr-chart.png"
+    }
+  ],
+  "Wrestlers": [
+    {
+      "id": "wrestlers-the-crusher",
+      "name": "The Crusher",
+      "bio": "The Crusher cuts promos that rewrite what just happened.",
+      "imageSrc": "/assets/themes/wrestlers/personas/01-the-crusher.png"
+    },
+    {
+      "id": "wrestlers-neon-viper",
+      "name": "Neon Viper",
+      "bio": "Neon Viper calls interference \"the invisible hand of destiny.\"",
+      "imageSrc": "/assets/themes/wrestlers/personas/02-neon-viper.png"
+    },
+    {
+      "id": "wrestlers-iron-titan",
+      "name": "Iron Titan",
+      "bio": "Iron Titan flexes innocence harder than the championship belt.",
+      "imageSrc": "/assets/themes/wrestlers/personas/03-iron-titan.png"
+    },
+    {
+      "id": "wrestlers-mad-dog",
+      "name": "Mad Dog",
+      "bio": "Mad Dog blames the ropes, the ref, and gravity—in that order.",
+      "imageSrc": "/assets/themes/wrestlers/personas/04-mad-dog.png"
+    },
+    {
+      "id": "wrestlers-steel-rose",
+      "name": "Steel Rose",
+      "bio": "Steel Rose sells a story better than a suplex.",
+      "imageSrc": "/assets/themes/wrestlers/personas/05-steel-rose.png"
+    },
+    {
+      "id": "wrestlers-bone-ripper",
+      "name": "Bone Ripper",
+      "bio": "Bone Ripper cuts promos that rewrite what just happened.",
+      "imageSrc": "/assets/themes/wrestlers/personas/06-bone-ripper.png"
+    },
+    {
+      "id": "wrestlers-ultra-nova",
+      "name": "Ultra Nova",
+      "bio": "Ultra Nova calls interference \"the invisible hand of destiny.\"",
+      "imageSrc": "/assets/themes/wrestlers/personas/07-ultra-nova.png"
+    },
+    {
+      "id": "wrestlers-dirty-duke",
+      "name": "Dirty Duke",
+      "bio": "Dirty Duke flexes innocence harder than the championship belt.",
+      "imageSrc": "/assets/themes/wrestlers/personas/08-dirty-duke.png"
+    },
+    {
+      "id": "wrestlers-raging-rex",
+      "name": "Raging Rex",
+      "bio": "Raging Rex blames the ropes, the ref, and gravity—in that order.",
+      "imageSrc": "/assets/themes/wrestlers/personas/09-raging-rex.png"
+    },
+    {
+      "id": "wrestlers-lady-piledriver",
+      "name": "Lady Piledriver",
+      "bio": "Lady Piledriver sells a story better than a suplex.",
+      "imageSrc": "/assets/themes/wrestlers/personas/10-lady-piledriver.png"
+    },
+    {
+      "id": "wrestlers-big-hammer",
+      "name": "Big Hammer",
+      "bio": "Big Hammer cuts promos that rewrite what just happened.",
+      "imageSrc": "/assets/themes/wrestlers/personas/11-big-hammer.png"
+    },
+    {
+      "id": "wrestlers-savage-sue",
+      "name": "Savage Sue",
+      "bio": "Savage Sue calls interference \"the invisible hand of destiny.\"",
+      "imageSrc": "/assets/themes/wrestlers/personas/12-savage-sue.png"
+    },
+    {
+      "id": "wrestlers-chrome-king",
+      "name": "Chrome King",
+      "bio": "Chrome King flexes innocence harder than the championship belt.",
+      "imageSrc": "/assets/themes/wrestlers/personas/13-chrome-king.png"
+    },
+    {
+      "id": "wrestlers-shadow-slam",
+      "name": "Shadow Slam",
+      "bio": "Shadow Slam blames the ropes, the ref, and gravity—in that order.",
+      "imageSrc": "/assets/themes/wrestlers/personas/14-shadow-slam.png"
+    },
+    {
+      "id": "wrestlers-turbo-terry",
+      "name": "Turbo Terry",
+      "bio": "Turbo Terry sells a story better than a suplex.",
+      "imageSrc": "/assets/themes/wrestlers/personas/15-turbo-terry.png"
+    },
+    {
+      "id": "wrestlers-queen-suplex",
+      "name": "Queen Suplex",
+      "bio": "Queen Suplex cuts promos that rewrite what just happened.",
+      "imageSrc": "/assets/themes/wrestlers/personas/16-queen-suplex.png"
+    },
+    {
+      "id": "wrestlers-axel-crow",
+      "name": "Axel Crow",
+      "bio": "Axel Crow calls interference \"the invisible hand of destiny.\"",
+      "imageSrc": "/assets/themes/wrestlers/personas/17-axel-crow.png"
+    },
+    {
+      "id": "wrestlers-grim-lock",
+      "name": "Grim Lock",
+      "bio": "Grim Lock flexes innocence harder than the championship belt.",
+      "imageSrc": "/assets/themes/wrestlers/personas/18-grim-lock.png"
+    },
+    {
+      "id": "wrestlers-flash-fury",
+      "name": "Flash Fury",
+      "bio": "Flash Fury blames the ropes, the ref, and gravity—in that order.",
+      "imageSrc": "/assets/themes/wrestlers/personas/19-flash-fury.png"
+    },
+    {
+      "id": "wrestlers-bronco-bill",
+      "name": "Bronco Bill",
+      "bio": "Bronco Bill sells a story better than a suplex.",
+      "imageSrc": "/assets/themes/wrestlers/personas/20-bronco-bill.png"
+    },
+    {
+      "id": "wrestlers-venom-val",
+      "name": "Venom Val",
+      "bio": "Venom Val cuts promos that rewrite what just happened.",
+      "imageSrc": "/assets/themes/wrestlers/personas/21-venom-val.png"
+    },
+    {
+      "id": "wrestlers-hurricane",
+      "name": "Hurricane",
+      "bio": "Hurricane calls interference \"the invisible hand of destiny.\"",
+      "imageSrc": "/assets/themes/wrestlers/personas/22-hurricane.png"
+    },
+    {
+      "id": "wrestlers-rocksteady",
+      "name": "Rocksteady",
+      "bio": "Rocksteady flexes innocence harder than the championship belt.",
+      "imageSrc": "/assets/themes/wrestlers/personas/23-rocksteady.png"
+    },
+    {
+      "id": "wrestlers-chainz",
+      "name": "Chainz",
+      "bio": "Chainz blames the ropes, the ref, and gravity—in that order.",
+      "imageSrc": "/assets/themes/wrestlers/personas/24-chainz.png"
+    },
+    {
+      "id": "wrestlers-miss-mayhem",
+      "name": "Miss Mayhem",
+      "bio": "Miss Mayhem sells a story better than a suplex.",
+      "imageSrc": "/assets/themes/wrestlers/personas/25-miss-mayhem.png"
+    }
+  ],
+  "Cyberpunk": [
+    {
+      "id": "cyberpunk-neon-runner",
+      "name": "Neon Runner",
+      "bio": "Neon Runner routes truth through enough proxies to lose it.",
+      "imageSrc": "/assets/themes/cyberpunk/personas/01-neon-runner.png"
+    },
+    {
+      "id": "cyberpunk-chrome-jack",
+      "name": "Chrome Jack",
+      "bio": "Chrome Jack calls corruption \"latency\" and shrugs.",
+      "imageSrc": "/assets/themes/cyberpunk/personas/02-chrome-jack.png"
+    },
+    {
+      "id": "cyberpunk-glitch-shade",
+      "name": "Glitch Shade",
+      "bio": "Glitch Shade keeps backups of lies on cold storage.",
+      "imageSrc": "/assets/themes/cyberpunk/personas/03-glitch-shade.png"
+    },
+    {
+      "id": "cyberpunk-byte-wire",
+      "name": "Byte Wire",
+      "bio": "Byte Wire insists the glitch is feature—until it incriminates.",
+      "imageSrc": "/assets/themes/cyberpunk/personas/04-byte-wire.png"
+    },
+    {
+      "id": "cyberpunk-proxy-crash",
+      "name": "Proxy Crash",
+      "bio": "Proxy Crash speaks in patches and patches the truth.",
+      "imageSrc": "/assets/themes/cyberpunk/personas/05-proxy-crash.png"
+    },
+    {
+      "id": "cyberpunk-vex-netrip",
+      "name": "Vex Netrip",
+      "bio": "Vex Netrip routes truth through enough proxies to lose it.",
+      "imageSrc": "/assets/themes/cyberpunk/personas/06-vex-netrip.png"
+    },
+    {
+      "id": "cyberpunk-razor-drift",
+      "name": "Razor Drift",
+      "bio": "Razor Drift calls corruption \"latency\" and shrugs.",
+      "imageSrc": "/assets/themes/cyberpunk/personas/07-razor-drift.png"
+    },
+    {
+      "id": "cyberpunk-pulse-vex",
+      "name": "Pulse Vex",
+      "bio": "Pulse Vex keeps backups of lies on cold storage.",
+      "imageSrc": "/assets/themes/cyberpunk/personas/08-pulse-vex.png"
+    },
+    {
+      "id": "cyberpunk-ghost-hex",
+      "name": "Ghost Hex",
+      "bio": "Ghost Hex insists the glitch is feature—until it incriminates.",
+      "imageSrc": "/assets/themes/cyberpunk/personas/09-ghost-hex.png"
+    },
+    {
+      "id": "cyberpunk-synth-static",
+      "name": "Synth Static",
+      "bio": "Synth Static speaks in patches and patches the truth.",
+      "imageSrc": "/assets/themes/cyberpunk/personas/10-synth-static.png"
+    },
+    {
+      "id": "cyberpunk-nova-override",
+      "name": "Nova Override",
+      "bio": "Nova Override routes truth through enough proxies to lose it.",
+      "imageSrc": "/assets/themes/cyberpunk/personas/11-nova-override.png"
+    },
+    {
+      "id": "cyberpunk-hex-blackout",
+      "name": "Hex Blackout",
+      "bio": "Hex Blackout calls corruption \"latency\" and shrugs.",
+      "imageSrc": "/assets/themes/cyberpunk/personas/12-hex-blackout.png"
+    },
+    {
+      "id": "cyberpunk-trace-spike",
+      "name": "Trace Spike",
+      "bio": "Trace Spike keeps backups of lies on cold storage.",
+      "imageSrc": "/assets/themes/cyberpunk/personas/13-trace-spike.png"
+    },
+    {
+      "id": "cyberpunk-volt-circuit",
+      "name": "Volt Circuit",
+      "bio": "Volt Circuit insists the glitch is feature—until it incriminates.",
+      "imageSrc": "/assets/themes/cyberpunk/personas/14-volt-circuit.png"
+    },
+    {
+      "id": "cyberpunk-echo-daemon",
+      "name": "Echo Daemon",
+      "bio": "Echo Daemon speaks in patches and patches the truth.",
+      "imageSrc": "/assets/themes/cyberpunk/personas/15-echo-daemon.png"
+    },
+    {
+      "id": "cyberpunk-shard-rootkit",
+      "name": "Shard Rootkit",
+      "bio": "Shard Rootkit routes truth through enough proxies to lose it.",
+      "imageSrc": "/assets/themes/cyberpunk/personas/16-shard-rootkit.png"
+    },
+    {
+      "id": "cyberpunk-null-firewall",
+      "name": "Null Firewall",
+      "bio": "Null Firewall calls corruption \"latency\" and shrugs.",
+      "imageSrc": "/assets/themes/cyberpunk/personas/17-null-firewall.png"
+    },
+    {
+      "id": "cyberpunk-patch-portscan",
+      "name": "Patch Portscan",
+      "bio": "Patch Portscan keeps backups of lies on cold storage.",
+      "imageSrc": "/assets/themes/cyberpunk/personas/18-patch-portscan.png"
+    },
+    {
+      "id": "cyberpunk-wire-ghostlink",
+      "name": "Wire Ghostlink",
+      "bio": "Wire Ghostlink insists the glitch is feature—until it incriminates.",
+      "imageSrc": "/assets/themes/cyberpunk/personas/19-wire-ghostlink.png"
+    },
+    {
+      "id": "cyberpunk-flux-chrome",
+      "name": "Flux Chrome",
+      "bio": "Flux Chrome speaks in patches and patches the truth.",
+      "imageSrc": "/assets/themes/cyberpunk/personas/20-flux-chrome.png"
+    },
+    {
+      "id": "cyberpunk-cache-stackdump",
+      "name": "Cache Stackdump",
+      "bio": "Cache Stackdump routes truth through enough proxies to lose it.",
+      "imageSrc": "/assets/themes/cyberpunk/personas/21-cache-stackdump.png"
+    },
+    {
+      "id": "cyberpunk-stack-buffer",
+      "name": "Stack Buffer",
+      "bio": "Stack Buffer calls corruption \"latency\" and shrugs.",
+      "imageSrc": "/assets/themes/cyberpunk/personas/22-stack-buffer.png"
+    },
+    {
+      "id": "cyberpunk-kernel-thread",
+      "name": "Kernel Thread",
+      "bio": "Kernel Thread keeps backups of lies on cold storage.",
+      "imageSrc": "/assets/themes/cyberpunk/personas/23-kernel-thread.png"
+    },
+    {
+      "id": "cyberpunk-pixel-packet",
+      "name": "Pixel Packet",
+      "bio": "Pixel Packet insists the glitch is feature—until it incriminates.",
+      "imageSrc": "/assets/themes/cyberpunk/personas/24-pixel-packet.png"
+    },
+    {
+      "id": "cyberpunk-drone-zero",
+      "name": "Drone Zero",
+      "bio": "Drone Zero speaks in patches and patches the truth.",
+      "imageSrc": "/assets/themes/cyberpunk/personas/25-drone-zero.png"
+    }
+  ],
+  "Aliens": [
+    {
+      "id": "aliens-zor-thar",
+      "name": "Zor thar",
+      "bio": "Zor thar translates poorly on purpose when cornered.",
+      "imageSrc": "/assets/themes/aliens/personas/01-zor-thar.png"
+    },
+    {
+      "id": "aliens-xan-bix",
+      "name": "Xan bix",
+      "bio": "Xan bix claims Earth customs are \"too confusing\"—except convenient ones.",
+      "imageSrc": "/assets/themes/aliens/personas/02-xan-bix.png"
+    },
+    {
+      "id": "aliens-glip-nox",
+      "name": "Glip nox",
+      "bio": "Glip nox blinks sideways at direct questions.",
+      "imageSrc": "/assets/themes/aliens/personas/03-glip-nox.png"
+    },
+    {
+      "id": "aliens-vrax-dari",
+      "name": "Vrax dari",
+      "bio": "Vrax dari insists their homeworld is classified—and so is lunch.",
+      "imageSrc": "/assets/themes/aliens/personas/04-vrax-dari.png"
+    },
+    {
+      "id": "aliens-qor-quon",
+      "name": "Qor quon",
+      "bio": "Qor quon offers friendship like a contract with fine print.",
+      "imageSrc": "/assets/themes/aliens/personas/05-qor-quon.png"
+    },
+    {
+      "id": "aliens-nebu-miri",
+      "name": "Nebu miri",
+      "bio": "Nebu miri translates poorly on purpose when cornered.",
+      "imageSrc": "/assets/themes/aliens/personas/06-nebu-miri.png"
+    },
+    {
+      "id": "aliens-kly-vex",
+      "name": "Kly vex",
+      "bio": "Kly vex claims Earth customs are \"too confusing\"—except convenient ones.",
+      "imageSrc": "/assets/themes/aliens/personas/07-kly-vex.png"
+    },
+    {
+      "id": "aliens-orbi-lume",
+      "name": "Orbi lume",
+      "bio": "Orbi lume blinks sideways at direct questions.",
+      "imageSrc": "/assets/themes/aliens/personas/08-orbi-lume.png"
+    },
+    {
+      "id": "aliens-zyn-zar",
+      "name": "Zyn zar",
+      "bio": "Zyn zar insists their homeworld is classified—and so is lunch.",
+      "imageSrc": "/assets/themes/aliens/personas/09-zyn-zar.png"
+    },
+    {
+      "id": "aliens-ryl-trix",
+      "name": "Ryl trix",
+      "bio": "Ryl trix offers friendship like a contract with fine print.",
+      "imageSrc": "/assets/themes/aliens/personas/10-ryl-trix.png"
+    },
+    {
+      "id": "aliens-prax-plex",
+      "name": "Prax plex",
+      "bio": "Prax plex translates poorly on purpose when cornered.",
+      "imageSrc": "/assets/themes/aliens/personas/11-prax-plex.png"
+    },
+    {
+      "id": "aliens-mork-zon",
+      "name": "Mork zon",
+      "bio": "Mork zon claims Earth customs are \"too confusing\"—except convenient ones.",
+      "imageSrc": "/assets/themes/aliens/personas/12-mork-zon.png"
+    },
+    {
+      "id": "aliens-thix-vox",
+      "name": "Thix vox",
+      "bio": "Thix vox blinks sideways at direct questions.",
+      "imageSrc": "/assets/themes/aliens/personas/13-thix-vox.png"
+    },
+    {
+      "id": "aliens-wex-nix",
+      "name": "Wex nix",
+      "bio": "Wex nix insists their homeworld is classified—and so is lunch.",
+      "imageSrc": "/assets/themes/aliens/personas/14-wex-nix.png"
+    },
+    {
+      "id": "aliens-yul-plor",
+      "name": "Yul plor",
+      "bio": "Yul plor offers friendship like a contract with fine print.",
+      "imageSrc": "/assets/themes/aliens/personas/15-yul-plor.png"
+    },
+    {
+      "id": "aliens-plox-wex",
+      "name": "Plox wex",
+      "bio": "Plox wex translates poorly on purpose when cornered.",
+      "imageSrc": "/assets/themes/aliens/personas/16-plox-wex.png"
+    },
+    {
+      "id": "aliens-drix-jor",
+      "name": "Drix jor",
+      "bio": "Drix jor claims Earth customs are \"too confusing\"—except convenient ones.",
+      "imageSrc": "/assets/themes/aliens/personas/17-drix-jor.png"
+    },
+    {
+      "id": "aliens-fenn-klyx",
+      "name": "Fenn klyx",
+      "bio": "Fenn klyx blinks sideways at direct questions.",
+      "imageSrc": "/assets/themes/aliens/personas/18-fenn-klyx.png"
+    },
+    {
+      "id": "aliens-jix-mox",
+      "name": "Jix mox",
+      "bio": "Jix mox insists their homeworld is classified—and so is lunch.",
+      "imageSrc": "/assets/themes/aliens/personas/19-jix-mox.png"
+    },
+    {
+      "id": "aliens-lorr-nor",
+      "name": "Lorr nor",
+      "bio": "Lorr nor offers friendship like a contract with fine print.",
+      "imageSrc": "/assets/themes/aliens/personas/20-lorr-nor.png"
+    },
+    {
+      "id": "aliens-nix-pex",
+      "name": "Nix pex",
+      "bio": "Nix pex translates poorly on purpose when cornered.",
+      "imageSrc": "/assets/themes/aliens/personas/21-nix-pex.png"
+    },
+    {
+      "id": "aliens-opp-qix",
+      "name": "Opp qix",
+      "bio": "Opp qix claims Earth customs are \"too confusing\"—except convenient ones.",
+      "imageSrc": "/assets/themes/aliens/personas/22-opp-qix.png"
+    },
+    {
+      "id": "aliens-quell-rox",
+      "name": "Quell rox",
+      "bio": "Quell rox blinks sideways at direct questions.",
+      "imageSrc": "/assets/themes/aliens/personas/23-quell-rox.png"
+    },
+    {
+      "id": "aliens-rix-syx",
+      "name": "Rix syx",
+      "bio": "Rix syx insists their homeworld is classified—and so is lunch.",
+      "imageSrc": "/assets/themes/aliens/personas/24-rix-syx.png"
+    },
+    {
+      "id": "aliens-senn-tox",
+      "name": "Senn tox",
+      "bio": "Senn tox offers friendship like a contract with fine print.",
+      "imageSrc": "/assets/themes/aliens/personas/25-senn-tox.png"
+    }
+  ],
+  "Wizards & Witches": [
+    {
+      "id": "wizards-and-witches-arcane-moonspell",
+      "name": "Arcane Moonspell",
+      "bio": "Arcane Moonspell blames the moon phase for inconsistent testimony.",
+      "imageSrc": "/assets/themes/wizards-and-witches/personas/01-arcane-moonspell.png"
+    },
+    {
+      "id": "wizards-and-witches-morgana-starweaver",
+      "name": "Morgana Starweaver",
+      "bio": "Morgana Starweaver quotes ancient law that only exists when needed.",
+      "imageSrc": "/assets/themes/wizards-and-witches/personas/02-morgana-starweaver.png"
+    },
+    {
+      "id": "wizards-and-witches-hex-nightbloom",
+      "name": "Hex Nightbloom",
+      "bio": "Hex Nightbloom insists the cauldron bubbled \"that way\" before anyone looked.",
+      "imageSrc": "/assets/themes/wizards-and-witches/personas/03-hex-nightbloom.png"
+    },
+    {
+      "id": "wizards-and-witches-rune-crowfeather",
+      "name": "Rune Crowfeather",
+      "bio": "Rune Crowfeather smells like smoke and plausible deniability.",
+      "imageSrc": "/assets/themes/wizards-and-witches/personas/04-rune-crowfeather.png"
+    },
+    {
+      "id": "wizards-and-witches-merlin-shadowoak",
+      "name": "Merlin Shadowoak",
+      "bio": "Merlin Shadowoak offers a charm that makes questions drift off course.",
+      "imageSrc": "/assets/themes/wizards-and-witches/personas/05-merlin-shadowoak.png"
+    },
+    {
+      "id": "wizards-and-witches-sage-emberwand",
+      "name": "Sage Emberwand",
+      "bio": "Sage Emberwand blames the moon phase for inconsistent testimony.",
+      "imageSrc": "/assets/themes/wizards-and-witches/personas/06-sage-emberwand.png"
+    },
+    {
+      "id": "wizards-and-witches-coven-crystalthorn",
+      "name": "Coven Crystalthorn",
+      "bio": "Coven Crystalthorn quotes ancient law that only exists when needed.",
+      "imageSrc": "/assets/themes/wizards-and-witches/personas/07-coven-crystalthorn.png"
+    },
+    {
+      "id": "wizards-and-witches-wisp-stormsigil",
+      "name": "Wisp Stormsigil",
+      "bio": "Wisp Stormsigil insists the cauldron bubbled \"that way\" before anyone looked.",
+      "imageSrc": "/assets/themes/wizards-and-witches/personas/08-wisp-stormsigil.png"
+    },
+    {
+      "id": "wizards-and-witches-ember-ravencloak",
+      "name": "Ember Ravencloak",
+      "bio": "Ember Ravencloak smells like smoke and plausible deniability.",
+      "imageSrc": "/assets/themes/wizards-and-witches/personas/09-ember-ravencloak.png"
+    },
+    {
+      "id": "wizards-and-witches-nimbus-willowmist",
+      "name": "Nimbus Willowmist",
+      "bio": "Nimbus Willowmist offers a charm that makes questions drift off course.",
+      "imageSrc": "/assets/themes/wizards-and-witches/personas/10-nimbus-willowmist.png"
+    },
+    {
+      "id": "wizards-and-witches-thistle-goldglyph",
+      "name": "Thistle Goldglyph",
+      "bio": "Thistle Goldglyph blames the moon phase for inconsistent testimony.",
+      "imageSrc": "/assets/themes/wizards-and-witches/personas/11-thistle-goldglyph.png"
+    },
+    {
+      "id": "wizards-and-witches-bramble-spellforge",
+      "name": "Bramble Spellforge",
+      "bio": "Bramble Spellforge quotes ancient law that only exists when needed.",
+      "imageSrc": "/assets/themes/wizards-and-witches/personas/12-bramble-spellforge.png"
+    },
+    {
+      "id": "wizards-and-witches-obsidian-blackroot",
+      "name": "Obsidian Blackroot",
+      "bio": "Obsidian Blackroot insists the cauldron bubbled \"that way\" before anyone looked.",
+      "imageSrc": "/assets/themes/wizards-and-witches/personas/13-obsidian-blackroot.png"
+    },
+    {
+      "id": "wizards-and-witches-luna-frosthex",
+      "name": "Luna Frosthex",
+      "bio": "Luna Frosthex smells like smoke and plausible deniability.",
+      "imageSrc": "/assets/themes/wizards-and-witches/personas/14-luna-frosthex.png"
+    },
+    {
+      "id": "wizards-and-witches-solstice-deepspell",
+      "name": "Solstice Deepspell",
+      "bio": "Solstice Deepspell offers a charm that makes questions drift off course.",
+      "imageSrc": "/assets/themes/wizards-and-witches/personas/15-solstice-deepspell.png"
+    },
+    {
+      "id": "wizards-and-witches-grim-wildwand",
+      "name": "Grim Wildwand",
+      "bio": "Grim Wildwand blames the moon phase for inconsistent testimony.",
+      "imageSrc": "/assets/themes/wizards-and-witches/personas/16-grim-wildwand.png"
+    },
+    {
+      "id": "wizards-and-witches-willow-ashcoven",
+      "name": "Willow Ashcoven",
+      "bio": "Willow Ashcoven quotes ancient law that only exists when needed.",
+      "imageSrc": "/assets/themes/wizards-and-witches/personas/17-willow-ashcoven.png"
+    },
+    {
+      "id": "wizards-and-witches-crow-gloom",
+      "name": "Crow Gloom",
+      "bio": "Crow Gloom insists the cauldron bubbled \"that way\" before anyone looked.",
+      "imageSrc": "/assets/themes/wizards-and-witches/personas/18-crow-gloom.png"
+    },
+    {
+      "id": "wizards-and-witches-myst-brightcurse",
+      "name": "Myst Brightcurse",
+      "bio": "Myst Brightcurse smells like smoke and plausible deniability.",
+      "imageSrc": "/assets/themes/wizards-and-witches/personas/19-myst-brightcurse.png"
+    },
+    {
+      "id": "wizards-and-witches-elder-voidleaf",
+      "name": "Elder Voidleaf",
+      "bio": "Elder Voidleaf offers a charm that makes questions drift off course.",
+      "imageSrc": "/assets/themes/wizards-and-witches/personas/20-elder-voidleaf.png"
+    },
+    {
+      "id": "wizards-and-witches-spell-ironcharm",
+      "name": "Spell Ironcharm",
+      "bio": "Spell Ironcharm blames the moon phase for inconsistent testimony.",
+      "imageSrc": "/assets/themes/wizards-and-witches/personas/21-spell-ironcharm.png"
+    },
+    {
+      "id": "wizards-and-witches-star-dreamhex",
+      "name": "Star Dreamhex",
+      "bio": "Star Dreamhex quotes ancient law that only exists when needed.",
+      "imageSrc": "/assets/themes/wizards-and-witches/personas/22-star-dreamhex.png"
+    },
+    {
+      "id": "wizards-and-witches-night-saltcircle",
+      "name": "Night Saltcircle",
+      "bio": "Night Saltcircle insists the cauldron bubbled \"that way\" before anyone looked.",
+      "imageSrc": "/assets/themes/wizards-and-witches/personas/23-night-saltcircle.png"
+    },
+    {
+      "id": "wizards-and-witches-broom-bloodrune",
+      "name": "Broom Bloodrune",
+      "bio": "Broom Bloodrune smells like smoke and plausible deniability.",
+      "imageSrc": "/assets/themes/wizards-and-witches/personas/24-broom-bloodrune.png"
+    },
+    {
+      "id": "wizards-and-witches-cauldron-ghostflame",
+      "name": "Cauldron Ghostflame",
+      "bio": "Cauldron Ghostflame offers a charm that makes questions drift off course.",
+      "imageSrc": "/assets/themes/wizards-and-witches/personas/25-cauldron-ghostflame.png"
+    }
+  ],
+  "Ninjas": [
+    {
+      "id": "ninjas-shadow-blade",
+      "name": "Shadow Blade",
+      "bio": "Shadow Blade was never there—except when claiming credit.",
+      "imageSrc": "/assets/themes/ninjas/personas/01-shadow-blade.png"
+    },
+    {
+      "id": "ninjas-silent-fox",
+      "name": "Silent Fox",
+      "bio": "Silent Fox speaks once, lies twice, vanishes thrice.",
+      "imageSrc": "/assets/themes/ninjas/personas/02-silent-fox.png"
+    },
+    {
+      "id": "ninjas-night-shuriken",
+      "name": "Night Shuriken",
+      "bio": "Night Shuriken claims shadows are witnesses—and they refuse to testify.",
+      "imageSrc": "/assets/themes/ninjas/personas/03-night-shuriken.png"
+    },
+    {
+      "id": "ninjas-swift-mist",
+      "name": "Swift Mist",
+      "bio": "Swift Mist throws smoke and narrative at the same time.",
+      "imageSrc": "/assets/themes/ninjas/personas/04-swift-mist.png"
+    },
+    {
+      "id": "ninjas-ghost-fang",
+      "name": "Ghost Fang",
+      "bio": "Ghost Fang insists silence is an answer—it just depends who hears it.",
+      "imageSrc": "/assets/themes/ninjas/personas/05-ghost-fang.png"
+    },
+    {
+      "id": "ninjas-kage-whisper",
+      "name": "Kage Whisper",
+      "bio": "Kage Whisper was never there—except when claiming credit.",
+      "imageSrc": "/assets/themes/ninjas/personas/06-kage-whisper.png"
+    },
+    {
+      "id": "ninjas-yoru-strike",
+      "name": "Yoru Strike",
+      "bio": "Yoru Strike speaks once, lies twice, vanishes thrice.",
+      "imageSrc": "/assets/themes/ninjas/personas/07-yoru-strike.png"
+    },
+    {
+      "id": "ninjas-shin-talon",
+      "name": "Shin Talon",
+      "bio": "Shin Talon claims shadows are witnesses—and they refuse to testify.",
+      "imageSrc": "/assets/themes/ninjas/personas/08-shin-talon.png"
+    },
+    {
+      "id": "ninjas-steel-crescent",
+      "name": "Steel Crescent",
+      "bio": "Steel Crescent throws smoke and narrative at the same time.",
+      "imageSrc": "/assets/themes/ninjas/personas/09-steel-crescent.png"
+    },
+    {
+      "id": "ninjas-smok-sparrow",
+      "name": "Smok Sparrow",
+      "bio": "Smok Sparrow insists silence is an answer—it just depends who hears it.",
+      "imageSrc": "/assets/themes/ninjas/personas/10-smok-sparrow.png"
+    },
+    {
+      "id": "ninjas-viper-wraith",
+      "name": "Viper Wraith",
+      "bio": "Viper Wraith was never there—except when claiming credit.",
+      "imageSrc": "/assets/themes/ninjas/personas/11-viper-wraith.png"
+    },
+    {
+      "id": "ninjas-lotus-cipher",
+      "name": "Lotus Cipher",
+      "bio": "Lotus Cipher speaks once, lies twice, vanishes thrice.",
+      "imageSrc": "/assets/themes/ninjas/personas/12-lotus-cipher.png"
+    },
+    {
+      "id": "ninjas-raven-veil",
+      "name": "Raven Veil",
+      "bio": "Raven Veil claims shadows are witnesses—and they refuse to testify.",
+      "imageSrc": "/assets/themes/ninjas/personas/13-raven-veil.png"
+    },
+    {
+      "id": "ninjas-mist-claw",
+      "name": "Mist Claw",
+      "bio": "Mist Claw throws smoke and narrative at the same time.",
+      "imageSrc": "/assets/themes/ninjas/personas/14-mist-claw.png"
+    },
+    {
+      "id": "ninjas-talon-river",
+      "name": "Talon River",
+      "bio": "Talon River insists silence is an answer—it just depends who hears it.",
+      "imageSrc": "/assets/themes/ninjas/personas/15-talon-river.png"
+    },
+    {
+      "id": "ninjas-blade-stone",
+      "name": "Blade Stone",
+      "bio": "Blade Stone was never there—except when claiming credit.",
+      "imageSrc": "/assets/themes/ninjas/personas/16-blade-stone.png"
+    },
+    {
+      "id": "ninjas-fox-ash",
+      "name": "Fox Ash",
+      "bio": "Fox Ash speaks once, lies twice, vanishes thrice.",
+      "imageSrc": "/assets/themes/ninjas/personas/17-fox-ash.png"
+    },
+    {
+      "id": "ninjas-crescent-thunder",
+      "name": "Crescent Thunder",
+      "bio": "Crescent Thunder claims shadows are witnesses—and they refuse to testify.",
+      "imageSrc": "/assets/themes/ninjas/personas/18-crescent-thunder.png"
+    },
+    {
+      "id": "ninjas-sparrow-moon",
+      "name": "Sparrow Moon",
+      "bio": "Sparrow Moon throws smoke and narrative at the same time.",
+      "imageSrc": "/assets/themes/ninjas/personas/19-sparrow-moon.png"
+    },
+    {
+      "id": "ninjas-wraith-wind",
+      "name": "Wraith Wind",
+      "bio": "Wraith Wind insists silence is an answer—it just depends who hears it.",
+      "imageSrc": "/assets/themes/ninjas/personas/20-wraith-wind.png"
+    },
+    {
+      "id": "ninjas-cipher-fire",
+      "name": "Cipher Fire",
+      "bio": "Cipher Fire was never there—except when claiming credit.",
+      "imageSrc": "/assets/themes/ninjas/personas/21-cipher-fire.png"
+    },
+    {
+      "id": "ninjas-haze-ice",
+      "name": "Haze Ice",
+      "bio": "Haze Ice speaks once, lies twice, vanishes thrice.",
+      "imageSrc": "/assets/themes/ninjas/personas/22-haze-ice.png"
+    },
+    {
+      "id": "ninjas-storm-root",
+      "name": "Storm Root",
+      "bio": "Storm Root claims shadows are witnesses—and they refuse to testify.",
+      "imageSrc": "/assets/themes/ninjas/personas/23-storm-root.png"
+    },
+    {
+      "id": "ninjas-frost-peak",
+      "name": "Frost Peak",
+      "bio": "Frost Peak throws smoke and narrative at the same time.",
+      "imageSrc": "/assets/themes/ninjas/personas/24-frost-peak.png"
+    },
+    {
+      "id": "ninjas-ember-depth",
+      "name": "Ember Depth",
+      "bio": "Ember Depth insists silence is an answer—it just depends who hears it.",
+      "imageSrc": "/assets/themes/ninjas/personas/25-ember-depth.png"
+    }
+  ],
+  "Rock Stars": [
+    {
+      "id": "rock-stars-riff-voltage",
+      "name": "Riff Voltage",
+      "bio": "Riff Voltage treats backstage passes like alibis.",
+      "imageSrc": "/assets/themes/rock-stars/personas/01-riff-voltage.png"
+    },
+    {
+      "id": "rock-stars-axel-vandal",
+      "name": "Axel Vandal",
+      "bio": "Axel Vandal remembers the setlist wrong on purpose.",
+      "imageSrc": "/assets/themes/rock-stars/personas/02-axel-vandal.png"
+    },
+    {
+      "id": "rock-stars-crash-starlight",
+      "name": "Crash Starlight",
+      "bio": "Crash Starlight calls chaos \"artistic direction.\"",
+      "imageSrc": "/assets/themes/rock-stars/personas/03-crash-starlight.png"
+    },
+    {
+      "id": "rock-stars-neon-riot",
+      "name": "Neon Riot",
+      "bio": "Neon Riot autographs denials faster than truth.",
+      "imageSrc": "/assets/themes/rock-stars/personas/04-neon-riot.png"
+    },
+    {
+      "id": "rock-stars-jett-hammer",
+      "name": "Jett Hammer",
+      "bio": "Jett Hammer turns feedback into feedback loops.",
+      "imageSrc": "/assets/themes/rock-stars/personas/05-jett-hammer.png"
+    },
+    {
+      "id": "rock-stars-razor-screamer",
+      "name": "Razor Screamer",
+      "bio": "Razor Screamer treats backstage passes like alibis.",
+      "imageSrc": "/assets/themes/rock-stars/personas/06-razor-screamer.png"
+    },
+    {
+      "id": "rock-stars-blaze-static",
+      "name": "Blaze Static",
+      "bio": "Blaze Static remembers the setlist wrong on purpose.",
+      "imageSrc": "/assets/themes/rock-stars/personas/07-blaze-static.png"
+    },
+    {
+      "id": "rock-stars-echo-wild",
+      "name": "Echo Wild",
+      "bio": "Echo Wild calls chaos \"artistic direction.\"",
+      "imageSrc": "/assets/themes/rock-stars/personas/08-echo-wild.png"
+    },
+    {
+      "id": "rock-stars-spike-thunder",
+      "name": "Spike Thunder",
+      "bio": "Spike Thunder autographs denials faster than truth.",
+      "imageSrc": "/assets/themes/rock-stars/personas/09-spike-thunder.png"
+    },
+    {
+      "id": "rock-stars-storm-overdrive",
+      "name": "Storm Overdrive",
+      "bio": "Storm Overdrive turns feedback into feedback loops.",
+      "imageSrc": "/assets/themes/rock-stars/personas/10-storm-overdrive.png"
+    },
+    {
+      "id": "rock-stars-vinyl-backbeat",
+      "name": "Vinyl Backbeat",
+      "bio": "Vinyl Backbeat treats backstage passes like alibis.",
+      "imageSrc": "/assets/themes/rock-stars/personas/11-vinyl-backbeat.png"
+    },
+    {
+      "id": "rock-stars-solo-feedback",
+      "name": "Solo Feedback",
+      "bio": "Solo Feedback remembers the setlist wrong on purpose.",
+      "imageSrc": "/assets/themes/rock-stars/personas/12-solo-feedback.png"
+    },
+    {
+      "id": "rock-stars-amp-noise",
+      "name": "Amp Noise",
+      "bio": "Amp Noise calls chaos \"artistic direction.\"",
+      "imageSrc": "/assets/themes/rock-stars/personas/13-amp-noise.png"
+    },
+    {
+      "id": "rock-stars-feedback-fuzz",
+      "name": "Feedback Fuzz",
+      "bio": "Feedback Fuzz autographs denials faster than truth.",
+      "imageSrc": "/assets/themes/rock-stars/personas/14-feedback-fuzz.png"
+    },
+    {
+      "id": "rock-stars-reverb-wailer",
+      "name": "Reverb Wailer",
+      "bio": "Reverb Wailer turns feedback into feedback loops.",
+      "imageSrc": "/assets/themes/rock-stars/personas/15-reverb-wailer.png"
+    },
+    {
+      "id": "rock-stars-distort-shred",
+      "name": "Distort Shred",
+      "bio": "Distort Shred treats backstage passes like alibis.",
+      "imageSrc": "/assets/themes/rock-stars/personas/16-distort-shred.png"
+    },
+    {
+      "id": "rock-stars-glitter-glam",
+      "name": "Glitter Glam",
+      "bio": "Glitter Glam remembers the setlist wrong on purpose.",
+      "imageSrc": "/assets/themes/rock-stars/personas/17-glitter-glam.png"
+    },
+    {
+      "id": "rock-stars-fang-stage",
+      "name": "Fang Stage",
+      "bio": "Fang Stage calls chaos \"artistic direction.\"",
+      "imageSrc": "/assets/themes/rock-stars/personas/18-fang-stage.png"
+    },
+    {
+      "id": "rock-stars-lux-crowd",
+      "name": "Lux Crowd",
+      "bio": "Lux Crowd autographs denials faster than truth.",
+      "imageSrc": "/assets/themes/rock-stars/personas/19-lux-crowd.png"
+    },
+    {
+      "id": "rock-stars-nova-roadie",
+      "name": "Nova Roadie",
+      "bio": "Nova Roadie turns feedback into feedback loops.",
+      "imageSrc": "/assets/themes/rock-stars/personas/20-nova-roadie.png"
+    },
+    {
+      "id": "rock-stars-chrome-groupie",
+      "name": "Chrome Groupie",
+      "bio": "Chrome Groupie treats backstage passes like alibis.",
+      "imageSrc": "/assets/themes/rock-stars/personas/21-chrome-groupie.png"
+    },
+    {
+      "id": "rock-stars-buzz-headliner",
+      "name": "Buzz Headliner",
+      "bio": "Buzz Headliner remembers the setlist wrong on purpose.",
+      "imageSrc": "/assets/themes/rock-stars/personas/22-buzz-headliner.png"
+    },
+    {
+      "id": "rock-stars-screech-bassline",
+      "name": "Screech Bassline",
+      "bio": "Screech Bassline calls chaos \"artistic direction.\"",
+      "imageSrc": "/assets/themes/rock-stars/personas/23-screech-bassline.png"
+    },
+    {
+      "id": "rock-stars-mosh-drumfire",
+      "name": "Mosh Drumfire",
+      "bio": "Mosh Drumfire autographs denials faster than truth.",
+      "imageSrc": "/assets/themes/rock-stars/personas/24-mosh-drumfire.png"
+    },
+    {
+      "id": "rock-stars-encore-encore",
+      "name": "Encore Encore",
+      "bio": "Encore Encore turns feedback into feedback loops.",
+      "imageSrc": "/assets/themes/rock-stars/personas/25-encore-encore.png"
+    }
+  ],
+  "Flying Squad": [
+    {
+      "id": "flying-squad-wing-harrier",
+      "name": "Wing Harrier",
+      "bio": "Wing Harrier calls evasive maneuvers \"clarification.\"",
+      "imageSrc": "/assets/themes/flying-squad/personas/01-wing-harrier.png"
+    },
+    {
+      "id": "flying-squad-ace-vector",
+      "name": "Ace Vector",
+      "bio": "Ace Vector logs hours that do not match the sun.",
+      "imageSrc": "/assets/themes/flying-squad/personas/02-ace-vector.png"
+    },
+    {
+      "id": "flying-squad-falcon-stratton",
+      "name": "Falcon Stratton",
+      "bio": "Falcon Stratton insists turbulence explains the timeline.",
+      "imageSrc": "/assets/themes/flying-squad/personas/03-falcon-stratton.png"
+    },
+    {
+      "id": "flying-squad-tempest-blaze",
+      "name": "Tempest Blaze",
+      "bio": "Tempest Blaze talks in call signs and dodges in plain English.",
+      "imageSrc": "/assets/themes/flying-squad/personas/04-tempest-blaze.png"
+    },
+    {
+      "id": "flying-squad-spitfire-kingston",
+      "name": "Spitfire Kingston",
+      "bio": "Spitfire Kingston claims radio static ate the important sentence.",
+      "imageSrc": "/assets/themes/flying-squad/personas/05-spitfire-kingston.png"
+    },
+    {
+      "id": "flying-squad-radar-lockheed",
+      "name": "Radar Lockheed",
+      "bio": "Radar Lockheed calls evasive maneuvers \"clarification.\"",
+      "imageSrc": "/assets/themes/flying-squad/personas/06-radar-lockheed.png"
+    },
+    {
+      "id": "flying-squad-maverick-crosswind",
+      "name": "Maverick Crosswind",
+      "bio": "Maverick Crosswind logs hours that do not match the sun.",
+      "imageSrc": "/assets/themes/flying-squad/personas/07-maverick-crosswind.png"
+    },
+    {
+      "id": "flying-squad-comet-nighthawk",
+      "name": "Comet Nighthawk",
+      "bio": "Comet Nighthawk insists turbulence explains the timeline.",
+      "imageSrc": "/assets/themes/flying-squad/personas/08-comet-nighthawk.png"
+    },
+    {
+      "id": "flying-squad-striker-turbine",
+      "name": "Striker Turbine",
+      "bio": "Striker Turbine talks in call signs and dodges in plain English.",
+      "imageSrc": "/assets/themes/flying-squad/personas/09-striker-turbine.png"
+    },
+    {
+      "id": "flying-squad-bishop-skyward",
+      "name": "Bishop Skyward",
+      "bio": "Bishop Skyward claims radio static ate the important sentence.",
+      "imageSrc": "/assets/themes/flying-squad/personas/10-bishop-skyward.png"
+    },
+    {
+      "id": "flying-squad-arrow-tailwind",
+      "name": "Arrow Tailwind",
+      "bio": "Arrow Tailwind calls evasive maneuvers \"clarification.\"",
+      "imageSrc": "/assets/themes/flying-squad/personas/11-arrow-tailwind.png"
+    },
+    {
+      "id": "flying-squad-rook-vortex",
+      "name": "Rook Vortex",
+      "bio": "Rook Vortex logs hours that do not match the sun.",
+      "imageSrc": "/assets/themes/flying-squad/personas/12-rook-vortex.png"
+    },
+    {
+      "id": "flying-squad-viper-goshawk",
+      "name": "Viper Goshawk",
+      "bio": "Viper Goshawk insists turbulence explains the timeline.",
+      "imageSrc": "/assets/themes/flying-squad/personas/13-viper-goshawk.png"
+    },
+    {
+      "id": "flying-squad-king-stratos",
+      "name": "King Stratos",
+      "bio": "King Stratos talks in call signs and dodges in plain English.",
+      "imageSrc": "/assets/themes/flying-squad/personas/14-king-stratos.png"
+    },
+    {
+      "id": "flying-squad-fox-wingate",
+      "name": "Fox Wingate",
+      "bio": "Fox Wingate claims radio static ate the important sentence.",
+      "imageSrc": "/assets/themes/flying-squad/personas/15-fox-wingate.png"
+    },
+    {
+      "id": "flying-squad-hawk-flynn",
+      "name": "Hawk Flynn",
+      "bio": "Hawk Flynn calls evasive maneuvers \"clarification.\"",
+      "imageSrc": "/assets/themes/flying-squad/personas/16-hawk-flynn.png"
+    },
+    {
+      "id": "flying-squad-jones-sortie",
+      "name": "Jones Sortie",
+      "bio": "Jones Sortie logs hours that do not match the sun.",
+      "imageSrc": "/assets/themes/flying-squad/personas/17-jones-sortie.png"
+    },
+    {
+      "id": "flying-squad-clarke-dogfight",
+      "name": "Clarke Dogfight",
+      "bio": "Clarke Dogfight insists turbulence explains the timeline.",
+      "imageSrc": "/assets/themes/flying-squad/personas/18-clarke-dogfight.png"
+    },
+    {
+      "id": "flying-squad-stone-afterburn",
+      "name": "Stone Afterburn",
+      "bio": "Stone Afterburn talks in call signs and dodges in plain English.",
+      "imageSrc": "/assets/themes/flying-squad/personas/19-stone-afterburn.png"
+    },
+    {
+      "id": "flying-squad-blaze-contrail",
+      "name": "Blaze Contrail",
+      "bio": "Blaze Contrail claims radio static ate the important sentence.",
+      "imageSrc": "/assets/themes/flying-squad/personas/20-blaze-contrail.png"
+    },
+    {
+      "id": "flying-squad-sky-skylark",
+      "name": "Sky Skylark",
+      "bio": "Sky Skylark calls evasive maneuvers \"clarification.\"",
+      "imageSrc": "/assets/themes/flying-squad/personas/21-sky-skylark.png"
+    },
+    {
+      "id": "flying-squad-cloud-propwash",
+      "name": "Cloud Propwash",
+      "bio": "Cloud Propwash logs hours that do not match the sun.",
+      "imageSrc": "/assets/themes/flying-squad/personas/22-cloud-propwash.png"
+    },
+    {
+      "id": "flying-squad-nimbus-wingover",
+      "name": "Nimbus Wingover",
+      "bio": "Nimbus Wingover insists turbulence explains the timeline.",
+      "imageSrc": "/assets/themes/flying-squad/personas/23-nimbus-wingover.png"
+    },
+    {
+      "id": "flying-squad-jet-strato",
+      "name": "Jet Strato",
+      "bio": "Jet Strato talks in call signs and dodges in plain English.",
+      "imageSrc": "/assets/themes/flying-squad/personas/24-jet-strato.png"
+    },
+    {
+      "id": "flying-squad-prop-cloudbreak",
+      "name": "Prop Cloudbreak",
+      "bio": "Prop Cloudbreak claims radio static ate the important sentence.",
+      "imageSrc": "/assets/themes/flying-squad/personas/25-prop-cloudbreak.png"
+    }
+  ],
+  "Drag Queens": [
+    {
+      "id": "drag-queens-miss-devine",
+      "name": "Miss Devine",
+      "bio": "Miss Devine reads the room—and edits the transcript.",
+      "imageSrc": "/assets/themes/drag-queens/personas/01-miss-devine.png"
+    },
+    {
+      "id": "drag-queens-lady-st-james",
+      "name": "Lady St James",
+      "bio": "Lady St James serves looks first, receipts never.",
+      "imageSrc": "/assets/themes/drag-queens/personas/02-lady-st-james.png"
+    },
+    {
+      "id": "drag-queens-velvet-fierce",
+      "name": "Velvet Fierce",
+      "bio": "Velvet Fierce calls shade \"constructive glitter.\"",
+      "imageSrc": "/assets/themes/drag-queens/personas/03-velvet-fierce.png"
+    },
+    {
+      "id": "drag-queens-crystal-deluxe",
+      "name": "Crystal Deluxe",
+      "bio": "Crystal Deluxe winks through accusations like runway lights.",
+      "imageSrc": "/assets/themes/drag-queens/personas/04-crystal-deluxe.png"
+    },
+    {
+      "id": "drag-queens-sasha-larue",
+      "name": "Sasha LaRue",
+      "bio": "Sasha LaRue makes denial a performance piece—standing ovation optional.",
+      "imageSrc": "/assets/themes/drag-queens/personas/05-sasha-larue.png"
+    },
+    {
+      "id": "drag-queens-cherry-lips",
+      "name": "Cherry Lips",
+      "bio": "Cherry Lips reads the room—and edits the transcript.",
+      "imageSrc": "/assets/themes/drag-queens/personas/06-cherry-lips.png"
+    },
+    {
+      "id": "drag-queens-diva-fantasia",
+      "name": "Diva Fantasia",
+      "bio": "Diva Fantasia serves looks first, receipts never.",
+      "imageSrc": "/assets/themes/drag-queens/personas/07-diva-fantasia.png"
+    },
+    {
+      "id": "drag-queens-electra-sparkle",
+      "name": "Electra Sparkle",
+      "bio": "Electra Sparkle calls shade \"constructive glitter.\"",
+      "imageSrc": "/assets/themes/drag-queens/personas/08-electra-sparkle.png"
+    },
+    {
+      "id": "drag-queens-glam-monroe",
+      "name": "Glam Monroe",
+      "bio": "Glam Monroe winks through accusations like runway lights.",
+      "imageSrc": "/assets/themes/drag-queens/personas/09-glam-monroe.png"
+    },
+    {
+      "id": "drag-queens-lola-velour",
+      "name": "Lola Velour",
+      "bio": "Lola Velour makes denial a performance piece—standing ovation optional.",
+      "imageSrc": "/assets/themes/drag-queens/personas/10-lola-velour.png"
+    },
+    {
+      "id": "drag-queens-paris-sensation",
+      "name": "Paris Sensation",
+      "bio": "Paris Sensation reads the room—and edits the transcript.",
+      "imageSrc": "/assets/themes/drag-queens/personas/11-paris-sensation.png"
+    },
+    {
+      "id": "drag-queens-nova-supreme",
+      "name": "Nova Supreme",
+      "bio": "Nova Supreme serves looks first, receipts never.",
+      "imageSrc": "/assets/themes/drag-queens/personas/12-nova-supreme.png"
+    },
+    {
+      "id": "drag-queens-mona-dazzle",
+      "name": "Mona Dazzle",
+      "bio": "Mona Dazzle calls shade \"constructive glitter.\"",
+      "imageSrc": "/assets/themes/drag-queens/personas/13-mona-dazzle.png"
+    },
+    {
+      "id": "drag-queens-roxy-glitter",
+      "name": "Roxy Glitter",
+      "bio": "Roxy Glitter winks through accusations like runway lights.",
+      "imageSrc": "/assets/themes/drag-queens/personas/14-roxy-glitter.png"
+    },
+    {
+      "id": "drag-queens-stella-shade",
+      "name": "Stella Shade",
+      "bio": "Stella Shade makes denial a performance piece—standing ovation optional.",
+      "imageSrc": "/assets/themes/drag-queens/personas/15-stella-shade.png"
+    },
+    {
+      "id": "drag-queens-venus-werk",
+      "name": "Venus Werk",
+      "bio": "Venus Werk reads the room—and edits the transcript.",
+      "imageSrc": "/assets/themes/drag-queens/personas/16-venus-werk.png"
+    },
+    {
+      "id": "drag-queens-dahlia-slay",
+      "name": "Dahlia Slay",
+      "bio": "Dahlia Slay serves looks first, receipts never.",
+      "imageSrc": "/assets/themes/drag-queens/personas/17-dahlia-slay.png"
+    },
+    {
+      "id": "drag-queens-fifi-vogue",
+      "name": "Fifi Vogue",
+      "bio": "Fifi Vogue calls shade \"constructive glitter.\"",
+      "imageSrc": "/assets/themes/drag-queens/personas/18-fifi-vogue.png"
+    },
+    {
+      "id": "drag-queens-gigi-runway",
+      "name": "Gigi Runway",
+      "bio": "Gigi Runway winks through accusations like runway lights.",
+      "imageSrc": "/assets/themes/drag-queens/personas/19-gigi-runway.png"
+    },
+    {
+      "id": "drag-queens-honey-tuck",
+      "name": "Honey Tuck",
+      "bio": "Honey Tuck makes denial a performance piece—standing ovation optional.",
+      "imageSrc": "/assets/themes/drag-queens/personas/20-honey-tuck.png"
+    },
+    {
+      "id": "drag-queens-ivy-beat",
+      "name": "Ivy Beat",
+      "bio": "Ivy Beat reads the room—and edits the transcript.",
+      "imageSrc": "/assets/themes/drag-queens/personas/21-ivy-beat.png"
+    },
+    {
+      "id": "drag-queens-jade-haus",
+      "name": "Jade Haus",
+      "bio": "Jade Haus serves looks first, receipts never.",
+      "imageSrc": "/assets/themes/drag-queens/personas/22-jade-haus.png"
+    },
+    {
+      "id": "drag-queens-kitty-drama",
+      "name": "Kitty Drama",
+      "bio": "Kitty Drama calls shade \"constructive glitter.\"",
+      "imageSrc": "/assets/themes/drag-queens/personas/23-kitty-drama.png"
+    },
+    {
+      "id": "drag-queens-luxe-tea",
+      "name": "Luxe Tea",
+      "bio": "Luxe Tea winks through accusations like runway lights.",
+      "imageSrc": "/assets/themes/drag-queens/personas/24-luxe-tea.png"
+    },
+    {
+      "id": "drag-queens-mimi-gag",
+      "name": "Mimi Gag",
+      "bio": "Mimi Gag makes denial a performance piece—standing ovation optional.",
+      "imageSrc": "/assets/themes/drag-queens/personas/25-mimi-gag.png"
+    }
+  ],
+  "Superheroes": [
+    {
+      "id": "superheroes-captain-nova",
+      "name": "Captain Nova",
+      "bio": "Captain Nova cites secret identity to dodge public facts.",
+      "imageSrc": "/assets/themes/superheroes/personas/01-captain-nova.png"
+    },
+    {
+      "id": "superheroes-mega-shield",
+      "name": "Mega Shield",
+      "bio": "Mega Shield claims the mask muffled the truth.",
+      "imageSrc": "/assets/themes/superheroes/personas/02-mega-shield.png"
+    },
+    {
+      "id": "superheroes-ultra-blaze",
+      "name": "Ultra Blaze",
+      "bio": "Ultra Blaze insists collateral damage is \"off-panel.\"",
+      "imageSrc": "/assets/themes/superheroes/personas/03-ultra-blaze.png"
+    },
+    {
+      "id": "superheroes-shadow-bolt",
+      "name": "Shadow Bolt",
+      "bio": "Shadow Bolt gives hero speeches that relocate blame skyward.",
+      "imageSrc": "/assets/themes/superheroes/personas/04-shadow-bolt.png"
+    },
+    {
+      "id": "superheroes-star-falcon",
+      "name": "Star Falcon",
+      "bio": "Star Falcon swears the villain started it—every time, everywhere.",
+      "imageSrc": "/assets/themes/superheroes/personas/05-star-falcon.png"
+    },
+    {
+      "id": "superheroes-iron-comet",
+      "name": "Iron Comet",
+      "bio": "Iron Comet cites secret identity to dodge public facts.",
+      "imageSrc": "/assets/themes/superheroes/personas/06-iron-comet.png"
+    },
+    {
+      "id": "superheroes-cosmic-titan",
+      "name": "Cosmic Titan",
+      "bio": "Cosmic Titan claims the mask muffled the truth.",
+      "imageSrc": "/assets/themes/superheroes/personas/07-cosmic-titan.png"
+    },
+    {
+      "id": "superheroes-mighty-pulse",
+      "name": "Mighty Pulse",
+      "bio": "Mighty Pulse insists collateral damage is \"off-panel.\"",
+      "imageSrc": "/assets/themes/superheroes/personas/08-mighty-pulse.png"
+    },
+    {
+      "id": "superheroes-turbo-vortex",
+      "name": "Turbo Vortex",
+      "bio": "Turbo Vortex gives hero speeches that relocate blame skyward.",
+      "imageSrc": "/assets/themes/superheroes/personas/09-turbo-vortex.png"
+    },
+    {
+      "id": "superheroes-thunder-phantom",
+      "name": "Thunder Phantom",
+      "bio": "Thunder Phantom swears the villain started it—every time, everywhere.",
+      "imageSrc": "/assets/themes/superheroes/personas/10-thunder-phantom.png"
+    },
+    {
+      "id": "superheroes-quantum-sentinel",
+      "name": "Quantum Sentinel",
+      "bio": "Quantum Sentinel cites secret identity to dodge public facts.",
+      "imageSrc": "/assets/themes/superheroes/personas/11-quantum-sentinel.png"
+    },
+    {
+      "id": "superheroes-nova-surge",
+      "name": "Nova Surge",
+      "bio": "Nova Surge claims the mask muffled the truth.",
+      "imageSrc": "/assets/themes/superheroes/personas/12-nova-surge.png"
+    },
+    {
+      "id": "superheroes-pulse-strike",
+      "name": "Pulse Strike",
+      "bio": "Pulse Strike insists collateral damage is \"off-panel.\"",
+      "imageSrc": "/assets/themes/superheroes/personas/13-pulse-strike.png"
+    },
+    {
+      "id": "superheroes-vortex-force",
+      "name": "Vortex Force",
+      "bio": "Vortex Force gives hero speeches that relocate blame skyward.",
+      "imageSrc": "/assets/themes/superheroes/personas/14-vortex-force.png"
+    },
+    {
+      "id": "superheroes-sentinel-guard",
+      "name": "Sentinel Guard",
+      "bio": "Sentinel Guard swears the villain started it—every time, everywhere.",
+      "imageSrc": "/assets/themes/superheroes/personas/15-sentinel-guard.png"
+    },
+    {
+      "id": "superheroes-phantom-watch",
+      "name": "Phantom Watch",
+      "bio": "Phantom Watch cites secret identity to dodge public facts.",
+      "imageSrc": "/assets/themes/superheroes/personas/16-phantom-watch.png"
+    },
+    {
+      "id": "superheroes-blaze-prime",
+      "name": "Blaze Prime",
+      "bio": "Blaze Prime claims the mask muffled the truth.",
+      "imageSrc": "/assets/themes/superheroes/personas/17-blaze-prime.png"
+    },
+    {
+      "id": "superheroes-falcon-rush",
+      "name": "Falcon Rush",
+      "bio": "Falcon Rush insists collateral damage is \"off-panel.\"",
+      "imageSrc": "/assets/themes/superheroes/personas/18-falcon-rush.png"
+    },
+    {
+      "id": "superheroes-titan-flash",
+      "name": "Titan Flash",
+      "bio": "Titan Flash gives hero speeches that relocate blame skyward.",
+      "imageSrc": "/assets/themes/superheroes/personas/19-titan-flash.png"
+    },
+    {
+      "id": "superheroes-comet-storm",
+      "name": "Comet Storm",
+      "bio": "Comet Storm swears the villain started it—every time, everywhere.",
+      "imageSrc": "/assets/themes/superheroes/personas/20-comet-storm.png"
+    },
+    {
+      "id": "superheroes-bolt-mind",
+      "name": "Bolt Mind",
+      "bio": "Bolt Mind cites secret identity to dodge public facts.",
+      "imageSrc": "/assets/themes/superheroes/personas/21-bolt-mind.png"
+    },
+    {
+      "id": "superheroes-shield-steel",
+      "name": "Shield Steel",
+      "bio": "Shield Steel claims the mask muffled the truth.",
+      "imageSrc": "/assets/themes/superheroes/personas/22-shield-steel.png"
+    },
+    {
+      "id": "superheroes-burst-wing",
+      "name": "Burst Wing",
+      "bio": "Burst Wing insists collateral damage is \"off-panel.\"",
+      "imageSrc": "/assets/themes/superheroes/personas/23-burst-wing.png"
+    },
+    {
+      "id": "superheroes-eclipse-ray",
+      "name": "Eclipse Ray",
+      "bio": "Eclipse Ray gives hero speeches that relocate blame skyward.",
+      "imageSrc": "/assets/themes/superheroes/personas/24-eclipse-ray.png"
+    },
+    {
+      "id": "superheroes-apex-core",
+      "name": "Apex Core",
+      "bio": "Apex Core swears the villain started it—every time, everywhere.",
+      "imageSrc": "/assets/themes/superheroes/personas/25-apex-core.png"
+    }
+  ]
+}

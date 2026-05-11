@@ -7,12 +7,17 @@ const repoRoot = path.resolve(__dirname, '..');
 const outputDir = path.join(repoRoot, 'exports');
 
 const STYLE_GUIDE_NOTES = [
-  'Style guide: gritty adult punk cartoon / British alt-comic energy, like a grimy back-alley rock poster character from a rowdy party game.',
-  'Use thick black ink outlines, exaggerated angular faces, bug-eyed suspicious expressions, sharp cheekbones, imperfect teeth, textured cel shading, worn denim/leather/clubwear details, and neon-accented punk attitude.',
-  'Avoid cute, pretty, soft, doll-like, kawaii, chibi, anime, children’s-book, glossy mobile-game, or generic attractive influencer styling.',
-  'Use one consistent portrait system for every persona: same camera distance, same body scale, same lighting angle, same clean edge treatment.',
-  'Aim for expressive faces, strong silhouette readability, and smooth cel-shaded rendering suitable for party game persona cards.',
-  'Keep it original artwork (no logos, no text, no recognizable real person likeness).',
+  'Style guide: 1990s gritty adult-animation cartoon bust portrait (MTV-era rude-toon energy: deliberately awkward, angular, and "ugly-cool", not polished Disney).',
+  'Line art: thick, bold, slightly irregular black outlines with hand-inked wobble.',
+  'Color: saturated but grimy cel shading—flat fills plus simple hard-edged shadow shapes, muted urban palette with occasional loud accent (neon hair, loud print, brass, blood-red lip).',
+  'Proportions: lanky thin necks, caricatured bony faces, exaggerated jaw and cheek planes.',
+  'Eyes: very large bulging eyes with tiny black pin-prick pupils for manic, vacant, or intense stares.',
+  'Hair: big messy clumps, spikes, mullets, unnatural accent colors where it fits the character.',
+  'Clothing: subculture costume to mid-chest only—faded graphic tees (no readable logos), punk/metal/streetwear, studs, chains, weathered jackets, theme-appropriate garb.',
+  'Mood: rebellious, edgy, party-game suspicion; expressive mouths with gums/teeth okay when it sells the expression.',
+  'Avoid cute, pretty, soft, doll-like, kawaii, chibi, anime sparkle eyes, children’s-book, glossy mobile-game, or generic influencer glam.',
+  'Use one consistent portrait system for every persona: same camera distance, same body scale, same lighting angle, same line weight family.',
+  'Original character art only (no logos, no text, no watermark, no recognizable real-person likeness, no copyrighted character).',
 ].join(' ');
 
 const FACE_SHAPES = ['heavy square jaw', 'long narrow face', 'crooked nose and pointed chin', 'broad cheekbones with sunken cheeks', 'round face with intense eyes', 'sharp triangular face', 'wide jaw with thick neck', 'gaunt face with deep eye bags'];
@@ -169,12 +174,28 @@ function filenameFromImageSrc(imageSrc, fallbackId) {
   return `${safeFallback || 'persona'}.png`;
 }
 
-function buildAvatarPrompt(persona, themeName, personaIndex = 0) {
+function loadTailoredSegmentMap() {
+  const dir = path.join(__dirname, 'data');
+  if (!fs.existsSync(dir)) return {};
+  const files = fs
+    .readdirSync(dir)
+    .filter((filename) => filename.startsWith('personaAvatarTailored') && filename.endsWith('.json'));
+  files.sort();
+  return files.reduce((acc, filename) => {
+    const fullPath = path.join(dir, filename);
+    const parsed = JSON.parse(fs.readFileSync(fullPath, 'utf8'));
+    return { ...acc, ...parsed };
+  }, {});
+}
+
+function buildAvatarPrompt(persona, themeName, personaIndex = 0, tailoredSegments = {}) {
   const name = String(persona?.name || 'Unknown Persona').trim();
   const bio = String(persona?.bio || '').trim();
   const canonicalThemeName = String(themeName || 'Default').trim();
-  const uniqueAppearance = buildUniqueAppearance(persona, canonicalThemeName, personaIndex);
-  return [
+  const personaId = String(persona?.id || '').trim();
+  const tailoredLook = typeof tailoredSegments[personaId] === 'string' ? tailoredSegments[personaId].trim() : '';
+
+  const framing = [
     'Create one standardized transparent PNG persona portrait for a social-deduction party game.',
     STYLE_GUIDE_NOTES,
     'Output must be a 1024x1024 square transparent-background PNG.',
@@ -183,6 +204,28 @@ function buildAvatarPrompt(persona, themeName, personaIndex = 0) {
     'Consistent framing for every persona: head and upper torso visible, top of head around 10% from the top edge, shoulder line around 62%, torso ending around 85% from the top edge.',
     'Use transparent empty padding around the character; no environment, no props that extend outside the safe area, no colored backdrop, no shadows on a floor.',
     'No text, no logo, no watermark, no border, no frame.',
+  ];
+
+  if (tailoredLook) {
+    return [
+      ...framing,
+      `Specific tailored look for this persona (follow closely; keep them visually distinct from other roster characters): ${tailoredLook}`,
+      'Match the age, ethnicity cues, and gender presentation implied by the description; do not swap gender or default to a generic young woman.',
+      'Do not reuse the same face, hair, clothing, body type, or expression from other personas.',
+      'Small name/theme-inspired accessory is allowed only if it stays inside the bust crop; no large props and no background scene.',
+      'Expressive face with readable suspicious party-game personality and silhouette-friendly shape language.',
+      'Avoid realistic photo style; keep the 1990s adult-animation cartoon / grimy cel comic hybrid.',
+      'Negative style constraints: not cute, not pretty doll, not kawaii, not chibi, not anime, not wholesome children’s cartoon, not glamour portrait.',
+      'Do not include copyrighted characters or recognizable real people.',
+      `Theme: ${canonicalThemeName}.`,
+      `Character name: ${name}.`,
+      `Character vibe: ${bio}`,
+    ].join(' ');
+  }
+
+  const uniqueAppearance = buildUniqueAppearance(persona, canonicalThemeName, personaIndex);
+  return [
+    ...framing,
     `Unique visual design for this persona: ${uniqueAppearance}.`,
     'The gender must match the gender stated above; do not default every character to female.',
     'Do not reuse the same face, hair, clothing, body type, or expression from other personas.',
@@ -197,14 +240,14 @@ function buildAvatarPrompt(persona, themeName, personaIndex = 0) {
   ].join(' ');
 }
 
-function buildRows(themeName, personas, { batchLabel = 'all-themes' } = {}) {
+function buildRows(themeName, personas, { batchLabel = 'all-themes', tailoredSegments = {} } = {}) {
   const themeFolder = themeSlug(themeName) || 'default';
   return (personas || []).map((persona, index) => {
     const personaId = String(persona?.id || `${themeFolder}-${index + 1}`).trim();
     const imageSrc = String(persona?.imageSrc || '').trim();
     const filename = filenameFromImageSrc(imageSrc, personaId);
     const outputPath = path.posix.join('/assets/themes', themeFolder, 'personas', filename);
-    const prompt = buildAvatarPrompt(persona, themeName, index);
+    const prompt = buildAvatarPrompt(persona, themeName, index, tailoredSegments);
     return {
       batchLabel,
       themeName,
@@ -256,6 +299,9 @@ function writeExportFiles(baseName, rows) {
 async function main() {
   if (!fs.existsSync(outputDir)) fs.mkdirSync(outputDir, { recursive: true });
 
+  const tailoredSegments = loadTailoredSegmentMap();
+  console.log(`[exportPersonaAvatarPrompts] Loaded ${Object.keys(tailoredSegments).length} tailored prompt overrides from scripts/data.`);
+
   const personasModule = await import(pathToFileURL(path.join(repoRoot, 'src', 'data', 'themePersonas.js')).href);
   const catalogModule = await import(pathToFileURL(path.join(repoRoot, 'src', 'data', 'themeCatalog.js')).href);
 
@@ -270,12 +316,12 @@ async function main() {
 
   const allRows = allThemeNames.flatMap((themeName) => {
     const personas = getThemePersonas(themeName);
-    return buildRows(themeName, personas, { batchLabel: 'all-themes' });
+    return buildRows(themeName, personas, { batchLabel: 'all-themes', tailoredSegments });
   });
 
   const coreRows = coreThemeNames.flatMap((themeName) => {
     const personas = getThemePersonas(themeName);
-    return buildRows(themeName, personas, { batchLabel: 'core-themes' });
+    return buildRows(themeName, personas, { batchLabel: 'core-themes', tailoredSegments });
   });
 
   const allFiles = writeExportFiles('persona-avatar-prompts', allRows);
