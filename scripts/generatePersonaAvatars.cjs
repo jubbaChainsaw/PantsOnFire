@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 const fs = require('fs');
 const path = require('path');
-const { applyChromaKeyTransparency } = require('./personaChromaKey.cjs');
+const { applyChromaKeyTransparency, DEFAULT_CHROMA_TOLERANCE } = require('./personaChromaKey.cjs');
 
 const repoRoot = path.resolve(__dirname, '..');
 const localKeysPath = path.join(__dirname, 'royaltyFreeApiKeys.local.json');
@@ -56,7 +56,8 @@ function parseArgs(argv) {
     dryRun: false,
     overwrite: false,
     chromaKey: true,
-    chromaTolerance: 42,
+    chromaTolerance: DEFAULT_CHROMA_TOLERANCE,
+    chromaFringe: true,
   };
   for (let i = 0; i < argv.length; i += 1) {
     const arg = argv[i];
@@ -76,8 +77,9 @@ function parseArgs(argv) {
     else if (arg === '--dry-run') options.dryRun = true;
     else if (arg === '--overwrite') options.overwrite = true;
     else if (arg === '--no-chroma-key') options.chromaKey = false;
+    else if (arg === '--no-chroma-fringe') options.chromaFringe = false;
     else if (arg === '--chroma-tolerance') {
-      options.chromaTolerance = Math.max(0, Number.parseInt(String(argv[i + 1] || '42'), 10) || 42);
+      options.chromaTolerance = Math.max(0, Number.parseInt(String(argv[i + 1] || String(DEFAULT_CHROMA_TOLERANCE)), 10) || DEFAULT_CHROMA_TOLERANCE);
       i += 1;
     }
     else throw new Error(`Unknown argument: ${arg}`);
@@ -101,7 +103,8 @@ function usage() {
   console.log('  --negative-prompt <text>  Override WAN negative prompt (max 500 chars; has a strong default)');
   console.log(`  (WAN) Prompts are packed to ${WAN_EDIT_PROMPT_CHAR_LIMIT} chars for fal API; long exports keep style preamble + GENDER LOCK/tailored block.`);
   console.log('  --no-chroma-key           Skip post-process (#FF00FF → alpha via sharp)');
-  console.log('  --chroma-tolerance <0-255> Per-channel distance for keying (default: 42)');
+  console.log(`  --chroma-tolerance <0-255> Per-channel distance for strict key box (default: ${DEFAULT_CHROMA_TOLERANCE})`);
+  console.log('  --no-chroma-fringe        Skip extra pass for dark magenta AA halos (stricter box only)');
   console.log('  --use-existing-reference  Legacy Nano Banana: use existing output PNG as edit reference (WAN ignores)');
   console.log('  --limit <n>               Limit number of personas processed after filters');
   console.log('  --overwrite               Regenerate files even if they already exist');
@@ -492,7 +495,10 @@ async function run() {
   if (options.theme) console.log(`[generatePersonaAvatars] Theme filter: ${options.theme}`);
   if (options.dryRun) console.log('[generatePersonaAvatars] Dry run enabled.');
   if (options.chromaKey) {
-    console.log(`[generatePersonaAvatars] Chroma post (#FF00FF → alpha): on (tolerance ${options.chromaTolerance})`);
+    console.log(
+      `[generatePersonaAvatars] Chroma post (#FF00FF → alpha): on (strict ±${options.chromaTolerance}`
+      + `${options.chromaFringe ? ', + fringe halo pass' : ''})`
+    );
   } else {
     console.log('[generatePersonaAvatars] Chroma post (#FF00FF → alpha): off');
   }
@@ -541,7 +547,10 @@ async function run() {
         });
     let outBuffer = imageBuffer;
     if (options.chromaKey) {
-      outBuffer = await applyChromaKeyTransparency(imageBuffer, { tolerance: options.chromaTolerance });
+      outBuffer = await applyChromaKeyTransparency(imageBuffer, {
+        tolerance: options.chromaTolerance,
+        fringe: options.chromaFringe,
+      });
     }
     fs.writeFileSync(outputPath, outBuffer);
     created += 1;

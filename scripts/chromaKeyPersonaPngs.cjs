@@ -4,7 +4,7 @@
  */
 const fs = require('fs');
 const path = require('path');
-const { applyChromaKeyTransparency } = require('./personaChromaKey.cjs');
+const { applyChromaKeyTransparency, DEFAULT_CHROMA_TOLERANCE } = require('./personaChromaKey.cjs');
 
 const repoRoot = path.resolve(__dirname, '..');
 
@@ -18,7 +18,8 @@ function themeFolderFromName(themeName) {
 
 function parseArgs(argv) {
   const options = {
-    tolerance: 42,
+    tolerance: DEFAULT_CHROMA_TOLERANCE,
+    fringe: true,
     dryRun: false,
     theme: '',
     limit: 0,
@@ -27,7 +28,11 @@ function parseArgs(argv) {
   for (let i = 0; i < argv.length; i += 1) {
     const arg = argv[i];
     if (arg === '--help' || arg === '-h') options.help = true;
-    else if (arg === '--tolerance') { options.tolerance = Math.max(0, Number.parseInt(String(argv[i + 1] || '42'), 10) || 42); i += 1; }
+    else if (arg === '--tolerance') {
+      options.tolerance = Math.max(0, Number.parseInt(String(argv[i + 1] || String(DEFAULT_CHROMA_TOLERANCE)), 10) || DEFAULT_CHROMA_TOLERANCE);
+      i += 1;
+    }
+    else if (arg === '--no-fringe') options.fringe = false;
     else if (arg === '--theme') { options.theme = String(argv[i + 1] || '').trim(); i += 1; }
     else if (arg === '--limit') { options.limit = Math.max(0, Number.parseInt(String(argv[i + 1] || '0'), 10) || 0); i += 1; }
     else if (arg === '--dry-run') options.dryRun = true;
@@ -43,7 +48,8 @@ function usage() {
   console.log('');
   console.log('Options:');
   console.log('  --theme <name>     Only this theme folder (e.g. "Default" → default)');
-  console.log('  --tolerance <0-255> RGB distance per channel (default: 42)');
+  console.log(`  --tolerance <0-255> Strict per-channel distance (default: ${DEFAULT_CHROMA_TOLERANCE})`);
+  console.log('  --no-fringe        Disable dark-magenta anti-alias halo pass');
   console.log('  --limit <n>        Stop after n files');
   console.log('  --dry-run          List files only');
 }
@@ -85,7 +91,7 @@ async function run() {
   }
 
   console.log(`[chromaKeyPersonaPngs] Files: ${limited.length}${options.theme ? ` (theme filter: ${options.theme} → ${themeFolder})` : ''}`);
-  console.log(`[chromaKeyPersonaPngs] Tolerance: ${options.tolerance}`);
+  console.log(`[chromaKeyPersonaPngs] Tolerance: ${options.tolerance}${options.fringe ? ', fringe halo pass on' : ', fringe off'}`);
 
   let wrote = 0;
   for (let i = 0; i < limited.length; i += 1) {
@@ -96,7 +102,10 @@ async function run() {
       continue;
     }
     const input = fs.readFileSync(filePath);
-    const output = await applyChromaKeyTransparency(input, { tolerance: options.tolerance });
+    const output = await applyChromaKeyTransparency(input, {
+      tolerance: options.tolerance,
+      fringe: options.fringe,
+    });
     fs.writeFileSync(filePath, output);
     wrote += 1;
     console.log(`- [${i + 1}/${limited.length}] WROTE ${rel}`);
