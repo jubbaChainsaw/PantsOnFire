@@ -19,7 +19,7 @@ const STANDARD_PERSONA_OUTPUT_SPEC = [
   '- Consistent camera distance, lighting direction, line weight, and cel-shaded party-game illustration style across every persona.',
   '- Preserve the unique physical traits, clothing, and expression described in the prompt; do not make characters look like the same person.',
   '- Preserve the stated gender presentation exactly; do not feminize male or non-binary personas.',
-  '- Gritty adult punk cartoon style: sharp ink lines, awkward expressive faces, alt-comic attitude, not soft or cute.',
+  '- 1990s gritty adult-animation rude-toon style: thick ink lines, bulging eyes with pin pupils, awkward expressive faces, cel-shaded grimy color, not soft or cute.',
   '- Negative style: no cute anime, no chibi, no kawaii, no pretty doll, no generic young woman, no children’s illustration, no glamour portrait.',
   '- Keep clean transparent padding around the silhouette for UI cropping.',
   '- No text, no logo, no watermark, no border, no frame, no floor shadow.',
