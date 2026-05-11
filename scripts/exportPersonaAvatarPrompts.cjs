@@ -7,20 +7,76 @@ const repoRoot = path.resolve(__dirname, '..');
 const outputDir = path.join(repoRoot, 'exports');
 
 const STYLE_GUIDE_NOTES = [
-  'Use polished digital illustration, clean comic-influenced linework, soft studio-style lighting, and rich but balanced color.',
+  'Style guide: gritty adult punk cartoon / British alt-comic energy, like a grimy back-alley rock poster character from a rowdy party game.',
+  'Use thick black ink outlines, exaggerated angular faces, bug-eyed suspicious expressions, sharp cheekbones, imperfect teeth, textured cel shading, worn denim/leather/clubwear details, and neon-accented punk attitude.',
+  'Avoid cute, pretty, soft, doll-like, kawaii, chibi, anime, children’s-book, glossy mobile-game, or generic attractive influencer styling.',
   'Use one consistent portrait system for every persona: same camera distance, same body scale, same lighting angle, same clean edge treatment.',
   'Aim for expressive faces, strong silhouette readability, and smooth cel-shaded rendering suitable for party game persona cards.',
   'Keep it original artwork (no logos, no text, no recognizable real person likeness).',
 ].join(' ');
 
-const FACE_SHAPES = ['square jaw', 'round face', 'long narrow face', 'heart-shaped face', 'broad cheekbones', 'soft oval face', 'angular cheekbones', 'wide friendly face'];
-const HAIR_STYLES = ['short cropped hair', 'messy medium hair', 'curly shoulder-length hair', 'sleek bob', 'high ponytail', 'shaved sides with textured top', 'wavy side part', 'long tied-back hair'];
-const HAIR_COLORS = ['black', 'dark brown', 'warm brown', 'auburn', 'copper red', 'ash blonde', 'platinum blonde', 'deep blue-black'];
-const SKIN_TONES = ['deep brown skin', 'rich dark skin', 'medium brown skin', 'olive skin', 'warm tan skin', 'light brown skin', 'fair skin with freckles', 'pale skin with rosy cheeks'];
-const BODY_TYPES = ['slim build', 'broad-shouldered build', 'stocky build', 'tall lanky build', 'compact athletic build', 'soft rounded build', 'strong square build', 'petite build'];
-const CLOTHING = ['sharp blazer over a plain tee', 'oversized hoodie', 'patterned bomber jacket', 'button-up shirt with rolled sleeves', 'leather jacket', 'chunky knit jumper', 'denim jacket', 'bright tracksuit top'];
-const ACCESSORIES = ['round glasses', 'small hoop earrings', 'thick eyebrows and no accessories', 'thin rectangular glasses', 'single ear cuff', 'neat scarf at the neck', 'baseball cap worn forward', 'statement necklace'];
-const EXPRESSIONS = ['side-eye suspicion', 'wide-eyed innocence', 'smug half-smile', 'nervous grin', 'deadpan stare', 'raised-eyebrow doubt', 'playful smirk', 'caught-in-the-act surprise'];
+const FACE_SHAPES = ['heavy square jaw', 'long narrow face', 'crooked nose and pointed chin', 'broad cheekbones with sunken cheeks', 'round face with intense eyes', 'sharp triangular face', 'wide jaw with thick neck', 'gaunt face with deep eye bags'];
+const HAIR_STYLES = ['short spiked hair', 'messy medium punk hair', 'shaggy mullet', 'buzzed sides with jagged top', 'greasy side part', 'wild curly hair', 'two messy buns', 'long tied-back hair with loose strands'];
+const HAIR_COLORS = ['jet black', 'dirty blonde', 'copper red', 'bleached yellow', 'dark brown', 'blue-black', 'bottle green', 'silver grey'];
+const SKIN_TONES = ['deep brown skin', 'rich dark skin', 'medium brown skin', 'olive skin', 'warm tan skin', 'light brown skin', 'fair freckled skin', 'pale skin with flushed cheeks'];
+const BODY_TYPES = ['skinny wiry build', 'broad-shouldered build', 'stocky pub-bouncer build', 'tall lanky build', 'compact athletic build', 'soft rounded build', 'strong square build', 'short wiry build'];
+const CLOTHING = ['scuffed leather jacket over a black tee', 'oversized hoodie with frayed cuffs', 'loud patterned bomber jacket', 'creased button-up shirt with rolled sleeves', 'ripped denim jacket with pins', 'chunky knit jumper with stretched collar', 'bright tracksuit top with worn zip', 'sharp blazer over a faded band-style tee'];
+const ACCESSORIES = ['round cracked glasses', 'small hoop earrings', 'thick eyebrows and no accessories', 'thin rectangular glasses', 'single ear cuff', 'scruffy scarf at the neck', 'backwards baseball cap', 'chunky chain necklace'];
+const EXPRESSIONS = ['hard side-eye suspicion', 'wide-eyed panic', 'smug half-smile', 'nervous teeth-baring grin', 'deadpan stare', 'raised-eyebrow doubt', 'crooked playful smirk', 'caught-in-the-act shock'];
+const MALE_NAME_HINTS = new Set([
+  'barry', 'marvin', 'callum', 'gregor', 'leon', 'dave', 'malik', 'ronan', 'colin', 'yusuf',
+  'kyle', 'arthur', 'nico', 'marco', 'oscar', 'dex', 'jules', 'freddie', 'owen', 'sergeant',
+  'kev', 'ricky', 'tony', 'mick', 'davey', 'lenny', 'omar', 'pete', 'ronnie', 'dan',
+  'reginald', 'arthur', 'thomas', 'harold', 'bernard', 'doyle', 'cedric', 'douglas',
+  'leonard', 'victor', 'rupert', 'captain', 'count', 'eddie', 'barry', 'stu', 'bill',
+  'topper', 'alaric', 'voss', 'jester', 'hollow', 'grizzlehook', 'len', 'bill', 'garrick',
+  'tom', 'redd', 'jenkins', 'burke', 'rami', 'dreg', 'harlan', 'silas', 'donny', 'kaito'
+]);
+const FEMALE_NAME_HINTS = new Set([
+  'nina', 'edith', 'tasha', 'pixie', 'zara', 'penny', 'chloe', 'rachel', 'jett', 'amy',
+  'ingrid', 'bianca', 'harper', 'sadie', 'cleo', 'lena', 'priya', 'naomi', 'carmen',
+  'agatha', 'lillian', 'margaret', 'vivian', 'clara', 'mabel', 'beatrice', 'nora',
+  'winifred', 'evelyn', 'helena', 'mildred', 'maeve', 'nyx', 'lira', 'elin', 'nettles',
+  'zuri', 'bride', 'annie', 'mel', 'beth', 'hilda', 'mourne', 'sadie', 'floe', 'fang'
+]);
+const NON_BINARY_NAME_HINTS = new Set(['jules', 'rio', 'reefspawn', 'glim', 'void', 'rook']);
+const NAME_DETAIL_HINTS = [
+  [/side[-\s]?eye/i, 'one eyebrow cocked, eyes cutting sideways suspiciously'],
+  [/nightshift/i, 'tired eye bags and a battered takeaway coffee cup tucked close to the chest'],
+  [/double[-\s]?check/i, 'two small checklist ticks tattooed on one wrist'],
+  [/not impressed/i, 'deep frown lines and unimpressed downturned mouth'],
+  [/mullet/i, 'dramatic scruffy mullet silhouette'],
+  [/leopard/i, 'leopard-print jacket collar'],
+  [/overthink/i, 'tense forehead wrinkles and bitten fingernails'],
+  [/two[-\s]?buns/i, 'two messy hair buns'],
+  [/low battery/i, 'tired drooping eyelids and tiny low-battery pin badge'],
+  [/glance[-\s]?back/i, 'head slightly turned while eyes still face camera'],
+  [/probably fine/i, 'forced grin with a tiny plaster on one cheek'],
+  [/specs/i, 'oversized glasses with thick frames'],
+  [/headphones/i, 'chunky headphones around the neck'],
+  [/pink[-\s]?fur/i, 'loud pink faux-fur collar'],
+  [/stoneface/i, 'stony blank expression and rigid jaw'],
+  [/seen it all/i, 'world-weary eyelids and knowing stare'],
+  [/grumble/i, 'muttering mouth shape and heavy brow'],
+  [/greenhair/i, 'bright green hair'],
+  [/curious/i, 'leaning-in eyes and inquisitive raised brow'],
+  [/whisper/i, 'one finger near lips but still inside the bust crop'],
+  [/watchful/i, 'wide watchful eyes with tiny crow’s-feet'],
+  [/precision/i, 'neat razor-straight haircut and tidy collar'],
+  [/backwards cap/i, 'backwards baseball cap'],
+  [/red blazer/i, 'bright red blazer'],
+  [/old tricks/i, 'older face, sly wrinkles, vintage waistcoat'],
+  [/highlighter/i, 'neon highlighter clipped to jacket pocket'],
+  [/last[-\s]?minute/i, 'messy rushed hair and crooked collar'],
+  [/sticker/i, 'small sticker patches on jacket'],
+  [/soft launch/i, 'phone-shaped pin badge and secretive smirk'],
+  [/checkmate/i, 'chess-piece lapel pin'],
+  [/half truths/i, 'one side of smile lifted, one eye squinting'],
+  [/late reply/i, 'tired eyes and phone notification badge on jacket'],
+  [/overfriendly/i, 'too-wide grin and intense eye contact'],
+  [/plot twist/i, 'dramatic raised eyebrow and theatre-like collar'],
+  [/pocket alibi/i, 'folded paper note peeking from jacket pocket'],
+];
 
 function hashString(value = '') {
   let hash = 2166136261;
@@ -32,20 +88,62 @@ function hashString(value = '') {
   return hash >>> 0;
 }
 
-function pickFrom(list, hash, salt = 0) {
-  return list[(hash + salt) % list.length];
+function pickFrom(list, seed, salt = '') {
+  const hash = hashString(`${seed}:${salt}`);
+  return list[hash % list.length];
 }
 
-function buildUniqueAppearance(persona, themeName) {
-  const seed = `${themeName}:${persona?.id || ''}:${persona?.name || ''}:${persona?.bio || ''}`;
+function pickByIndex(list, personaIndex = 0, multiplier = 1, offset = 0) {
+  return list[(Math.max(0, Number(personaIndex) || 0) * multiplier + offset) % list.length];
+}
+
+function inferGenderPresentation(persona, hash) {
+  const name = String(persona?.name || '').trim().toLowerCase();
+  const bio = String(persona?.bio || '').trim().toLowerCase();
+  const firstName = name.replace(/["“”'().]/g, '').split(/\s+/).filter(Boolean)[0] || '';
+  if (/\b(she|her|hers|woman|girl|lady|queen|bride|mother|mum|granny)\b/.test(bio) || FEMALE_NAME_HINTS.has(firstName)) {
+    return 'female';
+  }
+  if (/\b(he|him|his|man|boy|father|king|captain|sergeant|inspector)\b/.test(bio) || MALE_NAME_HINTS.has(firstName)) {
+    return 'male';
+  }
+  if (/\b(they|them|their|nonbinary|non-binary)\b/.test(bio) || NON_BINARY_NAME_HINTS.has(firstName)) {
+    return 'non-binary';
+  }
+  return ['male', 'female', 'non-binary'][hash % 3];
+}
+
+function buildNameSpecificDetails(persona, themeName, hash) {
+  const name = String(persona?.name || '').trim();
+  const bio = String(persona?.bio || '').trim();
+  const haystack = `${name} ${bio}`;
+  const matches = NAME_DETAIL_HINTS
+    .filter(([pattern]) => pattern.test(haystack))
+    .map(([, detail]) => detail);
+  const themeDetail = `${String(themeName || 'Default').trim()} theme influence in clothing color and attitude only, not background`;
+  const seed = `${themeName}:${persona?.id || ''}:${persona?.name || ''}:details`;
+  const fallback = [
+    `${pickFrom(['small scar through one eyebrow', 'chipped tooth', 'asymmetrical grin', 'heavy under-eye shadows', 'sharp hooked nose', 'freckled cheeks', 'crooked ears', 'prominent chin'], seed, 'facial-mark')}`,
+    `${pickFrom(['jacket pin', 'frayed collar', 'torn sleeve cuff', 'patched shoulder', 'scuffed lapel', 'loose neck scarf', 'worn hoodie strings', 'creased shirt pocket'], seed, 'name-detail')} inspired by the name`,
+  ];
+  return [...matches.slice(0, 3), themeDetail, ...fallback].slice(0, 5).join('; ');
+}
+
+function buildUniqueAppearance(persona, themeName, personaIndex = 0) {
+  const seed = `${themeName}:${personaIndex}:${persona?.id || ''}:${persona?.name || ''}:${persona?.bio || ''}`;
   const hash = hashString(seed);
+  const themeOffset = hashString(String(themeName || 'Default'));
+  const genderPresentation = inferGenderPresentation(persona, hash);
+  const nameSpecificDetails = buildNameSpecificDetails(persona, themeName, hash);
   return [
-    `${pickFrom(SKIN_TONES, hash, 3)}, ${pickFrom(FACE_SHAPES, hash, 11)}`,
-    `${pickFrom(HAIR_COLORS, hash, 19)} ${pickFrom(HAIR_STYLES, hash, 29)}`,
-    `${pickFrom(BODY_TYPES, hash, 37)}`,
-    `wearing a ${pickFrom(CLOTHING, hash, 43)}`,
-    `${pickFrom(ACCESSORIES, hash, 53)}`,
-    `expression: ${pickFrom(EXPRESSIONS, hash, 61)}`,
+    `gender: ${genderPresentation}`,
+    `${pickByIndex(SKIN_TONES, personaIndex, 1, themeOffset)}, ${pickByIndex(FACE_SHAPES, personaIndex, 3, themeOffset)}`,
+    `${pickByIndex(HAIR_COLORS, personaIndex, 5, themeOffset)} ${pickByIndex(HAIR_STYLES, personaIndex, 7, themeOffset)}`,
+    `${pickByIndex(BODY_TYPES, personaIndex, 3, themeOffset)}`,
+    `wearing a ${pickByIndex(CLOTHING, personaIndex, 5, themeOffset)}`,
+    `${pickByIndex(ACCESSORIES, personaIndex, 7, themeOffset)}`,
+    `expression: ${pickByIndex(EXPRESSIONS, personaIndex, 3, themeOffset)}`,
+    `name/theme-specific details: ${nameSpecificDetails}`,
   ].join('; ');
 }
 
@@ -71,11 +169,11 @@ function filenameFromImageSrc(imageSrc, fallbackId) {
   return `${safeFallback || 'persona'}.png`;
 }
 
-function buildAvatarPrompt(persona, themeName) {
+function buildAvatarPrompt(persona, themeName, personaIndex = 0) {
   const name = String(persona?.name || 'Unknown Persona').trim();
   const bio = String(persona?.bio || '').trim();
   const canonicalThemeName = String(themeName || 'Default').trim();
-  const uniqueAppearance = buildUniqueAppearance(persona, canonicalThemeName);
+  const uniqueAppearance = buildUniqueAppearance(persona, canonicalThemeName, personaIndex);
   return [
     'Create one standardized transparent PNG persona portrait for a social-deduction party game.',
     STYLE_GUIDE_NOTES,
@@ -86,9 +184,12 @@ function buildAvatarPrompt(persona, themeName) {
     'Use transparent empty padding around the character; no environment, no props that extend outside the safe area, no colored backdrop, no shadows on a floor.',
     'No text, no logo, no watermark, no border, no frame.',
     `Unique visual design for this persona: ${uniqueAppearance}.`,
+    'The gender must match the gender stated above; do not default every character to female.',
     'Do not reuse the same face, hair, clothing, body type, or expression from other personas.',
-    'Expressive face with readable personality and silhouette-friendly shape language.',
-    'Avoid realistic photo style; prefer vivid illustration/rendered-comic hybrid.',
+    'Small name/theme-inspired accessory is allowed only if it stays inside the bust crop; no large props and no background scene.',
+    'Expressive face with readable suspicious party-game personality and silhouette-friendly shape language.',
+    'Avoid realistic photo style; prefer gritty adult cartoon / punk comic hybrid.',
+    'Negative style constraints: not cute, not pretty doll, not kawaii, not chibi, not anime, not wholesome children’s cartoon, not generic young woman, not glamour portrait.',
     'Do not include copyrighted characters or recognizable real people.',
     `Theme: ${canonicalThemeName}.`,
     `Character name: ${name}.`,
@@ -103,7 +204,7 @@ function buildRows(themeName, personas, { batchLabel = 'all-themes' } = {}) {
     const imageSrc = String(persona?.imageSrc || '').trim();
     const filename = filenameFromImageSrc(imageSrc, personaId);
     const outputPath = path.posix.join('/assets/themes', themeFolder, 'personas', filename);
-    const prompt = buildAvatarPrompt(persona, themeName);
+    const prompt = buildAvatarPrompt(persona, themeName, index);
     return {
       batchLabel,
       themeName,
