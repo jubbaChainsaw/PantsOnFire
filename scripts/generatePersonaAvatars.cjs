@@ -108,7 +108,7 @@ function usage() {
   console.log('  --reference-image <path>  Legacy: local file for fal Nano Banana edit only (WAN ignores this)');
   console.log(`  --style-reference-url <u> Override WAN style-only reference URL (default: ${DEFAULT_PERSONA_STYLE_REFERENCE_URL})`);
   console.log('  --negative-prompt <text>  Override WAN negative prompt (max 500 chars; has a strong default)');
-  console.log(`  (WAN) Prompts are packed to ${WAN_EDIT_PROMPT_CHAR_LIMIT} chars for fal API; long exports keep style preamble + GENDER LOCK/tailored block.`);
+  console.log(`  (WAN) Prompt is sent as exported (no preamble); fal hard-caps at ${WAN_EDIT_PROMPT_CHAR_LIMIT} chars (tail ellipsis only if needed).`);
   console.log('  --chroma-key              Legacy: post-process flat #FF00FF field → alpha via sharp (default: off; white plate PNGs)');
   console.log('  --no-chroma-key           Skip magenta chroma post (same as default)');
   console.log(`  --chroma-tolerance <0-255> Per-channel distance for strict key box (default: ${DEFAULT_CHROMA_TOLERANCE})`);
@@ -187,9 +187,17 @@ function getPersonaOutputPath(record) {
   return path.join(repoRoot, 'public', normalized);
 }
 
+/** Persona exports use a single fixed MTV-style block; never append MANDATORY OUTPUT SPEC or other wrappers. */
+function isFixedMtvPersonaPrompt(prompt = '') {
+  const s = String(prompt || '');
+  return s.includes('STRICT primary style reference') && s.includes('Create a stylised 2D 90s adult MTV');
+}
+
 function standardizePrompt(prompt = '') {
+  const trimmed = String(prompt || '').trim();
+  if (isFixedMtvPersonaPrompt(trimmed)) return trimmed;
   return [
-    String(prompt || '').trim(),
+    trimmed,
     '',
     STANDARD_PERSONA_OUTPUT_SPEC,
   ].filter(Boolean).join('\n');
@@ -251,15 +259,7 @@ function isWanV27EditModel(modelId = '') {
   return String(modelId || '').replace(/^\/+/, '').includes('fal-ai/wan/v2.7/edit');
 }
 
-function wanEditStylePreamble() {
-  return (
-    'Img1=style-only (bold ink, cel-shade, readable color); never copy identity. '
-    + 'Flat SOLID pure white (#FFFFFF) backdrop only; bold thick BLACK outer outline around full silhouette; '
-    + '512 bust, 1 character, zero text/names/captions in-image. Subject: '
-  );
-}
-
-/** WAN appends MANDATORY OUTPUT SPEC via standardizePrompt(); that duplicates negatives and blows the 2k cap—drop it here. */
+/** WAN appends MANDATORY OUTPUT SPEC only for legacy prompts; MTV export has no appendix—strip if present. */
 function stripWanDuplicateOutputSpec(promptText) {
   const s = String(promptText || '');
   const marker = '\nMANDATORY OUTPUT SPEC:';
@@ -268,56 +268,13 @@ function stripWanDuplicateOutputSpec(promptText) {
   return s.slice(0, idx).trimEnd();
 }
 
-/**
- * fal WAN edit allows at most WAN_EDIT_PROMPT_CHAR_LIMIT characters on `prompt`.
- * TITLE COSTUME MANDATE must survive truncation (it lives near the end of exports).
- */
-const TITLE_COSTUME_MARK = 'TITLE COSTUME MANDATE (NON-NEGOTIABLE):';
-const THEME_CONTEXT_MARK = '\nTheme context for styling only';
-const HERO_LOOK_MARK = '\n\nHERO LOOK';
-
-function extractTitleCostumeMandateBlock(fullPrompt) {
-  const s = String(fullPrompt || '');
-  const i = s.indexOf(TITLE_COSTUME_MARK);
-  if (i === -1) return { title: '', withoutTitle: s.trim() };
-  const heroIdx = s.indexOf(HERO_LOOK_MARK, i);
-  const themeIdx = s.indexOf(THEME_CONTEXT_MARK, i);
-  const ends = [heroIdx, themeIdx].filter((n) => n > i);
-  const j = ends.length ? Math.min(...ends) : -1;
-  const title = (j === -1 ? s.slice(i) : s.slice(i, j)).trim();
-  const before = s.slice(0, i).trimEnd();
-  const after = j === -1 ? '' : s.slice(j).trimStart();
-  const withoutTitle = [before, after].filter(Boolean).join('\n\n').trim();
-  return { title, withoutTitle };
-}
-
-function fitWanEditPromptToLimit(preamble, corePrompt) {
+/** fal WAN edit: single string, no preamble; only fal’s character cap may trim the tail. */
+function fitWanCoreToLimit(corePrompt) {
   const max = WAN_EDIT_PROMPT_CHAR_LIMIT;
-  const p = String(preamble || '');
-  const stripped = String(corePrompt || '').trim();
-  const { title, withoutTitle } = extractTitleCostumeMandateBlock(stripped);
-  const prefix = title ? `${p}${title}\n` : p;
-  const maxCore = max - prefix.length;
-
-  let core = withoutTitle.trim();
-  let full = `${prefix}${core}`;
-  if (full.length <= max) return { text: full, truncated: false };
-
-  const genderIdx = core.indexOf('GENDER LOCK');
-  const heroLookIdx = core.indexOf('HERO LOOK');
-  if (genderIdx >= 0) core = core.slice(genderIdx).trimStart();
-  else if (heroLookIdx >= 0) core = core.slice(heroLookIdx).trimStart();
-  else core = core.slice(Math.max(0, core.length - maxCore)).trimStart();
-
-  full = `${prefix}${core}`;
-  if (full.length <= max) return { text: full, truncated: true };
-
+  const s = String(corePrompt || '').trim();
+  if (s.length <= max) return { text: s, truncated: false };
   const ellipsis = '…';
-  if (maxCore < ellipsis.length + 8) {
-    return { text: prefix.slice(0, max).trimEnd(), truncated: true };
-  }
-  core = `${core.slice(0, maxCore - ellipsis.length).trimEnd()}${ellipsis}`;
-  return { text: `${prefix}${core}`, truncated: true };
+  return { text: `${s.slice(0, max - ellipsis.length).trimEnd()}${ellipsis}`, truncated: true };
 }
 
 async function generateWithFalWanEdit({
@@ -331,15 +288,13 @@ async function generateWithFalWanEdit({
 }) {
   const refUrl = String(styleReferenceUrl || DEFAULT_PERSONA_STYLE_REFERENCE_URL).trim();
   const neg = String(negativePrompt || DEFAULT_PERSONA_NEGATIVE_PROMPT).trim().slice(0, 500);
-  const preamble = wanEditStylePreamble();
   const withoutDupSpec = stripWanDuplicateOutputSpec(String(prompt || '').trim());
-  const beforeFitLen = `${preamble}${withoutDupSpec}`.length;
-  const fit = fitWanEditPromptToLimit(preamble, withoutDupSpec);
+  const beforeFitLen = withoutDupSpec.length;
+  const fit = fitWanCoreToLimit(withoutDupSpec);
   if (fit.truncated) {
     console.warn(
-      `[generatePersonaAvatars] WAN prompt packed to ${WAN_EDIT_PROMPT_CHAR_LIMIT} chars (fal API hard limit). `
-      + `Length before packing (after dropping duplicate output spec): ${beforeFitLen}. `
-      + 'The tail was trimmed with an ellipsis; this is expected when preamble + mandate + hero text exceed the cap.',
+      `[generatePersonaAvatars] WAN prompt truncated to ${WAN_EDIT_PROMPT_CHAR_LIMIT} chars (fal API hard limit). `
+      + `Length before trim: ${beforeFitLen}.`,
     );
   }
   const combined = fit.text.length > WAN_EDIT_PROMPT_CHAR_LIMIT
