@@ -208,8 +208,9 @@ function buildCompactPersonaPrompt(persona, themeName, personaIndex = 0, tailore
     `ROSTER NAME (reasoning only; never paint as lettering): ${name}.`,
   ].filter(Boolean);
   let body = chunks.join('\n\n');
-  if (body.length > 2050) {
-    body = `${body.slice(0, 2049).trimEnd()}…`;
+  // Keep headroom for WAN preamble (~245) + hoisted title mandate so fal’s 2k cap rarely trims at send time.
+  if (body.length > 1650) {
+    body = `${body.slice(0, 1649).trimEnd()}…`;
   }
   return body;
 }

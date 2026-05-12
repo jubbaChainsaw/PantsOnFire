@@ -337,8 +337,9 @@ async function generateWithFalWanEdit({
   const fit = fitWanEditPromptToLimit(preamble, withoutDupSpec);
   if (fit.truncated) {
     console.warn(
-      `[generatePersonaAvatars] WAN prompt packed to ${WAN_EDIT_PROMPT_CHAR_LIMIT} chars (fal API limit). `
-      + `Length before packing (after dropping duplicate output spec): ${beforeFitLen}.`
+      `[generatePersonaAvatars] WAN prompt packed to ${WAN_EDIT_PROMPT_CHAR_LIMIT} chars (fal API hard limit). `
+      + `Length before packing (after dropping duplicate output spec): ${beforeFitLen}. `
+      + 'The tail was trimmed with an ellipsis; this is expected when preamble + mandate + hero text exceed the cap.',
     );
   }
   const combined = fit.text.length > WAN_EDIT_PROMPT_CHAR_LIMIT
