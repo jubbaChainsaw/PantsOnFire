@@ -16,13 +16,13 @@ Name: "{{CHARACTER_NAME}}"
 Theme: "{{THEME}}"
 Personality: "{{PERSONALITY_DESCRIPTION}}"
 
-The character MUST visually reflect the name, theme and personality. Interpret meaningful words in the name as visual traits, hairstyle, clothing, colours, accessories, patterns or attitude. Use the first name to strongly influence gender presentation and age style.
+The character MUST visually reflect the name, theme and personality. Interpret meaningful words in the name as visual traits, hairstyle, clothing, colours, accessories, patterns or attitude. Use the first name to strongly influence gender presentation, skin tone and age style.
 
 Theme elements must clearly influence outfit, styling and persona. Personality must strongly influence expression, eyes, mouth, posture and energy.
 
 Bust portrait ONLY. Show head, shoulders and upper chest only. Character facing mostly toward camera. Entire head and hair fully inside frame. No hands, legs or full body.
 
-Randomise ethnicity, facial structure, age, hairstyle and accessories while keeping the same art style universe.
+Randomise ethnicity, skin tone, facial structure, age, hairstyle and accessories while keeping the same art style universe.
 
 STYLE RULES:
 thick black outlines, bold silhouette, exaggerated cartoon features, expressive face, cel shading, clean shapes, high contrast, edgy modern party-game style, no realism, no text, no logos, no scenery, no extra objects.`;
