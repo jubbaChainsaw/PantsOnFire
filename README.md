@@ -225,6 +225,8 @@ Output:
 - `exports/persona-avatar-prompts.json`
 - `exports/persona-avatar-prompts.csv`
 
+Each row’s `prompt` (and `wanPrompt`) is a **short WAN-first** block: layout, one-line style anchor, theme, optional title-costume mandate, then a distilled **HERO LOOK** clause so traits are not buried under a long style essay.
+
 ### 2) Generate all persona avatars (fal.ai WAN edit by default)
 
 Set your API key:
