@@ -274,16 +274,20 @@ function stripWanDuplicateOutputSpec(promptText) {
  */
 const TITLE_COSTUME_MARK = 'TITLE COSTUME MANDATE (NON-NEGOTIABLE):';
 const THEME_CONTEXT_MARK = '\nTheme context for styling only';
+const HERO_LOOK_MARK = '\n\nHERO LOOK';
 
 function extractTitleCostumeMandateBlock(fullPrompt) {
   const s = String(fullPrompt || '');
   const i = s.indexOf(TITLE_COSTUME_MARK);
   if (i === -1) return { title: '', withoutTitle: s.trim() };
-  const j = s.indexOf(THEME_CONTEXT_MARK, i);
+  const heroIdx = s.indexOf(HERO_LOOK_MARK, i);
+  const themeIdx = s.indexOf(THEME_CONTEXT_MARK, i);
+  const ends = [heroIdx, themeIdx].filter((n) => n > i);
+  const j = ends.length ? Math.min(...ends) : -1;
   const title = (j === -1 ? s.slice(i) : s.slice(i, j)).trim();
   const before = s.slice(0, i).trimEnd();
   const after = j === -1 ? '' : s.slice(j).trimStart();
-  const withoutTitle = [before, after].filter(Boolean).join('\n').trim();
+  const withoutTitle = [before, after].filter(Boolean).join('\n\n').trim();
   return { title, withoutTitle };
 }
 
@@ -300,9 +304,9 @@ function fitWanEditPromptToLimit(preamble, corePrompt) {
   if (full.length <= max) return { text: full, truncated: false };
 
   const genderIdx = core.indexOf('GENDER LOCK');
-  const tailoredIdx = core.indexOf('Specific tailored look for this persona');
+  const heroLookIdx = core.indexOf('HERO LOOK');
   if (genderIdx >= 0) core = core.slice(genderIdx).trimStart();
-  else if (tailoredIdx >= 0) core = core.slice(tailoredIdx).trimStart();
+  else if (heroLookIdx >= 0) core = core.slice(heroLookIdx).trimStart();
   else core = core.slice(Math.max(0, core.length - maxCore)).trimStart();
 
   full = `${prefix}${core}`;
@@ -555,14 +559,14 @@ async function run() {
     ensureDir(path.dirname(outputPath));
     const imageBuffer = options.provider === 'openai'
       ? await generateWithOpenAi({
-          prompt: standardizePrompt(record.prompt),
+          prompt: standardizePrompt(String(record.wanPrompt || record.prompt || '').trim()),
           apiKey,
           model,
           size: options.size,
           quality: options.quality,
         })
       : await generateWithFal({
-          prompt: standardizePrompt(record.prompt),
+          prompt: standardizePrompt(String(record.wanPrompt || record.prompt || '').trim()),
           apiKey,
           model,
           size: options.size,

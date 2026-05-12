@@ -7,19 +7,9 @@ const { extractDisplayNameVisualSteer, formatNameVisualMandateBlock } = require(
 const repoRoot = path.resolve(__dirname, '..');
 const outputDir = path.join(repoRoot, 'exports');
 
-const STYLE_GUIDE_NOTES = [
-  'Style guide: 1990s gritty adult-animation cartoon bust portrait (MTV-era rude-toon energy: deliberately awkward, angular, and "ugly-cool", not polished Disney).',
-  'Line art: thick, bold, slightly irregular black outlines with hand-inked wobble.',
-  'Color: saturated cel shading with crisp shadow shapes—readable midtones; avoid mud-splattered clothing, heavy grease smears, and sickly yellow teeth.',
-  'Proportions: caricature exaggeration—when a tailored character block is present in this prompt, follow THAT body type, neck length, weight, and posture (do not default every portrait to the same lanky neck or same face template).',
-  'Eyes: very large bulging eyes with tiny black pin-prick pupils for manic, vacant, or intense stares.',
-  'Hair: big messy clumps, spikes, mullets, unnatural accent colors where it fits the character.',
-  'Clothing: subculture costume to mid-chest only—faded graphic tees (no readable logos), punk/metal/streetwear, studs, chains, weathered jackets, theme-appropriate garb.',
-  'Mood: edgy party-game suspicion; expressive mouths okay—keep teeth neutral (off-white or closed lips), not yellow nicotine horror.',
-  'Avoid cute, pretty, soft, doll-like, kawaii, chibi, anime sparkle eyes, children’s-book, glossy mobile-game, or generic influencer glam.',
-  'Use one consistent portrait system for every persona: same camera distance, same body scale, same lighting angle, same line weight family.',
-  'Original character art only (no logos, no text, no watermark, no recognizable real-person likeness, no copyrighted character).',
-].join(' ');
+/** Single style line for compact prompts (hosted reference carries most look). */
+const REF_STYLE_ONE_LINER =
+  'Cel-shaded rude-toon bust (1990s adult-animation party-game energy): thick black ink, big pin-prick eyes, readable colors — not filthy, not cute, not anime; match hosted style reference for line weight and shading only, never its character identity.';
 
 const FACE_SHAPES = ['heavy square jaw', 'long narrow face', 'crooked nose and pointed chin', 'broad cheekbones with sunken cheeks', 'round face with intense eyes', 'sharp triangular face', 'wide jaw with thick neck', 'gaunt face with deep eye bags'];
 const HAIR_STYLES = ['short spiked hair', 'messy medium punk hair', 'shaggy mullet', 'buzzed sides with jagged top', 'greasy side part', 'wild curly hair', 'two messy buns', 'long tied-back hair with loose strands'];
@@ -149,7 +139,45 @@ function loadTailoredSegmentMap() {
   }, {});
 }
 
-function buildAvatarPrompt(persona, themeName, personaIndex = 0, tailoredSegments = {}) {
+function betweenMarkers(full, start, end) {
+  const s = String(full || '');
+  const a = s.indexOf(start);
+  if (a === -1) return '';
+  if (!end) return s.slice(a).trim();
+  const b = s.indexOf(end, a + start.length);
+  if (b === -1) return s.slice(a).trim();
+  return s.slice(a, b).trim();
+}
+
+/** Pull highest-signal clauses from hyperspecific tailored text for short WAN prompts. */
+function distillTailoredForWan(tailored, maxLen = 1350) {
+  const t = String(tailored || '').replace(/\s+/g, ' ').trim();
+  if (!t) return '';
+  const faceI = t.indexOf('Face:');
+  const head = t.includes('GENDER LOCK')
+    ? betweenMarkers(t, 'GENDER LOCK', 'Face:')
+    : (faceI > 0 ? t.slice(0, faceI).trim() : '');
+  const hairToTheme = betweenMarkers(t, 'Hair:', 'Theme bust costume steer:');
+  const parts = [
+    head,
+    betweenMarkers(t, 'Face:', 'Facial hair:'),
+    betweenMarkers(t, 'Facial hair:', 'Hair:'),
+    hairToTheme,
+    betweenMarkers(t, 'Theme bust costume steer:', 'Silhouette quirk:'),
+    betweenMarkers(t, 'Silhouette quirk:', 'Acting vibe from bio'),
+  ];
+  if (t.includes('Acting vibe from bio')) {
+    parts.push(betweenMarkers(t, 'Acting vibe from bio', ''));
+  }
+  let out = parts.filter(Boolean).join(' ');
+  if (out.length > maxLen) out = `${out.slice(0, maxLen - 1).trimEnd()}…`;
+  return out;
+}
+
+/**
+ * WAN-first compact prompt: layout + style + title costume + distilled hero traits (no long guide wall).
+ */
+function buildCompactPersonaPrompt(persona, themeName, personaIndex = 0, tailoredSegments = {}) {
   const name = String(persona?.name || 'Unknown Persona').trim();
   const bio = String(persona?.bio || '').trim();
   const nameVisualMandate = formatNameVisualMandateBlock(name);
@@ -157,56 +185,33 @@ function buildAvatarPrompt(persona, themeName, personaIndex = 0, tailoredSegment
   const personaId = String(persona?.id || '').trim();
   const tailoredLook = typeof tailoredSegments[personaId] === 'string' ? tailoredSegments[personaId].trim() : '';
 
-  const framing = [
-    'Create one standardized 512-square persona illustration for a social-deduction party game.',
-    STYLE_GUIDE_NOTES,
-    'Background: perfectly flat, uniform SOLID pure white only — #FFFFFF (clean paper white), full-bleed to all edges; no gradients, no texture, no scenery, no floor, no cast shadow on the backdrop.',
-    'Bold thick BLACK outer ink outline around the entire character (and costume edges) separating the figure from the white field; outline must be opaque black (no soft grey halation ring).',
-    'Single character only, centered, facing camera in the same relaxed front-facing bust pose for every persona.',
-    'Pose must be consistent: shoulders square to camera, head upright, arms and hands out of frame, no action pose, no full body.',
-    'Consistent framing for every persona: head and upper torso visible, top of head around 10% from the top edge, shoulder line around 62%, torso ending around 85% from the top edge.',
-    'Use only flat white (#FFFFFF) outside the black silhouette outline inside the frame; no props or scenery beyond the bust crop.',
-    'Exactly one character; do not mix another roster persona’s signature costume (no random leopard print or pink fur unless the title mandate requires it).',
-    'CRITICAL — zero readable characters in the image: no letters, numbers, nametags, captions, speech bubbles, watermarks, logos, UI, or any written names (including on clothing, badges, or props).',
-    'No border or frame beyond the illustration itself.',
-    'Roster display titles carry locked costume cues: when the TITLE COSTUME MANDATE block appears later, those hair, garment, and prop choices are authoritative on the bust (do not swap them for unrelated generic wardrobe).',
-  ];
-
-  if (tailoredLook) {
-    return [
-      ...framing,
-      `Specific tailored look for this persona (follow closely; keep them visually distinct from other roster characters): ${tailoredLook}`,
-      'The tailored block OVERRIDES generic defaults elsewhere in this prompt (including default body/neck proportions), except the TITLE COSTUME MANDATE block (when present below) always wins for title costume keywords—prints, fur, hair silhouette, headphones, hats, blazers, glasses, etc.',
-      'Match the age, ethnicity cues, and gender presentation implied by the description; obey any GENDER LOCK line literally; do not swap gender or default to a generic young woman.',
-      'Do not reuse the same face, hair, clothing, body type, or expression from other personas.',
-      'Small name/theme-inspired accessory is allowed only if it stays inside the bust crop; no large props and no background scene.',
-      'Expressive face with readable suspicious party-game personality and silhouette-friendly shape language.',
-      'Avoid realistic photo style; keep the 1990s adult-animation cartoon / cel comic hybrid—readable faces for small UI, not filth-forward horror.',
-      'Negative style constraints: not cute, not pretty doll, not kawaii, not chibi, not anime, not wholesome children’s cartoon, not glamour portrait.',
-      'Do not include copyrighted characters or recognizable real people.',
-      ...(nameVisualMandate ? [nameVisualMandate] : []),
-      `Theme context for styling only — never render this theme title as text: ${canonicalThemeName}.`,
-      `Figure identity for your reasoning only — never paint as lettering, badges, or captions: ${name}.`,
-      `Expression and backstory for mood only — never quote or display as text: ${bio}`,
-    ].join(' ');
-  }
-
-  const uniqueAppearance = buildUniqueAppearance(persona, canonicalThemeName, personaIndex);
-  return [
-    ...framing,
-    `Unique visual design for this persona: ${uniqueAppearance}.`,
-    'The gender must match the gender stated above; do not default every character to female.',
-    'Do not reuse the same face, hair, clothing, body type, or expression from other personas.',
-    'Small name/theme-inspired accessory is allowed only if it stays inside the bust crop; no large props and no background scene.',
-    'Expressive face with readable suspicious party-game personality and silhouette-friendly shape language.',
-    'Avoid realistic photo style; prefer bold adult cartoon / punk comic hybrid—readable at avatar size, not filth-forward.',
-    'Negative style constraints: not cute, not pretty doll, not kawaii, not chibi, not anime, not wholesome children’s cartoon, not generic young woman, not glamour portrait.',
-    'Do not include copyrighted characters or recognizable real people.',
-    ...(nameVisualMandate ? [nameVisualMandate] : []),
-    `Theme context for styling only — never render this theme title as text: ${canonicalThemeName}.`,
-    `Figure identity for your reasoning only — never paint as lettering, badges, or captions: ${name}.`,
-    `Expression and backstory for mood only — never quote or display as text: ${bio}`,
+  const layout = [
+    'PERSONA BUST — exactly one original character.',
+    'LAYOUT: 512 square; head + upper torso; front-facing; shoulders square; arms/hands out of frame.',
+    'BACKGROUND: flat pure white #FFFFFF full bleed; bold black outer silhouette ink; no floor shadow on backdrop.',
+    'NO TEXT: zero readable letters, numbers, logos, watermarks, nametags, captions, or UI in the image.',
   ].join(' ');
+
+  const hero = tailoredLook
+    ? distillTailoredForWan(tailoredLook, 1000)
+    : String(buildUniqueAppearance(persona, canonicalThemeName, personaIndex) || '').trim().slice(0, 800);
+
+  const bioShort = bio.length > 160 ? `${bio.slice(0, 160).trim()}…` : bio;
+
+  const chunks = [
+    layout,
+    `STYLE: ${REF_STYLE_ONE_LINER}`,
+    `THEME MOOD (never render this title as text): ${canonicalThemeName}.`,
+    nameVisualMandate,
+    `HERO LOOK — obey every clause (gender, age, face, hair, clothing, jewelry, expression): ${hero}`,
+    bioShort ? `VIBE FROM BIO (mood only; never quote as text): ${bioShort}` : '',
+    `ROSTER NAME (reasoning only; never paint as lettering): ${name}.`,
+  ].filter(Boolean);
+  let body = chunks.join('\n\n');
+  if (body.length > 2050) {
+    body = `${body.slice(0, 2049).trimEnd()}…`;
+  }
+  return body;
 }
 
 function buildRows(themeName, personas, { batchLabel = 'all-themes', tailoredSegments = {} } = {}) {
@@ -216,7 +221,7 @@ function buildRows(themeName, personas, { batchLabel = 'all-themes', tailoredSeg
     const imageSrc = String(persona?.imageSrc || '').trim();
     const filename = filenameFromImageSrc(imageSrc, personaId);
     const outputPath = path.posix.join('/assets/themes', themeFolder, 'personas', filename);
-    const prompt = buildAvatarPrompt(persona, themeName, index, tailoredSegments);
+    const prompt = buildCompactPersonaPrompt(persona, themeName, index, tailoredSegments);
     return {
       batchLabel,
       themeName,
@@ -227,6 +232,7 @@ function buildRows(themeName, personas, { batchLabel = 'all-themes', tailoredSeg
       filename,
       outputPath,
       prompt,
+      wanPrompt: prompt,
       avatarPrompt: prompt,
       id: personaId,
     };
