@@ -29,6 +29,7 @@ import {
   XCircle,
   Wifi,
   KeyRound,
+  LogOut,
   Copy,
   Mic,
   MicOff,
@@ -81,6 +82,26 @@ import {
   getThemeOptions,
   normalizeUnlockedThemePackIds,
 } from "./data/themeCatalog";
+import {
+  ADDON_TWIST_TRUTH,
+  computeEntitlements,
+  DLC_STORE_BLURB,
+  effectiveUnlockedThemePackIds,
+  SUBSCRIPTION_TIERS,
+  TIER_FIBBER,
+  TIER_HOST_MOST,
+  TIER_RANK,
+} from "./account/tierModel";
+import {
+  clearAccountSession,
+  loginAccount,
+  purchaseAddonTwistTruthDemo,
+  purchaseDlcPackDemo,
+  purchaseTierDemo,
+  readAccountSession,
+  registerAccount,
+  syncSessionPackIds,
+} from "./account/accountStorage";
 import { getThemePackRedeemOffer } from "./data/dlc/themeRedeemCodes";
 import {
   COPY_BANK,
@@ -2752,6 +2773,141 @@ function RulesSplashScreen({ onContinue, theme, isOnlineMode = false }) {
     </TopFrame>
   );
 }
+function AccountGateScreen({ onSignedIn }) {
+  const [mode, setMode] = useState("register");
+  const [displayName, setDisplayName] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirm, setConfirm] = useState("");
+  const [error, setError] = useState("");
+  const resetError = () => setError("");
+  const submitRegister = (event) => {
+    event.preventDefault();
+    resetError();
+    if (password !== confirm) {
+      setError("Passwords do not match.");
+      return;
+    }
+    const result = registerAccount({ displayName, password });
+    if (!result.ok) {
+      setError(result.error || "Could not create account.");
+      return;
+    }
+    onSignedIn(result.session);
+  };
+  const submitLogin = (event) => {
+    event.preventDefault();
+    resetError();
+    const result = loginAccount({ displayName, password });
+    if (!result.ok) {
+      setError(result.error || "Could not sign in.");
+      return;
+    }
+    onSignedIn(result.session);
+  };
+  return (
+    <TopFrame theme="Default" allowScroll>
+      <div className="mx-auto flex min-h-[100dvh] max-w-md flex-col px-4 py-10">
+        <div className="text-center">
+          <div className="text-xs uppercase tracking-[0.35em] text-cyan-200/80">
+            Account
+          </div>
+          <h1 className="mt-2 text-2xl font-black text-yellow-300">
+            Sign in to play
+          </h1>
+          <p className="mt-2 text-sm text-white/75">
+            New players start as{" "}
+            <span className="font-semibold text-cyan-100">Fibber</span> (free)
+            so you can join online lobbies. Upgrade in the store to host local
+            or online games.
+          </p>
+        </div>
+        <GlassPanel className="mt-8 rounded-[2rem] border border-fuchsia-400/25 bg-black/35 p-6">
+          <div className="flex gap-2 rounded-2xl border border-white/10 bg-black/30 p-1">
+            <button
+              type="button"
+              className={`flex-1 rounded-xl px-3 py-2 text-sm font-black uppercase tracking-[0.12em] ${mode === "register" ? "bg-yellow-300 text-zinc-950" : "text-white/70"}`}
+              onClick={() => {
+                setMode("register");
+                resetError();
+              }}
+            >
+              Create account
+            </button>
+            <button
+              type="button"
+              className={`flex-1 rounded-xl px-3 py-2 text-sm font-black uppercase tracking-[0.12em] ${mode === "login" ? "bg-yellow-300 text-zinc-950" : "text-white/70"}`}
+              onClick={() => {
+                setMode("login");
+                resetError();
+              }}
+            >
+              Log in
+            </button>
+          </div>
+          <form
+            className="mt-6 space-y-4"
+            onSubmit={mode === "register" ? submitRegister : submitLogin}
+          >
+            <div>
+              <Label className="text-xs uppercase tracking-[0.2em] text-cyan-200/80">
+                Display name
+              </Label>
+              <Input
+                value={displayName}
+                onChange={(event) => setDisplayName(event.target.value)}
+                autoComplete="username"
+                className="mt-1 rounded-2xl border border-white/15 bg-white/10 text-white"
+              />
+            </div>
+            <div>
+              <Label className="text-xs uppercase tracking-[0.2em] text-cyan-200/80">
+                Password
+              </Label>
+              <Input
+                type="password"
+                value={password}
+                onChange={(event) => setPassword(event.target.value)}
+                autoComplete={
+                  mode === "register" ? "new-password" : "current-password"
+                }
+                className="mt-1 rounded-2xl border border-white/15 bg-white/10 text-white"
+              />
+            </div>
+            {mode === "register" && (
+              <div>
+                <Label className="text-xs uppercase tracking-[0.2em] text-cyan-200/80">
+                  Confirm password
+                </Label>
+                <Input
+                  type="password"
+                  value={confirm}
+                  onChange={(event) => setConfirm(event.target.value)}
+                  autoComplete="new-password"
+                  className="mt-1 rounded-2xl border border-white/15 bg-white/10 text-white"
+                />
+              </div>
+            )}
+            {error && (
+              <div className="rounded-xl border border-red-400/30 bg-red-500/15 px-3 py-2 text-sm text-red-100">
+                {error}
+              </div>
+            )}
+            <Button
+              type="submit"
+              className="h-12 w-full rounded-2xl border-2 border-white bg-yellow-300 text-zinc-950"
+            >
+              {mode === "register" ? "Create Fibber account" : "Log in"}
+            </Button>
+          </form>
+          <p className="mt-4 text-center text-[0.65rem] text-white/55">
+            Accounts are stored on this device for now. A future update will
+            sync purchases with your real login.
+          </p>
+        </GlassPanel>
+      </div>
+    </TopFrame>
+  );
+}
 function HomeScreen({
   onNavigate,
   homeLine,
@@ -2761,6 +2917,9 @@ function HomeScreen({
   profileMenuOpen = false,
   onToggleProfileMenu = () => {},
   onSelectProfileMenu = () => {},
+  accountTierLabel = "",
+  canCreateLocalGame = true,
+  canCreateOnlineLobby = true,
 }) {
   const logoSrc = adultMode ? NEW_UI_LOGO_18PLUS_SRC : NEW_UI_LOGO_MAIN_SRC;
   const displayName =
@@ -2819,6 +2978,14 @@ function HomeScreen({
                   <Settings className="h-4 w-4 text-cyan-200" />
                   Settings
                 </button>
+                <button
+                  type="button"
+                  className="mt-1 flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-sm text-rose-100 transition hover:bg-white/10"
+                  onClick={() => onSelectProfileMenu("sign-out")}
+                >
+                  <LogOut className="h-4 w-4 text-rose-200" />
+                  Sign out
+                </button>
               </div>
             )}
           </div>
@@ -2835,11 +3002,22 @@ function HomeScreen({
             <span>{displayName}</span>
             {username && <span className="text-white/65">(@{username})</span>}
           </div>
+          {accountTierLabel && (
+            <div className="mt-1 text-center text-[0.62rem] font-semibold uppercase tracking-[0.22em] text-amber-200/90">
+              {accountTierLabel}
+            </div>
+          )}
           <div className="mt-6 flex w-full flex-1 flex-col justify-center gap-4">
             {!joinOnlyMode && (
               <Button
                 className={NEW_UI_PRIMARY_BUTTON_CLASS}
                 onClick={() => onNavigate("setup")}
+                disabled={!canCreateLocalGame}
+                title={
+                  !canCreateLocalGame
+                    ? "Upgrade to Local Liar or higher in the store to host local pass-the-phone games."
+                    : undefined
+                }
               >
                 <Play className="mr-2 h-5 w-5" />
                 Setup Game
@@ -2849,6 +3027,12 @@ function HomeScreen({
               <Button
                 className={NEW_UI_PRIMARY_BUTTON_CLASS}
                 onClick={() => onNavigate("online-setup")}
+                disabled={!canCreateOnlineLobby}
+                title={
+                  !canCreateOnlineLobby
+                    ? "Upgrade to Suspect or higher in the store to create online lobbies."
+                    : undefined
+                }
               >
                 <Wifi className="mr-2 h-5 w-5" />
                 Create Online Lobby
@@ -3929,6 +4113,7 @@ function SetupScreen(props) {
     adultMode,
     categoryCount,
     onOpenAdmin,
+    canOpenAdminDialog = true,
     onStart,
     onBack,
     setupLine,
@@ -4407,8 +4592,14 @@ function SetupScreen(props) {
                   {startLabel}
                 </Button>
                 <Button
-                  className="h-14 rounded-[1.5rem] border border-fuchsia-400/30 bg-fuchsia-500/10 text-white"
+                  className="h-14 rounded-[1.5rem] border border-fuchsia-400/30 bg-fuchsia-500/10 text-white disabled:opacity-40"
                   onClick={onOpenAdmin}
+                  disabled={!canOpenAdminDialog}
+                  title={
+                    !canOpenAdminDialog
+                      ? "Unlock Host with the Most or the Twist the Truth add-on to edit custom categories."
+                      : undefined
+                  }
                 >
                   Open Admin
                 </Button>
@@ -6515,10 +6706,19 @@ function StoreScreen({
   unlockedThemePackIds = [],
   onUnlockThemePack = () => {},
   onRedeemThemeCode = () => ({ status: "invalid-code" }),
+  accountSession = null,
+  allDlcIncluded = false,
+  hasTwistAddon = false,
+  onSimulateTierPurchase = () => {},
+  onSimulateTwistAddon = () => {},
 }) {
   const unlocked = new Set(unlockedThemePackIds || []);
   const [redeemCodeInput, setRedeemCodeInput] = useState("");
   const [redeemFeedback, setRedeemFeedback] = useState(null);
+  const [storeNotice, setStoreNotice] = useState(null);
+  const currentTierRank = accountSession
+    ? TIER_RANK[accountSession.tierId] ?? 0
+    : 0;
   const packNameById = useMemo(
     () =>
       Object.fromEntries(
@@ -6578,25 +6778,123 @@ function StoreScreen({
               Store
             </div>
             <div className="text-white/80 text-sm mt-1">
-              Unlock DLC theme bundles.
+              Subscriptions, add-ons, and DLC theme packs.
             </div>
           </div>
           <div className="w-[72px]" />
         </div>
+        {storeNotice && (
+          <div
+            className={`rounded-2xl border px-4 py-3 text-sm ${
+              String(storeNotice).startsWith("Successfully")
+                ? "border-emerald-400/30 bg-emerald-500/15 text-emerald-50"
+                : "border-red-300/40 bg-red-500/15 text-red-100"
+            }`}
+          >
+            {storeNotice}
+          </div>
+        )}
+        <GlassPanel className="rounded-[2.5rem] border border-amber-300/25 bg-black/30 p-8">
+          <div className="flex items-center gap-3 mb-3">
+            <Star className="h-6 w-6 text-amber-200" />
+            <h2 className="text-2xl font-black text-amber-200">Subscriptions</h2>
+          </div>
+          {accountSession && (
+            <p className="text-sm text-white/70 mb-4">
+              Signed in as{" "}
+              <span className="font-semibold text-cyan-100">
+                {accountSession.displayName}
+              </span>
+              . Buttons below simulate checkout on this device only.
+            </p>
+          )}
+          <div className="space-y-4">
+            {SUBSCRIPTION_TIERS.map((tier) => {
+              const targetRank = TIER_RANK[tier.tierId] ?? 0;
+              const owned = currentTierRank >= targetRank;
+              const isFibber = tier.tierId === TIER_FIBBER;
+              return (
+                <div
+                  key={tier.tierId}
+                  className="rounded-2xl border border-white/10 bg-black/25 p-4"
+                >
+                  <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                    <div>
+                      <div className="font-black text-lg text-white">
+                        {tier.name}{" "}
+                        <span className="text-yellow-300">{tier.priceLabel}</span>
+                      </div>
+                      <ul className="mt-2 list-disc space-y-1 pl-5 text-xs text-white/70">
+                        {tier.bullets.map((line) => (
+                          <li key={line}>{line}</li>
+                        ))}
+                      </ul>
+                      {tier.upgradeHint && (
+                        <div className="mt-2 text-[0.7rem] text-cyan-100/80">
+                          {tier.upgradeHint}
+                        </div>
+                      )}
+                    </div>
+                    {!isFibber && (
+                      <Button
+                        className="mt-2 shrink-0 rounded-xl bg-yellow-300 text-zinc-950 border border-white disabled:opacity-50 sm:mt-0"
+                        disabled={owned || !accountSession}
+                        onClick={() => {
+                          const msg = onSimulateTierPurchase(tier.tierId);
+                          setStoreNotice(msg || "");
+                        }}
+                      >
+                        {owned ? "Owned" : "Simulate purchase"}
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </GlassPanel>
+        <GlassPanel className="rounded-[2.5rem] border border-fuchsia-400/20 bg-black/25 p-8">
+          <div className="flex items-center gap-3 mb-3">
+            <Flame className="h-6 w-6 text-fuchsia-200" />
+            <h2 className="text-2xl font-black text-fuchsia-100">
+              {ADDON_TWIST_TRUTH.name}
+            </h2>
+          </div>
+          <p className="text-sm text-white/75 mb-4">{ADDON_TWIST_TRUTH.description}</p>
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="text-yellow-300 font-black">
+              {ADDON_TWIST_TRUTH.priceLabel}
+            </div>
+            <Button
+              className="rounded-xl bg-yellow-300 text-zinc-950 border border-white disabled:opacity-50"
+              disabled={
+                !accountSession ||
+                allDlcIncluded ||
+                hasTwistAddon ||
+                currentTierRank >= TIER_RANK[TIER_HOST_MOST]
+              }
+              onClick={() => {
+                const msg = onSimulateTwistAddon();
+                setStoreNotice(msg || "");
+              }}
+            >
+              {hasTwistAddon || allDlcIncluded
+                ? "Included"
+                : "Simulate purchase"}
+            </Button>
+          </div>
+        </GlassPanel>
         <GlassPanel className="rounded-[2.5rem] p-8 border-fuchsia-400/20 bg-black/25">
           <div className="flex items-center gap-3 mb-4">
             <ShoppingBag className="h-6 w-6 text-yellow-300" />
             <h2 className="text-2xl font-black text-yellow-300">
-              Theme DLC Bundles
+              Theme DLC packs
             </h2>
           </div>
-          <p className="text-white/75 mb-5">
-            Each pack is 99p and adds DLC themes marked with a fire icon in the
-            setup dropdown.
-          </p>
+          <p className="text-white/75 mb-5">{DLC_STORE_BLURB}</p>
           <div className="space-y-3">
             {(dlcThemePacks || []).map((pack) => {
-              const isUnlocked = unlocked.has(pack.id);
+              const isUnlocked = allDlcIncluded || unlocked.has(pack.id);
               return (
                 <div
                   key={pack.id}
@@ -7111,6 +7409,7 @@ function AdminDialog({
   open,
   onOpenChange,
   premiumEnabled,
+  categoryEditorUnlocked,
   customCategories,
   setCustomCategories,
 }) {
@@ -7173,9 +7472,10 @@ function AdminDialog({
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
-              {!premiumEnabled && (
+              {!premiumEnabled && !categoryEditorUnlocked && (
                 <div className="rounded-2xl border border-amber-400/20 bg-amber-500/10 p-4 text-amber-100 text-sm">
-                  Premium mode is off in this prototype.
+                  Category editor requires Host with the Most, the Twist the
+                  Truth add-on, or premium mode in settings (prototype).
                 </div>
               )}
               <div className="grid gap-3 md:grid-cols-2">
@@ -7194,7 +7494,7 @@ function AdminDialog({
               </div>
               <Button
                 className="rounded-2xl bg-yellow-300 px-4 py-2 text-zinc-950"
-                disabled={!premiumEnabled || !selectedCategory}
+                disabled={!(premiumEnabled || categoryEditorUnlocked) || !selectedCategory}
                 onClick={() => {
                   const next = customCategories.map((cat) =>
                     cat.id === selectedCategory
@@ -7235,7 +7535,9 @@ function AdminDialog({
   );
 }
 export default function App() {
-  const [screen, setScreen] = useState("home");
+  const [screen, setScreen] = useState(() =>
+    readAccountSession() ? "home" : "account-gate",
+  );
   const [isDesktopLandscapeWeb, setIsDesktopLandscapeWeb] = useState(false);
   const [players, setPlayers] = useState(() => {
     const initialThemeName = toCanonicalThemeName(
@@ -7293,6 +7595,9 @@ export default function App() {
     normalizeUnlockedThemePackIds(
       getStored("imposter-unlocked-theme-packs-v1", []),
     ),
+  );
+  const [accountSession, setAccountSession] = useState(() =>
+    readAccountSession(),
   );
   const [onlineMode, setOnlineMode] = useState(false);
   const [onlineRole, setOnlineRole] = useState("offline");
@@ -7404,8 +7709,15 @@ export default function App() {
     [getLine],
   );
   const themeOptions = useMemo(
-    () => getThemeOptions(unlockedThemePackIds),
-    [unlockedThemePackIds],
+    () =>
+      getThemeOptions(
+        effectiveUnlockedThemePackIds(accountSession, unlockedThemePackIds),
+      ),
+    [accountSession, unlockedThemePackIds],
+  );
+  const entitlements = useMemo(
+    () => computeEntitlements(accountSession),
+    [accountSession],
   );
   const normalizedThemeName = useMemo(
     () => normalizeThemeSelection(nameTheme, themeOptions),
@@ -7486,10 +7798,13 @@ export default function App() {
       ),
     [enabledPictureReleaseChannels],
   );
-  useEffect(
-    () => setStored("imposter-unlocked-theme-packs-v1", unlockedThemePackIds),
-    [unlockedThemePackIds],
-  );
+  useEffect(() => {
+    setStored("imposter-unlocked-theme-packs-v1", unlockedThemePackIds);
+    if (readAccountSession()) {
+      syncSessionPackIds(unlockedThemePackIds);
+      setAccountSession(readAccountSession());
+    }
+  }, [unlockedThemePackIds]);
   useEffect(
     () => setStored("imposter-theme-v3", normalizedThemeName),
     [normalizedThemeName],
@@ -7833,6 +8148,12 @@ export default function App() {
     if (target === "settings") {
       setActiveSettingsTab("general");
       setScreen("settings");
+      return;
+    }
+    if (target === "sign-out") {
+      clearAccountSession();
+      setAccountSession(null);
+      setScreen("account-gate");
     }
   }, []);
   const currentUserDisplayName = useMemo(
@@ -9316,9 +9637,53 @@ export default function App() {
     categoryOptions,
     canonicalThemeName,
   });
+  const accountTierLabel = useMemo(() => {
+    if (!accountSession) return "";
+    const row = SUBSCRIPTION_TIERS.find(
+      (tier) => tier.tierId === accountSession.tierId,
+    );
+    const base = row ? `${row.name} (${row.priceLabel})` : "";
+    const addon =
+      accountSession.addonTwistTruth &&
+      accountSession.tierId !== TIER_HOST_MOST
+        ? " · Twist the Truth"
+        : "";
+    return `${base}${addon}`.trim();
+  }, [accountSession]);
+  useEffect(() => {
+    if (
+      screen === "setup" &&
+      (!entitlements.canCreateLocalGame || WEB_JOIN_ONLY_MODE)
+    ) {
+      setScreen("home");
+    }
+    if (
+      screen === "online-setup" &&
+      (!entitlements.canCreateOnlineLobby || WEB_JOIN_ONLY_MODE)
+    ) {
+      setScreen("home");
+    }
+  }, [
+    screen,
+    entitlements.canCreateLocalGame,
+    entitlements.canCreateOnlineLobby,
+  ]);
 
   return (
     <>
+      {screen === "account-gate" && (
+        <AccountGateScreen
+          onSignedIn={(session) => {
+            setAccountSession(session);
+            setUnlockedThemePackIds(
+              normalizeUnlockedThemePackIds(
+                session.unlockedThemePackIds || [],
+              ),
+            );
+            setScreen("home");
+          }}
+        />
+      )}
       {screen === "home" && (
         <HomeScreen
           onNavigate={(to) => {
@@ -9360,6 +9725,9 @@ export default function App() {
             setHomeProfileMenuOpen((current) => !current)
           }
           onSelectProfileMenu={handleSelectHomeProfileMenu}
+          accountTierLabel={accountTierLabel}
+          canCreateLocalGame={entitlements.canCreateLocalGame}
+          canCreateOnlineLobby={entitlements.canCreateOnlineLobby}
         />
       )}
       {screen === "development-progress" && (
@@ -9372,7 +9740,9 @@ export default function App() {
           theme={canonicalThemeName}
         />
       )}
-      {screen === "setup" && (
+      {screen === "setup" &&
+        entitlements.canCreateLocalGame &&
+        !WEB_JOIN_ONLY_MODE && (
         <SetupScreen
           players={players}
           setPlayers={setPlayers}
@@ -9397,6 +9767,9 @@ export default function App() {
           setPremiumEnabled={setPremiumEnabled}
           categoryCount={activeCategories.length}
           onOpenAdmin={() => setAdminOpen(true)}
+          canOpenAdminDialog={
+            entitlements.categoryEditorAdmin || premiumEnabled
+          }
           onStart={startGame}
           onBack={() => setScreen("home")}
           setupLine={copyState.setup}
@@ -9406,7 +9779,9 @@ export default function App() {
           desktopLandscape={isDesktopLandscapeWeb}
         />
       )}
-      {screen === "online-setup" && (
+      {screen === "online-setup" &&
+        entitlements.canCreateOnlineLobby &&
+        !WEB_JOIN_ONLY_MODE && (
         <OnlineLobbySetupScreen
           hostName={onlineHostName}
           setHostName={setOnlineHostName}
@@ -9943,11 +10318,48 @@ export default function App() {
           theme={canonicalThemeName}
           dlcThemePacks={DLC_THEME_PACKS}
           unlockedThemePackIds={unlockedThemePackIds}
-          onUnlockThemePack={(packId) =>
+          accountSession={accountSession}
+          allDlcIncluded={entitlements.allDlcIncluded}
+          hasTwistAddon={Boolean(accountSession?.addonTwistTruth)}
+          onSimulateTierPurchase={(tierId) => {
+            if (!accountSession) return "Sign in from the account screen first.";
+            const result = purchaseTierDemo(accountSession.userId, tierId);
+            if (!result.ok) return result.error;
+            setAccountSession(result.session);
+            setUnlockedThemePackIds(
+              normalizeUnlockedThemePackIds(
+                result.session.unlockedThemePackIds || [],
+              ),
+            );
+            const label =
+              SUBSCRIPTION_TIERS.find((row) => row.tierId === tierId)?.name ||
+              tierId;
+            return `Successfully upgraded to ${label} (demo checkout).`;
+          }}
+          onSimulateTwistAddon={() => {
+            if (!accountSession) return "Sign in from the account screen first.";
+            const result = purchaseAddonTwistTruthDemo(accountSession.userId);
+            if (!result.ok) return result.error;
+            setAccountSession(result.session);
+            return "Successfully unlocked Twist the Truth (demo checkout).";
+          }}
+          onUnlockThemePack={(packId) => {
+            if (accountSession && !entitlements.allDlcIncluded) {
+              const result = purchaseDlcPackDemo(accountSession.userId, packId);
+              if (result.ok) {
+                setAccountSession(result.session);
+                setUnlockedThemePackIds(
+                  normalizeUnlockedThemePackIds(
+                    result.session.unlockedThemePackIds || [],
+                  ),
+                );
+                return;
+              }
+            }
             setUnlockedThemePackIds((current) =>
               unlockThemePackIds(current, packId),
-            )
-          }
+            );
+          }}
           onRedeemThemeCode={(rawCode) => {
             const redemption = redeemThemePackIds(
               unlockedThemePackIds,
@@ -9998,6 +10410,9 @@ export default function App() {
         open={adminOpen}
         onOpenChange={setAdminOpen}
         premiumEnabled={premiumEnabled}
+        categoryEditorUnlocked={
+          entitlements.categoryEditorAdmin || premiumEnabled
+        }
         customCategories={customCategories}
         setCustomCategories={setCustomCategories}
       />
