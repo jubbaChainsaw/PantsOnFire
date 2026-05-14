@@ -5,6 +5,7 @@
   "type": "module",
   "main": "node_modules/expo/AppEntry.js",
   "scripts": {
+    "start": "node server/lobbyServer.js",
     "dev": "vite",
     "lobby:server": "node server/lobbyServer.js",
     "build": "vite build",

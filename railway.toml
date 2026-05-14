@@ -1,0 +1,11 @@
+# Railway deploy config — https://docs.railway.com/develop/cli
+# Set variables in the Railway dashboard (see docs/railway-deploy.md).
+
+[build]
+builder = "NIXPACKS"
+
+[deploy]
+startCommand = "npm start"
+healthcheckPath = "/health"
+healthcheckTimeout = 30
+restartPolicyType = "ON_FAILURE"

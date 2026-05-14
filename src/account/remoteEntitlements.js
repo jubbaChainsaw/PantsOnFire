@@ -1,5 +1,6 @@
 import { normalizeUnlockedThemePackIds } from '../data/themeCatalog';
 import { TIER_FIBBER } from '../account/tierModel.js';
+import { getLobbyApiBase } from '../lib/lobbyApiEnv.js';
 
 /**
  * Build the same session shape the game uses from Supabase user + API payload.
@@ -30,7 +31,7 @@ export function buildSessionFromRemote(user, payload = {}) {
  * @returns {Promise<{ tierId: string, addonTwistTruth: boolean, unlockedThemePackIds: string[] }>}
  */
 export async function fetchRemoteEntitlements(accessToken) {
-  const res = await fetch('/api/me/entitlements', {
+  const res = await fetch(`${getLobbyApiBase()}/me/entitlements`, {
     headers: {
       Authorization: `Bearer ${accessToken}`,
       Accept: 'application/json',
