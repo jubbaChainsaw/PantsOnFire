@@ -4,6 +4,7 @@ import { createServer } from 'node:http';
 import { Server } from 'socket.io';
 import { AccessToken } from 'livekit-server-sdk';
 import { createLobbyStore, toClientSnapshot } from './storage/index.js';
+import { mountEntitlementsRoutes } from './entitlementsRoutes.js';
 
 const PORT = Number(process.env.LOBBY_SERVER_PORT || process.env.PORT || 8787);
 const CLIENT_ORIGINS_RAW = String(
@@ -107,6 +108,7 @@ const { store, kind: storeKind, close: closeStore } = await createLobbyStore({
 const app = express();
 app.use(cors({ origin: corsOriginHandler }));
 app.use(express.json({ limit: '1mb' }));
+mountEntitlementsRoutes(app);
 
 const httpServer = createServer(app);
 const io = new Server(httpServer, {

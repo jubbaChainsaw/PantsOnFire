@@ -1,9 +1,9 @@
-import React from 'react';
+import React, { useCallback, useEffect } from 'react';
 import { Platform, SafeAreaView, StatusBar, StyleSheet, Text, View } from 'react-native';
 import { WebView } from 'react-native-webview';
+import Purchases from 'react-native-purchases';
 
 const DEFAULT_WEB_URL = Platform.select({
-  // Android emulator localhost mapping.
   android: 'http://10.0.2.2:5173',
   ios: 'http://localhost:5173',
   default: 'http://localhost:5173',
@@ -11,24 +11,56 @@ const DEFAULT_WEB_URL = Platform.select({
 
 const GAME_URL = process.env.EXPO_PUBLIC_GAME_URL || DEFAULT_WEB_URL;
 
+const IOS_KEY = process.env.EXPO_PUBLIC_REVENUECAT_IOS_KEY || '';
+const ANDROID_KEY = process.env.EXPO_PUBLIC_REVENUECAT_ANDROID_KEY || '';
+
 export default function App() {
+  useEffect(() => {
+    const apiKey = Platform.OS === 'ios' ? IOS_KEY : ANDROID_KEY;
+    if (!apiKey) return undefined;
+    try {
+      Purchases.setLogLevel(Purchases.LOG_LEVEL.WARN);
+      Purchases.configure({ apiKey });
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.warn('[Purchases] configure failed', error);
+    }
+    return undefined;
+  }, []);
+
+  const onWebMessage = useCallback((event) => {
+    try {
+      const msg = JSON.parse(String(event?.nativeEvent?.data || '{}'));
+      if (msg.type === 'POF_SET_USER' && msg.userId) {
+        Purchases.logIn(String(msg.userId)).catch(() => {});
+      }
+      if (msg.type === 'POF_REFRESH_ENTITLEMENTS') {
+        Purchases.syncPurchases().catch(() => {});
+      }
+    } catch {
+      /* ignore malformed messages */
+    }
+  }, []);
+
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="light-content" />
       <View style={styles.header}>
         <Text style={styles.title}>Pants on Fire! Find the Liar</Text>
-        <Text style={styles.subtitle}>Expo shell for mobile testing</Text>
+        <Text style={styles.subtitle}>Expo shell — WebView + RevenueCat</Text>
       </View>
       <WebView
         source={{ uri: GAME_URL }}
         style={styles.webview}
         startInLoadingState
         javaScriptEnabled
+        domStorageEnabled
         mediaPlaybackRequiresUserAction
+        onMessage={onWebMessage}
       />
       <View style={styles.footer}>
-        <Text style={styles.hint}>Running web build from: {GAME_URL}</Text>
-        <Text style={styles.hint}>Start Vite with: npm run dev</Text>
+        <Text style={styles.hint}>Web UI: {GAME_URL}</Text>
+        <Text style={styles.hint}>Run Vite: npm run dev</Text>
       </View>
     </SafeAreaView>
   );

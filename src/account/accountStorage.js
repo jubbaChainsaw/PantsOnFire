@@ -64,6 +64,7 @@ export function readAccountSession() {
     tierId: String(raw.tierId || TIER_FIBBER).trim() || TIER_FIBBER,
     addonTwistTruth: Boolean(raw.addonTwistTruth),
     unlockedThemePackIds: normalizeUnlockedThemePackIds(raw.unlockedThemePackIds || []),
+    authProvider: raw.authProvider === 'supabase' ? 'supabase' : 'local',
   };
 }
 
@@ -115,6 +116,7 @@ export function registerAccount({ displayName, password }) {
     tierId: TIER_FIBBER,
     addonTwistTruth: false,
     unlockedThemePackIds,
+    authProvider: 'local',
   };
   writeAccountSession(session);
   writeJson(LEGACY_PACK_KEY, unlockedThemePackIds);
@@ -137,6 +139,7 @@ export function loginAccount({ displayName, password }) {
     tierId: String(row.tierId || TIER_FIBBER).trim() || TIER_FIBBER,
     addonTwistTruth: Boolean(row.addonTwistTruth),
     unlockedThemePackIds: normalizeUnlockedThemePackIds(row.unlockedThemePackIds || []),
+    authProvider: 'local',
   };
   writeAccountSession(session);
   writeJson(LEGACY_PACK_KEY, session.unlockedThemePackIds);
@@ -170,6 +173,7 @@ export function purchaseTierDemo(userId, nextTierId) {
     tierId: nextTierId,
     addonTwistTruth: Boolean(row.addonTwistTruth),
     unlockedThemePackIds: normalizeUnlockedThemePackIds(row.unlockedThemePackIds || []),
+    authProvider: 'local',
   };
   writeAccountSession(session);
   writeJson(LEGACY_PACK_KEY, session.unlockedThemePackIds);
@@ -194,6 +198,7 @@ export function purchaseAddonTwistTruthDemo(userId) {
     tierId: String(row.tierId || TIER_FIBBER),
     addonTwistTruth: true,
     unlockedThemePackIds: normalizeUnlockedThemePackIds(row.unlockedThemePackIds || []),
+    authProvider: 'local',
   };
   writeAccountSession(session);
   return { ok: true, session };
@@ -217,6 +222,7 @@ export function purchaseDlcPackDemo(userId, packId) {
     tierId: String(row.tierId || TIER_FIBBER),
     addonTwistTruth: Boolean(row.addonTwistTruth),
     unlockedThemePackIds: nextIds,
+    authProvider: 'local',
   };
   writeAccountSession(session);
   writeJson(LEGACY_PACK_KEY, nextIds);
@@ -225,7 +231,7 @@ export function purchaseDlcPackDemo(userId, packId) {
 
 export function syncSessionPackIds(unlockedThemePackIds) {
   const sess = readAccountSession();
-  if (!sess) return;
+  if (!sess || sess.authProvider === 'supabase') return;
   const next = {
     ...sess,
     unlockedThemePackIds: normalizeUnlockedThemePackIds(unlockedThemePackIds),

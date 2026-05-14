@@ -102,6 +102,9 @@ import {
   registerAccount,
   syncSessionPackIds,
 } from "./account/accountStorage";
+import { buildSessionFromRemote, fetchRemoteEntitlements } from "./account/remoteEntitlements";
+import { notifyNativePurchasesUser } from "./billing/nativePurchasesBridge";
+import { useAuth } from "./auth/AuthProvider.jsx";
 import { getThemePackRedeemOffer } from "./data/dlc/themeRedeemCodes";
 import {
   COPY_BANK,
@@ -2774,11 +2777,22 @@ function RulesSplashScreen({ onContinue, theme, isOnlineMode = false }) {
   );
 }
 function AccountGateScreen({ onSignedIn }) {
+  const {
+    cloudConfigured,
+    loading: authLoading,
+    signInWithEmail,
+    signUpWithEmail,
+  } = useAuth();
   const [mode, setMode] = useState("register");
   const [displayName, setDisplayName] = useState("");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [error, setError] = useState("");
+  const [cloudMode, setCloudMode] = useState("login");
+  const [cloudEmail, setCloudEmail] = useState("");
+  const [cloudPassword, setCloudPassword] = useState("");
+  const [cloudBusy, setCloudBusy] = useState(false);
+  const [cloudError, setCloudError] = useState("");
   const resetError = () => setError("");
   const submitRegister = (event) => {
     event.preventDefault();
@@ -2804,9 +2818,26 @@ function AccountGateScreen({ onSignedIn }) {
     }
     onSignedIn(result.session);
   };
+  const submitCloud = async (event) => {
+    event.preventDefault();
+    setCloudError("");
+    setCloudBusy(true);
+    const action =
+      cloudMode === "register" ? signUpWithEmail : signInWithEmail;
+    const { error: cloudErr } = await action(
+      cloudEmail.trim(),
+      cloudPassword,
+    );
+    setCloudBusy(false);
+    if (cloudErr) {
+      setCloudError(String(cloudErr.message || cloudErr));
+      return;
+    }
+    // Supabase session is picked up by App; optional email-confirm flow may require no session yet
+  };
   return (
     <TopFrame theme="Default" allowScroll>
-      <div className="mx-auto flex min-h-[100dvh] max-w-md flex-col px-4 py-10">
+      <div className="mx-auto flex min-h-[100dvh] max-w-md flex-col gap-6 px-4 py-10">
         <div className="text-center">
           <div className="text-xs uppercase tracking-[0.35em] text-cyan-200/80">
             Account
@@ -2820,9 +2851,93 @@ function AccountGateScreen({ onSignedIn }) {
             so you can join online lobbies. Upgrade in the store to host local
             or online games.
           </p>
+          {cloudConfigured && authLoading && (
+            <p className="mt-2 text-xs text-cyan-100/90">Checking cloud session…</p>
+          )}
         </div>
-        <GlassPanel className="mt-8 rounded-[2rem] border border-fuchsia-400/25 bg-black/35 p-6">
-          <div className="flex gap-2 rounded-2xl border border-white/10 bg-black/30 p-1">
+        {cloudConfigured && (
+          <GlassPanel className="rounded-[2rem] border border-cyan-400/25 bg-black/35 p-6">
+            <div className="text-xs uppercase tracking-[0.28em] text-cyan-200/90">
+              Cloud account (Supabase)
+            </div>
+            <p className="mt-2 text-sm text-white/70">
+              Use the same login on web and in the Expo app. Purchases from the
+              App Store / Play Store sync through your project&apos;s lobby
+              server webhooks.
+            </p>
+            <div className="mt-4 flex gap-2 rounded-2xl border border-white/10 bg-black/30 p-1">
+              <button
+                type="button"
+                className={`flex-1 rounded-xl px-3 py-2 text-xs font-black uppercase tracking-[0.12em] ${cloudMode === "login" ? "bg-cyan-300 text-zinc-950" : "text-white/70"}`}
+                onClick={() => {
+                  setCloudMode("login");
+                  setCloudError("");
+                }}
+              >
+                Log in
+              </button>
+              <button
+                type="button"
+                className={`flex-1 rounded-xl px-3 py-2 text-xs font-black uppercase tracking-[0.12em] ${cloudMode === "register" ? "bg-cyan-300 text-zinc-950" : "text-white/70"}`}
+                onClick={() => {
+                  setCloudMode("register");
+                  setCloudError("");
+                }}
+              >
+                Register
+              </button>
+            </div>
+            <form className="mt-4 space-y-3" onSubmit={submitCloud}>
+              <div>
+                <Label className="text-xs uppercase tracking-[0.2em] text-cyan-200/80">
+                  Email
+                </Label>
+                <Input
+                  type="email"
+                  value={cloudEmail}
+                  onChange={(event) => setCloudEmail(event.target.value)}
+                  autoComplete="email"
+                  className="mt-1 rounded-2xl border border-white/15 bg-white/10 text-white"
+                />
+              </div>
+              <div>
+                <Label className="text-xs uppercase tracking-[0.2em] text-cyan-200/80">
+                  Password
+                </Label>
+                <Input
+                  type="password"
+                  value={cloudPassword}
+                  onChange={(event) => setCloudPassword(event.target.value)}
+                  autoComplete={
+                    cloudMode === "register" ? "new-password" : "current-password"
+                  }
+                  className="mt-1 rounded-2xl border border-white/15 bg-white/10 text-white"
+                />
+              </div>
+              {cloudError && (
+                <div className="rounded-xl border border-red-400/30 bg-red-500/15 px-3 py-2 text-sm text-red-100">
+                  {cloudError}
+                </div>
+              )}
+              <Button
+                type="submit"
+                disabled={cloudBusy}
+                className="h-12 w-full rounded-2xl border-2 border-white bg-cyan-300 text-zinc-950 disabled:opacity-60"
+              >
+                {cloudBusy
+                  ? "Please wait…"
+                  : cloudMode === "register"
+                    ? "Create cloud account"
+                    : "Cloud log in"}
+              </Button>
+            </form>
+          </GlassPanel>
+        )}
+        <GlassPanel className="rounded-[2rem] border border-fuchsia-400/25 bg-black/35 p-6">
+          <div className="text-xs uppercase tracking-[0.28em] text-fuchsia-200/90">
+            Device account (offline demo)
+          </div>
+          <div className="mt-3 flex gap-2 rounded-2xl border border-white/10 bg-black/30 p-1">
             <button
               type="button"
               className={`flex-1 rounded-xl px-3 py-2 text-sm font-black uppercase tracking-[0.12em] ${mode === "register" ? "bg-yellow-300 text-zinc-950" : "text-white/70"}`}
@@ -2900,8 +3015,8 @@ function AccountGateScreen({ onSignedIn }) {
             </Button>
           </form>
           <p className="mt-4 text-center text-[0.65rem] text-white/55">
-            Accounts are stored on this device for now. A future update will
-            sync purchases with your real login.
+            Device accounts stay on this browser. Use a cloud account to sync
+            with mobile and server-driven entitlements.
           </p>
         </GlassPanel>
       </div>
@@ -6709,6 +6824,7 @@ function StoreScreen({
   accountSession = null,
   allDlcIncluded = false,
   hasTwistAddon = false,
+  disableDlcDemo = false,
   onSimulateTierPurchase = () => {},
   onSimulateTwistAddon = () => {},
 }) {
@@ -6922,7 +7038,12 @@ function StoreScreen({
                       </div>
                       <Button
                         className="mt-2 rounded-xl bg-yellow-300 text-zinc-950 border border-white disabled:opacity-60"
-                        disabled={isUnlocked}
+                        disabled={isUnlocked || disableDlcDemo}
+                        title={
+                          disableDlcDemo
+                            ? "DLC packs for cloud accounts are unlocked via App Store / Play (RevenueCat)."
+                            : undefined
+                        }
                         onClick={() => onUnlockThemePack(pack.id)}
                       >
                         {isUnlocked ? "Unlocked" : "Unlock"}
@@ -7535,6 +7656,11 @@ function AdminDialog({
   );
 }
 export default function App() {
+  const {
+    loading: authLoading,
+    session: supabaseSession,
+    signOutCloud,
+  } = useAuth();
   const [screen, setScreen] = useState(() =>
     readAccountSession() ? "home" : "account-gate",
   );
@@ -7719,6 +7845,39 @@ export default function App() {
     () => computeEntitlements(accountSession),
     [accountSession],
   );
+  useEffect(() => {
+    if (authLoading) return;
+    const token = supabaseSession?.access_token;
+    const user = supabaseSession?.user;
+    if (!token || !user) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const payload = await fetchRemoteEntitlements(token);
+        if (cancelled) return;
+        const built = buildSessionFromRemote(user, payload);
+        setAccountSession(built);
+        setUnlockedThemePackIds(built.unlockedThemePackIds);
+        notifyNativePurchasesUser(built.userId);
+        setScreen((s) => (s === "account-gate" ? "home" : s));
+      } catch (err) {
+        console.warn("[cloud-entitlements]", err);
+        if (cancelled) return;
+        const built = buildSessionFromRemote(user, {});
+        setAccountSession(built);
+        setUnlockedThemePackIds(built.unlockedThemePackIds);
+        notifyNativePurchasesUser(built.userId);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [authLoading, supabaseSession?.access_token, supabaseSession?.user]);
+  useEffect(() => {
+    if (authLoading) return;
+    if (supabaseSession?.access_token) return;
+    setAccountSession(readAccountSession());
+  }, [authLoading, supabaseSession?.access_token]);
   const normalizedThemeName = useMemo(
     () => normalizeThemeSelection(nameTheme, themeOptions),
     [nameTheme, themeOptions],
@@ -7800,11 +7959,12 @@ export default function App() {
   );
   useEffect(() => {
     setStored("imposter-unlocked-theme-packs-v1", unlockedThemePackIds);
-    if (readAccountSession()) {
-      syncSessionPackIds(unlockedThemePackIds);
-      setAccountSession(readAccountSession());
-    }
-  }, [unlockedThemePackIds]);
+    if (accountSession?.authProvider === "supabase") return;
+    const local = readAccountSession();
+    if (!local) return;
+    syncSessionPackIds(unlockedThemePackIds);
+    setAccountSession(readAccountSession());
+  }, [unlockedThemePackIds, accountSession?.authProvider]);
   useEffect(
     () => setStored("imposter-theme-v3", normalizedThemeName),
     [normalizedThemeName],
@@ -8151,11 +8311,21 @@ export default function App() {
       return;
     }
     if (target === "sign-out") {
-      clearAccountSession();
-      setAccountSession(null);
-      setScreen("account-gate");
+      void (async () => {
+        const startedCloud = accountSession?.authProvider === "supabase";
+        await signOutCloud();
+        if (!startedCloud) {
+          clearAccountSession();
+          setAccountSession(null);
+          setScreen("account-gate");
+          return;
+        }
+        const local = readAccountSession();
+        setAccountSession(local || null);
+        setScreen(local ? "home" : "account-gate");
+      })();
     }
-  }, []);
+  }, [signOutCloud, accountSession]);
   const currentUserDisplayName = useMemo(
     () =>
       String(
@@ -9680,6 +9850,7 @@ export default function App() {
                 session.unlockedThemePackIds || [],
               ),
             );
+            notifyNativePurchasesUser(session.userId);
             setScreen("home");
           }}
         />
@@ -10321,8 +10492,12 @@ export default function App() {
           accountSession={accountSession}
           allDlcIncluded={entitlements.allDlcIncluded}
           hasTwistAddon={Boolean(accountSession?.addonTwistTruth)}
+          disableDlcDemo={accountSession?.authProvider === "supabase"}
           onSimulateTierPurchase={(tierId) => {
             if (!accountSession) return "Sign in from the account screen first.";
+            if (accountSession.authProvider === "supabase") {
+              return "Cloud accounts unlock tiers via App Store / Play Billing (RevenueCat). Demo checkout is only for device accounts.";
+            }
             const result = purchaseTierDemo(accountSession.userId, tierId);
             if (!result.ok) return result.error;
             setAccountSession(result.session);
@@ -10338,6 +10513,9 @@ export default function App() {
           }}
           onSimulateTwistAddon={() => {
             if (!accountSession) return "Sign in from the account screen first.";
+            if (accountSession.authProvider === "supabase") {
+              return "Cloud accounts unlock add-ons via the native stores. Demo checkout is only for device accounts.";
+            }
             const result = purchaseAddonTwistTruthDemo(accountSession.userId);
             if (!result.ok) return result.error;
             setAccountSession(result.session);

@@ -36,6 +36,7 @@
     "host:generate-openai-theme-stills:defaults": "node scripts/generateOpenAiThemeHostImages.cjs --face ./public/assets/host-generation/host-face.png --style ./public/assets/host-generation/host-default-key-art.png"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.49.1",
     "cors": "^2.8.6",
     "expo": "^55.0.17",
     "express": "^5.2.1",
@@ -46,6 +47,7 @@
     "react": "^19.2.5",
     "react-dom": "^19.2.5",
     "react-native": "^0.85.2",
+    "react-native-purchases": "^8.6.2",
     "react-native-webview": "^13.16.1",
     "redis": "^5.12.1",
     "sharp": "^0.34.5",

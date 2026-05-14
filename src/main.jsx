@@ -58,14 +58,17 @@ class RootErrorBoundary extends React.Component {
 
 async function bootstrap() {
   try {
+    const { AuthProvider } = await import('./auth/AuthProvider.jsx');
     const { default: App } = await import('./App.jsx');
     if (!rootElement) throw new Error('Root element #root not found');
     ReactDOM.createRoot(rootElement).render(
       <React.StrictMode>
         <RootErrorBoundary>
-          <App />
+          <AuthProvider>
+            <App />
+          </AuthProvider>
         </RootErrorBoundary>
-      </React.StrictMode>
+      </React.StrictMode>,
     );
   } catch (error) {
     console.error('[bootstrap] Failed to load app', error);
