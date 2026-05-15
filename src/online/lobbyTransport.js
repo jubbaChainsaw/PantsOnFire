@@ -1,14 +1,8 @@
 import { io } from 'socket.io-client';
+import { getLobbyApiBase, getLobbyServerOrigin } from '../lib/lobbyApiEnv.js';
 
-const ENV_LOBBY_SERVER_URL = String(import.meta?.env?.VITE_LOBBY_SERVER_URL || '').trim();
-const RAILWAY_API_FALLBACK = 'https://api.pantsonfire.app';
-const RUNTIME_HOSTNAME = typeof window !== 'undefined' ? String(window.location?.hostname || '').toLowerCase() : '';
-const IS_LOCAL_WEB_HOST = RUNTIME_HOSTNAME === 'localhost' || RUNTIME_HOSTNAME === '127.0.0.1';
-const FALLBACK_LOBBY_SERVER_URL = IS_LOCAL_WEB_HOST ? '' : RAILWAY_API_FALLBACK;
-const LOBBY_SERVER_URL = ENV_LOBBY_SERVER_URL || FALLBACK_LOBBY_SERVER_URL;
-const LOBBY_API_BASE = LOBBY_SERVER_URL
-  ? `${LOBBY_SERVER_URL.replace(/\/$/, '')}/api`
-  : '/api';
+const LOBBY_SERVER_URL = getLobbyServerOrigin();
+const LOBBY_API_BASE = getLobbyApiBase();
 
 function randomId(prefix = 'id') {
   return `${prefix}-${Math.random().toString(36).slice(2, 10)}-${Date.now().toString(36)}`;
