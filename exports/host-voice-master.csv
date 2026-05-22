@@ -1,0 +1,6 @@
+theme_slug,theme_name,voice_id,accent_notes,host_name,enabled
+default,Default,,Neutral British gameshow host; crisp witty delivery,Ian Poster,true
+murder-mystery,Murder Mystery,,Dry British detective cadence; measured theatrical reads,Ian Poster,true
+pirates,Pirates,,West Country pirate burr; playful nautical delivery,Ian Poster,true
+cops-and-robbers,Cops and Robbers,,Tough urban cop tone; short authoritative sentences,Ian Poster,true
+ghosts-and-ghouls,Ghosts and Ghouls,,Soft spooky host; hushed theatrics and gentle boo energy,Ian Poster,true

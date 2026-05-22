@@ -72,8 +72,8 @@ import { NAME_POOLS, randomNameFromTheme } from "./data/names";
 import { toCanonicalThemeName } from "./data/themeAliases";
 import { getThemePersonas, pickRandomThemePersona } from "./data/themePersonas";
 import {
-  getThemeHostPersona,
   buildThemeIntroDialogue,
+  getIanPosterHostDisplayPersona,
   pickThemeHostRoundStinger,
   pickThemeGuestHostName,
 } from "./data/themeHosts";
@@ -124,7 +124,15 @@ import {
   sanitizeBannedWords,
 } from "./data/categories";
 import { PICTURE_DLC_MANIFESTS } from "./data/pictureDlcManifests";
-import { getDefaultHostVoiceSrcCandidatesForLine } from "./data/defaultHostVoiceLineMap";
+import { getHostVoiceSrcCandidatesForLine } from "./data/hostVoiceLineMap";
+import {
+  buildIanPosterGreetingLine,
+  buildIanPosterRoundsLine,
+  buildIanPosterThemeCopyBank,
+  getIanPosterHostNameLine,
+  getIanPosterThemeVoice,
+  IAN_POSTER_VOICE_THEME_NAMES,
+} from "./data/ianPosterThemeVoice";
 import {
   createLobbyTransport,
   createNextRoundOnServer,
@@ -1921,9 +1929,14 @@ function normalizeHostVoiceLine(line = "") {
     .trim()
     .toLowerCase();
 }
-function useDefaultHostVoicePlayback({
+function isIanPosterVoiceTheme(themeName = "Default") {
+  return IAN_POSTER_VOICE_THEME_NAMES.includes(toCanonicalThemeName(themeName));
+}
+
+function useIanPosterHostVoicePlayback({
   enabled = false,
   line = "",
+  themeName = "Default",
   fallbackDurationMs = 6000,
 } = {}) {
   const [isPlaying, setIsPlaying] = useState(false);
@@ -1948,7 +1961,7 @@ function useDefaultHostVoicePlayback({
       }
       return undefined;
     }
-    const mappedSrcCandidates = getDefaultHostVoiceSrcCandidatesForLine(normalized);
+    const mappedSrcCandidates = getHostVoiceSrcCandidatesForLine(normalized, themeName);
     if (!mappedSrcCandidates.length) {
       setIsPlaying(true);
       clearFallbackTimer();
@@ -2005,10 +2018,11 @@ function useDefaultHostVoicePlayback({
         audioRef.current = null;
       }
     };
-  }, [enabled, line, fallbackDurationMs]);
+  }, [enabled, line, themeName, fallbackDurationMs]);
   return isPlaying;
 }
-function getDefaultThemeVoiceLineForGameIntroLine({
+function getIanPosterVoiceLineForGameIntroLine({
+  themeName = "Default",
   line = "",
   lineIndex = 0,
   total = 0,
@@ -2016,29 +2030,27 @@ function getDefaultThemeVoiceLineForGameIntroLine({
   totalRounds = 1,
   playerCount = 1,
 } = {}) {
+  const canonical = toCanonicalThemeName(themeName);
+  const voice = getIanPosterThemeVoice(canonical);
   const currentLine = String(line || "").trim();
   if (!currentLine) return "";
   if (lineIndex === 0) {
     const hour = new Date().getHours();
-    const greeting = hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening";
-    return `${greeting}, and welcome to Pants on Fire! Find the Liar.`;
+    const greetingKey = hour < 12 ? "morning" : hour < 18 ? "afternoon" : "evening";
+    return buildIanPosterGreetingLine(canonical, greetingKey);
   }
-  if (lineIndex === 1) {
-    return DEFAULT_HOST_NAME_LINE;
-  }
+  if (lineIndex === 1) return getIanPosterHostNameLine(canonical);
   if (lineIndex === 2) {
     return Number(isOnlineMode)
-      ? (DEFAULT_HOST.onlinePrompt || currentLine)
-      : (DEFAULT_HOST.passPrompt || currentLine);
+      ? (voice.onlinePrompt || currentLine)
+      : (voice.passPrompt || currentLine);
   }
   if (lineIndex === total - 2) {
     const safeRounds = Math.max(1, Number(totalRounds) || 1);
     const safePlayers = Math.max(1, Number(playerCount) || 1);
-    return `Through ${safeRounds} rounds, the ${safePlayers} of you will try to expose the liar without exposing yourselves first.`;
+    return buildIanPosterRoundsLine(canonical, safeRounds, safePlayers);
   }
-  if (lineIndex >= total - 1) {
-    return DEFAULT_HOST_CLOSING_LINE;
-  }
+  if (lineIndex >= total - 1) return voice.closingLine || currentLine;
   return currentLine;
 }
 function fitTextToBubble(
@@ -2076,10 +2088,6 @@ const HOST_DIALOGUE_TIMINGS = {
   liarRevealAdvanceMs: 6000,
   liarRevealCompleteMs: 6000,
 };
-const DEFAULT_HOST = getThemeHostPersona("Default");
-const DEFAULT_HOST_NAME_LINE = `${DEFAULT_HOST.name || "Ian Poster"} here, your ${DEFAULT_HOST.role || "professional suspicion stylist"}.`;
-const DEFAULT_HOST_CLOSING_LINE =
-  "Keep clues short, keep confidence high, and keep your poker face alive.";
 const HOST_DIALOGUE_PANEL_CLASS =
   "rounded-[1.5rem] bg-[#e60096] text-white shadow-[0_18px_38px_rgba(0,0,0,0.55)]";
 const HOST_DIALOGUE_BUTTON_CLASS =
@@ -2092,7 +2100,7 @@ function GameIntroScreen({
   totalRounds = 1,
   playerCount = 0,
 }) {
-  const themedHostPersona = useMemo(() => getThemeHostPersona(theme), [theme]);
+  const themedHostPersona = useMemo(() => getIanPosterHostDisplayPersona(theme), [theme]);
   const greeting = (() => {
     const hour = new Date().getHours();
     if (hour < 12) return "Good morning";
@@ -2117,8 +2125,9 @@ function GameIntroScreen({
   const introSpeechBubbleRef = useRef(null);
   const [introLineFontSize, setIntroLineFontSize] = useState(30);
   const currentLine = introLines[lineIndex] || "";
-  const voicePlaybackEnabled = toCanonicalThemeName(theme) === "Default";
-  const voiceLineForPlayback = getDefaultThemeVoiceLineForGameIntroLine({
+  const voicePlaybackEnabled = isIanPosterVoiceTheme(theme);
+  const voiceLineForPlayback = getIanPosterVoiceLineForGameIntroLine({
+    themeName: theme,
     line: currentLine,
     lineIndex,
     total: introLines.length,
@@ -2126,9 +2135,10 @@ function GameIntroScreen({
     totalRounds: resolvedRoundCount,
     playerCount: resolvedPlayerCount,
   });
-  const isVoicePlayingLine = useDefaultHostVoicePlayback({
+  const isVoicePlayingLine = useIanPosterHostVoicePlayback({
     enabled: voicePlaybackEnabled,
     line: voiceLineForPlayback,
+    themeName: theme,
     fallbackDurationMs: HOST_DIALOGUE_TIMINGS.gameIntroAdvanceMs,
   });
   const isTalking = lineIndex < introLines.length - 1;
@@ -2597,7 +2607,7 @@ function resolveCategoryChoiceCardArt(category, themeName = "Default") {
 }
 function HostIntroScreen({ round, stingerLine, onContinue, theme }) {
   const hostSizeConfig = useMemo(() => getHostSizeConfig(theme), [theme]);
-  const themedHostPersona = useMemo(() => getThemeHostPersona(theme), [theme]);
+  const themedHostPersona = useMemo(() => getIanPosterHostDisplayPersona(theme), [theme]);
   const exampleCardSrc = getRoundCardFrontSrc();
   const examplePrompts = getHostExamplePrompts(round.roundTypeId);
   const normalExamplePrompt = examplePrompts.normal;
@@ -2614,10 +2624,11 @@ function HostIntroScreen({ round, stingerLine, onContinue, theme }) {
   const speechBubbleFitRef = useRef(null);
   const [speechBubbleFontSize, setSpeechBubbleFontSize] = useState(28);
   const currentSpeechLine = speechSentences[speechIndex] || "";
-  const voicePlaybackEnabled = toCanonicalThemeName(theme) === "Default";
-  const isVoicePlayingLine = useDefaultHostVoicePlayback({
+  const voicePlaybackEnabled = isIanPosterVoiceTheme(theme);
+  const isVoicePlayingLine = useIanPosterHostVoicePlayback({
     enabled: voicePlaybackEnabled,
     line: currentSpeechLine,
+    themeName: theme,
     fallbackDurationMs: HOST_DIALOGUE_TIMINGS.roundIntroAdvanceMs,
   });
   const canContinue = speechIndex >= speechSentences.length - 1;
@@ -7804,7 +7815,6 @@ export default function App() {
   );
   const [adminOpen, setAdminOpen] = useState(false);
   const [recentPromptKeys, setRecentPromptKeys] = useState([]);
-  const getLine = useMemo(() => createCopyPicker(COPY_BANK), []);
   const [copyState, setCopyState] = useState({
     home: COPY_BANK.home[0],
     setup: COPY_BANK.setup[0],
@@ -7819,21 +7829,6 @@ export default function App() {
     onlineLobby: COPY_BANK.onlineLobby[0],
     hostStinger: COPY_BANK.hostStingerPrompt[0],
   });
-  const refreshCopy = useCallback(
-    (keys = []) => {
-      const targetKeys = Array.isArray(keys) ? keys : [keys];
-      if (!targetKeys.length) return;
-      setCopyState((current) => {
-        const next = { ...current };
-        targetKeys.forEach((key) => {
-          if (!key || !COPY_BANK[key]?.length) return;
-          next[key] = getLine(key);
-        });
-        return next;
-      });
-    },
-    [getLine],
-  );
   const themeOptions = useMemo(
     () =>
       getThemeOptions(
@@ -7883,6 +7878,32 @@ export default function App() {
     [nameTheme, themeOptions],
   );
   const canonicalThemeName = normalizedThemeName;
+  const themeCopyBank = useMemo(() => {
+    if (!isIanPosterVoiceTheme(canonicalThemeName)) return COPY_BANK;
+    return { ...COPY_BANK, ...buildIanPosterThemeCopyBank(canonicalThemeName) };
+  }, [canonicalThemeName]);
+  const getLine = useMemo(() => createCopyPicker(themeCopyBank), [themeCopyBank]);
+  const refreshCopy = useCallback(
+    (keys = []) => {
+      const targetKeys = Array.isArray(keys) ? keys : [keys];
+      if (!targetKeys.length) return;
+      setCopyState((current) => {
+        const next = { ...current };
+        targetKeys.forEach((key) => {
+          if (!key || !themeCopyBank[key]?.length) return;
+          next[key] = getLine(key);
+        });
+        return next;
+      });
+    },
+    [getLine, themeCopyBank],
+  );
+  useEffect(() => {
+    refreshCopy([
+      "home", "setup", "chooser", "passPhone", "revealNormal", "revealLiar",
+      "discussion", "voting", "caught", "escaped", "winner", "onlineLobby",
+    ]);
+  }, [canonicalThemeName, refreshCopy]);
   const themeMeta = THEME_META[normalizedThemeName] || THEME_META.Default;
   const availablePicturePackManifests = useMemo(
     () => PICTURE_DLC_MANIFESTS || [],
@@ -8738,6 +8759,7 @@ export default function App() {
     [players.length],
   );
   const themedKey = (key) => {
+    if (isIanPosterVoiceTheme(canonicalThemeName)) return key;
     const overridesByTheme =
       THEME_STINGER_KEY_OVERRIDES[canonicalThemeName] ||
       THEME_STINGER_KEY_OVERRIDES[toCanonicalThemeName(canonicalThemeName)] ||
@@ -10598,3 +10620,4 @@ export default function App() {
     </>
   );
 }
+

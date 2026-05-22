@@ -1,4 +1,11 @@
 import { toCanonicalThemeName } from './themeAliases';
+import {
+  buildIanPosterGreetingLine,
+  buildIanPosterRoundsLine,
+  getIanPosterHostNameLine,
+  getIanPosterThemeVoice,
+  IAN_POSTER_HOST_NAME,
+} from './ianPosterThemeVoice';
 
 const ROUND_TYPE_FLAVOR_BY_ID = {
   prompt: 'hot-seat clues',
@@ -602,29 +609,48 @@ export function buildThemeIntroDialogue({
   playerCount = 1,
   isOnlineMode = false,
 } = {}) {
-  const persona = getThemeHostPersona(themeName);
+  const canonical = toCanonicalThemeName(themeName);
+  const voice = getIanPosterThemeVoice(canonical);
   const rounds = Math.max(1, Number(totalRounds) || 1);
   const players = Math.max(1, Number(playerCount) || 1);
+  const greetingKey = greeting.toLowerCase().includes('morning')
+    ? 'morning'
+    : greeting.toLowerCase().includes('afternoon')
+      ? 'afternoon'
+      : greeting.toLowerCase().includes('evening')
+        ? 'evening'
+        : 'anytime';
   return [
-    `${greeting}, and welcome to Pants on Fire! Find the Liar.`,
-    `${persona.name} here, your ${persona.role}.`,
-    ...safeLines(persona.introHooks, FALLBACK_PERSONA.introHooks),
-    `Through ${rounds} rounds, the ${players} of you will try to expose the liar without exposing yourselves first.`,
+    buildIanPosterGreetingLine(canonical, greetingKey),
+    getIanPosterHostNameLine(canonical),
+    ...safeLines(voice.introHooks, getIanPosterThemeVoice('Default').introHooks),
+    buildIanPosterRoundsLine(canonical, rounds, players),
     isOnlineMode
-      ? (persona.onlinePrompt || FALLBACK_PERSONA.onlinePrompt)
-      : (persona.passPrompt || FALLBACK_PERSONA.passPrompt),
-    'Keep clues short, keep confidence high, and keep your poker face alive.',
+      ? (voice.onlinePrompt || getIanPosterThemeVoice('Default').onlinePrompt)
+      : (voice.passPrompt || getIanPosterThemeVoice('Default').passPrompt),
+    voice.closingLine || getIanPosterThemeVoice('Default').closingLine,
   ];
 }
 
 export function pickThemeHostRoundStinger(themeName = 'Default', roundTypeId = 'prompt', roundTypeName = '') {
-  const persona = getThemeHostPersona(themeName);
-  const lines = safeLines(persona.roundStingers, FALLBACK_PERSONA.roundStingers);
-  const chosen = lines[Math.floor(Math.random() * lines.length)] || FALLBACK_PERSONA.roundStingers[0];
+  const canonical = toCanonicalThemeName(themeName);
+  const voice = getIanPosterThemeVoice(canonical);
+  const lines = safeLines(voice.roundStingers, getIanPosterThemeVoice('Default').roundStingers);
+  const chosen = lines[Math.floor(Math.random() * lines.length)] || lines[0];
   return fillTemplate(chosen, {
     roundTypeName: roundTypeName || roundTypeId || 'this round',
     roundTypeFlavor: ROUND_TYPE_FLAVOR_BY_ID[roundTypeId] || 'suspicious gameplay',
   });
+}
+
+/** On-screen host identity: Ian Poster on every theme, themed role copy. */
+export function getIanPosterHostDisplayPersona(themeName = 'Default') {
+  const voice = getIanPosterThemeVoice(themeName);
+  return {
+    name: IAN_POSTER_HOST_NAME,
+    role: voice.themedRole,
+    accentNotes: voice.accentNotes,
+  };
 }
 
 const THEME_GRILL_GUEST_HOST_NAMES = {

@@ -174,41 +174,53 @@ Importer output:
 - Keep attribution metadata (`attribution.json`) for legal/audit tracking.
 - Check source site terms before shipping; provider terms may change over time.
 
-## Default host voice-over pack (line-synced playback)
+## Ian Poster host voice (all core themes)
 
-You can install a generated voice-over ZIP for the **Default** host so intro/stinger
-text plays in sync with corresponding MP3 lines.
+**Ian Poster** hosts every core theme with themed wording, accent notes, and puns. Theme art
+and Grill guest hosts stay per theme; spoken intro and flow copy use Ian throughout.
 
-### 1) Place your ZIP in exports
+### 1) Assign voice IDs per theme
 
-Put the voice pack ZIP in:
+Edit the master registry (one row per theme):
 
-- `exports/`
+- `exports/host-voice-master.csv`
 
-The installer supports nested folders inside the ZIP and finds files by MP3 name.
+Columns: `theme_slug`, `theme_name`, `voice_id`, `accent_notes`, `host_name`, `enabled`
 
-### 2) Install into public assets
+Fill in `voice_id` with your TTS provider voice ID before bulk generation.
+
+### 2) Export all lines for bulk TTS
+
+```bash
+npm run host:export-voice-master
+```
+
+This writes:
+
+- `exports/host-voice-lines-master.csv` — full line list with `voice_id`, text, SSML
+- `exports/host-voice-lines-master-ssml.csv` — compact SSML + voice_id for pipelines
+
+Re-run after editing `src/data/ianPosterThemeVoice.js` or updating voice IDs in the master CSV.
+
+### 3) Install generated MP3 packs
+
+Per theme, install MP3s under:
+
+- `public/assets/audio/host/<theme-slug>/tts/`
+
+Default theme (legacy installer):
 
 ```bash
 npm run host:install-default-voice-pack -- --zip exports/default-host-tts.zip
 ```
 
-If `--zip` is omitted, it auto-selects the newest ZIP in `exports/`.
-
-Installer output location:
-
-- `public/assets/audio/host/default/tts/`
-
-### 3) Optional: regenerate SSML source CSV
+### Legacy Default-only SSML export
 
 ```bash
 npm run export:default-host-ssml
 ```
 
-This writes:
-
-- `exports/default-host-voice-lines-ssml.csv`
-- `exports/default-host-voice-lines-ssml-polly-safe.csv`
+Writes `exports/default-host-voice-lines-ssml.csv` (Default theme only).
 
 ## Batch generation for persona avatars
 
