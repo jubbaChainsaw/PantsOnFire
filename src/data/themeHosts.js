@@ -334,21 +334,6 @@ export const THEME_HOST_PERSONAS = {
       'Be precise. Hesitation is louder than shouting.',
     ],
   },
-  'Detectives Noir': {
-    name: 'Inspector Red Herrington',
-    role: 'smoke-filled fraud examiner',
-    introHooks: [
-      'I trust no one, especially people who say “trust me.”',
-      'One clue each. Keep it clean, kid.',
-    ],
-    onlinePrompt: 'Online casefile open: private evidence, public accusations.',
-    passPrompt: 'Pass the phone like a sealed case file.',
-    roundStingers: [
-      "{roundTypeName} case is open. One clue, no dramatic confessions.",
-      "In {roundTypeFlavor}, liars hide in overconfident narration.",
-      'Follow the details. The truth hates improv.',
-    ],
-  },
   'Mythology (Gods & Legends)': {
     name: 'Orac-Libi',
     role: 'prophet of questionable truth',

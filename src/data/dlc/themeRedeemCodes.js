@@ -7,28 +7,28 @@ const VALID_PACK_IDS = new Set(ALL_DLC_PACK_IDS);
 // In production, validate codes server-side for revocation/expiry support.
 export const THEME_PACK_REDEEM_OFFERS = [
   {
-    id: 'promo-history-drop',
-    code: 'HISTORY-99',
-    packIds: ['worst-liars-in-history'],
-    description: 'Giveaway unlock for Worst Liars In History.',
+    id: 'promo-ye-olde',
+    code: 'YEOlDE-99',
+    packIds: ['ye-olde-baloney'],
+    description: 'Giveaway unlock for Ye Olde Baloney.',
   },
   {
-    id: 'promo-case-files',
-    code: 'CASEFILES-99',
-    packIds: ['high-stakes-cases'],
-    description: 'Campaign unlock for High Stakes Cases.',
+    id: 'promo-myth-taken',
+    code: 'MYTH-99',
+    packIds: ['myth-taken-identity'],
+    description: 'Campaign unlock for Myth-Taken Identity.',
   },
   {
-    id: 'promo-future-fantasy',
-    code: 'FANTASY-FUTURE',
-    packIds: ['future-and-fantasy'],
-    description: 'Creator bundle unlock for Future & Fantasy.',
+    id: 'promo-licence-fib',
+    code: 'LICENCE-FIB',
+    packIds: ['licence-to-fib'],
+    description: 'Creator unlock for Licence to Fib.',
   },
   {
-    id: 'promo-stage-spectacle',
+    id: 'promo-glitter',
     code: 'SHOWTIME-99',
-    packIds: ['stage-and-spectacle'],
-    description: 'Event unlock for Stage & Spectacle.',
+    packIds: ['glitter-and-suspects'],
+    description: 'Event unlock for Glitter & Suspects.',
   },
   {
     id: 'promo-all-theme-packs',

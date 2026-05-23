@@ -49,7 +49,8 @@ export const SUBSCRIPTION_TIERS = [
     priceLabel: '£6.99',
     upgradeHint: 'Previous tier price is deducted when you upgrade in the real store.',
     bullets: [
-      'Every DLC theme pack (themes, personas, tailored host dialogue).',
+      'Every DLC theme bundle (themes, personas, tailored host dialogue).',
+      `Includes all ${DLC_THEME_PACKS.length} bundles: ${DLC_BUNDLE_NAMES_LIST}.`,
       'Full category editor (custom categories and prompt pairs).',
       'All future DLC packs at no extra charge.',
     ],
