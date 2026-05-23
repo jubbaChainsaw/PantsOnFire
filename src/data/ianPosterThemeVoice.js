@@ -1,10 +1,15 @@
 import { toCanonicalThemeName } from './themeAliases';
 import { CORE_THEME_NAMES } from './themeCatalog';
+import {
+  DLC_HOST_VOICE_PACKS,
+  DLC_THEME_VOICE_SLUG_BY_NAME,
+  IAN_POSTER_DLC_THEME_VOICE,
+} from './dlc/ianPosterDlcThemeVoice.js';
 
 export const IAN_POSTER_HOST_NAME = 'Ian Poster';
 
 /** Slug used in audio filenames and export CSV (`default`, `pirates`, …). */
-export const THEME_VOICE_SLUG_BY_NAME = {
+const CORE_THEME_VOICE_SLUG_BY_NAME = {
   Default: 'default',
   'Murder Mystery': 'murder-mystery',
   Pirates: 'pirates',
@@ -39,7 +44,7 @@ function flowCopy(home, setup, chooser, passPhone, revealNormal, revealLiar, dis
  * Ian Poster speaks on every theme — same host, themed wording, accent, and puns.
  * Assign `voiceId` per theme in exports/host-voice-master.csv for bulk TTS.
  */
-export const IAN_POSTER_THEME_VOICE = {
+const IAN_POSTER_CORE_THEME_VOICE = {
   Default: {
     themedRole: 'professional suspicion stylist',
     accentNotes: 'Neutral British gameshow host; crisp, witty, lightly sarcastic.',
@@ -445,6 +450,18 @@ export const IAN_POSTER_THEME_VOICE = {
   },
 };
 
+
+export const THEME_VOICE_SLUG_BY_NAME = {
+  ...CORE_THEME_VOICE_SLUG_BY_NAME,
+  ...DLC_THEME_VOICE_SLUG_BY_NAME,
+};
+
+export const IAN_POSTER_THEME_VOICE = {
+  ...IAN_POSTER_CORE_THEME_VOICE,
+  ...IAN_POSTER_DLC_THEME_VOICE,
+};
+
+export { DLC_HOST_VOICE_PACKS };
 export function getIanPosterThemeSlug(themeName = 'Default') {
   const canonical = toCanonicalThemeName(themeName);
   return THEME_VOICE_SLUG_BY_NAME[canonical] || THEME_VOICE_SLUG_BY_NAME.Default;
@@ -494,6 +511,4 @@ export function buildIanPosterThemeCopyBank(themeName = 'Default') {
 }
 
 /** Themes with Ian Poster voice packs in data + master CSV. */
-export const IAN_POSTER_VOICE_THEME_NAMES = CORE_THEME_NAMES.filter(
-  (name) => Boolean(IAN_POSTER_THEME_VOICE[name]),
-);
+export const IAN_POSTER_VOICE_THEME_NAMES = Object.keys(IAN_POSTER_THEME_VOICE);

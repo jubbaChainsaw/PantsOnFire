@@ -174,53 +174,49 @@ Importer output:
 - Keep attribution metadata (`attribution.json`) for legal/audit tracking.
 - Check source site terms before shipping; provider terms may change over time.
 
-## Ian Poster host voice (all core themes)
+## Ian Poster host voice (core + DLC packs)
 
-**Ian Poster** hosts every core theme with themed wording, accent notes, and puns. Theme art
-and Grill guest hosts stay per theme; spoken intro and flow copy use Ian throughout.
+**Ian Poster** hosts every theme with themed wording and puns. Core themes and each DLC trio pack have separate CSV registries for bulk TTS (e.g. ElevenLabs).
 
-### 1) Assign voice IDs per theme
+### Core themes (5)
 
-Edit the master registry (one row per theme):
-
-- `exports/host-voice-master.csv`
-
-Columns: `theme_slug`, `theme_name`, `voice_id`, `accent_notes`, `host_name`, `enabled`
-
-Fill in `voice_id` with your TTS provider voice ID before bulk generation.
-
-### 2) Export all lines for bulk TTS
+1. Edit `exports/host-voice-master.csv` — set `voice_id` per theme.
+2. Export:
 
 ```bash
 npm run host:export-voice-master
 ```
 
-This writes:
+Outputs: `exports/host-voice-lines-master.csv` and `host-voice-lines-master-ssml.csv`.
 
-- `exports/host-voice-lines-master.csv` — full line list with `voice_id`, text, SSML
-- `exports/host-voice-lines-master-ssml.csv` — compact SSML + voice_id for pipelines
+### DLC packs (10 trios)
 
-Re-run after editing `src/data/ianPosterThemeVoice.js` or updating voice IDs in the master CSV.
+See `exports/dlc/README.md` for the full pack list.
 
-### 3) Install generated MP3 packs
+**Example — Wanted: Better Alibis** (Cowboys, Gangsters, Wrestlers):
 
-Per theme, install MP3s under:
+1. Edit `exports/dlc/wanted-better-alibis/host-voice-master.csv`
+2. Export:
 
-- `public/assets/audio/host/<theme-slug>/tts/`
+```bash
+npm run host:export-dlc-voice -- --pack wanted-better-alibis
+```
 
-Default theme (legacy installer):
+Outputs in that folder: `host-voice-lines.csv` and `host-voice-lines-ssml.csv`.
+
+Voice scripts live in `src/data/dlc/ianPosterDlcThemeVoice.js` (add themes per pack as you author them).
+
+### Install MP3s
+
+Per theme slug: `public/assets/audio/host/<theme-slug>/tts/`
+
+Default zip installer:
 
 ```bash
 npm run host:install-default-voice-pack -- --zip exports/default-host-tts.zip
 ```
 
-### Legacy Default-only SSML export
-
-```bash
-npm run export:default-host-ssml
-```
-
-Writes `exports/default-host-voice-lines-ssml.csv` (Default theme only).
+Legacy Default-only SSML: `npm run export:default-host-ssml`
 
 ## Batch generation for persona avatars
 
