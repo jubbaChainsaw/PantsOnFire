@@ -174,49 +174,77 @@ Importer output:
 - Keep attribution metadata (`attribution.json`) for legal/audit tracking.
 - Check source site terms before shipping; provider terms may change over time.
 
-## Ian Poster host voice (core + DLC packs)
+## Ian Poster host voice (ElevenLabs)
 
-**Ian Poster** hosts every theme with themed wording and puns. Core themes and each DLC trio pack have separate CSV registries for bulk TTS (e.g. ElevenLabs).
+Ian Poster speaks on every theme. Voice IDs live in CSV registries; scripts export line lists, then call ElevenLabs to make MP3s.
 
-### Core themes (5)
+### API key
 
-1. Edit `exports/host-voice-master.csv` — set `voice_id` per theme.
-2. Export:
+Set one of:
+
+```bash
+export ELEVENLABS_API_KEY=your_key_here
+```
+
+Or add to `scripts/royaltyFreeApiKeys.local.json` (gitignored, same pattern as persona image keys):
+
+```json
+{
+  "elevenLabsApiKey": "your_key_here"
+}
+```
+
+### Core themes (Default, Pirates, Murder Mystery, …)
+
+**1. Voice IDs** — already in `exports/host-voice-master.csv` (edit to change).
+
+**2. Export line list** (no API key needed):
 
 ```bash
 npm run host:export-voice-master
 ```
 
-Outputs: `exports/host-voice-lines-master.csv` and `host-voice-lines-master-ssml.csv`.
+Writes `exports/host-voice-lines-master.csv`.
 
-### DLC packs (10 trios)
+**3. Generate MP3s:**
 
-See `exports/dlc/README.md` for the full pack list.
+```bash
+npm run host:generate-elevenlabs -- --core --install
+```
 
-**Example — Wanted: Better Alibis** (Cowboys, Gangsters, Wrestlers):
+`--install` writes to `public/assets/audio/host/<theme-slug>/tts/`. Without it, files go to `exports/generated-audio/<theme-slug>/`.
 
-1. Edit `exports/dlc/wanted-better-alibis/host-voice-master.csv`
-2. Export:
+Test first:
+
+```bash
+npm run host:generate-elevenlabs -- --core --dry-run --limit 5
+```
+
+### DLC pack (e.g. Wanted: Better Alibis)
+
+**1. Voice IDs** — `exports/dlc/wanted-better-alibis/host-voice-master.csv`
+
+**2. Export:**
 
 ```bash
 npm run host:export-dlc-voice -- --pack wanted-better-alibis
 ```
 
-Outputs in that folder: `host-voice-lines.csv` and `host-voice-lines-ssml.csv`.
+**3. Generate:**
 
-Voice scripts live in `src/data/dlc/ianPosterDlcThemeVoice.js` (add themes per pack as you author them).
+```bash
+npm run host:generate-elevenlabs -- --pack wanted-better-alibis --install
+```
 
-### Install MP3s
+All DLC packs: see `exports/dlc/README.md`.
 
-Per theme slug: `public/assets/audio/host/<theme-slug>/tts/`
+### Legacy: zip install
 
-Default zip installer:
+If you already have a ZIP of MP3s:
 
 ```bash
 npm run host:install-default-voice-pack -- --zip exports/default-host-tts.zip
 ```
-
-Legacy Default-only SSML: `npm run export:default-host-ssml`
 
 ## Batch generation for persona avatars
 
