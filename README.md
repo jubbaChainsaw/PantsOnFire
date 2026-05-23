@@ -174,41 +174,49 @@ Importer output:
 - Keep attribution metadata (`attribution.json`) for legal/audit tracking.
 - Check source site terms before shipping; provider terms may change over time.
 
-## Default host voice-over pack (line-synced playback)
+## Ian Poster host voice (core + DLC packs)
 
-You can install a generated voice-over ZIP for the **Default** host so intro/stinger
-text plays in sync with corresponding MP3 lines.
+**Ian Poster** hosts every theme with themed wording and puns. Core themes and each DLC trio pack have separate CSV registries for bulk TTS (e.g. ElevenLabs).
 
-### 1) Place your ZIP in exports
+### Core themes (5)
 
-Put the voice pack ZIP in:
+1. Edit `exports/host-voice-master.csv` — set `voice_id` per theme.
+2. Export:
 
-- `exports/`
+```bash
+npm run host:export-voice-master
+```
 
-The installer supports nested folders inside the ZIP and finds files by MP3 name.
+Outputs: `exports/host-voice-lines-master.csv` and `host-voice-lines-master-ssml.csv`.
 
-### 2) Install into public assets
+### DLC packs (10 trios)
+
+See `exports/dlc/README.md` for the full pack list.
+
+**Example — Wanted: Better Alibis** (Cowboys, Gangsters, Wrestlers):
+
+1. Edit `exports/dlc/wanted-better-alibis/host-voice-master.csv`
+2. Export:
+
+```bash
+npm run host:export-dlc-voice -- --pack wanted-better-alibis
+```
+
+Outputs in that folder: `host-voice-lines.csv` and `host-voice-lines-ssml.csv`.
+
+Voice scripts live in `src/data/dlc/ianPosterDlcThemeVoice.js` (add themes per pack as you author them).
+
+### Install MP3s
+
+Per theme slug: `public/assets/audio/host/<theme-slug>/tts/`
+
+Default zip installer:
 
 ```bash
 npm run host:install-default-voice-pack -- --zip exports/default-host-tts.zip
 ```
 
-If `--zip` is omitted, it auto-selects the newest ZIP in `exports/`.
-
-Installer output location:
-
-- `public/assets/audio/host/default/tts/`
-
-### 3) Optional: regenerate SSML source CSV
-
-```bash
-npm run export:default-host-ssml
-```
-
-This writes:
-
-- `exports/default-host-voice-lines-ssml.csv`
-- `exports/default-host-voice-lines-ssml-polly-safe.csv`
+Legacy Default-only SSML: `npm run export:default-host-ssml`
 
 ## Batch generation for persona avatars
 
