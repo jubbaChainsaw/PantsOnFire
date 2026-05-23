@@ -108,7 +108,6 @@ export const THEME_META = {
   Cyberpunk: { gradient: 'from-fuchsia-500 via-cyan-500 to-zinc-900', accent: 'text-cyan-200', musicPack: 'cyberpunk_synth', sfxPack: 'neon_glitch', tone: 'neon-rebel', hostStyle: 'street-hacker' },
   Vikings: { gradient: 'from-slate-700 via-stone-500 to-amber-600', accent: 'text-amber-200', musicPack: 'viking_war_drums', sfxPack: 'shield_clang', tone: 'mythic-brawler', hostStyle: 'skald' },
   Ninjas: { gradient: 'from-zinc-900 via-violet-700 to-emerald-600', accent: 'text-emerald-200', musicPack: 'shadow_dojo', sfxPack: 'blade_swish', tone: 'stealth-chaos', hostStyle: 'sensei' },
-  'Detectives Noir': { gradient: 'from-zinc-800 via-slate-700 to-amber-500', accent: 'text-amber-100', musicPack: 'noir_jazz', sfxPack: 'camera_shutter', tone: 'mystery-smoke', hostStyle: 'inspector' },
   'Mythology (Gods & Legends)': { gradient: 'from-yellow-300 via-orange-500 to-sky-600', accent: 'text-yellow-100', musicPack: 'mythic_choir', sfxPack: 'thunder_crack', tone: 'epic-legendary', hostStyle: 'oracle' },
   'Post-Apocalypse': { gradient: 'from-zinc-700 via-amber-700 to-red-900', accent: 'text-orange-200', musicPack: 'wasteland_pulse', sfxPack: 'metal_scrape', tone: 'survival-grit', hostStyle: 'scavenger' },
   Carnival: { gradient: 'from-fuchsia-500 via-yellow-300 to-cyan-500', accent: 'text-pink-100', musicPack: 'carnival_calliope', sfxPack: 'crowd_cheer', tone: 'chaotic-fairground', hostStyle: 'ringmaster' },

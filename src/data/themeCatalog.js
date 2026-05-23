@@ -1,8 +1,14 @@
 import { THEME_META } from './themes.js';
-import { WORST_LIARS_IN_HISTORY_THEME_PACK } from './dlc/themePacks/worst-liars-in-history/themePack.js';
-import { HIGH_STAKES_CASES_THEME_PACK } from './dlc/themePacks/high-stakes-cases/themePack.js';
-import { FUTURE_AND_FANTASY_THEME_PACK } from './dlc/themePacks/future-and-fantasy/themePack.js';
-import { STAGE_AND_SPECTACLE_THEME_PACK } from './dlc/themePacks/stage-and-spectacle/themePack.js';
+import { YE_OLDE_BALONEY_THEME_PACK } from './dlc/themePacks/ye-olde-baloney/themePack.js';
+import { MYTH_TAKEN_IDENTITY_THEME_PACK } from './dlc/themePacks/myth-taken-identity/themePack.js';
+import { LICENCE_TO_FIB_THEME_PACK } from './dlc/themePacks/licence-to-fib/themePack.js';
+import { WANTED_BETTER_ALIBIS_THEME_PACK } from './dlc/themePacks/wanted-better-alibis/themePack.js';
+import { RANK_AND_FILE_MOSTLY_FILE_THEME_PACK } from './dlc/themePacks/rank-and-file-mostly-file/themePack.js';
+import { BEAST_MODE_DECEIT_THEME_PACK } from './dlc/themePacks/beast-mode-deceit/themePack.js';
+import { CTRL_ALT_ELIEVE_THEME_PACK } from './dlc/themePacks/ctrl-alt-elieve/themePack.js';
+import { DARK_ARTS_KRAFTY_LIES_THEME_PACK } from './dlc/themePacks/dark-arts-krafty-lies/themePack.js';
+import { DRAWN_TO_LIE_THEME_PACK } from './dlc/themePacks/drawn-to-lie/themePack.js';
+import { GLITTER_AND_SUSPECTS_THEME_PACK } from './dlc/themePacks/glitter-and-suspects/themePack.js';
 
 export const CORE_THEME_NAMES = [
   'Default',
@@ -13,10 +19,16 @@ export const CORE_THEME_NAMES = [
 ];
 
 export const DLC_THEME_PACKS = [
-  WORST_LIARS_IN_HISTORY_THEME_PACK,
-  HIGH_STAKES_CASES_THEME_PACK,
-  FUTURE_AND_FANTASY_THEME_PACK,
-  STAGE_AND_SPECTACLE_THEME_PACK,
+  YE_OLDE_BALONEY_THEME_PACK,
+  MYTH_TAKEN_IDENTITY_THEME_PACK,
+  LICENCE_TO_FIB_THEME_PACK,
+  WANTED_BETTER_ALIBIS_THEME_PACK,
+  RANK_AND_FILE_MOSTLY_FILE_THEME_PACK,
+  BEAST_MODE_DECEIT_THEME_PACK,
+  CTRL_ALT_ELIEVE_THEME_PACK,
+  DARK_ARTS_KRAFTY_LIES_THEME_PACK,
+  DRAWN_TO_LIE_THEME_PACK,
+  GLITTER_AND_SUSPECTS_THEME_PACK,
 ];
 
 export const DLC_THEME_NAMES = [

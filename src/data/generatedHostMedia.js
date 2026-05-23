@@ -89,9 +89,6 @@ export const THEME_GENERATED_HOST_MEDIA = {
   "Ninjas": {
     "hostOverlay": "/assets/themes/ninjas/hosts/host-overlay.png"
   },
-  "Detectives Noir": {
-    "hostOverlay": "/assets/themes/detectives-noir/hosts/host-overlay.png"
-  },
   "Mythology (Gods & Legends)": {
     "hostOverlay": "/assets/themes/mythology-gods-legends/hosts/host-overlay.png"
   },
