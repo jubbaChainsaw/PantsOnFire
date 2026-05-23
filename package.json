@@ -26,6 +26,7 @@
     "host:export-default-ssml": "node scripts/exportDefaultHostSsmlCsv.cjs",
     "host:export-voice-master": "node scripts/exportHostVoiceMasterCsv.cjs",
     "host:export-dlc-voice": "node scripts/exportDlcHostVoicePack.cjs",
+    "host:generate-elevenlabs": "node scripts/generateHostVoiceElevenLabs.cjs",
     "host:install-default-voice-pack": "node scripts/installDefaultHostVoicePack.cjs",
     "host:install-theme-host-packs": "node scripts/installThemeHostPacks.cjs",
     "host:install-mapped-videos": "node scripts/installMappedHostVideos.cjs",
