@@ -184,15 +184,6 @@ export const THEME_ASSETS = {
     iconSheet: '/assets/themes/ninjas/icons/icons-sheet.svg',
     uiBanner: '/assets/themes/ninjas/ui/banner.svg',
   },
-  'Detectives Noir': {
-    characterCard: '/assets/themes/detectives-noir/characters/presenter.svg',
-    personaHostIdle: '/assets/themes/detectives-noir/hosts/persona-host-idle.png',
-    personaHostTalk1: '/assets/themes/detectives-noir/hosts/persona-host-talk-1.png',
-    personaHostTalk2: '/assets/themes/detectives-noir/hosts/persona-host-talk-2.png',
-    personaHostTalk3: '/assets/themes/detectives-noir/hosts/persona-host-talk-3.png',
-    iconSheet: '/assets/themes/detectives-noir/icons/icons-sheet.svg',
-    uiBanner: '/assets/themes/detectives-noir/ui/banner.svg',
-  },
   'Mythology (Gods & Legends)': {
     characterCard: '/assets/themes/mythology-gods-legends/characters/presenter.svg',
     personaHostIdle: '/assets/themes/mythology-gods-legends/hosts/persona-host-idle.png',
