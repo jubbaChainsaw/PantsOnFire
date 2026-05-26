@@ -1,22 +1,13 @@
 const fs = require('fs');
 const path = require('path');
 const vm = require('vm');
+const {
+  buildElevenLabsSsmlExport,
+  buildElevenLabsTtsText,
+} = require('./elevenLabsTtsPrompt.cjs');
 
 function readFile(filePath) {
   return fs.readFileSync(filePath, 'utf8');
-}
-
-function esc(text) {
-  return String(text)
-    .replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g, ' ')
-    .replaceAll('&', '&amp;')
-    .replaceAll('<', '&lt;')
-    .replaceAll('>', '&gt;')
-    .replaceAll('"', '&quot;');
-}
-
-function toSsml(line, pauseMs = 1400) {
-  return `<speak>${esc(line)}<break time='${pauseMs}ms'/></speak>`;
 }
 
 function csvEscape(value) {
@@ -64,8 +55,9 @@ function toFilenameSafeKey(value = '') {
 function collectRowsForTheme(themeName, voice, slug, voiceId, accentNotes, roundTypes) {
   const rows = [];
   const prefix = slug === 'default' ? 'default' : slug;
-  const push = (filename, lineText, lineType, variant = '', pauseMs = 1400) => {
+  const push = (filename, lineText, lineType, variant = '', pauseMs = 0) => {
     if (!lineText) return;
+    const ttsOpts = { lineType, variant, pauseMs };
     rows.push({
       filename,
       theme_slug: slug,
@@ -75,7 +67,8 @@ function collectRowsForTheme(themeName, voice, slug, voiceId, accentNotes, round
       line_type: lineType,
       variant,
       line_text: lineText,
-      ssml: toSsml(lineText, pauseMs),
+      tts_text: buildElevenLabsTtsText(lineText, ttsOpts),
+      ssml: buildElevenLabsSsmlExport(lineText, ttsOpts),
     });
   };
 
@@ -87,7 +80,7 @@ function collectRowsForTheme(themeName, voice, slug, voiceId, accentNotes, round
 
   push(`${prefix}_intro_online_prompt.mp3`, voice.onlinePrompt, 'game_intro', 'online_mode');
   push(`${prefix}_intro_pass_prompt.mp3`, voice.passPrompt, 'game_intro', 'offline_mode');
-  push(`${prefix}_intro_closing.mp3`, voice.closingLine, 'game_intro', 'closing', 1800);
+  push(`${prefix}_intro_closing.mp3`, voice.closingLine, 'game_intro', 'closing', 1750);
 
   Object.entries(voice.greetings || {}).forEach(([key]) => {
     push(
@@ -143,7 +136,7 @@ function collectRowsForTheme(themeName, voice, slug, voiceId, accentNotes, round
   flowKeys.forEach((key) => {
     const lines = Array.isArray(flow[key]) ? flow[key] : [];
     lines.forEach((line, index) => {
-      const pauseMs = key === 'winner' ? 1800 : 1200;
+      const pauseMs = key === 'winner' ? 1750 : 0;
       push(`${prefix}_${key}_${String(index + 1).padStart(2, '0')}.mp3`, line, `flow_${key}`, `${key}_${index + 1}`, pauseMs);
     });
   });
@@ -197,7 +190,7 @@ function writeVoiceExports({ rows, linesOutPath, ssmlOutPath, logPrefix }) {
 
   const header = [
     'filename', 'theme_slug', 'theme_name', 'voice_id', 'accent_notes',
-    'line_type', 'variant', 'line_text', 'ssml',
+    'line_type', 'variant', 'line_text', 'tts_text', 'ssml',
   ];
   const linesCsv = [
     header.join(','),
@@ -210,17 +203,18 @@ function writeVoiceExports({ rows, linesOutPath, ssmlOutPath, logPrefix }) {
       csvEscape(row.line_type),
       csvEscape(row.variant),
       csvEscape(row.line_text),
+      csvEscape(row.tts_text),
       csvEscape(row.ssml),
     ].join(',')),
   ].join('\n') + '\n';
 
   const ssmlCsv = [
-    'filename,theme_slug,voice_id,ssml',
+    'filename,theme_slug,voice_id,tts_text',
     ...rows.map((row) => [
       csvEscape(row.filename),
       csvEscape(row.theme_slug),
       csvEscape(row.voice_id),
-      csvEscape(row.ssml),
+      csvEscape(row.tts_text),
     ].join(',')),
   ].join('\n') + '\n';
 
