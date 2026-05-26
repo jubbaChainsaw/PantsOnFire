@@ -178,6 +178,11 @@ Importer output:
 
 Ian Poster speaks on every theme. Voice IDs live in CSV registries; scripts export line lists, then call ElevenLabs to make MP3s.
 
+**Pronunciation:** On-screen copy stays **Ian Poster**. The `tts_text` sent to ElevenLabs uses **Ee-an Poss-tah** (Ian like “Ee-an”, Poster like “Poss-tah” / boss + bar). Re-export after changing `IAN_POSTER_SPOKEN_NAME` in `scripts/lib/elevenLabsTtsPrompt.cjs`.
+
+**Cadence:** Exports follow [ElevenLabs TTS best practices](https://elevenlabs.io/docs/overview/capabilities/text-to-speech/best-practices): one trailing `<break time="Xs" />` per clip (seconds, not ms), light em-dash pacing, and `apply_text_normalization: on` in the generator.
+
+
 ### API key
 
 Set one of:

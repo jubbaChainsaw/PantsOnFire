@@ -14,6 +14,11 @@
  */
 const fs = require('fs');
 const path = require('path');
+const {
+  IAN_POSTER_VOICE_SETTINGS,
+  buildElevenLabsTtsText,
+  normalizeStoredTtsPayload,
+} = require('./lib/elevenLabsTtsPrompt.cjs');
 
 const repoRoot = path.resolve(__dirname, '..');
 const localKeysPath = path.join(__dirname, 'royaltyFreeApiKeys.local.json');
@@ -138,11 +143,25 @@ function loadLinesFromCsv(csvPath) {
     theme_slug: cols[idx.theme_slug] || '',
     voice_id: cols[idx.voice_id] || '',
     line_text: cols[idx.line_text] || '',
-  })).filter((r) => r.filename && r.voice_id && r.line_text);
+    tts_text: cols[idx.tts_text] || cols[idx.ssml] || '',
+    line_type: cols[idx.line_type] || '',
+    variant: cols[idx.variant] || '',
+  })).filter((r) => r.filename && r.voice_id && (r.tts_text || r.line_text));
 }
 
 function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function resolveTtsText(row) {
+  if (row.tts_text) return normalizeStoredTtsPayload(row.tts_text);
+  if (row.line_text) {
+    return buildElevenLabsTtsText(row.line_text, {
+      lineType: row.line_type,
+      variant: row.variant,
+    });
+  }
+  return '';
 }
 
 async function synthesize({ apiKey, voiceId, text, modelId }) {
@@ -157,6 +176,8 @@ async function synthesize({ apiKey, voiceId, text, modelId }) {
     body: JSON.stringify({
       text,
       model_id: modelId,
+      apply_text_normalization: 'on',
+      voice_settings: IAN_POSTER_VOICE_SETTINGS,
     }),
   });
   if (!res.ok) {
@@ -220,7 +241,7 @@ async function main() {
       const audio = await synthesize({
         apiKey,
         voiceId: row.voice_id,
-        text: row.line_text,
+        text: resolveTtsText(row),
         modelId: args.modelId,
       });
       fs.mkdirSync(path.dirname(dest), { recursive: true });
