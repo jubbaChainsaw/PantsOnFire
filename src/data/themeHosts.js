@@ -659,7 +659,6 @@ const THEME_GRILL_GUEST_HOST_NAMES = {
   Cyberpunk: 'Neon Ember',
   Vikings: 'Torchbeard',
   Ninjas: 'Ashinobi',
-  'Detectives Noir': 'Lt. Smoulder',
   'Mythology (Gods & Legends)': 'Hephaesizzle',
   'Post-Apocalypse': 'Rustfire Rex',
   Carnival: 'Ringmaster Raze',

@@ -6,7 +6,7 @@ const ROOT = '/workspace';
 const GRAPHICS = path.join(ROOT, 'Graphics');
 const CARDS = path.join(ROOT, 'Cards');
 const HOSTS = path.join(ROOT, 'Hosts');
-const OUT = path.join(ROOT, 'public/assets/new-ui');
+const OUT = path.join(ROOT, 'public/assets/ui');
 
 function ensureDir(dir) {
   fs.mkdirSync(dir, { recursive: true });

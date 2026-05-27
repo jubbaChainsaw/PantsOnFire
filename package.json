@@ -30,6 +30,7 @@
     "host:install-default-voice-pack": "node scripts/installDefaultHostVoicePack.cjs",
     "host:install-theme-host-packs": "node scripts/installThemeHostPacks.cjs",
     "host:install-mapped-videos": "node scripts/installMappedHostVideos.cjs",
+    "host:sync-generated-media": "node scripts/syncGeneratedHostMediaFromDisk.cjs",
     "export:default-host-ssml": "node scripts/exportDefaultHostSsmlCsv.cjs",
     "persona:export-avatar-prompts": "node scripts/exportPersonaAvatarPrompts.cjs",
     "persona:generate-avatars": "npm run persona:export-avatar-prompts && node scripts/generatePersonaAvatars.cjs --provider fal --model fal-ai/wan/v2.7/edit --size 512x512",
