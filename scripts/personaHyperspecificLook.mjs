@@ -7,15 +7,17 @@
 
 import { createRequire } from 'module';
 import { GANGSTERS_LOOK_OVERRIDES_BY_ID } from './data/gangstersLookOverrides.mjs';
+import { LAUNCH_THEME_LOOK_OVERRIDES_BY_ID } from './data/launchThemeLookOverrides.mjs';
 
 const require = createRequire(import.meta.url);
 const { extractDisplayNameVisualSteer } = require('./personaNameVisualCues.cjs');
 
 /** Exact overrides — unmistakably different from synthesized faces. */
 export const LOOK_OVERRIDES_BY_ID = {
+  ...LAUNCH_THEME_LOOK_OVERRIDES_BY_ID,
+  ...GANGSTERS_LOOK_OVERRIDES_BY_ID,
   'default-barry-side-eye-collins':
     'GENDER LOCK (NON-NEGOTIABLE): adult human man — must read male. White man, chubby, mid-50s, mostly bald crown with gingery-grey hair only around the sides and back; narrow slitty inquisitive eyes deliberately looking sideways under a heavy brow; soft jaw and flushed cheeks; shiny sweat on forehead and upper lip; nervous tight mouth like he is mid-overhear; cheap loose polo shirt with a stretched collar and a faint food stain; silver chain just visible; anxious weight-shift implied in the shoulders; no glasses.',
-  ...GANGSTERS_LOOK_OVERRIDES_BY_ID,
 };
 
 /** Mirrors `exportPersonaAvatarPrompts.cjs` name hints so gender matches common names. */
@@ -28,6 +30,7 @@ const FEMALE_NAME_HINTS = new Set([
   'gianna', 'lakeisha', 'destiny', 'monique', 'claudia',
   'sigrid', 'freya', 'matilda', 'cordelia', 'beatrix', 'seraphina', 'henrietta',
   'gwendolyn', 'adelaide', 'penelope', 'vivienne', 'cassia', 'aurelia', 'octavia',
+  'claire', 'nadine', 'carol', 'laura',
 ]);
 const MALE_NAME_HINTS = new Set([
   'barry', 'marvin', 'callum', 'gregor', 'leon', 'dave', 'malik', 'ronan', 'colin', 'yusuf',
@@ -40,6 +43,11 @@ const MALE_NAME_HINTS = new Set([
   'vittorio', 'alphonse', 'paulie', 'carmine', 'terrance', 'deandre', 'salvatore',
   'jimmy', 'rico', 'vito', 'marcus', 'jamal', 'enzo', 'gino', 'angelo', 'tyree',
   'darius', 'louie', 'raheem', 'fredo',
+  'kev', 'ricky', 'tony', 'mick', 'davey', 'lenny', 'pete', 'ronnie', 'omar', 'dan', 'ellis',
+  'brickjaw', 'dullahan', 'garrick', 'redd', 'jenkins', 'burke', 'dreg', 'harlan', 'donny', 'kaito',
+  'rustbane', 'grizzlehook', 'len', 'bill', 'rami', 'reginald', 'arthur', 'thomas', 'harold', 'bernard',
+  'cedric', 'douglas', 'leonard', 'victor', 'rupert', 'benedict', 'doyle', 'crowhurst', 'bellamy', 'finch',
+  'sykes', 'griggs', 'thorne', 'harker', 'dalloway', 'graves', 'marlowe', 'kane', 'voss', 'finchley', 'shaw',
 ]);
 const NON_BINARY_NAME_HINTS = new Set(['jules', 'rio', 'reefspawn', 'glim', 'void', 'rook']);
 
@@ -48,15 +56,34 @@ function firstNameToken(name) {
     .replace(/["“”'().]/g, '')
     .split(/\s+/)
     .filter(Boolean);
-  const titles = new Set(['dr', 'mr', 'mrs', 'ms', 'miss', 'sir', 'lady', 'professor', 'prof', 'captain', 'sgt', 'cpl', 'lt', 'ada', 'cmdr', 'ensign', 'judge', 'detective', 'inspector', 'sergeant', 'major', 'colonel', 'general', 'nurse', 'matron']);
-  if (parts.length > 1 && titles.has(parts[0].toLowerCase().replace(/\.$/, ''))) {
-    return parts[1].toLowerCase();
+  const titles = new Set([
+    'dr', 'mr', 'mrs', 'ms', 'miss', 'sir', 'lady', 'professor', 'prof', 'captain', 'sgt', 'cpl',
+    'lt', 'ada', 'cmdr', 'ensign', 'judge', 'detective', 'inspector', 'sergeant', 'major',
+    'colonel', 'general', 'nurse', 'matron', 'father', 'mother', 'pc', 'old', 'master', 'admiral',
+    'mumsy', 'nosey', 'ciggy', 'lipbite', 'sniffer', 'skint', 'grease', 'shifty', 'silent', 'panic',
+    'flatcap', 'bucket', 'hooknose', 'mad', 'blackfeather', 'barrelgut', 'gullcoat', 'two', 'redline',
+    'whisper', 'scurvy', 'barnacle', 'biscuit', 'ironjaw', 'mirelurk', 'sultan', 'frostbraid', 'knuckles',
+    'granny', 'reefspawn', 'tidecaller',
+  ]);
+  const cleaned = parts.map((p) => p.toLowerCase().replace(/\.$/, ''));
+  let start = 0;
+  if (cleaned.length > 1 && titles.has(cleaned[0])) start = 1;
+  for (let i = start; i < cleaned.length; i += 1) {
+    const tok = cleaned[i];
+    if (tok.length < 2 || titles.has(tok)) continue;
+    if (FEMALE_NAME_HINTS.has(tok) || MALE_NAME_HINTS.has(tok) || NON_BINARY_NAME_HINTS.has(tok)) {
+      return tok;
+    }
   }
-  return (parts[0] || '').toLowerCase();
+  for (let i = start; i < cleaned.length; i += 1) {
+    const tok = cleaned[i];
+    if (tok.length >= 2 && !titles.has(tok)) return tok;
+  }
+  return (cleaned[start] || '').toLowerCase();
 }
 
 /** @returns {'female'|'male'|'non-binary'|'unknown'} */
-function inferGenderBucket(name, bio) {
+export function inferGenderBucket(name, bio) {
   const b = String(bio || '').toLowerCase();
   const first = firstNameToken(name);
   if (/\b(she|her|hers|woman|girl|lady|queen|bride|mother|mum|granny)\b/.test(b)) return 'female';
@@ -68,7 +95,7 @@ function inferGenderBucket(name, bio) {
   return 'unknown';
 }
 
-function genderLockPrefix(bucket) {
+export function genderLockPrefix(bucket) {
   if (bucket === 'female') {
     return 'GENDER LOCK (NON-NEGOTIABLE): adult human woman — must read unmistakably female; do NOT render as male or masc-androgynous. ';
   }
@@ -104,6 +131,14 @@ export const THEME_BUST_COSTUME_CUE = {
     'mismatched era jacket lapels, LED strip accents, pocket watch with wrong hands, chronometer pin generic',
   Spies: 'trench or tailored black coat, earpiece wire, mirrored shades half-down, bruised knuckle optional',
   Cowboys: 'dusty hat brim, bandana knot, denim or duster collar, sun-leather skin',
+  'Murder Mystery':
+    'Edwardian high collar, velvet or tweed, cameo or pearls, manor-house candlelit pallor, suspicious half-smile',
+  Pirates:
+    'tricorn or bandana, salt-stiff hair, earring, weathered sun skin, rope or compass prop at chest, no readable map text',
+  'Cops and Robbers':
+    'police blues OR robber stripes/mask/skull bandana abstract, blank badge or handcuff prop, radio mic, gritty urban night',
+  'Ghosts and Ghouls':
+    'pale undead skin, stitches or ectoplasm, Victorian lace OR sheet-ghost folds, coffin nail or lantern prop, spooky rim light',
   'Detectives Noir': 'fedora shadow, trench lapel, cigarette prop unlit, five-o-clock grit',
   Medical: 'scrubs or lab coat, stethoscope, ID badge blank plastic, tired smug eyes',
   Wrestlers: 'face paint stripes, championship belt buckle abstract shape, sweat sheen, mic cord at neck edge',
@@ -469,6 +504,33 @@ const SILHOUETTE = [
   'one shoulder higher than the other',
 ];
 
+/** Pools for launch-theme look generator (index-permuted picks, not id-hash). */
+export const LOOK_POOLS = {
+  AGES,
+  ETHNICITIES,
+  SOCIAL_CUES,
+  BUILDS,
+  FACE_SHAPES,
+  NOSES,
+  MOUTHS,
+  BROWS,
+  EYES,
+  GLASSES,
+  MASC_FACIAL_HAIR,
+  FEMME_FACIAL_HAIR,
+  AMBIG_FACIAL_HAIR,
+  MAKEUP,
+  SCARS_MARKS,
+  PIERCINGS,
+  TEETH,
+  HAIRS,
+  SKIN,
+  SWEAT,
+  TOPS,
+  EXTRA_JEWELRY,
+  SILHOUETTE,
+};
+
 function fnv1a(str) {
   let h = 2166136261 >>> 0;
   const s = String(str || '');
@@ -482,6 +544,20 @@ function fnv1a(str) {
 function pick(arr, id, salt) {
   if (!arr.length) return '';
   return arr[fnv1a(`${id}|${salt}`) % arr.length];
+}
+
+/** Deterministic pool pick by roster index (spreads variety within a theme). */
+export function pickAt(arr, index, salt = 0) {
+  if (!arr?.length) return '';
+  const n = ((Number(index) || 0) * 17 + (Number(salt) || 0) * 31) >>> 0;
+  return arr[n % arr.length];
+}
+
+/** Pool pick keyed by persona id so alphabetical sort does not cluster identical traits. */
+export function pickForPersona(arr, personaId, slot = 0) {
+  if (!arr?.length) return '';
+  const h = fnv1a(`${personaId}|slot${slot}`);
+  return arr[(h + slot * 41) % arr.length];
 }
 
 function facialHairFor(genderBucket, genPhrase, id) {

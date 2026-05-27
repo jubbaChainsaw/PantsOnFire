@@ -33,6 +33,7 @@
     "host:install-mapped-videos": "node scripts/installMappedHostVideos.cjs",
     "host:sync-generated-media": "node scripts/syncGeneratedHostMediaFromDisk.cjs",
     "export:default-host-ssml": "node scripts/exportDefaultHostSsmlCsv.cjs",
+    "persona:generate-look-overrides": "node scripts/generateLaunchThemeLookOverrides.mjs",
     "persona:export-avatar-prompts": "node scripts/exportPersonaAvatarPrompts.cjs",
     "persona:generate-avatars": "npm run persona:export-avatar-prompts && node scripts/generatePersonaAvatars.cjs --provider fal --model fal-ai/wan/v2.7/edit --size 512x512",
     "persona:key-chroma": "node scripts/chromaKeyPersonaPngs.cjs",
