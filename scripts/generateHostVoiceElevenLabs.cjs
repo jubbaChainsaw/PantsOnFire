@@ -27,6 +27,7 @@ function parseArgs(argv) {
   const args = {
     core: false,
     pack: '',
+    personaCallouts: false,
     install: false,
     dryRun: false,
     limit: 0,
@@ -41,6 +42,8 @@ function parseArgs(argv) {
     else if (a === '--dry-run') args.dryRun = true;
     else if (a === '--pack' && argv[i + 1]) {
       args.pack = argv[++i].trim();
+    } else if (a === '--persona-callouts') {
+      args.personaCallouts = true;
     } else if (a === '--limit' && argv[i + 1]) {
       args.limit = Math.max(0, Number(argv[++i]) || 0);
     } else if (a === '--delay-ms' && argv[i + 1]) {
@@ -60,10 +63,12 @@ function printHelp() {
   console.log(`Usage:
   npm run host:generate-elevenlabs -- --core [--install] [--dry-run] [--limit N]
   npm run host:generate-elevenlabs -- --pack <pack-id> [--install] [--dry-run]
+  npm run host:generate-elevenlabs -- --persona-callouts [--install] [--dry-run]
 
 Options:
   --core              Use exports/host-voice-lines-master.csv (5 core themes)
   --pack <id>         Use exports/dlc/<id>/host-voice-lines.csv
+  --persona-callouts  Use exports/host-persona-callouts.csv (beta launch themes)
   --install           Write MP3s to public/assets/audio/host/<theme-slug>/tts/
   --out-dir <path>    Otherwise writes to exports/generated-audio/<slug>/
   --dry-run           Print plan only, no API calls
@@ -199,17 +204,24 @@ function resolveOutputPath({ row, install, outDir }) {
 
 async function main() {
   const args = parseArgs(process.argv);
-  if (args.help || (!args.core && !args.pack)) {
+  if (args.help || (!args.core && !args.pack && !args.personaCallouts)) {
     printHelp();
     process.exit(args.help ? 0 : 1);
   }
 
-  const csvPath = args.core
-    ? path.join(repoRoot, 'exports', 'host-voice-lines-master.csv')
-    : path.join(repoRoot, 'exports', 'dlc', args.pack, 'host-voice-lines.csv');
+  const csvPath = args.personaCallouts
+    ? path.join(repoRoot, 'exports', 'host-persona-callouts.csv')
+    : args.core
+      ? path.join(repoRoot, 'exports', 'host-voice-lines-master.csv')
+      : path.join(repoRoot, 'exports', 'dlc', args.pack, 'host-voice-lines.csv');
 
   if (!fs.existsSync(csvPath)) {
-    throw new Error(`Missing ${csvPath}. Run export first (host:export-voice-master or host:export-dlc-voice).`);
+    const hint = args.personaCallouts
+      ? 'host:export-persona-callouts'
+      : args.core
+        ? 'host:export-voice-master'
+        : 'host:export-dlc-voice';
+    throw new Error(`Missing ${csvPath}. Run export first (npm run ${hint}).`);
   }
 
   let lines = loadLinesFromCsv(csvPath);

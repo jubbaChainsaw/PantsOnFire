@@ -22,7 +22,8 @@ Theme elements must clearly influence outfit, styling and persona. Personality m
 
 Bust portrait ONLY. Show head, shoulders and upper chest only. Character facing mostly toward camera. Entire head and hair fully inside frame. No hands, legs or full body.
 
-Randomise ethnicity, skin tone, facial structure, age, hairstyle and accessories while keeping the same art style universe.
+MANDATORY UNIQUE CHARACTER LOOK — follow exactly; do not genericize or swap ethnicity, gender, age, facial structure, scars, glasses, jewelry, or costume:
+{{UNIQUE_CHARACTER_LOOK}}
 
 STYLE RULES:
 thick black outlines, bold silhouette, exaggerated cartoon features, expressive face, cel shading, clean shapes, high contrast, edgy modern party-game style, no realism, no text, no logos, no scenery, no extra objects.`;
@@ -36,14 +37,24 @@ function escapeForPromptQuotedField(value) {
     .trim();
 }
 
-function buildPersonaAvatarPrompt(persona, themeName) {
+function buildPersonaAvatarPrompt(persona, themeName, buildHyperspecificLook) {
   const name = escapeForPromptQuotedField(persona?.name || 'Unknown Persona');
   const theme = escapeForPromptQuotedField(themeName || 'Default');
   const bio = escapeForPromptQuotedField(persona?.bio || '');
+  const personaId = String(persona?.id || '').trim();
+  const uniqueLook = buildHyperspecificLook
+    ? buildHyperspecificLook({
+      id: personaId,
+      name: persona?.name,
+      bio: persona?.bio,
+      themeName,
+    })
+    : '';
   return MTV_PARTY_GAME_POSITIVE_TEMPLATE
     .replace('{{CHARACTER_NAME}}', name)
     .replace('{{THEME}}', theme)
-    .replace('{{PERSONALITY_DESCRIPTION}}', bio);
+    .replace('{{PERSONALITY_DESCRIPTION}}', bio)
+    .replace('{{UNIQUE_CHARACTER_LOOK}}', escapeForPromptQuotedField(uniqueLook));
 }
 
 function csvEscape(value) {
@@ -68,14 +79,22 @@ function filenameFromImageSrc(imageSrc, fallbackId) {
   return `${safeFallback || 'persona'}.png`;
 }
 
-function buildRows(themeName, personas, { batchLabel = 'all-themes' } = {}) {
+function buildRows(themeName, personas, { batchLabel = 'all-themes', buildHyperspecificLook } = {}) {
   const themeFolder = themeSlug(themeName) || 'default';
   return (personas || []).map((persona, index) => {
     const personaId = String(persona?.id || `${themeFolder}-${index + 1}`).trim();
     const imageSrc = String(persona?.imageSrc || '').trim();
     const filename = filenameFromImageSrc(imageSrc, personaId);
     const outputPath = path.posix.join('/assets/themes', themeFolder, 'personas', filename);
-    const prompt = buildPersonaAvatarPrompt(persona, themeName);
+    const prompt = buildPersonaAvatarPrompt(persona, themeName, buildHyperspecificLook);
+    const hyperspecificLook = buildHyperspecificLook
+      ? buildHyperspecificLook({
+        id: personaId,
+        name: persona?.name,
+        bio: persona?.bio,
+        themeName,
+      })
+      : '';
     return {
       batchLabel,
       themeName,
@@ -85,6 +104,7 @@ function buildRows(themeName, personas, { batchLabel = 'all-themes' } = {}) {
       imageSrc,
       filename,
       outputPath,
+      hyperspecificLook,
       prompt,
       wanPrompt: prompt,
       avatarPrompt: prompt,
@@ -130,9 +150,11 @@ async function main() {
 
   const personasModule = await import(pathToFileURL(path.join(repoRoot, 'src', 'data', 'themePersonas.js')).href);
   const catalogModule = await import(pathToFileURL(path.join(repoRoot, 'src', 'data', 'themeCatalog.js')).href);
+  const lookModule = await import(pathToFileURL(path.join(repoRoot, 'scripts', 'personaHyperspecificLook.mjs')).href);
 
   const { getThemePersonas } = personasModule;
   const { ALL_THEME_NAMES = [], CORE_THEME_NAMES = [] } = catalogModule;
+  const { buildHyperspecificLook } = lookModule;
   if (typeof getThemePersonas !== 'function') {
     throw new Error('getThemePersonas export not found in src/data/themePersonas.js');
   }
@@ -142,12 +164,12 @@ async function main() {
 
   const allRows = allThemeNames.flatMap((themeName) => {
     const personas = getThemePersonas(themeName);
-    return buildRows(themeName, personas, { batchLabel: 'all-themes' });
+    return buildRows(themeName, personas, { batchLabel: 'all-themes', buildHyperspecificLook });
   });
 
   const coreRows = coreThemeNames.flatMap((themeName) => {
     const personas = getThemePersonas(themeName);
-    return buildRows(themeName, personas, { batchLabel: 'core-themes' });
+    return buildRows(themeName, personas, { batchLabel: 'core-themes', buildHyperspecificLook });
   });
 
   const allFiles = writeExportFiles('persona-avatar-prompts', allRows);

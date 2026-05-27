@@ -63,11 +63,12 @@ import {
 import { Switch } from "./components/ui/switch";
 import { PASS_THE_PHONE_ROUND_TYPES, ROUND_TYPES } from "./data/roundTypes";
 import { THEME_META } from "./data/themes";
+import { getThemeHostAssets, THEME_ASSETS } from "./data/themeAssets";
 import {
-  getThemeAssets,
-  getThemeHostAssets,
-  THEME_ASSETS,
-} from "./data/themeAssets";
+  getPersonaCalloutLineTextForPlayer,
+  shouldPlayPersonaCalloutForPlayer,
+} from "./data/hostPersonaCallouts";
+import { getPersonaCalloutSrcCandidates } from "./data/hostVoiceLineMap";
 import { NAME_POOLS, randomNameFromTheme } from "./data/names";
 import { toCanonicalThemeName } from "./data/themeAliases";
 import { getThemePersonas, pickRandomThemePersona } from "./data/themePersonas";
@@ -1823,6 +1824,7 @@ function useIanPosterHostVoicePlayback({
   line = "",
   themeName = "Default",
   fallbackDurationMs = 6000,
+  audioSrcCandidates = null,
 } = {}) {
   const [isPlaying, setIsPlaying] = useState(false);
   const audioRef = useRef(null);
@@ -1846,7 +1848,10 @@ function useIanPosterHostVoicePlayback({
       }
       return undefined;
     }
-    const mappedSrcCandidates = getHostVoiceSrcCandidatesForLine(normalized, themeName);
+    const mappedSrcCandidates =
+      Array.isArray(audioSrcCandidates) && audioSrcCandidates.length
+        ? audioSrcCandidates.filter(Boolean)
+        : getHostVoiceSrcCandidatesForLine(normalized, themeName);
     if (!mappedSrcCandidates.length) {
       setIsPlaying(true);
       clearFallbackTimer();
@@ -1903,7 +1908,7 @@ function useIanPosterHostVoicePlayback({
         audioRef.current = null;
       }
     };
-  }, [enabled, line, themeName, fallbackDurationMs]);
+  }, [enabled, line, themeName, fallbackDurationMs, audioSrcCandidates]);
   return isPlaying;
 }
 function getIanPosterVoiceLineForGameIntroLine({
@@ -2354,7 +2359,7 @@ function getCustomCategoryMetaById() {
     UI_CUSTOM_CATEGORY_META.map((entry) => [entry.id, entry]),
   );
 }
-function applyNewUiCategoryMetaToList(list = []) {
+function applyUiCategoryMetaToList(list = []) {
   const byId = getCustomCategoryMetaById();
   return list.map((category) => {
     const meta = byId[category?.id];
@@ -3395,7 +3400,7 @@ function FriendsScreen({
     </TopFrame>
   );
 }
-function NewUiCategoryBadge({
+function UiCategoryBadge({
   categoryId = "",
   fallbackEmoji = "🎲",
   fallbackName = "",
@@ -4683,6 +4688,7 @@ function RevealScreen({
   normalLine,
   liarLine,
   theme,
+  personaOnlyMode = false,
   onlineMode = false,
   localPlayerName = "",
   onlinePrivatePrompt = null,
@@ -4691,6 +4697,26 @@ function RevealScreen({
   playSfx = () => {},
 }) {
   const player = players[currentRevealIndex];
+  const personaCalloutLine = getPersonaCalloutLineTextForPlayer(player, theme);
+  const personaCalloutSrcCandidates = getPersonaCalloutSrcCandidates(
+    theme,
+    player?.personaId,
+  );
+  const shouldPlayPersonaCallout = shouldPlayPersonaCalloutForPlayer(
+    player,
+    theme,
+    personaOnlyMode,
+  );
+  useIanPosterHostVoicePlayback({
+    enabled:
+      shouldPlayPersonaCallout &&
+      isIanPosterVoiceTheme(theme) &&
+      Boolean(personaCalloutLine),
+    line: personaCalloutLine,
+    themeName: theme,
+    audioSrcCandidates: personaCalloutSrcCandidates,
+    fallbackDurationMs: 2200,
+  });
   const prompt = onlineMode
     ? onlinePrivatePrompt?.prompt || ""
     : round.promptsByPlayerId[player.id];
@@ -6246,13 +6272,37 @@ function LiarRevealScreen({
   round,
   onComplete,
   theme,
+  personaOnlyMode = false,
   playSfx = () => {},
 }) {
   const liars = players.filter((p) => (round.imposterIds || []).includes(p.id));
+  const primaryLiar = liars[0] || null;
+  const liarPersonaCalloutLine = getPersonaCalloutLineTextForPlayer(
+    primaryLiar,
+    theme,
+  );
+  const liarPersonaCalloutSrcCandidates = getPersonaCalloutSrcCandidates(
+    theme,
+    primaryLiar?.personaId,
+  );
+  const shouldPlayLiarPersonaCallout =
+    shouldPlayPersonaCalloutForPlayer(primaryLiar, theme, personaOnlyMode) &&
+    liars.length === 1;
+  const [announcementIndex, setAnnouncementIndex] = useState(0);
+  useIanPosterHostVoicePlayback({
+    enabled:
+      announcementIndex === 1 &&
+      shouldPlayLiarPersonaCallout &&
+      isIanPosterVoiceTheme(theme) &&
+      Boolean(liarPersonaCalloutLine),
+    line: liarPersonaCalloutLine,
+    themeName: theme,
+    audioSrcCandidates: liarPersonaCalloutSrcCandidates,
+    fallbackDurationMs: 2200,
+  });
   const hostSizeConfig = getHostSizeConfig(theme);
   const audioRef = useRef(null);
   const hasCompletedRef = useRef(false);
-  const [announcementIndex, setAnnouncementIndex] = useState(0);
   const announcementBubbleTextRef = useRef(null);
   const announcementBubbleFitRef = useRef(null);
   const [announcementBubbleFontSize, setAnnouncementBubbleFontSize] =
@@ -7801,7 +7851,7 @@ export default function App() {
     [availablePicturePackManifests],
   );
   const allCategories = useMemo(
-    () => applyNewUiCategoryMetaToList(getCombinedCategories(customCategories)),
+    () => applyUiCategoryMetaToList(getCombinedCategories(customCategories)),
     [customCategories],
   );
   const activeCategories = useMemo(
@@ -10226,6 +10276,7 @@ export default function App() {
             normalLine={copyState.revealNormal}
             liarLine={copyState.revealLiar}
             theme={canonicalThemeName}
+            personaOnlyMode={personaOnlyMode}
             onlineMode={onlineMode}
             localPlayerName={onlinePlayerName}
             onlinePrivatePrompt={onlinePrivatePrompt}
@@ -10330,6 +10381,7 @@ export default function App() {
           round={round}
           onComplete={finishLiarReveal}
           theme={canonicalThemeName}
+          personaOnlyMode={personaOnlyMode}
           playSfx={playSfx}
         />
       )}
