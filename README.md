@@ -243,6 +243,27 @@ npm run host:generate-elevenlabs -- --pack wanted-better-alibis --install
 
 All DLC packs: see `exports/dlc/README.md`.
 
+### Persona name callouts (beta launch themes)
+
+Ian Poster speaks each curated persona name in **Persona-only** mode (pass-the-phone reveal and single-liar reveal).
+
+**1. Export** (reads `themePersonas.js` — re-run after adding personas):
+
+```bash
+npm run host:export-persona-callouts
+```
+
+Writes `exports/host-persona-callouts.csv` (Default + core themes + Cowboys / Gangsters / Wrestlers).
+
+**2. Generate** (uses each theme’s `voice_id` from the master registries):
+
+```bash
+npm run host:generate-elevenlabs -- --persona-callouts --limit 10 --install
+npm run host:generate-elevenlabs -- --persona-callouts --install
+```
+
+Files install to `public/assets/audio/host/<theme-slug>/tts/` as `{slug}_persona_{persona-key}.mp3`.
+
 ### Legacy: zip install
 
 If you already have a ZIP of MP3s:

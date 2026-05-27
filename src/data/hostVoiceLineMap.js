@@ -8,6 +8,11 @@ import {
   getIanPosterThemeVoice,
   IAN_POSTER_VOICE_THEME_NAMES,
 } from './ianPosterThemeVoice';
+import {
+  buildPersonaCalloutFilename,
+  getPersonaCalloutEntriesForTheme,
+  HOST_PERSONA_CALLOUT_THEME_NAMES,
+} from './hostPersonaCallouts';
 
 export const HOST_TTS_BASE_PATH = '/assets/audio/host';
 export const DEFAULT_HOST_TTS_BASE_PATH = `${HOST_TTS_BASE_PATH}/default/tts`;
@@ -128,12 +133,43 @@ function buildThemeHostLineFilenameMap(themeName = 'Default') {
     });
   });
 
+  getPersonaCalloutEntriesForTheme(themeName).forEach((entry) => {
+    pushLine(map, entry.lineText, entry.filename);
+  });
+
   return map;
 }
 
 const HOST_LINE_MAP_BY_THEME = Object.fromEntries(
   IAN_POSTER_VOICE_THEME_NAMES.map((themeName) => [themeName, buildThemeHostLineFilenameMap(themeName)]),
 );
+
+/** personaId → MP3 filename (launch themes only). */
+const PERSONA_CALLOUT_FILENAME_BY_THEME = Object.fromEntries(
+  HOST_PERSONA_CALLOUT_THEME_NAMES.map((themeName) => {
+    const slug = getIanPosterThemeSlug(themeName);
+    const byId = Object.fromEntries(
+      getPersonaCalloutEntriesForTheme(themeName).map((entry) => [entry.personaId, entry.filename]),
+    );
+    return [themeName, { slug, byId }];
+  }),
+);
+
+export function getPersonaCalloutFilenameForPlayer(themeName = 'Default', personaId = '') {
+  const canonical = toCanonicalThemeName(themeName);
+  const id = String(personaId || '').trim();
+  if (!id) return '';
+  const bucket = PERSONA_CALLOUT_FILENAME_BY_THEME[canonical];
+  if (bucket?.byId?.[id]) return bucket.byId[id];
+  const slug = getIanPosterThemeSlug(canonical);
+  return buildPersonaCalloutFilename(slug, id);
+}
+
+export function getPersonaCalloutSrcCandidates(themeName = 'Default', personaId = '') {
+  const filename = getPersonaCalloutFilenameForPlayer(themeName, personaId);
+  if (!filename) return [];
+  return getHostVoiceBasePathsForTheme(themeName).map((base) => `${base}/${filename}`);
+}
 
 export function getHostVoiceFilenameForLine(line = '', themeName = 'Default') {
   const canonicalTheme = toCanonicalThemeName(themeName);

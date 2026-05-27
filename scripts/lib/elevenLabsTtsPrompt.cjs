@@ -22,6 +22,7 @@ const IAN_POSTER_SPOKEN_NAME = 'Ee-an Poss-tah';
 const TRAILING_PAUSE_SEC_BY_LINE_TYPE = {
   game_intro: 1.1,
   host_round_intro: 1.35,
+  persona_callout: 0.85,
   flow_winner: 1.75,
   flow_chooser: 1.05,
   flow_passPhone: 1.0,
@@ -58,6 +59,7 @@ function resolveTrailingPauseSec(lineType = '', variant = '', pauseMs = 0) {
     return TRAILING_PAUSE_SEC_BY_LINE_TYPE.game_intro;
   }
   if (lineType === 'host_round_intro') return TRAILING_PAUSE_SEC_BY_LINE_TYPE.host_round_intro;
+  if (lineType === 'persona_callout') return TRAILING_PAUSE_SEC_BY_LINE_TYPE.persona_callout;
   if (lineType.startsWith('flow_')) {
     const flowKey = lineType.replace(/^flow_/, '');
     if (flowKey === 'winner') return TRAILING_PAUSE_SEC_BY_LINE_TYPE.flow_winner;

@@ -48,6 +48,8 @@ Used by `src/data/uiAssets.js` (`UI_PACK_SLUG = 'ui'`).
 
 Bulk-generated via `npm run host:generate-elevenlabs`.
 
+Persona name clips (Persona-only mode): `{slug}_persona_{persona-key}.mp3` — export with `npm run host:export-persona-callouts`, generate with `npm run host:generate-elevenlabs -- --persona-callouts --install`.
+
 ## Retired
 
 - **Detectives Noir** — do not re-add `themes/detectives-noir/`.
