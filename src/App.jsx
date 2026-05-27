@@ -78,6 +78,21 @@ import {
   pickThemeGuestHostName,
 } from "./data/themeHosts";
 import {
+  getUiCardBackSrc,
+  getUiCardFrontSrc,
+  getUiCategoryIconSrc,
+  getUiGameModeIconSrc,
+  listUiPreloadSources,
+  UI_CARD_LIAR_FRONT_SRC,
+  UI_CUSTOM_CATEGORY_META,
+  UI_LOGO_18PLUS_SRC,
+  UI_LOGO_MAIN_SRC,
+  UI_PRIMARY_BUTTON_CLASS,
+  UI_WALLPAPER_HOME_SRC,
+  UI_WALLPAPER_IN_GAME_SRC,
+} from "./data/uiAssets";
+
+import {
   DLC_THEME_PACKS,
   getThemeOptions,
   normalizeUnlockedThemePackIds,
@@ -235,105 +250,6 @@ const UI_ICON_CROWN_GOLD_SRC = "/assets/images/ui-icons/crown-gold.png";
 const UI_ICON_BADGE_18_PLUS_SRC = "/assets/images/ui-icons/badge-18-plus.png";
 const UI_ICON_BADGE_LIAR_SRC = "/assets/images/ui-icons/badge-liar.png";
 const UI_ICON_MAGNIFIER_FIRE_SRC = "/assets/images/ui-icons/magnifier-fire.png";
-const NEW_UI_BASE = "/assets/new-ui";
-const NEW_UI_LOGO_MAIN_SRC = `${NEW_UI_BASE}/logos/main-logo.png`;
-const NEW_UI_LOGO_18PLUS_SRC = `${NEW_UI_BASE}/logos/logo-18plus.png`;
-const NEW_UI_WALLPAPER_IN_GAME_SRC = `${NEW_UI_BASE}/wallpapers/in-game.png`;
-const NEW_UI_WALLPAPER_HOME_SRC = NEW_UI_WALLPAPER_IN_GAME_SRC;
-const NEW_UI_CARD_BASE = `${NEW_UI_BASE}/cards`;
-const NEW_UI_CATEGORY_ICON_BASE = `${NEW_UI_BASE}/categories`;
-const NEW_UI_ROUND_TYPE_ICON_BASE = `${NEW_UI_BASE}/game-modes`;
-const NEW_UI_CARD_DEFAULT_FRONT_SRC = `${NEW_UI_CARD_BASE}/default-front.png`;
-const NEW_UI_CARD_DEFAULT_BACK_SRC = `${NEW_UI_CARD_BASE}/default-back.png`;
-const NEW_UI_CARD_LIAR_FRONT_SRC = `${NEW_UI_CARD_BASE}/liar-front.png`;
-const NEW_UI_GAME_MODE_ICON_BY_ID = Object.freeze({
-  prompt: `${NEW_UI_ROUND_TYPE_ICON_BASE}/prompt.png`,
-  opinion: `${NEW_UI_ROUND_TYPE_ICON_BASE}/opinion.png`,
-  picture: `${NEW_UI_ROUND_TYPE_ICON_BASE}/picture.png`,
-  nameblame: "/assets/images/round-types/name-and-shame.png",
-  noise: `${NEW_UI_ROUND_TYPE_ICON_BASE}/noise.png`,
-  chain: `${NEW_UI_ROUND_TYPE_ICON_BASE}/chain.png`,
-  grill: `${NEW_UI_ROUND_TYPE_ICON_BASE}/grill.png`,
-  sound: `${NEW_UI_ROUND_TYPE_ICON_BASE}/sound.png`,
-  video: `${NEW_UI_ROUND_TYPE_ICON_BASE}/video.png`,
-});
-const NEW_UI_CATEGORY_ICON_BY_ID = Object.freeze(
-  Object.fromEntries(
-    DEFAULT_CATEGORIES.map((category) => [
-      category.id,
-      `${NEW_UI_CATEGORY_ICON_BASE}/${category.id}.png`,
-    ]),
-  ),
-);
-const NEW_UI_PRIMARY_BUTTON_CLASS =
-  "h-16 rounded-[1.9rem] border-2 border-white bg-[#f500c8] text-white text-lg sm:text-xl font-black uppercase tracking-[0.02em] hover:bg-[#ff24d4] shadow-[0_10px_24px_rgba(0,0,0,0.45)]";
-const NEW_UI_CUSTOM_CATEGORY_META = [
-  {
-    id: "travel-disasters",
-    name: "Travel Disasters",
-    iconSrc: `${NEW_UI_CATEGORY_ICON_BASE}/travel-disasters.png`,
-  },
-  {
-    id: "roommate-chaos",
-    name: "Roommate Chaos",
-    iconSrc: `${NEW_UI_CATEGORY_ICON_BASE}/roommate-chaos.png`,
-  },
-  {
-    id: "mobile-apps",
-    name: "Mobile Apps",
-    iconSrc: `${NEW_UI_CATEGORY_ICON_BASE}/mobile-apps.png`,
-  },
-  {
-    id: "school-uni",
-    name: "School / Uni Life",
-    iconSrc: `${NEW_UI_CATEGORY_ICON_BASE}/school-uni.png`,
-  },
-  {
-    id: "mythical-creatures",
-    name: "Mythical Creatures",
-    iconSrc: `${NEW_UI_CATEGORY_ICON_BASE}/mythical-creatures.png`,
-  },
-  {
-    id: "cars-motors",
-    name: "Cars & Motors",
-    iconSrc: `${NEW_UI_CATEGORY_ICON_BASE}/cars-motors.png`,
-  },
-  {
-    id: "childhood-nostalgia",
-    name: "Childhood Nostalgia",
-    iconSrc: `${NEW_UI_CATEGORY_ICON_BASE}/childhood-nostalgia.png`,
-  },
-  {
-    id: "conspiracy-lite",
-    name: "Conspiracy Lite",
-    iconSrc: `${NEW_UI_CATEGORY_ICON_BASE}/conspiracy-lite.png`,
-  },
-  {
-    id: "dating-bios",
-    name: "Dating App Bios",
-    iconSrc: `${NEW_UI_CATEGORY_ICON_BASE}/dating-bios.png`,
-  },
-  {
-    id: "board-game-lore",
-    name: "Board Games",
-    iconSrc: `${NEW_UI_CATEGORY_ICON_BASE}/board-game-lore.png`,
-  },
-  {
-    id: "internet-slang",
-    name: "Internet Slang",
-    iconSrc: `${NEW_UI_CATEGORY_ICON_BASE}/internet-slang.png`,
-  },
-  {
-    id: "memes-viral",
-    name: "Memes & Viral Moments",
-    iconSrc: `${NEW_UI_CATEGORY_ICON_BASE}/memes-viral.png`,
-  },
-  {
-    id: "pic-mix",
-    name: "Pic & Mix",
-    iconSrc: `${NEW_UI_CATEGORY_ICON_BASE}/pic-mix.png`,
-  },
-];
 const MIN_PLAYERS = 3;
 const MAX_PLAYERS = 12;
 const WEB_JOIN_ONLY_MODE =
@@ -1415,7 +1331,7 @@ function TopFrame({ children, theme = "Default", allowScroll = false }) {
     >
       <div
         className="fixed inset-0 bg-cover bg-center bg-no-repeat"
-        style={{ backgroundImage: `url(${NEW_UI_WALLPAPER_IN_GAME_SRC})` }}
+        style={{ backgroundImage: `url(${UI_WALLPAPER_IN_GAME_SRC})` }}
       />
       <div className="fixed inset-0 bg-black/45" />
       <div
@@ -1855,38 +1771,7 @@ function ThemeIconStrip({ src, alt }) {
     />
   );
 }
-function getNewUiHostSlug(themeName = "Default") {
-  const canonicalThemeName = toCanonicalThemeName(themeName || "Default");
-  const slugByTheme = {
-    Default: "default",
-    "Murder Mystery": "murder-mystery",
-    Pirates: "pirates",
-    "Cops and Robbers": "cops-and-robbers",
-    "Ghosts and Ghouls": "ghosts-and-ghouls",
-  };
-  return slugByTheme[canonicalThemeName] || "default";
-}
-function getNewUiHostFrames(themeName = "Default") {
-  const slug = getNewUiHostSlug(themeName);
-  const frameCountBySlug = {
-    default: 9,
-    "murder-mystery": 6,
-    pirates: 6,
-    "cops-and-robbers": 6,
-    "ghosts-and-ghouls": 6,
-  };
-  const frameCount = frameCountBySlug[slug] || frameCountBySlug.default;
-  return Array.from(
-    { length: frameCount },
-    (_, index) =>
-      `/assets/new-ui/hosts/${slug}/talk-${String(index + 1).padStart(2, "0")}.png`,
-  );
-}
 function getThemeHostFrameSources(themeName = "Default", state = "idle") {
-  const newUiFrames = getNewUiHostFrames(themeName);
-  if (newUiFrames.length) {
-    return state === "talking" ? newUiFrames : [newUiFrames[0]].filter(Boolean);
-  }
   const hostAssets = getThemeHostAssets(themeName);
   const idleFrame = hostAssets?.idle || "";
   const talkingFrames = Array.isArray(hostAssets?.talkingFrames)
@@ -2180,7 +2065,7 @@ function GameIntroScreen({
   }
   return (
     <BrandedScreen
-      wallpaperSrc={NEW_UI_WALLPAPER_IN_GAME_SRC}
+      wallpaperSrc={UI_WALLPAPER_IN_GAME_SRC}
       overlayClassName="bg-black/65"
     >
       <div className="relative mx-auto flex h-[calc(100dvh-1.25rem)] w-full max-w-[28rem] flex-col items-center justify-between gap-3 overflow-hidden py-1">
@@ -2265,30 +2150,24 @@ function getRoundRuleText(roundTypeId = "prompt") {
   return "Give one clue, blend in, and avoid revealing your exact prompt.";
 }
 function getCategoryIconSrc(categoryId = "") {
-  const normalizedId = String(categoryId || "").trim();
-  if (!normalizedId) return "";
-  return NEW_UI_CATEGORY_ICON_BY_ID[normalizedId] || "";
+  return getUiCategoryIconSrc(categoryId);
 }
 function getRoundTypeIconSrc(roundTypeId = "prompt") {
-  const normalizedId = String(roundTypeId || "prompt")
-    .trim()
-    .toLowerCase();
-  if (!normalizedId) return NEW_UI_GAME_MODE_ICON_BY_ID.prompt;
-  if (normalizedId === "offtopic") return NEW_UI_GAME_MODE_ICON_BY_ID.prompt;
+  const normalizedId = String(roundTypeId || "prompt").trim().toLowerCase();
   return (
-    NEW_UI_GAME_MODE_ICON_BY_ID[normalizedId] ||
+    getUiGameModeIconSrc(normalizedId) ||
     ROUND_TYPES[normalizedId]?.logoSrc ||
-    NEW_UI_GAME_MODE_ICON_BY_ID.prompt
+    getUiGameModeIconSrc("prompt")
   );
 }
-function getRoundCardBackSrc() {
-  return NEW_UI_CARD_DEFAULT_BACK_SRC;
+function getRoundCardBackSrc(themeName = "Default") {
+  return getUiCardBackSrc(themeName);
 }
-function getRoundCardFrontSrc() {
-  return NEW_UI_CARD_DEFAULT_FRONT_SRC;
+function getRoundCardFrontSrc(themeName = "Default") {
+  return getUiCardFrontSrc(themeName);
 }
 function getImposterCardFrontSrc() {
-  return NEW_UI_CARD_LIAR_FRONT_SRC;
+  return UI_CARD_LIAR_FRONT_SRC;
 }
 function preloadImageSources(sources = []) {
   if (typeof window === "undefined" || typeof window.Image === "undefined")
@@ -2353,7 +2232,8 @@ function useCategoryAndModeIconPreload({
   canonicalThemeName = "Default",
 } = {}) {
   useEffect(() => {
-    const allRoundTypeIconSources = Object.values(NEW_UI_GAME_MODE_ICON_BY_ID)
+    const allRoundTypeIconSources = listUiPreloadSources()
+      .filter((source) => source.includes("/game-modes/"))
       .map((source) => String(source || "").trim())
       .filter(Boolean);
     preloadImageSources(allRoundTypeIconSources);
@@ -2392,16 +2272,8 @@ function useGlobalGraphicsPreload() {
     let cancelled = false;
     const startedAtMs = Date.now();
     const coreUiSources = [
-      NEW_UI_LOGO_MAIN_SRC,
-      NEW_UI_LOGO_18PLUS_SRC,
-      NEW_UI_WALLPAPER_HOME_SRC,
-      NEW_UI_WALLPAPER_IN_GAME_SRC,
-      NEW_UI_CARD_DEFAULT_FRONT_SRC,
-      NEW_UI_CARD_DEFAULT_BACK_SRC,
-      NEW_UI_CARD_LIAR_FRONT_SRC,
-      ...Object.values(NEW_UI_GAME_MODE_ICON_BY_ID),
-      ...Object.values(NEW_UI_CATEGORY_ICON_BY_ID),
-      ...NEW_UI_CUSTOM_CATEGORY_META.map((entry) => entry?.iconSrc),
+      ...listUiPreloadSources(),
+      ...UI_CUSTOM_CATEGORY_META.map((entry) => entry?.iconSrc),
       ...CARD_FIRE_FLAME_SOURCES,
       UI_ICON_BOXERS_RED_SRC,
       UI_ICON_BOXERS_GREEN_SRC,
@@ -2458,7 +2330,7 @@ function StartupPreloadOverlay({ show = false }) {
         >
           <div className="flex flex-col items-center justify-center gap-5 text-center text-white">
             <motion.img
-              src={NEW_UI_LOGO_MAIN_SRC}
+              src={UI_LOGO_MAIN_SRC}
               alt="Pants on Fire loading logo"
               className="h-32 w-32 sm:h-40 sm:w-40 object-contain drop-shadow-[0_10px_30px_rgba(255,120,0,0.55)]"
               animate={{ rotate: 360 }}
@@ -2479,7 +2351,7 @@ function StartupPreloadOverlay({ show = false }) {
 }
 function getCustomCategoryMetaById() {
   return Object.fromEntries(
-    NEW_UI_CUSTOM_CATEGORY_META.map((entry) => [entry.id, entry]),
+    UI_CUSTOM_CATEGORY_META.map((entry) => [entry.id, entry]),
   );
 }
 function applyNewUiCategoryMetaToList(list = []) {
@@ -2603,12 +2475,12 @@ function getHostExamplePrompts(roundTypeId = "prompt") {
 function resolveCategoryChoiceCardArt(category, themeName = "Default") {
   const categoryIconSrc = category?.iconSrc || getCategoryIconSrc(category?.id);
   if (categoryIconSrc) return categoryIconSrc;
-  return getRoundCardBackSrc();
+  return getRoundCardBackSrc(themeName);
 }
 function HostIntroScreen({ round, stingerLine, onContinue, theme }) {
   const hostSizeConfig = useMemo(() => getHostSizeConfig(theme), [theme]);
   const themedHostPersona = useMemo(() => getIanPosterHostDisplayPersona(theme), [theme]);
-  const exampleCardSrc = getRoundCardFrontSrc();
+  const exampleCardSrc = getRoundCardFrontSrc(theme);
   const examplePrompts = getHostExamplePrompts(round.roundTypeId);
   const normalExamplePrompt = examplePrompts.normal;
   const liarExamplePrompt = examplePrompts.liar;
@@ -2674,7 +2546,7 @@ function HostIntroScreen({ round, stingerLine, onContinue, theme }) {
   }
   return (
     <BrandedScreen
-      wallpaperSrc={NEW_UI_WALLPAPER_IN_GAME_SRC}
+      wallpaperSrc={UI_WALLPAPER_IN_GAME_SRC}
       overlayClassName="bg-black/65"
     >
       <div className="relative mx-auto flex h-[calc(100dvh-1.25rem)] w-full max-w-[28rem] flex-col items-center justify-between gap-3 overflow-hidden py-1">
@@ -3047,7 +2919,7 @@ function HomeScreen({
   canCreateLocalGame = true,
   canCreateOnlineLobby = true,
 }) {
-  const logoSrc = adultMode ? NEW_UI_LOGO_18PLUS_SRC : NEW_UI_LOGO_MAIN_SRC;
+  const logoSrc = adultMode ? UI_LOGO_18PLUS_SRC : UI_LOGO_MAIN_SRC;
   const displayName =
     personaProfile?.realName || personaProfile?.inGameName || "Player 1";
   const username = normalizeFriendUsername(personaProfile?.username || "");
@@ -3057,7 +2929,7 @@ function HomeScreen({
   };
   return (
     <BrandedScreen
-      wallpaperSrc={NEW_UI_WALLPAPER_HOME_SRC}
+      wallpaperSrc={UI_WALLPAPER_HOME_SRC}
       overlayClassName="bg-black/35"
     >
       <div className="mx-auto h-[calc(100dvh-2rem)] w-full max-w-[28rem] px-4 pt-4 pb-6">
@@ -3136,7 +3008,7 @@ function HomeScreen({
           <div className="mt-6 flex w-full flex-1 flex-col justify-center gap-4">
             {!joinOnlyMode && (
               <Button
-                className={NEW_UI_PRIMARY_BUTTON_CLASS}
+                className={UI_PRIMARY_BUTTON_CLASS}
                 onClick={() => onNavigate("setup")}
                 disabled={!canCreateLocalGame}
                 title={
@@ -3151,7 +3023,7 @@ function HomeScreen({
             )}
             {!joinOnlyMode && (
               <Button
-                className={NEW_UI_PRIMARY_BUTTON_CLASS}
+                className={UI_PRIMARY_BUTTON_CLASS}
                 onClick={() => onNavigate("online-setup")}
                 disabled={!canCreateOnlineLobby}
                 title={
@@ -3165,14 +3037,14 @@ function HomeScreen({
               </Button>
             )}
             <Button
-              className={NEW_UI_PRIMARY_BUTTON_CLASS}
+              className={UI_PRIMARY_BUTTON_CLASS}
               onClick={() => onNavigate("online-join")}
             >
               <KeyRound className="mr-2 h-5 w-5" />
               Join Online Lobby
             </Button>
             <Button
-              className={NEW_UI_PRIMARY_BUTTON_CLASS}
+              className={UI_PRIMARY_BUTTON_CLASS}
               onClick={() => onNavigate("store")}
             >
               <ShoppingBag className="mr-2 h-5 w-5" />
@@ -3637,7 +3509,7 @@ function OnlineLobbySetupScreen({
   );
   return (
     <BrandedScreen
-      wallpaperSrc={NEW_UI_WALLPAPER_IN_GAME_SRC}
+      wallpaperSrc={UI_WALLPAPER_IN_GAME_SRC}
       overlayClassName="bg-black/45"
     >
       <div className="mx-auto max-w-3xl space-y-6">
@@ -3862,7 +3734,7 @@ function OnlineLobbySetupScreen({
 }
 function BrandedScreen({
   children,
-  wallpaperSrc = NEW_UI_WALLPAPER_IN_GAME_SRC,
+  wallpaperSrc = UI_WALLPAPER_IN_GAME_SRC,
   overlayClassName = "bg-black/35",
   frameClassName = "",
   contentClassName = "",
@@ -3926,7 +3798,7 @@ function OnlineJoinLobbyScreen({
   const canJoin = playerName.trim().length > 0;
   return (
     <BrandedScreen
-      wallpaperSrc={NEW_UI_WALLPAPER_IN_GAME_SRC}
+      wallpaperSrc={UI_WALLPAPER_IN_GAME_SRC}
       overlayClassName="bg-black/45"
     >
       <div className="mx-auto max-w-3xl space-y-6">
@@ -4048,7 +3920,7 @@ function OnlineLobbyCodeScreen({
     .filter(Boolean);
   return (
     <BrandedScreen
-      wallpaperSrc={NEW_UI_WALLPAPER_IN_GAME_SRC}
+      wallpaperSrc={UI_WALLPAPER_IN_GAME_SRC}
       overlayClassName="bg-black/45"
     >
       <div className="mx-auto max-w-4xl space-y-6">
@@ -4338,7 +4210,7 @@ function SetupScreen(props) {
       ];
   return (
     <BrandedScreen
-      wallpaperSrc={NEW_UI_WALLPAPER_IN_GAME_SRC}
+      wallpaperSrc={UI_WALLPAPER_IN_GAME_SRC}
       overlayClassName="bg-black/45"
       contentClassName={desktopLandscape ? "max-w-[1320px]" : "max-w-[1120px]"}
     >
@@ -4842,8 +4714,8 @@ function RevealScreen({
   const fireAudioRef = useRef(null);
   const promptTextRef = useRef(null);
   const promptFitContainerRef = useRef(null);
-  const cardBackSrc = getRoundCardBackSrc();
-  const themedCardFrontSrc = getRoundCardFrontSrc();
+  const cardBackSrc = getRoundCardBackSrc(theme);
+  const themedCardFrontSrc = getRoundCardFrontSrc(theme);
   const cardFrontSrc = isImposter
     ? getImposterCardFrontSrc()
     : themedCardFrontSrc;
@@ -10206,7 +10078,7 @@ export default function App() {
       )}
       {screen === "round-type-choice" && round && (
         <BrandedScreen
-          wallpaperSrc={NEW_UI_WALLPAPER_IN_GAME_SRC}
+          wallpaperSrc={UI_WALLPAPER_IN_GAME_SRC}
           overlayClassName="bg-black/45"
         >
           <div className="mx-auto max-w-4xl space-y-6">
@@ -10265,7 +10137,7 @@ export default function App() {
       )}
       {screen === "category-choice" && round && (
         <BrandedScreen
-          wallpaperSrc={NEW_UI_WALLPAPER_IN_GAME_SRC}
+          wallpaperSrc={UI_WALLPAPER_IN_GAME_SRC}
           overlayClassName="bg-black/45"
         >
           <div className="mx-auto max-w-4xl space-y-6">
@@ -10340,7 +10212,7 @@ export default function App() {
       )}
       {screen === "reveal" && round && (
         <BrandedScreen
-          wallpaperSrc={NEW_UI_WALLPAPER_IN_GAME_SRC}
+          wallpaperSrc={UI_WALLPAPER_IN_GAME_SRC}
           overlayClassName="bg-black/45"
         >
           <RevealScreen
