@@ -1,8 +1,17 @@
 import { DEFAULT_CATEGORIES } from './categories.js';
 import { getIanPosterThemeSlug } from './ianPosterThemeVoice.js';
 
-/** Canonical UI pack under public/assets/new-ui/ */
-export const UI_ASSET_BASE = '/assets/new-ui';
+/**
+ * Active UI asset pack folder under public/assets/.
+ * Served at /assets/<UI_PACK_SLUG>/ (today: `ui` → /assets/ui/).
+ *
+ * For a future reskin, add e.g. public/assets/ui-v2/ and switch UI_PACK_SLUG
+ * (or wire VITE_UI_PACK_SLUG) without moving theme or audio assets.
+ */
+export const UI_PACK_SLUG = 'ui';
+
+/** Public URL base for the active UI pack. */
+export const UI_ASSET_BASE = `/assets/${UI_PACK_SLUG}`;
 
 export const UI_WALLPAPER_HOME_SRC = `${UI_ASSET_BASE}/wallpapers/home-page.png`;
 export const UI_WALLPAPER_IN_GAME_SRC = `${UI_ASSET_BASE}/wallpapers/in-game.png`;
@@ -15,7 +24,7 @@ export const UI_CARD_DEFAULT_FRONT_SRC = `${UI_CARD_BASE}/default-front.png`;
 export const UI_CARD_DEFAULT_BACK_SRC = `${UI_CARD_BASE}/default-back.png`;
 export const UI_CARD_LIAR_FRONT_SRC = `${UI_CARD_BASE}/liar-front.png`;
 
-/** Themes with themed front/back card art in new-ui/cards/ */
+/** Themes with themed front/back card art in ui/cards/ */
 export const UI_THEMED_CARD_SLUGS = new Set([
   'default',
   'murder-mystery',
