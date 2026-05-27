@@ -6,6 +6,7 @@
  */
 
 import { createRequire } from 'module';
+import { GANGSTERS_LOOK_OVERRIDES_BY_ID } from './data/gangstersLookOverrides.mjs';
 
 const require = createRequire(import.meta.url);
 const { extractDisplayNameVisualSteer } = require('./personaNameVisualCues.cjs');
@@ -14,6 +15,7 @@ const { extractDisplayNameVisualSteer } = require('./personaNameVisualCues.cjs')
 export const LOOK_OVERRIDES_BY_ID = {
   'default-barry-side-eye-collins':
     'GENDER LOCK (NON-NEGOTIABLE): adult human man — must read male. White man, chubby, mid-50s, mostly bald crown with gingery-grey hair only around the sides and back; narrow slitty inquisitive eyes deliberately looking sideways under a heavy brow; soft jaw and flushed cheeks; shiny sweat on forehead and upper lip; nervous tight mouth like he is mid-overhear; cheap loose polo shirt with a stretched collar and a faint food stain; silver chain just visible; anxious weight-shift implied in the shoulders; no glasses.',
+  ...GANGSTERS_LOOK_OVERRIDES_BY_ID,
 };
 
 /** Mirrors `exportPersonaAvatarPrompts.cjs` name hints so gender matches common names. */
@@ -21,8 +23,9 @@ const FEMALE_NAME_HINTS = new Set([
   'nina', 'edith', 'tasha', 'pixie', 'zara', 'penny', 'chloe', 'rachel', 'jett', 'amy',
   'ingrid', 'bianca', 'harper', 'sadie', 'cleo', 'lena', 'priya', 'naomi', 'carmen',
   'agatha', 'lillian', 'margaret', 'vivian', 'clara', 'mabel', 'beatrice', 'nora',
-  'winifred', 'evelyn', 'helena', 'mildred', 'maeve', 'nyx', 'lira', 'elin', 'nettles',
+  'winifred',   'evelyn', 'helena', 'mildred', 'maeve', 'nyx', 'lira', 'elin', 'nettles',
   'zuri', 'bride', 'annie', 'mel', 'beth', 'hilda', 'mourne', 'floe', 'fang', 'astrid',
+  'gianna', 'lakeisha', 'destiny', 'monique', 'claudia',
   'sigrid', 'freya', 'matilda', 'cordelia', 'beatrix', 'seraphina', 'henrietta',
   'gwendolyn', 'adelaide', 'penelope', 'vivienne', 'cassia', 'aurelia', 'octavia',
 ]);
@@ -34,6 +37,9 @@ const MALE_NAME_HINTS = new Set([
   'kaito', 'rolf', 'bjorn', 'ulf', 'eirik', 'harald', 'gunnar', 'snorri', 'magnus', 'ivar',
   'tiber', 'flavius', 'brutus', 'lucius', 'marcellus', 'maximus', 'percival',
   'alistair', 'felix', 'mortimer', 'clive', 'horace', 'barnaby', 'edmund',
+  'vittorio', 'alphonse', 'paulie', 'carmine', 'terrance', 'deandre', 'salvatore',
+  'jimmy', 'rico', 'vito', 'marcus', 'jamal', 'enzo', 'gino', 'angelo', 'tyree',
+  'darius', 'louie', 'raheem', 'fredo',
 ]);
 const NON_BINARY_NAME_HINTS = new Set(['jules', 'rio', 'reefspawn', 'glim', 'void', 'rook']);
 
@@ -111,7 +117,8 @@ export const THEME_BUST_COSTUME_CUE = {
   'Drag Queens': 'big wig volume, lashes to forehead, sequin bustier, contour warpaint',
   Superheroes: 'spandex suit chevron emblem abstract, cape fold, heroic jaw, mask lines',
   Medieval: 'chain-mail coif, surcoat with heraldic shape blocks only, mud-splattered cheek, iron pauldron edge',
-  Gangsters: 'pinstripe suit, fedora tilt, cigar stub, gold ring glint, shoulder holster strap suggestion',
+  Gangsters:
+    'mafia OR street: pinstripe suit and fedora OR bandana/red-blue streetwear accents (no logos or letters), cigar or pager prop, gold jewelry abstract',
   'Law and Order': 'court blazer or police blues, lapel mic nub, blank badge, stack of folders prop edge',
   'Sci-Fi': 'jumpsuit with glowing seam lines, chest computer panel abstract, comm badge no text, zero-g hair float',
   Anime: 'spiky two-tone hair, school-uniform collar OR hero scarf, huge expressive cel eyes still with pin pupils per style guide',
