@@ -1521,154 +1521,154 @@
   ],
   "Gangsters": [
     {
-      "id": "gangsters-vinny-two-times",
-      "name": "Vinny Two-Times",
-      "bio": "Vinny Two-Times says nobody saw nothing—especially not them.",
-      "imageSrc": "/assets/themes/gangsters/personas/01-vinny-two-times.png"
+      "id": "gangsters-don-vittorio-colletti",
+      "name": "Don Vittorio Colletti",
+      "bio": "Speaks softly like a wedding toast and somehow everyone else goes quiet first. Says family business is never personal—right before making it very personal.",
+      "imageSrc": "/assets/themes/gangsters/personas/01-don-vittorio-colletti.png"
     },
     {
-      "id": "gangsters-sal-knife",
-      "name": "Sal Knife",
-      "bio": "Sal Knife offers protection from problems they invented.",
-      "imageSrc": "/assets/themes/gangsters/personas/02-sal-knife.png"
+      "id": "gangsters-alphonse-scar-malone",
+      "name": "Alphonse \"Scar\" Malone",
+      "bio": "Chicago-flash grin, prohibition-era suits, and a temper that shows up before the receipts do. Insists he was at a charity dinner during every interesting hour.",
+      "imageSrc": "/assets/themes/gangsters/personas/02-alphonse-scar-malone.png"
     },
     {
-      "id": "gangsters-frankie-brass",
-      "name": "Frankie Brass",
-      "bio": "Frankie Brass keeps two sets of books and three sets of eyebrows.",
-      "imageSrc": "/assets/themes/gangsters/personas/03-frankie-brass.png"
+      "id": "gangsters-gianna-black-dress-romano",
+      "name": "Gianna \"Black Dress\" Romano",
+      "bio": "Shows up in mourning for people who are still standing. Knows who sent flowers and who sent shooters—claims she only arranges the seating chart.",
+      "imageSrc": "/assets/themes/gangsters/personas/03-gianna-black-dress-romano.png"
     },
     {
-      "id": "gangsters-tony-mouth",
-      "name": "Tony Mouth",
-      "bio": "Tony Mouth calls loyalty a handshake and evidence a misunderstanding.",
-      "imageSrc": "/assets/themes/gangsters/personas/04-tony-mouth.png"
+      "id": "gangsters-paulie-cement-nails",
+      "name": "Paulie \"Cement Nails\" Marchesi",
+      "bio": "Union docks, heavy hands, and a laugh that sounds like a door locking. Offers alibis that involve being \"very far underground at the time.\"",
+      "imageSrc": "/assets/themes/gangsters/personas/04-paulie-cement-nails.png"
     },
     {
-      "id": "gangsters-lucky-fixer",
-      "name": "Lucky Fixer",
-      "bio": "Lucky Fixer remembers favors you never agreed to.",
-      "imageSrc": "/assets/themes/gangsters/personas/05-lucky-fixer.png"
+      "id": "gangsters-carmine-the-ledger-fiore",
+      "name": "Carmine \"The Ledger\" Fiore",
+      "bio": "Keeps two ledgers, three safe-deposit boxes, and a saint candle for each. Swears the numbers are honest; the people behind them, less so.",
+      "imageSrc": "/assets/themes/gangsters/personas/05-carmine-the-ledger-fiore.png"
     },
     {
-      "id": "gangsters-rico-rackets",
-      "name": "Rico Rackets",
-      "bio": "Rico Rackets says nobody saw nothing—especially not them.",
-      "imageSrc": "/assets/themes/gangsters/personas/06-rico-rackets.png"
+      "id": "gangsters-terrance-west-side-cole",
+      "name": "Terrance \"West Side\" Cole",
+      "bio": "West Side OG with a red rag folded in his pocket and a stare that ends arguments. Says he was \"praying for peace\" whenever sirens show up.",
+      "imageSrc": "/assets/themes/gangsters/personas/06-terrance-west-side-cole.png"
     },
     {
-      "id": "gangsters-joey-iceberg",
-      "name": "Joey Iceberg",
-      "bio": "Joey Iceberg offers protection from problems they invented.",
-      "imageSrc": "/assets/themes/gangsters/personas/07-joey-iceberg.png"
+      "id": "gangsters-deandre-east-gate-brooks",
+      "name": "DeAndre \"East Gate\" Brooks",
+      "bio": "East Side captain who treats blue like a dress code and turf like homework. Claims he was tutoring kids when the block got loud.",
+      "imageSrc": "/assets/themes/gangsters/personas/07-deandre-east-gate-brooks.png"
     },
     {
-      "id": "gangsters-benny-stacks",
-      "name": "Benny Stacks",
-      "bio": "Benny Stacks keeps two sets of books and three sets of eyebrows.",
-      "imageSrc": "/assets/themes/gangsters/personas/08-benny-stacks.png"
+      "id": "gangsters-lakeisha-corner-bishop",
+      "name": "LaKeisha \"Corner Bishop\" Williams",
+      "bio": "Runs the corner like a congregation and calls truces she did not plan. Says Crips and Bloods both listen to her—then denies saying which side she meant.",
+      "imageSrc": "/assets/themes/gangsters/personas/08-lakeisha-corner-bishop.png"
     },
     {
-      "id": "gangsters-mickey-cage",
-      "name": "Mickey Cage",
-      "bio": "Mickey Cage calls loyalty a handshake and evidence a misunderstanding.",
-      "imageSrc": "/assets/themes/gangsters/personas/09-mickey-cage.png"
+      "id": "gangsters-salvatore-young-sun-greco",
+      "name": "Salvatore \"Young Sun\" Greco",
+      "bio": "Hot-blooded heir who wants the family table but not the family patience. Swears he respects omertà while live-texting updates.",
+      "imageSrc": "/assets/themes/gangsters/personas/09-salvatore-young-sun-greco.png"
     },
     {
-      "id": "gangsters-johnny-broadway",
-      "name": "Johnny Broadway",
-      "bio": "Johnny Broadway remembers favors you never agreed to.",
-      "imageSrc": "/assets/themes/gangsters/personas/10-johnny-broadway.png"
+      "id": "gangsters-jimmy-speakeasy-omalley",
+      "name": "Jimmy \"Speakeasy\" O'Malley",
+      "bio": "Bootlegger smile, jazz-club handshake, and a back room that never appears on maps. Says the cops drank with him all night—off the record, on the house.",
+      "imageSrc": "/assets/themes/gangsters/personas/10-jimmy-speakeasy-omalley.png"
     },
     {
-      "id": "gangsters-donny-wharf",
-      "name": "Donny Wharf",
-      "bio": "Donny Wharf says nobody saw nothing—especially not them.",
-      "imageSrc": "/assets/themes/gangsters/personas/11-donny-wharf.png"
+      "id": "gangsters-rico-the-baker-napolitano",
+      "name": "Rico \"The Baker\" Napolitano",
+      "bio": "Fronts a bakery that never runs out of flour and never opens early. Insists the white dust on his cuffs is cannoli sugar with attitude.",
+      "imageSrc": "/assets/themes/gangsters/personas/11-rico-the-baker-napolitano.png"
     },
     {
-      "id": "gangsters-esco-tunnel",
-      "name": "Esco Tunnel",
-      "bio": "Esco Tunnel offers protection from problems they invented.",
-      "imageSrc": "/assets/themes/gangsters/personas/12-esco-tunnel.png"
+      "id": "gangsters-vito-consigliere-battaglia",
+      "name": "Vito \"Consigliere\" Battaglia",
+      "bio": "Whispers advice like scripture and never holds the weapon himself. Remembers every favor, every betrayal, and every name you almost said.",
+      "imageSrc": "/assets/themes/gangsters/personas/12-vito-consigliere-battaglia.png"
     },
     {
-      "id": "gangsters-nico-vault",
-      "name": "Nico Vault",
-      "bio": "Nico Vault keeps two sets of books and three sets of eyebrows.",
-      "imageSrc": "/assets/themes/gangsters/personas/13-nico-vault.png"
+      "id": "gangsters-marcus-low-slow-evans",
+      "name": "Marcus \"Low Slow\" Evans",
+      "bio": "Lowrider legend who is always \"just pulling off\" when trouble pulls up. Says red or blue rides do not mean red or blue loyalties—his story shifts with the paint.",
+      "imageSrc": "/assets/themes/gangsters/personas/13-marcus-low-slow-evans.png"
     },
     {
-      "id": "gangsters-vito-ledger",
-      "name": "Vito Ledger",
-      "bio": "Vito Ledger calls loyalty a handshake and evidence a misunderstanding.",
-      "imageSrc": "/assets/themes/gangsters/personas/14-vito-ledger.png"
+      "id": "gangsters-destiny-red-hood-martinez",
+      "name": "Destiny \"Red Hood\" Martinez",
+      "bio": "West Side face card with a hoodie up and receipts for every rumor. Smiles sweetly while denying she knows what set the meeting was about.",
+      "imageSrc": "/assets/themes/gangsters/personas/14-destiny-red-hood-martinez.png"
     },
     {
-      "id": "gangsters-gino-nose",
-      "name": "Gino Nose",
-      "bio": "Gino Nose remembers favors you never agreed to.",
-      "imageSrc": "/assets/themes/gangsters/personas/15-gino-nose.png"
+      "id": "gangsters-jamal-blue-line-henderson",
+      "name": "Jamal \"Blue Line\" Henderson",
+      "bio": "East Side lieutenant who treats the blue bandana like a necktie. Says he was at his grandma's when shots rang out—grandma backs him up, suspiciously fast.",
+      "imageSrc": "/assets/themes/gangsters/personas/15-jamal-blue-line-henderson.png"
     },
     {
-      "id": "gangsters-carmine-shark",
-      "name": "Carmine Shark",
-      "bio": "Carmine Shark says nobody saw nothing—especially not them.",
-      "imageSrc": "/assets/themes/gangsters/personas/16-carmine-shark.png"
+      "id": "gangsters-enzo-two-timers-spats",
+      "name": "Enzo \"Two-Timers\" Spats",
+      "bio": "Old-school made man in spats and a fedora tilt that hides nothing. Claims he only visits court for weddings—never his own trials.",
+      "imageSrc": "/assets/themes/gangsters/personas/16-enzo-two-timers-spats.png"
     },
     {
-      "id": "gangsters-angelo-hammer",
-      "name": "Angelo Hammer",
-      "bio": "Angelo Hammer offers protection from problems they invented.",
-      "imageSrc": "/assets/themes/gangsters/personas/17-angelo-hammer.png"
+      "id": "gangsters-gino-the-nose-moretti",
+      "name": "Gino \"The Nose\" Moretti",
+      "bio": "Smells a rat before it squeaks and sells that talent to the highest bidder twice. Swears he is loyal to family—does not specify which family.",
+      "imageSrc": "/assets/themes/gangsters/personas/17-gino-the-nose-moretti.png"
     },
     {
-      "id": "gangsters-enzo-spats",
-      "name": "Enzo Spats",
-      "bio": "Enzo Spats keeps two sets of books and three sets of eyebrows.",
-      "imageSrc": "/assets/themes/gangsters/personas/18-enzo-spats.png"
+      "id": "gangsters-angelo-hammer-ricci",
+      "name": "Angelo \"Hammer\" Ricci",
+      "bio": "Capo's right hand with knuckles like door knockers and a voice like gravel. Offers protection from problems he definitely did not start.",
+      "imageSrc": "/assets/themes/gangsters/personas/18-angelo-hammer-ricci.png"
     },
     {
-      "id": "gangsters-paulie-cigar",
-      "name": "Paulie Cigar",
-      "bio": "Paulie Cigar calls loyalty a handshake and evidence a misunderstanding.",
-      "imageSrc": "/assets/themes/gangsters/personas/19-paulie-cigar.png"
+      "id": "gangsters-tyree-no-witness-johnson",
+      "name": "Tyree \"No Witness\" Johnson",
+      "bio": "Street code tattooed in his posture: see nothing, say less, charge more. Insists the block went silent out of respect, not fear.",
+      "imageSrc": "/assets/themes/gangsters/personas/19-tyree-no-witness-johnson.png"
     },
     {
-      "id": "gangsters-sonny-furs",
-      "name": "Sonny Furs",
-      "bio": "Sonny Furs remembers favors you never agreed to.",
-      "imageSrc": "/assets/themes/gangsters/personas/20-sonny-furs.png"
+      "id": "gangsters-monique-funeral-fit-davis",
+      "name": "Monique \"Funeral Fit\" Davis",
+      "bio": "Dressed for every candlelight vigil on both sides of town. Knows who wore red, who wore blue, and who switched colors in the parking lot.",
+      "imageSrc": "/assets/themes/gangsters/personas/20-monique-funeral-fit-davis.png"
     },
     {
-      "id": "gangsters-augie-tracks",
-      "name": "Augie Tracks",
-      "bio": "Augie Tracks says nobody saw nothing—especially not them.",
-      "imageSrc": "/assets/themes/gangsters/personas/21-augie-tracks.png"
+      "id": "gangsters-darius-smoke-signal-clark",
+      "name": "Darius \"Smoke Signal\" Clark",
+      "bio": "Pager-era street broker who still calls a group text a \"wire tap risk.\" Says he was passing messages for peace, not orders.",
+      "imageSrc": "/assets/themes/gangsters/personas/21-darius-smoke-signal-clark.png"
     },
     {
-      "id": "gangsters-marco-deal",
-      "name": "Marco Deal",
-      "bio": "Marco Deal offers protection from problems they invented.",
-      "imageSrc": "/assets/themes/gangsters/personas/22-marco-deal.png"
+      "id": "gangsters-louie-the-fix-torretti",
+      "name": "Louie \"The Fix\" Torretti",
+      "bio": "Fixer for judges, jerseys, and jury pools—never in the same sentence. Remembers favors you never agreed to and interest you cannot afford.",
+      "imageSrc": "/assets/themes/gangsters/personas/22-louie-the-fix-torretti.png"
     },
     {
-      "id": "gangsters-lou-contract",
-      "name": "Lou Contract",
-      "bio": "Lou Contract keeps two sets of books and three sets of eyebrows.",
-      "imageSrc": "/assets/themes/gangsters/personas/23-lou-contract.png"
+      "id": "gangsters-claudia-chain-countess",
+      "name": "Claudia \"Chain Countess\" Vitale",
+      "bio": "Ice around her neck and gossip around her table. Claims the diamonds are rented; the alibis are definitely borrowed.",
+      "imageSrc": "/assets/themes/gangsters/personas/23-claudia-chain-countess.png"
     },
     {
-      "id": "gangsters-patsy-witness",
-      "name": "Patsy Witness",
-      "bio": "Patsy Witness calls loyalty a handshake and evidence a misunderstanding.",
-      "imageSrc": "/assets/themes/gangsters/personas/24-patsy-witness.png"
+      "id": "gangsters-raheem-set-truce-king",
+      "name": "Raheem \"Set Truce\" King",
+      "bio": "Calls himself peacemaker while red and blue both owe him money. Says the handshake on the corner was spiritual, not tactical.",
+      "imageSrc": "/assets/themes/gangsters/personas/24-raheem-set-truce-king.png"
     },
     {
-      "id": "gangsters-fredo-court",
-      "name": "Fredo Court",
-      "bio": "Fredo Court remembers favors you never agreed to.",
-      "imageSrc": "/assets/themes/gangsters/personas/25-fredo-court.png"
+      "id": "gangsters-fredo-behind-court",
+      "name": "Fredo \"Behind Court\" Mancini",
+      "bio": "Family name opens doors he walks through sideways. Insists he was never the weak link—just the misunderstood middle child with excellent timing.",
+      "imageSrc": "/assets/themes/gangsters/personas/25-fredo-behind-court.png"
     }
   ],
   "Military": [
