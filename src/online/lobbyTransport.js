@@ -5,7 +5,11 @@ const LOBBY_SERVER_URL = getLobbyServerOrigin();
 const LOBBY_API_BASE = getLobbyApiBase();
 
 function randomId(prefix = 'id') {
-  return `${prefix}-${Math.random().toString(36).slice(2, 10)}-${Date.now().toString(36)}`;
+  const unique =
+    typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function'
+      ? crypto.randomUUID().replace(/-/g, '').slice(0, 12)
+      : Math.random().toString(36).slice(2, 10);
+  return `${prefix}-${unique}-${Date.now().toString(36)}`;
 }
 
 function nowIso() {
@@ -25,8 +29,8 @@ async function requestJson(path, { method = 'GET', body } = {}) {
   let payload = null;
   try {
     payload = await response.json();
-  } catch {
-    payload = null;
+  } catch (_err) {
+    // keep payload as null on parse error
   }
   if (!response.ok) {
     const code = payload?.error || 'request-failed';
