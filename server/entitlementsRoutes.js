@@ -143,13 +143,107 @@ function extractAppUserId(body) {
   ).trim();
 }
 
+/**
+ * Build the entitlement store backed by Supabase when configured, falling back to
+ * an in-memory Map for local development.
+ *
+ * Expected table DDL (run once in Supabase SQL editor):
+ *
+ *   create table if not exists user_entitlements (
+ *     user_id               text primary key,
+ *     tier_id               text not null default 'fibber',
+ *     addon_twist_truth     boolean not null default false,
+ *     unlocked_theme_pack_ids jsonb not null default '[]',
+ *     updated_at            timestamptz not null default now(),
+ *     source                text not null default 'default'
+ *   );
+ *
+ * See docs/supabase-entitlements-migration.sql for the full migration.
+ */
+function buildEntitlementStore(supabaseUrl, serviceKey) {
+  const isProduction = process.env.NODE_ENV === 'production';
+
+  if (supabaseUrl && serviceKey) {
+    const supabase = createClient(supabaseUrl, serviceKey, {
+      auth: { autoRefreshToken: false, persistSession: false },
+    });
+
+    return {
+      async get(userId) {
+        const { data, error } = await supabase
+          .from('user_entitlements')
+          .select('tier_id, addon_twist_truth, unlocked_theme_pack_ids, updated_at, source')
+          .eq('user_id', userId)
+          .maybeSingle();
+        if (error) {
+          // eslint-disable-next-line no-console
+          console.error('[entitlements] supabase get error', error);
+          return null;
+        }
+        if (!data) return null;
+        return {
+          tierId: data.tier_id,
+          addonTwistTruth: data.addon_twist_truth,
+          unlockedThemePackIds: Array.isArray(data.unlocked_theme_pack_ids)
+            ? data.unlocked_theme_pack_ids
+            : [],
+          updatedAt: data.updated_at,
+          source: data.source,
+        };
+      },
+      async set(userId, row) {
+        const { error } = await supabase.from('user_entitlements').upsert(
+          {
+            user_id: userId,
+            tier_id: row.tierId,
+            addon_twist_truth: row.addonTwistTruth,
+            unlocked_theme_pack_ids: row.unlockedThemePackIds,
+            updated_at: row.updatedAt || new Date().toISOString(),
+            source: row.source || 'system',
+          },
+          { onConflict: 'user_id' },
+        );
+        if (error) {
+          // eslint-disable-next-line no-console
+          console.error('[entitlements] supabase set error', error);
+        }
+      },
+    };
+  }
+
+  if (isProduction) {
+    // eslint-disable-next-line no-console
+    console.warn(
+      '[entitlements] WARNING: Running in production without a persistent entitlement store. ' +
+        'Entitlements will be lost on restart. ' +
+        'Set SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY to enable Supabase persistence.',
+    );
+  }
+
+  // In-memory fallback for local development.
+  const memStore = new Map();
+  return {
+    async get(userId) {
+      return memStore.get(userId) || null;
+    },
+    async set(userId, row) {
+      memStore.set(userId, row);
+    },
+  };
+}
+
 export function mountEntitlementsRoutes(app, { store } = {}) {
-  const entitlementStore = store || new Map();
   const supabaseUrl = String(
     process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || '',
   ).trim();
   const serviceKey = String(process.env.SUPABASE_SERVICE_ROLE_KEY || '').trim();
   const webhookSecret = String(process.env.REVENUECAT_WEBHOOK_SECRET || '').trim();
+
+  const entitlementStore = store || buildEntitlementStore(supabaseUrl, serviceKey);
+
+  // Supabase admin client for JWT verification (separate from the entitlement store client).
+  const authSupabaseUrl = supabaseUrl;
+  const authServiceKey = serviceKey;
 
   app.get('/api/me/entitlements', async (req, res) => {
     const token = String(req.headers.authorization || '')
@@ -159,11 +253,11 @@ export function mountEntitlementsRoutes(app, { store } = {}) {
       res.status(401).json({ error: 'missing-token' });
       return;
     }
-    if (!supabaseUrl || !serviceKey) {
+    if (!authSupabaseUrl || !authServiceKey) {
       res.status(503).json({ error: 'server-auth-not-configured' });
       return;
     }
-    const admin = createClient(supabaseUrl, serviceKey, {
+    const admin = createClient(authSupabaseUrl, authServiceKey, {
       auth: { autoRefreshToken: false, persistSession: false },
     });
     const { data, error } = await admin.auth.getUser(token);
@@ -172,7 +266,7 @@ export function mountEntitlementsRoutes(app, { store } = {}) {
       return;
     }
     const userId = data.user.id;
-    const stored = entitlementStore.get(userId);
+    const stored = await entitlementStore.get(userId);
     const row = stored
       ? mergeEntitlementsRow(defaultEntitlements(), stored)
       : defaultEntitlements();
@@ -183,7 +277,7 @@ export function mountEntitlementsRoutes(app, { store } = {}) {
     });
   });
 
-  app.post('/api/billing/revenuecat', (req, res) => {
+  app.post('/api/billing/revenuecat', async (req, res) => {
     if (!webhookSecret) {
       res.status(503).json({ error: 'webhook-not-configured' });
       return;
@@ -200,15 +294,15 @@ export function mountEntitlementsRoutes(app, { store } = {}) {
       return;
     }
     const subscriber = extractSubscriberFromBody(body);
-    const activeIds = subscriber
-      ? collectActiveEntitlementIds(subscriber)
-      : [];
+    const activeIds = subscriber ? collectActiveEntitlementIds(subscriber) : [];
     const mapped = mapRevenueCatEntitlements(activeIds);
-    const prev = entitlementStore.get(appUserId) || defaultEntitlements();
+    const prev = (await entitlementStore.get(appUserId)) || defaultEntitlements();
     const next = mergeEntitlementsRow(prev, mapped);
-    entitlementStore.set(appUserId, next);
+    await entitlementStore.set(appUserId, next);
     res.json({ ok: true, userId: appUserId });
   });
 
   return { entitlementStore };
 }
+
+export { mapRevenueCatEntitlements, mergeEntitlementsRow, defaultEntitlements };
