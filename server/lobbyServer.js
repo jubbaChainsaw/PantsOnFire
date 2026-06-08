@@ -1,14 +1,16 @@
 import cors from 'cors';
 import express from 'express';
 import { createServer } from 'node:http';
+import { randomUUID } from 'node:crypto';
 import { Server } from 'socket.io';
 import { AccessToken } from 'livekit-server-sdk';
 import { createLobbyStore, toClientSnapshot } from './storage/index.js';
 import { mountEntitlementsRoutes } from './entitlementsRoutes.js';
 
 const PORT = Number(process.env.LOBBY_SERVER_PORT || process.env.PORT || 8787);
+const IS_PRODUCTION = process.env.NODE_ENV === 'production';
 const CLIENT_ORIGINS_RAW = String(
-  process.env.LOBBY_CLIENT_ORIGINS || process.env.LOBBY_CLIENT_ORIGIN || '*'
+  process.env.LOBBY_CLIENT_ORIGINS || process.env.LOBBY_CLIENT_ORIGIN || (IS_PRODUCTION ? '' : '*')
 ).trim();
 const MIN_PLAYERS = 3;
 const SESSION_TOKEN_TTL_MS = Number(process.env.LOBBY_SESSION_TOKEN_TTL_MS || 1000 * 60 * 60 * 12);
@@ -36,6 +38,16 @@ function parseClientOrigins(rawValue) {
 
 const CLIENT_ORIGINS = parseClientOrigins(CLIENT_ORIGINS_RAW);
 const ALLOW_ALL_ORIGINS = CLIENT_ORIGINS.includes('*');
+
+if (IS_PRODUCTION && ALLOW_ALL_ORIGINS) {
+  // eslint-disable-next-line no-console
+  console.error(
+    '[lobby-server] FATAL: Running in production with wildcard CORS (*). ' +
+      'Set LOBBY_CLIENT_ORIGINS to a comma-separated list of allowed origins ' +
+      '(e.g. https://your-app.com) before starting in production.'
+  );
+  process.exit(1);
+}
 
 function escapeRegex(rawValue = '') {
   return String(rawValue).replace(/[|\\{}()[\]^$+?.]/g, '\\$&');
@@ -422,7 +434,7 @@ app.post('/api/lobbies/:code/resume', async (req, res) => {
 app.post('/api/lobbies/:code/leave', async (req, res) => {
   const code = normalizeCode(req.params.code);
   const playerId = String(req.body?.playerId || '');
-  const role = String(req.body?.role || '');
+  void req.body?.role;
   if (!playerId) {
     res.status(400).json({ error: 'player-id-required' });
     return;
@@ -852,7 +864,7 @@ io.on('connection', (socket) => {
       : null;
     if (!player) return;
     io.to(roomName(normalizedCode)).emit('party-chat:message', {
-      id: `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+      id: `${Date.now()}-${randomUUID().slice(0, 8)}`,
       lobbyCode: normalizedCode,
       playerId: normalizedPlayerId,
       playerName: String(player.name || 'Player'),
@@ -923,7 +935,9 @@ shutdownSignals.forEach((signal) => {
   process.on(signal, async () => {
     try {
       await closeStore();
-    } catch {}
+    } catch (_err) {
+      // ignore shutdown errors
+    }
     process.exit(0);
   });
 });
