@@ -680,6 +680,92 @@ npm run expo:start
 
 ---
 
+## Dev Mode vs Production Mode
+
+### Dev mode (default — `npm run dev`)
+
+All guards are relaxed for fast local iteration:
+
+- Local account registration/login (`src/account/accountStorage.js`) is enabled.  
+  **Warning:** passwords are stored as base64 in `localStorage`. This is NOT secure and is for offline/demo testing only — never use in a live storefront.
+- Demo purchase functions (`purchaseTierDemo`, `purchaseAddonTwistTruthDemo`, `purchaseDlcPackDemo`) are enabled.
+- CORS allows all origins (`*`).
+- Missing `VITE_LOBBY_SERVER_URL` falls back to relative `/api` via the Vite dev proxy.
+
+### Production mode (`NODE_ENV=production` / Vite `PROD=true`)
+
+| Feature | Behaviour |
+|---------|-----------|
+| Local auth | **Blocked** unless `VITE_ENABLE_LOCAL_AUTH=true` (testing only) |
+| Demo purchases | **Blocked** unless `VITE_ENABLE_DEMO_BILLING=true` (testing only) |
+| CORS | **Requires** `LOBBY_CLIENT_ORIGINS` — server exits on startup if wildcard |
+| Lobby server URL | **Requires** `VITE_LOBBY_SERVER_URL` — shows error UI if missing |
+| Entitlement store | **Warns** if Supabase vars not set (falls back to volatile in-memory) |
+
+### Required production environment variables
+
+#### Frontend (Vite build-time)
+
+| Variable | Required | Description |
+|----------|----------|-------------|
+| `VITE_LOBBY_SERVER_URL` | **Yes** | Full URL of lobby server, e.g. `https://lobby.example.com` |
+| `VITE_LOBBY_SERVER_FALLBACK_URL` | No | Secondary lobby URL fallback |
+| `VITE_SUPABASE_URL` | No | Supabase project URL for auth |
+| `VITE_SUPABASE_ANON_KEY` | No | Supabase anonymous key |
+| `VITE_ENABLE_DEMO_BILLING` | No | `"true"` to allow demo purchases in prod build (testing only) |
+| `VITE_ENABLE_LOCAL_AUTH` | No | `"true"` to allow local auth in prod build (testing only) |
+
+#### Backend (lobby server runtime)
+
+| Variable | Required | Description |
+|----------|----------|-------------|
+| `NODE_ENV` | **Yes** | Set to `production` to enable security hardening |
+| `LOBBY_CLIENT_ORIGINS` | **Yes in prod** | Comma-separated allowed CORS origins |
+| `SUPABASE_URL` | Recommended | Enables Supabase entitlement persistence |
+| `SUPABASE_SERVICE_ROLE_KEY` | Recommended | Service role key for entitlement writes |
+| `LOBBY_REDIS_URL` | Recommended | Redis URL for durable lobby storage |
+| `REVENUECAT_WEBHOOK_SECRET` | No | Bearer token for RevenueCat webhook auth |
+| `LIVEKIT_URL` | No | LiveKit server for voice chat |
+| `LIVEKIT_API_KEY` | No | LiveKit API key |
+| `LIVEKIT_API_SECRET` | No | LiveKit API secret |
+
+---
+
+## Supabase Entitlement Persistence
+
+When `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` are set, the lobby server persists
+RevenueCat webhook entitlements in a `user_entitlements` table rather than in-memory.
+Run the migration once before deploying:
+
+```sql
+-- Full migration with RLS policies: docs/supabase-entitlements-migration.sql
+create table if not exists user_entitlements (
+  user_id                 text        primary key,
+  tier_id                 text        not null default 'fibber',
+  addon_twist_truth       boolean     not null default false,
+  unlocked_theme_pack_ids jsonb       not null default '[]'::jsonb,
+  updated_at              timestamptz not null default now(),
+  source                  text        not null default 'default'
+);
+```
+
+---
+
+## Code Quality
+
+| Script | Description |
+|--------|-------------|
+| `npm run lint` | Run ESLint over `src/` and `server/` |
+| `npm run format` | Run Prettier over the whole project |
+| `npm run test` | Run Vitest unit tests once |
+| `npm run test:watch` | Run Vitest in watch mode |
+| `npm run check` | `lint` + `test` + `build` (mirrors CI gate) |
+
+CI runs on every push/PR via `.github/workflows/ci.yml`.
+
+
+---
+
 ## What’s Next
 
 - Online lobby + real party chat

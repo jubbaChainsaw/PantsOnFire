@@ -15,15 +15,52 @@ Pants on Fire: Find the Liar — a React + Vite party/social-deduction game with
 
 ### Key commands
 
-- **Install deps:** `npm install`
+- **Install deps:** `npm install --legacy-peer-deps`
 - **Dev server:** `npm run dev`
 - **Build:** `npm run build`
 - **Lobby server:** `npm run lobby:server`
 - **Preview prod build:** `npm run preview`
+- **Lint:** `npm run lint`
+- **Format:** `npm run format`
+- **Test:** `npm run test`
+- **Test (watch):** `npm run test:watch`
+- **Full CI check:** `npm run check` (lint + test + build)
+
+### Dev mode vs production mode
+
+In **dev mode** (default), all security guards are relaxed:
+- Local account auth (base64 in localStorage) is allowed.
+- Demo purchase functions work.
+- CORS allows all origins.
+
+In **production** (`NODE_ENV=production`):
+- Local auth is blocked unless `VITE_ENABLE_LOCAL_AUTH=true`.
+- Demo purchases are blocked unless `VITE_ENABLE_DEMO_BILLING=true`.
+- CORS requires `LOBBY_CLIENT_ORIGINS` — server exits on startup if not set.
+- Frontend requires `VITE_LOBBY_SERVER_URL` — shows error UI if missing.
+
+> **Warning:** Local auth stores passwords as base64 in localStorage. This is NOT secure and is only for offline/demo testing. Never use in a live storefront.
+
+> **Warning:** Demo purchase functions are for offline/local testing only. They must never be enabled in a production app store build.
+
+### Required production env vars
+
+See `README.md` → "Required production environment variables" for the full table.
+
+Key variables:
+- **Frontend:** `VITE_LOBBY_SERVER_URL`, `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`
+- **Backend:** `NODE_ENV=production`, `LOBBY_CLIENT_ORIGINS`, `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`
+
+### Supabase entitlement migration
+
+Before deploying in production, run the migration in `docs/supabase-entitlements-migration.sql`.
+This creates the `user_entitlements` table used to persist RevenueCat webhook entitlements.
+Without it, entitlements reset on server restart.
 
 ### Caveats
 
 - The Vite proxy config (`vite.config.js`) forwards `/api` and `/socket.io` to `localhost:8787`. Start the lobby server first if testing online multiplayer features.
-- No lint or test scripts are defined in `package.json`. Lint checking is limited to `npm run build` (which surfaces TypeScript/JSX errors via Vite/Rollup).
+- `npm install` requires `--legacy-peer-deps` because `eslint-plugin-react` 7.x has a peer dep conflict with ESLint 10. This is handled automatically in the CI workflow.
 - Redis, LiveKit, and Expo are optional — only needed for advanced features (persistent lobbies, voice chat, mobile shell).
 - The `sharp` native module is a dependency; `npm install` handles it automatically on supported platforms.
+- Pre-existing files `src/data/dlcCuratedPersonas.js`, `src/data/themeHosts.js`, `src/data/names.js`, `src/data/ianPosterThemeVoice.js`, `src/online/voicePartyTransport.js`, and `server/storage/redisLobbyStore.js` are excluded from ESLint due to pre-existing issues out of scope for the current hardening pass.
