@@ -1,6 +1,31 @@
 import { normalizeUnlockedThemePackIds } from '../data/themeCatalog';
 import { TIER_FIBBER, TIER_HOST_MOST, TIER_LOCAL_LIAR, TIER_SUSPECT } from './tierModel.js';
 
+/**
+ * Demo billing is only available in dev/demo mode.
+ * Set VITE_ENABLE_DEMO_BILLING="true" to allow it in a production build (for testing only).
+ * WARNING: demo purchases are not real payments and must never be enabled in a live storefront.
+ */
+export function isDemoBillingEnabled() {
+  if (import.meta.env?.PROD) {
+    return import.meta.env?.VITE_ENABLE_DEMO_BILLING === 'true';
+  }
+  return true;
+}
+
+/**
+ * Local (base64-encoded) auth is only for offline/demo testing.
+ * Base64 encoding is NOT secure password storage. Passwords stored this way can be
+ * trivially decoded by anyone with access to localStorage — never use in production.
+ * Set VITE_ENABLE_LOCAL_AUTH="true" to allow it in a production build (for testing only).
+ */
+export function isLocalAuthEnabled() {
+  if (import.meta.env?.PROD) {
+    return import.meta.env?.VITE_ENABLE_LOCAL_AUTH === 'true';
+  }
+  return true;
+}
+
 const SESSION_KEY = 'imposter-account-session-v2';
 const DIRECTORY_KEY = 'imposter-account-directory-v2';
 const LEGACY_PACK_KEY = 'imposter-unlocked-theme-packs-v1';
@@ -95,6 +120,13 @@ function findDirectoryUser(userId) {
  * @returns {{ ok: true, session: object } | { ok: false, error: string }}
  */
 export function registerAccount({ displayName, password }) {
+  if (!isLocalAuthEnabled()) {
+    return {
+      ok: false,
+      error:
+        'Local account registration is disabled in production. Please sign in with Supabase.',
+    };
+  }
   const name = String(displayName || '').trim();
   const pass = String(password || '');
   if (name.length < 2) return { ok: false, error: 'Display name should be at least 2 characters.' };
@@ -127,6 +159,12 @@ export function registerAccount({ displayName, password }) {
  * @returns {{ ok: true, session: object } | { ok: false, error: string }}
  */
 export function loginAccount({ displayName, password }) {
+  if (!isLocalAuthEnabled()) {
+    return {
+      ok: false,
+      error: 'Local account login is disabled in production. Please sign in with Supabase.',
+    };
+  }
   const name = String(displayName || '').trim().toLowerCase();
   const pass = String(password || '');
   const dir = readDirectory();
@@ -154,9 +192,16 @@ function patchDirectory(userId, patch) {
 
 /**
  * Demo checkout: sets subscription tier locally (replace with real payment provider).
+ * This function is disabled in production builds unless VITE_ENABLE_DEMO_BILLING="true".
  * @returns {{ ok: true, session: object } | { ok: false, error: string }}
  */
 export function purchaseTierDemo(userId, nextTierId) {
+  if (!isDemoBillingEnabled()) {
+    return {
+      ok: false,
+      error: 'Demo purchases are disabled in production. Please use the real payment flow.',
+    };
+  }
   const order = [TIER_FIBBER, TIER_LOCAL_LIAR, TIER_SUSPECT, TIER_HOST_MOST];
   const row = findDirectoryUser(userId);
   if (!row) return { ok: false, error: 'Account not found.' };
@@ -181,9 +226,17 @@ export function purchaseTierDemo(userId, nextTierId) {
 }
 
 /**
+ * Demo addon purchase for Twist the Truth.
+ * Disabled in production unless VITE_ENABLE_DEMO_BILLING="true".
  * @returns {{ ok: true, session: object } | { ok: false, error: string }}
  */
 export function purchaseAddonTwistTruthDemo(userId) {
+  if (!isDemoBillingEnabled()) {
+    return {
+      ok: false,
+      error: 'Demo purchases are disabled in production. Please use the real payment flow.',
+    };
+  }
   const row = findDirectoryUser(userId);
   if (!row) return { ok: false, error: 'Account not found.' };
   if (String(row.tierId) === TIER_HOST_MOST) {
@@ -205,9 +258,17 @@ export function purchaseAddonTwistTruthDemo(userId) {
 }
 
 /**
+ * Demo DLC pack purchase.
+ * Disabled in production unless VITE_ENABLE_DEMO_BILLING="true".
  * @returns {{ ok: true, session: object } | { ok: false, error: string }}
  */
 export function purchaseDlcPackDemo(userId, packId) {
+  if (!isDemoBillingEnabled()) {
+    return {
+      ok: false,
+      error: 'Demo purchases are disabled in production. Please use the real payment flow.',
+    };
+  }
   const row = findDirectoryUser(userId);
   if (!row) return { ok: false, error: 'Account not found.' };
   if (String(row.tierId) === TIER_HOST_MOST) {

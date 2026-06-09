@@ -1,5 +1,7 @@
 import { DLC_THEME_PACKS, normalizeUnlockedThemePackIds } from '../data/themeCatalog';
 
+const DLC_BUNDLE_NAMES_LIST = DLC_THEME_PACKS.map((p) => p.name).join(', ');
+
 export const TIER_FIBBER = 'fibber';
 export const TIER_LOCAL_LIAR = 'local_liar';
 export const TIER_SUSPECT = 'suspect';

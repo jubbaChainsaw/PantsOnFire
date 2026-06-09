@@ -1,3 +1,9 @@
+import { randomBytes, randomUUID } from 'node:crypto';
+import {
+  SHARED_ONLINE_CATEGORIES,
+  SHARED_ONLINE_BANNED_WORD_BANK,
+} from '../../src/data/sharedOnlineCategories.js';
+
 const LOBBY_CODE_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 const LOBBY_CODE_LENGTH = 6;
 const MIN_PLAYERS = 3;
@@ -18,29 +24,6 @@ const DEFAULT_LOBBY_SETTINGS = {
   },
 };
 
-const SERVER_BANNED_WORD_BANK = {
-  'prompt::sports::0': ['bat', 'pitcher', 'stadium', 'scoreboard', 'coach'],
-  'prompt::sports::1': ['referee', 'supporters', 'captain', 'season', 'training'],
-  'prompt::sports::2': ['tournament', 'singles', 'doubles', 'umpire', 'grip'],
-  'prompt::sports::3': ['champion', 'fitness', 'crowd', 'aggressive', 'professional'],
-  'prompt::food::0': ['crispy', 'restaurant', 'delivery', 'toppings', 'stuffed'],
-  'prompt::food::1': ['mustard', 'barbecue', 'greasy', 'handheld', 'snack'],
-  'prompt::food::2': ['breakfast', 'steaming', 'sugar', 'morning', 'cafe'],
-  'prompt::food::3': ['bakery', 'frosting', 'gooey', 'treat', 'party'],
-  'prompt::movies::0': ['franchise', 'merchandise', 'funny', 'family', 'adventure'],
-  'prompt::movies::1': ['blockbuster', 'director', 'soundtrack', 'suspense', 'iconic'],
-  'prompt::movies::2': ['relationship', 'dramatic', 'emotional', 'chemistry', 'memorable'],
-  'prompt::movies::3': ['cinematography', 'director', 'ambitious', 'complex', 'masterpiece'],
-  'prompt::music::0': ['frontman', 'album', 'touring', 'anthem', 'fans'],
-  'prompt::music::1': ['teenage', 'chorus', 'gigs', 'melody', 'mosh'],
-  'prompt::music::2': ['intense', 'stage', 'headline', 'riffs', 'chaotic'],
-  'prompt::music::3': ['virtuoso', 'concert', 'legendary', 'solo', 'discography'],
-  'prompt::places::0': ['capital', 'landmark', 'tourist', 'rainy', 'commute'],
-  'prompt::places::1': ['passport', 'museum', 'nightlife', 'language', 'metro'],
-  'prompt::places::2': ['queues', 'departure', 'luggage', 'platform', 'delay'],
-  'prompt::places::3': ['sand', 'slides', 'crowded', 'suncream', 'towels'],
-};
-
 const SERVER_BANNED_WORD_FILLERS = [
   'bluff',
   'sus',
@@ -54,74 +37,16 @@ const SERVER_BANNED_WORD_FILLERS = [
   'clueless',
 ];
 
-const SERVER_PROMPT_CATEGORIES = [
-  {
-    id: 'sports',
-    name: 'Sports',
-    emoji: '🏅',
-    prompts: [
-      { hint: 'Sports Showdown', main: 'Basketball', imposter: 'Baseball' },
-      { hint: 'Sports Showdown', main: 'Football', imposter: 'Rugby' },
-      { hint: 'Sports Showdown', main: 'Tennis', imposter: 'Badminton' },
-      { hint: 'Sports Showdown', main: 'Boxing', imposter: 'MMA' },
-    ],
-  },
-  {
-    id: 'food',
-    name: 'Food',
-    emoji: '🍕',
-    prompts: [
-      { hint: 'Food Face-Off', main: 'Pizza', imposter: 'Calzone' },
-      { hint: 'Food Face-Off', main: 'Burger', imposter: 'Hot Dog' },
-      { hint: 'Food Face-Off', main: 'Sushi', imposter: 'Poke Bowl' },
-      { hint: 'Food Face-Off', main: 'Waffles', imposter: 'Pancakes' },
-    ],
-  },
-  {
-    id: 'movies',
-    name: 'Movies',
-    emoji: '🎬',
-    prompts: [
-      { hint: 'Movie Clash', main: 'Inception', imposter: 'Memento' },
-      { hint: 'Movie Clash', main: 'Titanic', imposter: 'The Notebook' },
-      { hint: 'Movie Clash', main: 'The Matrix', imposter: 'Blade Runner' },
-      { hint: 'Movie Clash', main: 'Shrek', imposter: 'Toy Story' },
-    ],
-  },
-  {
-    id: 'music',
-    name: 'Music',
-    emoji: '🎵',
-    prompts: [
-      { hint: 'Music Battle', main: 'Nirvana', imposter: 'Foo Fighters' },
-      { hint: 'Music Battle', main: 'Metallica', imposter: 'Megadeth' },
-      { hint: 'Music Battle', main: 'Drake', imposter: 'Kendrick Lamar' },
-      { hint: 'Music Battle', main: 'Adele', imposter: 'Sam Smith' },
-    ],
-  },
-  {
-    id: 'places',
-    name: 'Places',
-    emoji: '🌍',
-    prompts: [
-      { hint: 'Place Swap', main: 'London', imposter: 'Manchester' },
-      { hint: 'Place Swap', main: 'Paris', imposter: 'Berlin' },
-      { hint: 'Place Swap', main: 'Airport', imposter: 'Train Station' },
-      { hint: 'Place Swap', main: 'Beach', imposter: 'Waterpark' },
-    ],
-  },
-];
-
 function nowIso() {
   return new Date().toISOString();
 }
 
 function randomId(prefix = 'id') {
-  return `${prefix}-${Math.random().toString(36).slice(2, 10)}-${Date.now().toString(36)}`;
+  return `${prefix}-${randomUUID().replace(/-/g, '').slice(0, 12)}-${Date.now().toString(36)}`;
 }
 
 function randomSessionToken() {
-  return randomId('sess');
+  return `sess-${randomBytes(24).toString('base64url')}`;
 }
 
 function normalizeCode(raw = '') {
@@ -129,9 +54,10 @@ function normalizeCode(raw = '') {
 }
 
 function generateLobbyCode() {
+  const bytes = randomBytes(LOBBY_CODE_LENGTH);
   let code = '';
   for (let i = 0; i < LOBBY_CODE_LENGTH; i += 1) {
-    code += LOBBY_CODE_CHARS[Math.floor(Math.random() * LOBBY_CODE_CHARS.length)];
+    code += LOBBY_CODE_CHARS[bytes[i] % LOBBY_CODE_CHARS.length];
   }
   return code;
 }
@@ -193,10 +119,21 @@ function sanitizeLobbySettings(raw = {}) {
   };
 }
 
+function cryptoRandInt(max) {
+  if (max <= 0) return 0;
+  const needed = Math.ceil(Math.log2(max) / 8) || 1;
+  const maxUnbiased = Math.floor(256 ** needed / max) * max;
+  let val;
+  do {
+    val = randomBytes(needed).readUIntBE(0, needed);
+  } while (val >= maxUnbiased);
+  return val % max;
+}
+
 function shuffle(items = []) {
   const clone = [...items];
   for (let i = clone.length - 1; i > 0; i -= 1) {
-    const j = Math.floor(Math.random() * (i + 1));
+    const j = cryptoRandInt(i + 1);
     [clone[i], clone[j]] = [clone[j], clone[i]];
   }
   return clone;
@@ -204,7 +141,7 @@ function shuffle(items = []) {
 
 function pickRandom(items = []) {
   if (!Array.isArray(items) || items.length === 0) return null;
-  return items[Math.floor(Math.random() * items.length)];
+  return items[cryptoRandInt(items.length)];
 }
 
 function sanitizeServerBannedWords(categoryName, hint, main, imposter, words) {
@@ -352,7 +289,7 @@ function hydrateRound(rawRound, playerCount = 0) {
 
 function buildAuthoritativeRound(players = [], roundNumber = 1, recentPromptKeys = []) {
   if (!players.length) return null;
-  const category = pickRandom(SERVER_PROMPT_CATEGORIES);
+  const category = pickRandom(SHARED_ONLINE_CATEGORIES);
   if (!category?.prompts?.length) return null;
   const promptOptions = category.prompts.map((prompt, index) => ({
     key: `prompt::${category.id}::${index}`,
@@ -369,7 +306,7 @@ function buildAuthoritativeRound(players = [], roundNumber = 1, recentPromptKeys
     selected.prompt.hint,
     selected.prompt.main,
     selected.prompt.imposter,
-    SERVER_BANNED_WORD_BANK[selected.key] || []
+    SHARED_ONLINE_BANNED_WORD_BANK[selected.key] || []
   );
   return {
     id: randomId('round'),
@@ -419,12 +356,7 @@ function buildAuthoritativeRound(players = [], roundNumber = 1, recentPromptKeys
 
 function toPublicRound(round) {
   if (!round || typeof round !== 'object') return null;
-  const {
-    promptsByPlayerId,
-    mediaByPlayerId,
-    votesByPlayerId,
-    ...publicRound
-  } = round;
+  const { promptsByPlayerId: _p, mediaByPlayerId: _m, votesByPlayerId: _v, ...publicRound } = round;
   return publicRound;
 }
 
@@ -1051,6 +983,8 @@ function buildStoreCore({
   };
 }
 
+export { sanitizeLobbySettings, generateLobbyCode, scoreRoundServer };
+
 export function toClientSnapshot(lobby) {
   if (!lobby) return null;
   return {
@@ -1138,7 +1072,9 @@ export function createRedisLobbyStore({ redis, keyPrefix = 'pof:lobby', sessionT
     shutdown: async () => {
       try {
         await redis.quit();
-      } catch {}
+      } catch (_err) {
+        // ignore quit errors
+      }
     },
   });
 }

@@ -1,11 +1,16 @@
 import { io } from 'socket.io-client';
-import { getLobbyApiBase, getLobbyServerOrigin } from '../lib/lobbyApiEnv.js';
+import { getLobbyApiBase, getLobbyServerOrigin, getLobbyConfigError } from '../lib/lobbyApiEnv.js';
 
 const LOBBY_SERVER_URL = getLobbyServerOrigin();
 const LOBBY_API_BASE = getLobbyApiBase();
+const LOBBY_CONFIG_ERROR = getLobbyConfigError();
 
 function randomId(prefix = 'id') {
-  return `${prefix}-${Math.random().toString(36).slice(2, 10)}-${Date.now().toString(36)}`;
+  const unique =
+    typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function'
+      ? crypto.randomUUID().replace(/-/g, '').slice(0, 12)
+      : Math.random().toString(36).slice(2, 10);
+  return `${prefix}-${unique}-${Date.now().toString(36)}`;
 }
 
 function nowIso() {
@@ -17,6 +22,11 @@ function normalizeCode(lobbyCode) {
 }
 
 async function requestJson(path, { method = 'GET', body } = {}) {
+  if (LOBBY_CONFIG_ERROR) {
+    const err = new Error(LOBBY_CONFIG_ERROR);
+    err.code = 'lobby-server-not-configured';
+    throw err;
+  }
   const response = await fetch(`${LOBBY_API_BASE}${path}`, {
     method,
     headers: { 'Content-Type': 'application/json' },
@@ -25,8 +35,8 @@ async function requestJson(path, { method = 'GET', body } = {}) {
   let payload = null;
   try {
     payload = await response.json();
-  } catch {
-    payload = null;
+  } catch (_err) {
+    // keep payload as null on parse error
   }
   if (!response.ok) {
     const code = payload?.error || 'request-failed';
