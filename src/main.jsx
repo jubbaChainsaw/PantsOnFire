@@ -5,9 +5,6 @@ import './styles.css';
 const rootElement = document.getElementById('root');
 
 function createErrorScreen({ title, subtitle, message, stack }) {
-  const s = (styles) => Object.assign(document.createElement('div'), { style: '' }).style;
-  void s;
-
   const applyStyle = (el, styles) => Object.assign(el.style, styles);
 
   const outer = document.createElement('div');
