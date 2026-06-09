@@ -6,8 +6,8 @@ import { TIER_FIBBER, TIER_HOST_MOST, TIER_LOCAL_LIAR, TIER_SUSPECT } from './ti
  * Set VITE_ENABLE_DEMO_BILLING="true" to allow it in a production build (for testing only).
  * WARNING: demo purchases are not real payments and must never be enabled in a live storefront.
  */
-function isDemoBillingEnabled() {
-  if (typeof import.meta !== 'undefined' && import.meta.env?.PROD) {
+export function isDemoBillingEnabled() {
+  if (import.meta.env?.PROD) {
     return import.meta.env?.VITE_ENABLE_DEMO_BILLING === 'true';
   }
   return true;
@@ -19,8 +19,8 @@ function isDemoBillingEnabled() {
  * trivially decoded by anyone with access to localStorage — never use in production.
  * Set VITE_ENABLE_LOCAL_AUTH="true" to allow it in a production build (for testing only).
  */
-function isLocalAuthEnabled() {
-  if (typeof import.meta !== 'undefined' && import.meta.env?.PROD) {
+export function isLocalAuthEnabled() {
+  if (import.meta.env?.PROD) {
     return import.meta.env?.VITE_ENABLE_LOCAL_AUTH === 'true';
   }
   return true;

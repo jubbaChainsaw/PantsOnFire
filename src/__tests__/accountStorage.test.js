@@ -1,34 +1,34 @@
 /**
  * Tests for accountStorage.js
  *
- * Production-mode tests verify that demo billing and local auth functions
- * return the correct error when the production guard is active.
- *
- * We test the production guard by directly testing the exported functions
- * (which check import.meta.env.PROD). In the Vitest environment PROD is false,
- * so we rely on the module-mock approach for the production path.
+ * The module runs in Vitest (PROD=false by default), so all guards are inactive unless
+ * we explicitly set import.meta.env.PROD = true before calling the guard helpers.
  */
 
-import { describe, it, expect, beforeEach } from 'vitest';
-
-// ─── Dev mode tests ──────────────────────────────────────────────────────────
-// Import directly — Vitest runs in dev/test mode (PROD=false), so all guards
-// should be inactive and the functions should work normally.
-
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import {
   registerAccount,
   loginAccount,
   purchaseTierDemo,
   purchaseAddonTwistTruthDemo,
   purchaseDlcPackDemo,
+  isDemoBillingEnabled,
+  isLocalAuthEnabled,
 } from '../account/accountStorage.js';
 
-describe('accountStorage – dev mode (PROD=false, default)', () => {
+// ─── Dev mode tests (PROD=false, the Vitest default) ─────────────────────────
+
+describe('accountStorage – dev mode (PROD=false)', () => {
   beforeEach(() => {
-    // Clear localStorage between tests (jsdom persists state across tests)
-    if (typeof window !== 'undefined') {
-      window.localStorage.clear();
-    }
+    if (typeof window !== 'undefined') window.localStorage.clear();
+  });
+
+  it('isDemoBillingEnabled() returns true in dev mode', () => {
+    expect(isDemoBillingEnabled()).toBe(true);
+  });
+
+  it('isLocalAuthEnabled() returns true in dev mode', () => {
+    expect(isLocalAuthEnabled()).toBe(true);
   });
 
   it('registerAccount succeeds with valid credentials', () => {
@@ -90,31 +90,85 @@ describe('accountStorage – dev mode (PROD=false, default)', () => {
   });
 });
 
-// ─── Production mode tests ────────────────────────────────────────────────────
-// These tests verify the production guard returns the correct error message.
-// We test the guard logic directly since PROD cannot be set to true in Vitest
-// without full module re-evaluation. We use a simple check on the error messages
-// by calling the guard helpers indirectly through a vi.mock.
+// ─── Production mode tests (PROD=true, no override) ──────────────────────────
+// We set import.meta.env.PROD = true before each test and restore after.
+// This works because isDemoBillingEnabled / isLocalAuthEnabled read the flag lazily.
 
-describe('accountStorage – production guard error messages', () => {
-  it('purchaseTierDemo production error contains expected text', () => {
-    // The guard returns this message when isDemoBillingEnabled() is false.
-    // Verified by inspecting the guard condition in accountStorage.js.
-    const expectedError =
-      'Demo purchases are disabled in production. Please use the real payment flow.';
-    expect(typeof expectedError).toBe('string');
-    expect(expectedError).toMatch(/disabled in production/i);
+describe('accountStorage – production mode (PROD=true, no override)', () => {
+  beforeEach(() => {
+    if (typeof window !== 'undefined') window.localStorage.clear();
+    import.meta.env.PROD = true;
+    import.meta.env.VITE_ENABLE_DEMO_BILLING = undefined;
+    import.meta.env.VITE_ENABLE_LOCAL_AUTH = undefined;
   });
 
-  it('registerAccount production error contains expected text', () => {
-    const expectedError =
-      'Local account registration is disabled in production. Please sign in with Supabase.';
-    expect(expectedError).toMatch(/disabled in production/i);
+  afterEach(() => {
+    import.meta.env.PROD = false;
+    delete import.meta.env.VITE_ENABLE_DEMO_BILLING;
+    delete import.meta.env.VITE_ENABLE_LOCAL_AUTH;
   });
 
-  it('loginAccount production error contains expected text', () => {
-    const expectedError =
-      'Local account login is disabled in production. Please sign in with Supabase.';
-    expect(expectedError).toMatch(/disabled in production/i);
+  it('isDemoBillingEnabled() returns false when PROD=true and no override', () => {
+    expect(isDemoBillingEnabled()).toBe(false);
+  });
+
+  it('isLocalAuthEnabled() returns false when PROD=true and no override', () => {
+    expect(isLocalAuthEnabled()).toBe(false);
+  });
+
+  it('purchaseTierDemo is blocked in production', () => {
+    const result = purchaseTierDemo('any-user', 'suspect');
+    expect(result.ok).toBe(false);
+    expect(result.error).toMatch(/disabled in production/i);
+  });
+
+  it('purchaseAddonTwistTruthDemo is blocked in production', () => {
+    const result = purchaseAddonTwistTruthDemo('any-user');
+    expect(result.ok).toBe(false);
+    expect(result.error).toMatch(/disabled in production/i);
+  });
+
+  it('purchaseDlcPackDemo is blocked in production', () => {
+    const result = purchaseDlcPackDemo('any-user', 'pack-id');
+    expect(result.ok).toBe(false);
+    expect(result.error).toMatch(/disabled in production/i);
+  });
+
+  it('registerAccount is blocked in production', () => {
+    const result = registerAccount({ displayName: 'Test', password: 'pass1234' });
+    expect(result.ok).toBe(false);
+    expect(result.error).toMatch(/disabled in production/i);
+  });
+
+  it('loginAccount is blocked in production', () => {
+    const result = loginAccount({ displayName: 'Test', password: 'pass1234' });
+    expect(result.ok).toBe(false);
+    expect(result.error).toMatch(/disabled in production/i);
+  });
+});
+
+// ─── Production mode with override enabled ────────────────────────────────────
+
+describe('accountStorage – production mode with VITE_ENABLE_DEMO_BILLING=true', () => {
+  beforeEach(() => {
+    if (typeof window !== 'undefined') window.localStorage.clear();
+    import.meta.env.PROD = true;
+    import.meta.env.VITE_ENABLE_DEMO_BILLING = 'true';
+  });
+
+  afterEach(() => {
+    import.meta.env.PROD = false;
+    delete import.meta.env.VITE_ENABLE_DEMO_BILLING;
+  });
+
+  it('isDemoBillingEnabled() returns true when override is set', () => {
+    expect(isDemoBillingEnabled()).toBe(true);
+  });
+
+  it('purchaseTierDemo is allowed when override is set', () => {
+    // Need local auth too for register; bypass by using a non-existent user → account not found
+    const result = purchaseTierDemo('nonexistent', 'suspect');
+    // Fails with 'Account not found' (not the production guard error)
+    expect(result.error).not.toMatch(/disabled in production/i);
   });
 });
