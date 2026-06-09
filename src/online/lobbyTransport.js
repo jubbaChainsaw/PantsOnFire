@@ -1,8 +1,9 @@
 import { io } from 'socket.io-client';
-import { getLobbyApiBase, getLobbyServerOrigin } from '../lib/lobbyApiEnv.js';
+import { getLobbyApiBase, getLobbyServerOrigin, getLobbyConfigError } from '../lib/lobbyApiEnv.js';
 
 const LOBBY_SERVER_URL = getLobbyServerOrigin();
 const LOBBY_API_BASE = getLobbyApiBase();
+const LOBBY_CONFIG_ERROR = getLobbyConfigError();
 
 function randomId(prefix = 'id') {
   const unique =
@@ -21,6 +22,11 @@ function normalizeCode(lobbyCode) {
 }
 
 async function requestJson(path, { method = 'GET', body } = {}) {
+  if (LOBBY_CONFIG_ERROR) {
+    const err = new Error(LOBBY_CONFIG_ERROR);
+    err.code = 'lobby-server-not-configured';
+    throw err;
+  }
   const response = await fetch(`${LOBBY_API_BASE}${path}`, {
     method,
     headers: { 'Content-Type': 'application/json' },
