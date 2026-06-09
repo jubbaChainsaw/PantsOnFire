@@ -241,10 +241,6 @@ export function mountEntitlementsRoutes(app, { store } = {}) {
 
   const entitlementStore = store || buildEntitlementStore(supabaseUrl, serviceKey);
 
-  // Supabase admin client for JWT verification (separate from the entitlement store client).
-  const authSupabaseUrl = supabaseUrl;
-  const authServiceKey = serviceKey;
-
   app.get('/api/me/entitlements', async (req, res) => {
     const token = String(req.headers.authorization || '')
       .replace(/^Bearer\s+/i, '')
@@ -253,11 +249,11 @@ export function mountEntitlementsRoutes(app, { store } = {}) {
       res.status(401).json({ error: 'missing-token' });
       return;
     }
-    if (!authSupabaseUrl || !authServiceKey) {
+    if (!supabaseUrl || !serviceKey) {
       res.status(503).json({ error: 'server-auth-not-configured' });
       return;
     }
-    const admin = createClient(authSupabaseUrl, authServiceKey, {
+    const admin = createClient(supabaseUrl, serviceKey, {
       auth: { autoRefreshToken: false, persistSession: false },
     });
     const { data, error } = await admin.auth.getUser(token);

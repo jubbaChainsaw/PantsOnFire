@@ -434,7 +434,6 @@ app.post('/api/lobbies/:code/resume', async (req, res) => {
 app.post('/api/lobbies/:code/leave', async (req, res) => {
   const code = normalizeCode(req.params.code);
   const playerId = String(req.body?.playerId || '');
-  void req.body?.role;
   if (!playerId) {
     res.status(400).json({ error: 'player-id-required' });
     return;
