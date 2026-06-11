@@ -101,14 +101,70 @@ function validateLobbyPlayerSession(lobby, playerId, sessionToken) {
   return { player };
 }
 
-const { store, kind: storeKind, close: closeStore } = await createLobbyStore({
+const { store, kind: storeKind, close: closeStore, redisClient } = await createLobbyStore({
   sessionTokenTtlMs: SESSION_TOKEN_TTL_MS,
 });
 
+// Minimal fixed-window rate limiter (per IP) so lobby-code guessing and join
+// spam cannot run unthrottled. Swap for a shared-store limiter if the server
+// is ever scaled to multiple instances.
+function createRateLimiter({ windowMs, max }) {
+  const buckets = new Map();
+  const cleanupTimer = setInterval(() => {
+    const now = Date.now();
+    for (const [key, bucket] of buckets.entries()) {
+      if (bucket.resetAt <= now) buckets.delete(key);
+    }
+  }, windowMs);
+  cleanupTimer.unref?.();
+  return (req, res, next) => {
+    const key = String(req.ip || req.socket?.remoteAddress || 'unknown');
+    const now = Date.now();
+    let bucket = buckets.get(key);
+    if (!bucket || bucket.resetAt <= now) {
+      bucket = { count: 0, resetAt: now + windowMs };
+      buckets.set(key, bucket);
+    }
+    bucket.count += 1;
+    if (bucket.count > max) {
+      res.status(429).json({ error: 'rate-limited' });
+      return;
+    }
+    next();
+  };
+}
+
+const createLobbyLimiter = createRateLimiter({ windowMs: 60_000, max: 10 });
+const joinLobbyLimiter = createRateLimiter({ windowMs: 60_000, max: 20 });
+const resumeLimiter = createRateLimiter({ windowMs: 60_000, max: 30 });
+const lookupLimiter = createRateLimiter({ windowMs: 60_000, max: 60 });
+const voiceTokenLimiter = createRateLimiter({ windowMs: 60_000, max: 12 });
+
 const app = express();
+app.set('trust proxy', 1);
 app.use(cors({ origin: corsOriginHandler }));
 app.use(express.json({ limit: '1mb' }));
-mountEntitlementsRoutes(app);
+
+// Entitlements survive restarts when Redis is configured; the Map fallback is
+// for local development only.
+const entitlementsRedisPrefix = String(process.env.ENTITLEMENTS_REDIS_KEY_PREFIX || 'pof:entitlements').trim() || 'pof:entitlements';
+const entitlementsStore = redisClient
+  ? {
+      get: async (userId) => {
+        const raw = await redisClient.get(`${entitlementsRedisPrefix}:${userId}`);
+        if (!raw) return undefined;
+        try {
+          return JSON.parse(raw);
+        } catch {
+          return undefined;
+        }
+      },
+      set: async (userId, row) => {
+        await redisClient.set(`${entitlementsRedisPrefix}:${userId}`, JSON.stringify(row));
+      },
+    }
+  : new Map();
+mountEntitlementsRoutes(app, { store: entitlementsStore });
 
 const httpServer = createServer(app);
 const io = new Server(httpServer, {
@@ -250,7 +306,7 @@ app.get('/health', (_req, res) => {
   });
 });
 
-app.post('/api/lobbies/:code/voice/token', async (req, res) => {
+app.post('/api/lobbies/:code/voice/token', voiceTokenLimiter, async (req, res) => {
   if (!isLiveKitConfigured()) {
     res.status(503).json({ error: 'voice-not-configured' });
     return;
@@ -281,6 +337,9 @@ app.post('/api/lobbies/:code/voice/token', async (req, res) => {
     const accessToken = new AccessToken(LIVEKIT_API_KEY, LIVEKIT_API_SECRET, {
       identity: playerId,
       name: String(validation.player?.name || 'Player'),
+      // Short-lived join window; the token only gates room entry, not an
+      // established session, so this does not cut off active calls.
+      ttl: '15m',
     });
     accessToken.addGrant({
       roomJoin: true,
@@ -302,7 +361,7 @@ app.post('/api/lobbies/:code/voice/token', async (req, res) => {
   }
 });
 
-app.post('/api/lobbies', async (req, res) => {
+app.post('/api/lobbies', createLobbyLimiter, async (req, res) => {
   const hostName = String(req.body?.hostName || '').trim() || 'Host';
   const hostPlayer = req.body?.hostPlayer || {};
   const maxPlayers = Number(req.body?.maxPlayers);
@@ -323,7 +382,7 @@ app.post('/api/lobbies', async (req, res) => {
   });
 });
 
-app.get('/api/lobbies/:code', async (req, res) => {
+app.get('/api/lobbies/:code', lookupLimiter, async (req, res) => {
   const code = normalizeCode(req.params.code);
   const lobby = await store.getLobby(code);
   if (!lobby) {
@@ -333,10 +392,11 @@ app.get('/api/lobbies/:code', async (req, res) => {
   res.json({ lobby: toClientSnapshot(lobby) });
 });
 
-app.post('/api/lobbies/:code/join', async (req, res) => {
+app.post('/api/lobbies/:code/join', joinLobbyLimiter, async (req, res) => {
   const code = normalizeCode(req.params.code);
   const incoming = req.body?.player || {};
-  const joined = await store.upsertPlayer(code, incoming);
+  const sessionToken = String(req.body?.sessionToken || '');
+  const joined = await store.upsertPlayer(code, incoming, sessionToken);
   if (joined.error === 'not-found') {
     res.status(404).json({ error: 'lobby-not-found' });
     return;
@@ -347,6 +407,10 @@ app.post('/api/lobbies/:code/join', async (req, res) => {
   }
   if (joined.error === 'lobby-ended') {
     res.status(409).json({ error: 'lobby-ended' });
+    return;
+  }
+  if (joined.error === 'client-id-in-use') {
+    res.status(409).json({ error: 'client-id-in-use' });
     return;
   }
   if (joined.error === 'lobby-full') {
@@ -861,10 +925,15 @@ io.on('connection', (socket) => {
     });
   });
 
-  socket.on('party-voice:activity', ({ code, playerId, isTalking }) => {
+  socket.on('party-voice:activity', async ({ code, playerId, sessionToken, isTalking }) => {
     const normalizedCode = normalizeCode(code);
     const normalizedPlayerId = String(playerId || '').trim();
-    if (!normalizedCode || !normalizedPlayerId) return;
+    const normalizedToken = String(sessionToken || '').trim();
+    if (!normalizedCode || !normalizedPlayerId || !normalizedToken) return;
+    const lobby = await store.getLobby(normalizedCode);
+    if (!lobby) return;
+    const validation = validateLobbyPlayerSession(lobby, normalizedPlayerId, normalizedToken);
+    if (validation.error) return;
     io.to(roomName(normalizedCode)).emit('party-voice:activity', {
       lobbyCode: normalizedCode,
       playerId: normalizedPlayerId,

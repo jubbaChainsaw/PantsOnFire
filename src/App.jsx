@@ -755,6 +755,10 @@ function mapLobbyErrorToMessage(
     }
     return "Lobby is full. Ask the host to raise the player limit or start a new lobby.";
   }
+  if (code === "client-id-in-use")
+    return "This device already has a player in the lobby. Wait a moment for the old slot to clear, then try again.";
+  if (code === "rate-limited")
+    return "Too many attempts. Wait a few seconds and try again.";
   if (code === "player-id-required")
     return "Unable to leave lobby: missing player identity.";
   if (code === "voice-not-configured")
@@ -9401,11 +9405,18 @@ export default function App() {
       name: onlinePlayerName.trim(),
       clientId: onlineClientId,
     });
+    const storedSession = onlineSessionRef.current;
+    const reclaimSessionToken =
+      storedSession?.lobbyCode === normalizedCode
+        ? storedSession?.sessionToken || ""
+        : "";
     let nextSnapshot = null;
     let resolvedPlayer = joiner;
     let sessionToken = "";
     try {
-      const result = await joinLobbyOnServer(normalizedCode, joiner);
+      const result = await joinLobbyOnServer(normalizedCode, joiner, {
+        sessionToken: reclaimSessionToken,
+      });
       nextSnapshot = result?.lobby || null;
       resolvedPlayer = result?.player || joiner;
       sessionToken = result?.sessionToken || "";

@@ -77,11 +77,11 @@ export async function readLobbySnapshot(lobbyCode) {
   }
 }
 
-export async function joinLobbyOnServer(lobbyCode, player) {
+export async function joinLobbyOnServer(lobbyCode, player, { sessionToken = '' } = {}) {
   const normalizedCode = normalizeCode(lobbyCode);
   const payload = await requestJson(`/lobbies/${encodeURIComponent(normalizedCode)}/join`, {
     method: 'POST',
-    body: { player },
+    body: { player, sessionToken: String(sessionToken || '') },
   });
   return {
     lobby: payload?.lobby || null,
@@ -333,6 +333,7 @@ export function createLobbyTransport({
       socket.emit('party-voice:activity', {
         code: normalizedCode,
         playerId,
+        sessionToken: currentSessionToken,
         isTalking: Boolean(isTalking),
       });
     },

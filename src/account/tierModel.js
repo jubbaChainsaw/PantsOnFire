@@ -12,6 +12,8 @@ export const TIER_RANK = {
   [TIER_HOST_MOST]: 3,
 };
 
+const DLC_BUNDLE_NAMES_LIST = DLC_THEME_PACKS.map((pack) => pack.name).join(', ');
+
 /** @typedef {{ tierId: string, name: string, priceLabel: string, upgradeHint?: string, bullets: string[] }} TierProduct */
 
 /** @type {TierProduct[]} */
