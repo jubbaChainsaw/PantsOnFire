@@ -45,23 +45,23 @@ export default function App() {
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="light-content" />
-      <View style={styles.header}>
-        <Text style={styles.title}>Pants on Fire! Find the Liar</Text>
-        <Text style={styles.subtitle}>Expo shell — WebView + RevenueCat</Text>
-      </View>
+      {__DEV__ ? (
+        <View style={styles.header}>
+          <Text style={styles.title}>Pants on Fire! Find the Liar</Text>
+          <Text style={styles.subtitle}>Dev shell — {GAME_URL}</Text>
+        </View>
+      ) : null}
       <WebView
         source={{ uri: GAME_URL }}
         style={styles.webview}
+        originWhitelist={['https://*', 'http://localhost*', 'http://10.0.2.2*']}
+        setSupportMultipleWindows={false}
         startInLoadingState
         javaScriptEnabled
         domStorageEnabled
         mediaPlaybackRequiresUserAction
         onMessage={onWebMessage}
       />
-      <View style={styles.footer}>
-        <Text style={styles.hint}>Web UI: {GAME_URL}</Text>
-        <Text style={styles.hint}>Run Vite: npm run dev</Text>
-      </View>
     </SafeAreaView>
   );
 }
@@ -89,15 +89,5 @@ const styles = StyleSheet.create({
   webview: {
     flex: 1,
     backgroundColor: '#120038',
-  },
-  footer: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderTopWidth: 1,
-    borderTopColor: 'rgba(255,255,255,0.12)',
-  },
-  hint: {
-    color: '#cbd5e1',
-    fontSize: 11,
   },
 });

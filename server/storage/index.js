@@ -18,6 +18,7 @@ export async function createLobbyStore({
       store,
       kind: 'memory',
       close: store.shutdown,
+      redisClient: null,
     };
   }
 
@@ -37,6 +38,7 @@ export async function createLobbyStore({
     store,
     kind: 'redis',
     close: store.shutdown,
+    redisClient: client,
   };
 }
 

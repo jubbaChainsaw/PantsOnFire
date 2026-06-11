@@ -1,3 +1,4 @@
+import { timingSafeEqual } from 'node:crypto';
 import { createClient } from '@supabase/supabase-js';
 
 const TIER_FIBBER = 'fibber';
@@ -30,7 +31,7 @@ function pickHigherTier(a, b) {
   return rb > ra ? b : a;
 }
 
-function defaultEntitlements() {
+export function defaultEntitlements() {
   return {
     tierId: TIER_FIBBER,
     addonTwistTruth: false,
@@ -40,7 +41,7 @@ function defaultEntitlements() {
   };
 }
 
-function mergeEntitlementsRow(prev, next) {
+export function mergeEntitlementsRow(prev, next) {
   const base = { ...defaultEntitlements(), ...prev };
   return {
     tierId: pickHigherTier(String(base.tierId || TIER_FIBBER), String(next.tierId || TIER_FIBBER)),
@@ -59,7 +60,7 @@ function mergeEntitlementsRow(prev, next) {
  * Configure entitlement identifiers in RevenueCat to match these keys, or set
  * REVENUECAT_ENTITLEMENT_TIER_JSON e.g. {"premium_host":"host_most"}.
  */
-function mapRevenueCatEntitlements(activeEntitlementIds) {
+export function mapRevenueCatEntitlements(activeEntitlementIds) {
   const ids = new Set(
     (Array.isArray(activeEntitlementIds) ? activeEntitlementIds : [])
       .map((id) => String(id || '').trim())
@@ -108,7 +109,7 @@ function mapRevenueCatEntitlements(activeEntitlementIds) {
   };
 }
 
-function collectActiveEntitlementIds(subscriber) {
+export function collectActiveEntitlementIds(subscriber) {
   const ents = subscriber?.entitlements || {};
   const ids = [];
   const now = Date.now();
@@ -143,13 +144,30 @@ function extractAppUserId(body) {
   ).trim();
 }
 
+function timingSafeStringEqual(a, b) {
+  const bufA = Buffer.from(String(a || ''));
+  const bufB = Buffer.from(String(b || ''));
+  if (bufA.length !== bufB.length) return false;
+  return timingSafeEqual(bufA, bufB);
+}
+
 export function mountEntitlementsRoutes(app, { store } = {}) {
+  // The store may be a Map (dev) or an async get/set adapter (e.g. Redis).
   const entitlementStore = store || new Map();
   const supabaseUrl = String(
     process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || '',
   ).trim();
   const serviceKey = String(process.env.SUPABASE_SERVICE_ROLE_KEY || '').trim();
   const webhookSecret = String(process.env.REVENUECAT_WEBHOOK_SECRET || '').trim();
+  let adminClient = null;
+  function getAdminClient() {
+    if (!adminClient) {
+      adminClient = createClient(supabaseUrl, serviceKey, {
+        auth: { autoRefreshToken: false, persistSession: false },
+      });
+    }
+    return adminClient;
+  }
 
   app.get('/api/me/entitlements', async (req, res) => {
     const token = String(req.headers.authorization || '')
@@ -163,16 +181,13 @@ export function mountEntitlementsRoutes(app, { store } = {}) {
       res.status(503).json({ error: 'server-auth-not-configured' });
       return;
     }
-    const admin = createClient(supabaseUrl, serviceKey, {
-      auth: { autoRefreshToken: false, persistSession: false },
-    });
-    const { data, error } = await admin.auth.getUser(token);
+    const { data, error } = await getAdminClient().auth.getUser(token);
     if (error || !data?.user?.id) {
       res.status(401).json({ error: 'invalid-token' });
       return;
     }
     const userId = data.user.id;
-    const stored = entitlementStore.get(userId);
+    const stored = await Promise.resolve(entitlementStore.get(userId));
     const row = stored
       ? mergeEntitlementsRow(defaultEntitlements(), stored)
       : defaultEntitlements();
@@ -183,13 +198,13 @@ export function mountEntitlementsRoutes(app, { store } = {}) {
     });
   });
 
-  app.post('/api/billing/revenuecat', (req, res) => {
+  app.post('/api/billing/revenuecat', async (req, res) => {
     if (!webhookSecret) {
       res.status(503).json({ error: 'webhook-not-configured' });
       return;
     }
     const auth = String(req.headers.authorization || '').trim();
-    if (auth !== `Bearer ${webhookSecret}`) {
+    if (!timingSafeStringEqual(auth, `Bearer ${webhookSecret}`)) {
       res.status(401).json({ error: 'unauthorized' });
       return;
     }
@@ -200,13 +215,19 @@ export function mountEntitlementsRoutes(app, { store } = {}) {
       return;
     }
     const subscriber = extractSubscriberFromBody(body);
-    const activeIds = subscriber
-      ? collectActiveEntitlementIds(subscriber)
-      : [];
-    const mapped = mapRevenueCatEntitlements(activeIds);
-    const prev = entitlementStore.get(appUserId) || defaultEntitlements();
-    const next = mergeEntitlementsRow(prev, mapped);
-    entitlementStore.set(appUserId, next);
+    if (!subscriber) {
+      // Without a subscriber payload we cannot know the full entitlement
+      // state; acknowledge so RevenueCat does not retry, but change nothing.
+      res.json({ ok: true, userId: appUserId, skipped: 'no-subscriber-payload' });
+      return;
+    }
+    // Replace, don't merge upward: the webhook carries the full active
+    // entitlement set, so expirations and refunds must lower access too.
+    const mapped = mapRevenueCatEntitlements(collectActiveEntitlementIds(subscriber));
+    await Promise.resolve(entitlementStore.set(appUserId, {
+      ...mapped,
+      updatedAt: new Date().toISOString(),
+    }));
     res.json({ ok: true, userId: appUserId });
   });
 

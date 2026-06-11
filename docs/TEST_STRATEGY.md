@@ -4,6 +4,20 @@
 
 Protect gameplay, lobby stability, purchases, entitlements and future releases.
 
+## Current Automated Coverage
+
+Run with `npm test` (dependency-free `node --test`, in `tests/`):
+
+- Server lobby store: create/join, seat-hijack protection, ready/start,
+  round generation and liar assignment, public snapshot redaction, private
+  round authorization, vote validation, server-side scoring, resume and
+  token expiry.
+- Entitlements: RevenueCat entitlement mapping, expiry handling, webhook
+  replace/downgrade semantics, webhook authentication.
+
+Client-side game logic is not yet under test; extract pure logic from
+App.jsx and add vitest (see docs/review-2026-06/TECHNICAL_DEBT_AND_ROADMAP.md).
+
 ## Unit Tests
 
 Priority areas:

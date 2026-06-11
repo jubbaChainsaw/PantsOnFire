@@ -1,8 +1,15 @@
+import { randomBytes, randomInt } from 'node:crypto';
+
 const LOBBY_CODE_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 const LOBBY_CODE_LENGTH = 6;
 const MIN_PLAYERS = 3;
 const MAX_PLAYERS = 12;
 const MAX_RECENT_PROMPT_KEYS = 6;
+const DEFAULT_LOBBY_IDLE_TTL_MS = Math.max(
+  1000 * 60 * 30,
+  Number(process.env.LOBBY_IDLE_TTL_MS || 1000 * 60 * 60 * 24) || 1000 * 60 * 60 * 24
+);
+const ROUND_REVEAL_PHASES = new Set(['liar-reveal', 'results', 'final']);
 const DEFAULT_LOBBY_SETTINGS = {
   themeName: 'Default',
   mode: 'classic',
@@ -117,11 +124,13 @@ function nowIso() {
 }
 
 function randomId(prefix = 'id') {
-  return `${prefix}-${Math.random().toString(36).slice(2, 10)}-${Date.now().toString(36)}`;
+  return `${prefix}-${randomBytes(6).toString('hex')}-${Date.now().toString(36)}`;
 }
 
+// Session tokens are bearer credentials: they must come from a CSPRNG and be
+// long enough that online guessing is infeasible.
 function randomSessionToken() {
-  return randomId('sess');
+  return `sess-${randomBytes(24).toString('base64url')}`;
 }
 
 function normalizeCode(raw = '') {
@@ -131,7 +140,7 @@ function normalizeCode(raw = '') {
 function generateLobbyCode() {
   let code = '';
   for (let i = 0; i < LOBBY_CODE_LENGTH; i += 1) {
-    code += LOBBY_CODE_CHARS[Math.floor(Math.random() * LOBBY_CODE_CHARS.length)];
+    code += LOBBY_CODE_CHARS[randomInt(LOBBY_CODE_CHARS.length)];
   }
   return code;
 }
@@ -423,8 +432,25 @@ function toPublicRound(round) {
     promptsByPlayerId,
     mediaByPlayerId,
     votesByPlayerId,
+    imposterIds,
+    imposterPrompt,
+    commonPrompt,
+    grillData,
     ...publicRound
   } = round;
+  // Liar identity and the real/imposter prompt pair stay server-side until the
+  // round reaches a reveal phase; before that they would leak who the liar is
+  // to anyone watching lobby snapshots.
+  const phase = normalizeRoundPhase(round.phase, round.roundTypeId);
+  if (ROUND_REVEAL_PHASES.has(phase)) {
+    return {
+      ...publicRound,
+      imposterIds: Array.isArray(imposterIds) ? [...imposterIds] : [],
+      imposterPrompt: imposterPrompt ?? null,
+      commonPrompt: commonPrompt ?? null,
+      grillData: grillData ?? null,
+    };
+  }
   return publicRound;
 }
 
@@ -492,19 +518,6 @@ function hydrateLobby(rawLobby) {
 }
 
 function createStoreHelpers({ sessionTokenTtlMs }) {
-  function issueOrReuseSessionToken(lobby, playerId) {
-    if (!lobby.playerSessions) lobby.playerSessions = {};
-    const existing = lobby.playerSessions[playerId];
-    if (existing?.token && Number(existing.expiresAt) > Date.now()) return existing.token;
-    const token = randomSessionToken();
-    lobby.playerSessions[playerId] = {
-      token,
-      issuedAt: Date.now(),
-      expiresAt: Date.now() + sessionTokenTtlMs,
-    };
-    return token;
-  }
-
   function findPlayerIdBySessionToken(lobby, sessionToken) {
     if (!lobby?.playerSessions || !sessionToken) return null;
     return Object.keys(lobby.playerSessions)
@@ -529,7 +542,6 @@ function createStoreHelpers({ sessionTokenTtlMs }) {
   }
 
   return {
-    issueOrReuseSessionToken,
     findPlayerIdBySessionToken,
     rotateSessionTokenForPlayer,
     getRoleForPlayer,
@@ -607,33 +619,61 @@ function buildStoreCore({
     };
   }
 
-  async function upsertPlayer(code, playerInput) {
+  async function upsertPlayer(code, playerInput, providedSessionToken = '') {
     const lobby = await getLobby(code);
     if (!lobby) return { error: 'not-found' };
     if (lobby.status === 'started') return { error: 'already-started' };
     if (lobby.status === 'ended') return { error: 'lobby-ended' };
     const incoming = sanitizePlayer(playerInput);
-    const existingByClient = lobby.players.find((player) => player.clientId && player.clientId === incoming.clientId);
-    const existingById = existingByClient || lobby.players.find((player) => player.id === incoming.id);
-    if (!existingById && lobby.players.length >= clampLobbyMaxPlayers(lobby.maxPlayers)) {
+    // Joins may never grant host status; the host seat is created server-side
+    // in createLobby and reclaiming it requires the resume flow.
+    incoming.isHost = false;
+    incoming.score = 0;
+    const existingByClient = lobby.players.find(
+      (player) => player.clientId && player.clientId === incoming.clientId
+    );
+    if (existingByClient) {
+      // Reclaiming an existing seat requires proof of ownership: player ids and
+      // clientIds are visible to the whole lobby, so matching them alone would
+      // let any member (or anyone with the code) hijack another player's seat
+      // and session.
+      const token = String(providedSessionToken || '').trim();
+      const sessionEntry = lobby.playerSessions?.[existingByClient.id] || null;
+      const tokenValid = Boolean(
+        token
+        && sessionEntry?.token
+        && sessionEntry.token === token
+        && Number(sessionEntry.expiresAt) > Date.now()
+      );
+      if (!tokenValid) {
+        return { error: 'client-id-in-use' };
+      }
+      const merged = {
+        ...existingByClient,
+        name: incoming.name,
+        color: incoming.color || existingByClient.color,
+        personaId: incoming.personaId || existingByClient.personaId,
+        personaBio: incoming.personaBio || existingByClient.personaBio,
+        personaImageSrc: incoming.personaImageSrc || existingByClient.personaImageSrc,
+      };
+      lobby.players = lobby.players.map((player) => (player.id === merged.id ? merged : player));
+      const sessionToken = helpers.rotateSessionTokenForPlayer(lobby, merged.id);
+      await saveLobby(lobby);
+      return { lobby, player: merged, sessionToken };
+    }
+    if (lobby.players.length >= clampLobbyMaxPlayers(lobby.maxPlayers)) {
       return { error: 'lobby-full', maxPlayers: clampLobbyMaxPlayers(lobby.maxPlayers) };
     }
-    const playerId = existingById?.id || incoming.id;
-    const merged = {
-      ...incoming,
-      id: playerId,
-      isHost: existingById?.isHost || Boolean(incoming.isHost),
-      isReady: typeof existingById?.isReady === 'boolean' ? existingById.isReady : Boolean(incoming.isReady),
-      joinedAt: existingById?.joinedAt || incoming.joinedAt || nowIso(),
-      score: Number.isFinite(Number(existingById?.score))
-        ? Math.max(0, Number(existingById.score))
-        : Math.max(0, Number(incoming.score || 0)),
-    };
-    lobby.players = lobby.players.filter((player) => player.id !== playerId && player.clientId !== incoming.clientId);
-    lobby.players.push(merged);
-    const sessionToken = helpers.issueOrReuseSessionToken(lobby, merged.id);
+    // Never trust a caller-supplied id that collides with an existing player.
+    if (lobby.players.some((player) => player.id === incoming.id)) {
+      incoming.id = randomId('opl');
+    }
+    incoming.isReady = false;
+    incoming.joinedAt = nowIso();
+    lobby.players.push(incoming);
+    const sessionToken = helpers.rotateSessionTokenForPlayer(lobby, incoming.id);
     await saveLobby(lobby);
-    return { lobby, player: merged, sessionToken };
+    return { lobby, player: incoming, sessionToken };
   }
 
   async function setPlayerReady(code, playerId, sessionToken = '', isReady = true) {
@@ -1076,7 +1116,10 @@ export function toClientSnapshot(lobby) {
   };
 }
 
-export function createInMemoryLobbyStore({ sessionTokenTtlMs = 1000 * 60 * 60 * 12 } = {}) {
+export function createInMemoryLobbyStore({
+  sessionTokenTtlMs = 1000 * 60 * 60 * 12,
+  lobbyIdleTtlMs = DEFAULT_LOBBY_IDLE_TTL_MS,
+} = {}) {
   const lobbies = new Map();
   async function ensureUniqueCode() {
     let attempts = 0;
@@ -1087,6 +1130,14 @@ export function createInMemoryLobbyStore({ sessionTokenTtlMs = 1000 * 60 * 60 * 
     }
     throw new Error('Unable to generate unique lobby code');
   }
+  const sweepTimer = setInterval(() => {
+    const cutoff = Date.now() - lobbyIdleTtlMs;
+    for (const [code, lobby] of lobbies.entries()) {
+      const updatedAt = Date.parse(String(lobby?.updatedAt || lobby?.createdAt || '')) || 0;
+      if (updatedAt < cutoff) lobbies.delete(code);
+    }
+  }, Math.min(lobbyIdleTtlMs, 1000 * 60 * 10));
+  sweepTimer.unref?.();
   return buildStoreCore({
     kind: 'memory',
     sessionTokenTtlMs,
@@ -1096,12 +1147,20 @@ export function createInMemoryLobbyStore({ sessionTokenTtlMs = 1000 * 60 * 60 * 
       lobbies.set(code, lobby);
     },
     removeLobbyRaw: async (code) => lobbies.delete(code),
-    shutdown: async () => {},
+    shutdown: async () => {
+      clearInterval(sweepTimer);
+    },
   });
 }
 
-export function createRedisLobbyStore({ redis, keyPrefix = 'pof:lobby', sessionTokenTtlMs = 1000 * 60 * 60 * 12 } = {}) {
+export function createRedisLobbyStore({
+  redis,
+  keyPrefix = 'pof:lobby',
+  sessionTokenTtlMs = 1000 * 60 * 60 * 12,
+  lobbyIdleTtlMs = DEFAULT_LOBBY_IDLE_TTL_MS,
+} = {}) {
   if (!redis) throw new Error('Redis client is required');
+  const lobbyTtlSeconds = Math.max(60, Math.floor(lobbyIdleTtlMs / 1000));
   function lobbyKey(code) {
     return `${keyPrefix}:${normalizeCode(code)}`;
   }
@@ -1129,7 +1188,8 @@ export function createRedisLobbyStore({ redis, keyPrefix = 'pof:lobby', sessionT
       }
     },
     writeLobbyRaw: async (code, lobby) => {
-      await redis.set(lobbyKey(code), JSON.stringify(lobby));
+      // Idle lobbies expire automatically; every write refreshes the TTL.
+      await redis.set(lobbyKey(code), JSON.stringify(lobby), { EX: lobbyTtlSeconds });
     },
     removeLobbyRaw: async (code) => {
       const removed = await redis.del(lobbyKey(code));
