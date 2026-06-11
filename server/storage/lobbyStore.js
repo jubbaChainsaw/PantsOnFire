@@ -240,7 +240,7 @@ function sanitizeServerBannedWords(categoryName, hint, main, imposter, words) {
   return selected.slice(0, 5);
 }
 
-function scoreRoundServer(players, round, votesByPlayerId = {}) {
+export function scoreRoundServer(players, round, votesByPlayerId = {}) {
   const tally = {};
   for (const voterId of Object.keys(votesByPlayerId || {})) {
     const votedFor = votesByPlayerId[voterId];

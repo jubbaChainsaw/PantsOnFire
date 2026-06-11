@@ -2,6 +2,14 @@
 
 **Planning pass only. No code was moved or changed for this review.**
 
+> **Status update:** E1 + E2 + E3 have since been implemented (approved
+> separately). Round generation lives in `src/game/rounds/`, scoring in
+> `src/game/scoring/`, and the Grill 'Em judge in `src/game/grillJudge/`,
+> each covered by behaviour tests plus parity tests against a frozen copy of
+> the original App.jsx implementation (`tests/fixtures/legacyGameLogic.mjs`)
+> and a client-vs-server scoring drift detector. All other items remain
+> planning-only.
+
 Companion to `SECURITY_AUDIT.md` / `TECHNICAL_DEBT_AND_ROADMAP.md` in this
 folder. Scope: identify the safest extractions from `src/App.jsx`
 (10,556 lines) that reduce future bug risk without disturbing the
