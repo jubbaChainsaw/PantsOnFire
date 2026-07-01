@@ -1,5 +1,3 @@
-import { Room, RoomEvent } from 'livekit-client';
-
 const RAW_LOBBY_SERVER_URL = String(import.meta?.env?.VITE_LOBBY_SERVER_URL || '').trim();
 const RAILWAY_API_FALLBACK = 'https://api.pantsonfire.app';
 const RUNTIME_HOSTNAME = typeof window !== 'undefined' ? String(window.location?.hostname || '').toLowerCase() : '';
@@ -49,6 +47,11 @@ export async function createVoicePartyTransport({
   if (!normalizedCode) throw new Error('lobby-code-required');
   if (!normalizedPlayerId) throw new Error('player-id-required');
   if (!normalizedSessionToken) throw new Error('session-token-required');
+
+  // livekit-client (~130kB gzipped) is only needed once a player actually
+  // joins voice chat, so it is fetched here instead of at module load —
+  // pass-the-phone and non-voice online sessions never pay for it.
+  const { Room, RoomEvent } = await import('livekit-client');
 
   const voicePayload = await requestJson(`/lobbies/${encodeURIComponent(normalizedCode)}/voice/token`, {
     method: 'POST',

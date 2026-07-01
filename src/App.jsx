@@ -1858,7 +1858,7 @@ function useCategoryAndModeIconPreload({
     preloadImageSources([...roundTypeIconSources, ...categoryIconSources]);
   }, [screen, roundTypeOptions, categoryOptions, canonicalThemeName]);
 }
-function useGlobalGraphicsPreload() {
+function useGlobalGraphicsPreload(themeName = "Default") {
   const [isReady, setIsReady] = useState(() =>
     typeof window === "undefined",
   );
@@ -1884,10 +1884,18 @@ function useGlobalGraphicsPreload() {
     ]
       .map((source) => String(source || "").trim())
       .filter(Boolean);
-    const themeSources = Object.values(THEME_ASSETS || {})
-      .flatMap((entry) =>
-        Object.values(entry || {}).map((source) => String(source || "").trim()),
-      )
+    // Only warm the cache for the theme currently in play (plus the Default
+    // fallback theme, since getThemeHostAssets falls back to it for missing
+    // fields). Every theme's art still renders correctly on demand via the
+    // existing <img>/<video> src attributes when a player switches themes —
+    // this only changes *when* bytes are fetched, not what ends up on screen.
+    const activeThemeAssets = THEME_ASSETS[themeName] || {};
+    const defaultThemeAssets = THEME_ASSETS.Default || {};
+    const themeSources = [
+      ...Object.values(activeThemeAssets),
+      ...Object.values(defaultThemeAssets),
+    ]
+      .map((source) => String(source || "").trim())
       .filter(Boolean);
     const allSources = [...coreUiSources, ...themeSources];
     preloadImageSources(allSources);
@@ -1911,7 +1919,7 @@ function useGlobalGraphicsPreload() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [themeName]);
   return isReady;
 }
 function StartupPreloadOverlay({ show = false }) {
@@ -9061,7 +9069,7 @@ export default function App() {
   const categoryChoiceGridClass = isDesktopLandscapeWeb
     ? "mt-8 grid grid-cols-4 gap-4 items-stretch"
     : "mt-8 grid grid-cols-2 gap-4 items-stretch";
-  const startupGraphicsReady = useGlobalGraphicsPreload();
+  const startupGraphicsReady = useGlobalGraphicsPreload(canonicalThemeName);
   useCategoryAndModeIconPreload({
     screen,
     roundTypeOptions,
