@@ -713,8 +713,8 @@ function mapLobbyErrorToMessage(
   fallback = "Unable to complete online lobby request.",
 ) {
   const code = error?.code || error?.payload?.error || "";
-  if (code === "lobby-server-url-missing") {
-    return "Lobby server URL is not configured for this build.";
+  if (code === "lobby-server-url-missing" || code === "lobby-server-not-configured") {
+    return "Online play is unavailable: the lobby server address is not configured for this build. (Deployment is missing VITE_LOBBY_SERVER_URL.)";
   }
   if (code === "lobby-not-found")
     return "Lobby not found. Ask the host to regenerate and share a fresh code.";
@@ -975,7 +975,7 @@ function buildLocalRound(
         emoji: "🎯",
       }
     : category;
-  let promptOptions = [];
+  let promptOptions;
 
   if (selectedRoundType.id === "prompt") {
     promptOptions = (effectiveCategory.prompts || []).map((prompt, index) => ({
@@ -8803,12 +8803,12 @@ export default function App() {
     }
     if (normalizedPhase === "liar-reveal") {
       playSfx(IMPOSTER_FOUND_SFX_SRC, { volume: 0.8 });
-      refreshCopy([Boolean(resolution?.imposterCaught) ? "caught" : "escaped"]);
+      refreshCopy([resolution?.imposterCaught ? "caught" : "escaped"]);
       setScreen("liar-reveal");
       return serverRound;
     }
     if (normalizedPhase === "results") {
-      refreshCopy([Boolean(resolution?.imposterCaught) ? "caught" : "escaped"]);
+      refreshCopy([resolution?.imposterCaught ? "caught" : "escaped"]);
       setScreen("results");
       return serverRound;
     }
@@ -9218,9 +9218,9 @@ export default function App() {
       clientId: onlineClientId,
       isHost: true,
     });
-    let snapshot = null;
-    let resolvedHostPlayer = hostPlayer;
-    let sessionToken = "";
+    let snapshot;
+    let resolvedHostPlayer;
+    let sessionToken;
     try {
       const result = await createLobbyOnServer({
         hostName: host,
@@ -9326,7 +9326,7 @@ export default function App() {
   async function runOnlineJoinCodeStep() {
     if (!joinLobbyCodeInput.trim()) return;
     const normalizedCode = joinLobbyCodeInput.trim().toUpperCase();
-    let snapshot = null;
+    let snapshot;
     try {
       snapshot = await readLobbySnapshot(normalizedCode);
     } catch (error) {
@@ -9401,9 +9401,9 @@ export default function App() {
       name: onlinePlayerName.trim(),
       clientId: onlineClientId,
     });
-    let nextSnapshot = null;
-    let resolvedPlayer = joiner;
-    let sessionToken = "";
+    let nextSnapshot;
+    let resolvedPlayer;
+    let sessionToken;
     try {
       const result = await joinLobbyOnServer(normalizedCode, joiner);
       nextSnapshot = result?.lobby || null;
@@ -9573,7 +9573,7 @@ export default function App() {
             `Start now with ${onlineLobbyPlayers.length} players? Only players currently in this lobby will be in this match.`,
           );
     if (!confirmation) return;
-    let result = null;
+    let result;
     try {
       result = await startLobbyOnServer(lobbyCode, {
         hostClientId: onlineClientId,
