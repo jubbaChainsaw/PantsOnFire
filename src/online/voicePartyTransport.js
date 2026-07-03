@@ -24,7 +24,7 @@ async function requestJson(path, { method = 'GET', body } = {}) {
   try {
     payload = await response.json();
   } catch {
-    payload = null;
+    // keep payload as null on parse error
   }
   if (!response.ok) {
     const code = payload?.error || 'request-failed';
@@ -172,8 +172,9 @@ export async function createVoicePartyTransport({
   return {
     async setMuted(nextMuted = false) {
       if (closed) return;
-      await room.localParticipant.setMicrophoneEnabled(!Boolean(nextMuted));
-      if (Boolean(nextMuted)) {
+      const muted = Boolean(nextMuted);
+      await room.localParticipant.setMicrophoneEnabled(!muted);
+      if (muted) {
         lastSpeakingState = false;
         onEvent({ type: 'local-speaking', isTalking: false, roomName });
       }

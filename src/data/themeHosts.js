@@ -573,17 +573,19 @@ export function getThemeHostPersona(themeName = 'Default') {
 export function buildThemeHostCopyMap(themeName = 'Default') {
   const persona = getThemeHostPersona(themeName);
   const fallback = FALLBACK_PERSONA;
-  const useWithFallback = (value, fallbackValue) => {
+  // Named "withFallback" (not "useWithFallback") so ESLint does not mistake
+  // this plain helper for a React hook.
+  const withFallback = (value, fallbackValue) => {
     if (typeof value === 'string') return value;
     return fallbackValue;
   };
   return {
-    hostIntroName: useWithFallback(persona.name, fallback.name),
-    hostIntroRole: useWithFallback(persona.role, fallback.role),
+    hostIntroName: withFallback(persona.name, fallback.name),
+    hostIntroRole: withFallback(persona.role, fallback.role),
     hostIntroHookA: safeLines(persona.introHooks, fallback.introHooks)[0] || fallback.introHooks[0] || '',
     hostIntroHookB: safeLines(persona.introHooks, fallback.introHooks)[1] || fallback.introHooks[1] || '',
-    hostOnlinePrompt: useWithFallback(persona.onlinePrompt, fallback.onlinePrompt),
-    hostPassPrompt: useWithFallback(persona.passPrompt, fallback.passPrompt),
+    hostOnlinePrompt: withFallback(persona.onlinePrompt, fallback.onlinePrompt),
+    hostPassPrompt: withFallback(persona.passPrompt, fallback.passPrompt),
   };
 }
 
