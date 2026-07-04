@@ -129,6 +129,39 @@ const io = new Server(httpServer, {
   cors: { origin: corsOriginHandler, methods: ['GET', 'POST'] },
 });
 
+// Multi-instance support: when Redis is configured, attach the Socket.IO Redis
+// adapter so lobby snapshot broadcasts reach players connected to any instance.
+// Without Redis (local dev) the default in-memory adapter is used.
+const REDIS_URL_FOR_ADAPTER = String(
+  process.env.REDIS_URL || process.env.LOBBY_REDIS_URL || ''
+).trim();
+let closeAdapterClients = async () => {};
+if (REDIS_URL_FOR_ADAPTER) {
+  const { createAdapter } = await import('@socket.io/redis-adapter');
+  const { createClient } = await import('redis');
+  const pubClient = createClient({ url: REDIS_URL_FOR_ADAPTER });
+  const subClient = pubClient.duplicate();
+  pubClient.on('error', (error) => {
+    // eslint-disable-next-line no-console
+    console.error('[lobby-server][socket-adapter] pub client error', error);
+  });
+  subClient.on('error', (error) => {
+    // eslint-disable-next-line no-console
+    console.error('[lobby-server][socket-adapter] sub client error', error);
+  });
+  await Promise.all([pubClient.connect(), subClient.connect()]);
+  io.adapter(createAdapter(pubClient, subClient));
+  closeAdapterClients = async () => {
+    try {
+      await Promise.all([pubClient.quit(), subClient.quit()]);
+    } catch {
+      // ignore shutdown errors
+    }
+  };
+  // eslint-disable-next-line no-console
+  console.log('[lobby-server] Socket.IO Redis adapter enabled (multi-instance broadcasts)');
+}
+
 function roomName(code) {
   return `lobby:${normalizeCode(code)}`;
 }
@@ -936,6 +969,7 @@ shutdownSignals.forEach((signal) => {
   process.on(signal, async () => {
     try {
       await closeStore();
+      await closeAdapterClients();
     } catch (_err) {
       // ignore shutdown errors
     }
