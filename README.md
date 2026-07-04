@@ -765,6 +765,32 @@ CI runs on every push/PR via `.github/workflows/ci.yml`.
 
 ---
 
+## Platform Split: Web Joins, App Hosts
+
+Production web builds are **join-only**: players open the site, enter a lobby code,
+and play. Hosting games (online lobbies and local pass-the-phone) and purchases
+live in the mobile app.
+
+| Build | Hosting | Purchases |
+|-------|---------|-----------|
+| Mobile app (Expo shell) | ✅ | ✅ (App Store / Google Play via RevenueCat) |
+| Dev web (`npm run dev`) | ✅ | ✅ (demo checkout) |
+| Production web | ❌ join-only | ❌ points to the app |
+
+Escape hatches (`src/lib/platform.js` is the single source of truth):
+
+- `VITE_ENABLE_WEB_HOSTING=true` — restore hosting on production web (staging/testing only).
+- `VITE_WEB_JOIN_ONLY=true` — force join-only anywhere, e.g. to preview the web experience in dev.
+
+### Scaling the lobby server
+
+When `LOBBY_REDIS_URL` is set, the server attaches the Socket.IO Redis adapter, so
+lobby snapshot broadcasts reach players connected to **any** instance. Run
+multi-instance deployments behind a load balancer with **sticky sessions** (a
+standard Socket.IO requirement).
+
+---
+
 ## Analytics & Error Monitoring
 
 Two layers, both privacy-light and optional:

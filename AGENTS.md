@@ -53,8 +53,23 @@ Key variables:
 
 ### Platform split (product decision)
 
-Web is join/play only. Account creation prompts, purchases, and game hosting are
-app-based (Expo shell + RevenueCat). Demo billing stays dev-only.
+Web is join/play only. Purchases and game hosting (online lobbies and local
+pass-the-phone) are app-based (Expo shell + RevenueCat). Demo billing stays dev-only.
+
+Implementation: `src/lib/platform.js` is the single source of truth.
+- Native shell (detected via `window.ReactNativeWebView`) → full capability.
+- Dev builds → full capability (local workflow unchanged).
+- Production web → join-only by default; `VITE_ENABLE_WEB_HOSTING=true` restores
+  hosting for staging; `VITE_WEB_JOIN_ONLY=true` forces join-only anywhere for testing.
+- `WEB_JOIN_ONLY_MODE` in `App.jsx` derives from `isGameHostingAllowed()`; hosting
+  actions (`startGame`, `createOnlineLobby`) and purchase callbacks also gate directly.
+
+### Scaling
+
+When `LOBBY_REDIS_URL`/`REDIS_URL` is set, the lobby server attaches the Socket.IO
+Redis adapter so snapshot broadcasts reach players on any instance. Multi-instance
+deployments must use sticky sessions (standard Socket.IO requirement) — the
+disconnect-grace bookkeeping is per-instance and relies on a client staying put.
 
 ### Analytics & error monitoring
 
