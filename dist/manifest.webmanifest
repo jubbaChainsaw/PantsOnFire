@@ -1,0 +1,21 @@
+{
+  "name": "Pants on Fire: Find the Liar",
+  "short_name": "Pants on Fire",
+  "description": "A loud, chaotic party game of bluffing and social deduction. Catch the liar... or become the liar.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0b1233",
+  "theme_color": "#0b1233",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
