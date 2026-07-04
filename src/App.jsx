@@ -149,6 +149,7 @@ import {
   getIanPosterThemeVoice,
   IAN_POSTER_VOICE_THEME_NAMES,
 } from "./data/ianPosterThemeVoice";
+import { trackEvent } from "./lib/monitoring.js";
 import {
   createLobbyTransport,
   createNextRoundOnServer,
@@ -7452,6 +7453,27 @@ function SettingsScreen({
                 ))}
               </div>
             </div>
+            <div className="rounded-[1.75rem] border border-white/15 bg-white/5 p-5">
+              <div className="font-black text-lg text-white">Legal</div>
+              <div className="mt-3 flex flex-wrap gap-3">
+                <a
+                  href="/legal/privacy.html"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="rounded-xl border border-white/15 bg-black/25 px-4 py-2 text-sm font-semibold text-white/85 transition hover:border-yellow-300/50 hover:bg-black/40"
+                >
+                  Privacy Policy
+                </a>
+                <a
+                  href="/legal/terms.html"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="rounded-xl border border-white/15 bg-black/25 px-4 py-2 text-sm font-semibold text-white/85 transition hover:border-yellow-300/50 hover:bg-black/40"
+                >
+                  Terms of Service
+                </a>
+              </div>
+            </div>
           </GlassPanel>
         )}
       </div>
@@ -9030,6 +9052,7 @@ export default function App() {
     setOnlinePrivatePromptError("");
     refreshCopy(["chooser"]);
     setScreen("game-intro");
+    trackEvent("local_game_started", { playerCount: resetPlayers.length });
   }
   useEffect(() => {
     if (screen !== "category-choice") return;
@@ -9322,6 +9345,9 @@ export default function App() {
     setStoredOnlineSession(session);
     setPlayers(toGamePlayers(snapshot.players || []));
     setScreen("online-lobby-created");
+    trackEvent("online_lobby_created", {
+      maxPlayers: Number(snapshot.maxPlayers || 0),
+    });
   }
   async function runOnlineJoinCodeStep() {
     if (!joinLobbyCodeInput.trim()) return;
@@ -9506,6 +9532,9 @@ export default function App() {
     setStoredOnlineSession(session);
     setPlayers(toGamePlayers(nextSnapshot.players || []));
     setScreen("online-lobby-waiting");
+    trackEvent("online_lobby_joined", {
+      playerCount: Array.isArray(nextSnapshot.players) ? nextSnapshot.players.length : 0,
+    });
   }
   async function toggleOnlineReady() {
     if (!onlineMode || !lobbyCode) return;
@@ -9631,6 +9660,9 @@ export default function App() {
     setOnlinePrivatePrompt(null);
     setOnlinePrivatePromptError("");
     const startedLobby = result?.lobby || null;
+    trackEvent("online_game_started", {
+      playerCount: Array.isArray(startedLobby?.players) ? startedLobby.players.length : 0,
+    });
     if (startedLobby) {
       const hostPlayerNameForInvite =
         startedLobby.hostName ||
