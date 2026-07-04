@@ -151,6 +151,12 @@ import {
 } from "./data/ianPosterThemeVoice";
 import { trackEvent } from "./lib/monitoring.js";
 import {
+  isGameHostingAllowed,
+  isPurchasingAllowed,
+  APP_ONLY_HOSTING_MESSAGE,
+  APP_ONLY_PURCHASE_MESSAGE,
+} from "./lib/platform.js";
+import {
   createLobbyTransport,
   createNextRoundOnServer,
   createLobbyOnServer,
@@ -254,8 +260,9 @@ const UI_ICON_BADGE_LIAR_SRC = "/assets/images/ui-icons/badge-liar.png";
 const UI_ICON_MAGNIFIER_FIRE_SRC = "/assets/images/ui-icons/magnifier-fire.png";
 const MIN_PLAYERS = 3;
 const MAX_PLAYERS = 12;
-const WEB_JOIN_ONLY_MODE =
-  String(import.meta?.env?.VITE_WEB_JOIN_ONLY ?? "false").trim() !== "false";
+// Join-only is now the default on production web (native shell and dev builds
+// keep full capability). See src/lib/platform.js for the resolution rules.
+const WEB_JOIN_ONLY_MODE = !isGameHostingAllowed();
 const ONLINE_VOICE_ACTIVE_SCREENS = new Set([
   "online-lobby-created",
   "online-lobby-waiting",
@@ -9021,6 +9028,9 @@ export default function App() {
   }
 
   function startGame(seedPlayers = null) {
+    // Defense in depth: the setup screen is hidden in join-only mode, but the
+    // action itself must also refuse in case of stale navigation state.
+    if (!isGameHostingAllowed()) return;
     const basePlayers =
       seedPlayers && seedPlayers.length ? seedPlayers : players;
     const starterTypeId = pickCompatibleRoundTypeId(activeCategories);
@@ -9232,6 +9242,10 @@ export default function App() {
     setScreen(nextScreen);
   }
   async function createOnlineLobby() {
+    if (!isGameHostingAllowed()) {
+      setOnlineLobbyError(APP_ONLY_HOSTING_MESSAGE);
+      return;
+    }
     const fallbackHostName =
       normalizePersonaProfile(personaProfile).inGameName || "Player 1";
     const host = (onlineHostName || fallbackHostName || "Host").trim();
@@ -10472,6 +10486,7 @@ export default function App() {
           hasTwistAddon={Boolean(accountSession?.addonTwistTruth)}
           disableDlcDemo={accountSession?.authProvider === "supabase"}
           onSimulateTierPurchase={(tierId) => {
+            if (!isPurchasingAllowed()) return APP_ONLY_PURCHASE_MESSAGE;
             if (!accountSession) return "Sign in from the account screen first.";
             if (accountSession.authProvider === "supabase") {
               return "Cloud accounts unlock tiers via App Store / Play Billing (RevenueCat). Demo checkout is only for device accounts.";
@@ -10490,6 +10505,7 @@ export default function App() {
             return `Successfully upgraded to ${label} (demo checkout).`;
           }}
           onSimulateTwistAddon={() => {
+            if (!isPurchasingAllowed()) return APP_ONLY_PURCHASE_MESSAGE;
             if (!accountSession) return "Sign in from the account screen first.";
             if (accountSession.authProvider === "supabase") {
               return "Cloud accounts unlock add-ons via the native stores. Demo checkout is only for device accounts.";
@@ -10500,6 +10516,7 @@ export default function App() {
             return "Successfully unlocked Twist the Truth (demo checkout).";
           }}
           onUnlockThemePack={(packId) => {
+            if (!isPurchasingAllowed()) return;
             if (accountSession && !entitlements.allDlcIncluded) {
               const result = purchaseDlcPackDemo(accountSession.userId, packId);
               if (result.ok) {
