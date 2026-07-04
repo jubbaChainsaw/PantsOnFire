@@ -6,6 +6,7 @@ import { Server } from 'socket.io';
 import { AccessToken } from 'livekit-server-sdk';
 import { createLobbyStore, toClientSnapshot } from './storage/index.js';
 import { mountEntitlementsRoutes } from './entitlementsRoutes.js';
+import { mountTelemetryRoutes } from './telemetryRoutes.js';
 
 const PORT = Number(process.env.LOBBY_SERVER_PORT || process.env.PORT || 8787);
 const IS_PRODUCTION = process.env.NODE_ENV === 'production';
@@ -121,6 +122,7 @@ const app = express();
 app.use(cors({ origin: corsOriginHandler }));
 app.use(express.json({ limit: '1mb' }));
 mountEntitlementsRoutes(app);
+mountTelemetryRoutes(app);
 
 const httpServer = createServer(app);
 const io = new Server(httpServer, {

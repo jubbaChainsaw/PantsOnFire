@@ -1,6 +1,9 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './styles.css';
+import { initMonitoring, captureError } from './lib/monitoring.js';
+
+initMonitoring();
 
 const rootElement = document.getElementById('root');
 
@@ -101,6 +104,7 @@ class RootErrorBoundary extends React.Component {
   componentDidCatch(error) {
     // eslint-disable-next-line no-console
     console.error('[RootErrorBoundary] Render crash', error);
+    captureError(error, { source: 'react-error-boundary' });
   }
 
   render() {
@@ -191,6 +195,7 @@ async function bootstrap() {
   } catch (error) {
     // eslint-disable-next-line no-console
     console.error('[bootstrap] Failed to load app', error);
+    captureError(error, { source: 'bootstrap' });
     renderBootstrapError(error);
   }
 }

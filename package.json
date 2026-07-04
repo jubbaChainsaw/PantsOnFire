@@ -48,6 +48,7 @@
     "host:generate-openai-theme-stills:defaults": "node scripts/generateOpenAiThemeHostImages.cjs --face ./public/assets/host-generation/host-face.png --style ./public/assets/host-generation/host-default-key-art.png"
   },
   "dependencies": {
+    "@sentry/react": "^10.63.0",
     "@supabase/supabase-js": "^2.49.1",
     "cors": "^2.8.6",
     "expo": "^55.0.17",
