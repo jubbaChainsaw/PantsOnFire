@@ -763,6 +763,54 @@ create table if not exists user_entitlements (
 
 CI runs on every push/PR via `.github/workflows/ci.yml`.
 
+---
+
+## Analytics & Error Monitoring
+
+Two layers, both privacy-light and optional:
+
+### Built-in telemetry (works out of the box)
+
+The client (`src/lib/monitoring.js`) captures uncaught errors, unhandled promise
+rejections, and React error-boundary crashes, plus a small set of product events
+(`app_loaded`, `local_game_started`, `online_lobby_created`, `online_lobby_joined`,
+`online_game_started`). Reports are POSTed to the lobby server:
+
+- `POST /api/telemetry/client-errors` — rate-limited to 10/min per IP
+- `POST /api/telemetry/events` — rate-limited to 60/min per IP
+
+The server (`server/telemetryRoutes.js`) writes them to stdout as structured JSON
+lines prefixed `[telemetry]`, so any log platform (Railway logs, Datadog, grep) can
+filter and aggregate them. Payloads are size-capped and sanitized; events carry a
+random per-session ID, never account identity.
+
+Disable entirely with `VITE_TELEMETRY_DISABLED=true`.
+
+### Sentry (optional, richer)
+
+Set `VITE_SENTRY_DSN` at build time to enable Sentry error tracking. The SDK is
+dynamically imported only when a DSN is present, so it adds zero bundle cost when
+unused.
+
+### Privacy rules for events
+
+`trackEvent(name, props)` props must never contain personal data — no display
+names, emails, or chat text. Stick to counts, booleans, and enum-ish strings.
+
+---
+
+## Legal Pages
+
+Static, self-contained legal pages are served from `public/legal/`:
+
+- `/legal/privacy.html` — privacy policy
+- `/legal/terms.html` — terms of service
+
+Both are linked from the in-game Settings screen and suitable as the URLs app
+stores require. **Before launch**, replace the `[COMPANY NAME]`, `[JURISDICTION]`,
+`[CONTACT EMAIL]`, and `[DATE]` placeholders (highlighted in yellow on the pages)
+with real values.
+
 
 ---
 

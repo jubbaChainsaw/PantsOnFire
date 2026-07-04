@@ -51,6 +51,24 @@ Key variables:
 - **Frontend:** `VITE_LOBBY_SERVER_URL`, `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`
 - **Backend:** `NODE_ENV=production`, `LOBBY_CLIENT_ORIGINS`, `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`
 
+### Platform split (product decision)
+
+Web is join/play only. Account creation prompts, purchases, and game hosting are
+app-based (Expo shell + RevenueCat). Demo billing stays dev-only.
+
+### Analytics & error monitoring
+
+- Client: `src/lib/monitoring.js` — global error capture + `trackEvent()`. Initialised in `src/main.jsx`.
+- Server: `server/telemetryRoutes.js` — rate-limited `/api/telemetry/*` endpoints logging structured JSON to stdout (`[telemetry]` prefix).
+- Optional Sentry via `VITE_SENTRY_DSN` (dynamically imported, zero cost unused).
+- Event props must never contain personal data (names, emails, chat text).
+
+### Legal pages
+
+`public/legal/privacy.html` and `public/legal/terms.html`, linked from the Settings
+screen. Placeholders (`[COMPANY NAME]`, `[CONTACT EMAIL]`, etc.) must be filled in
+before launch.
+
 ### Supabase entitlement migration
 
 Before deploying in production, run the migration in `docs/supabase-entitlements-migration.sql`.
