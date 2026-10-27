@@ -16,18 +16,18 @@ const TWO_TRUTHS_HINTS = [
   'Fire Round',
 ];
 
-/** Frames use `{topic}` as a plural noun phrase only (from categoryTopicNouns). */
+/** Frames use `{topic}` as a plural noun phrase only (from categoryTopicNouns). UK English. */
 const TWO_TRUTHS_FRAME_TEMPLATES = [
   'Name three {topic}',
   'Name three {topic} you would defend in an argument',
   'Name three {topic} everyone here should know',
   'Name three {topic} that scream this category',
-  'Name three {topic} you are weirdly picky about',
-  'Name three {topic} you would put on a starter pack',
+  'Name three {topic} you are weirdly fussy about',
+  'Name three {topic} you would put on a meme starter kit',
   'Name three {topic} that are overrated',
   'Name three {topic} from your childhood',
   'Name three {topic} you discovered too late',
-  'Name three {topic} you would recommend to a newbie',
+  'Name three {topic} you would recommend to a beginner',
   'Name three {topic} that always start debates',
   'Name three {topic} you secretly judge people for liking',
   'Name three {topic} you would ban from this category',
@@ -44,37 +44,37 @@ const TWO_TRUTHS_FRAME_TEMPLATES = [
   'Name three {topic} you would put on a bingo card',
   'Name three {topic} that sound fake but are real',
   'Name three {topic} you would explain to an alien',
-  'Name three {topic} you would put on a pub quiz',
-  'Name three {topic} that would start a group chat war',
+  'Name three {topic} you would put in a pub quiz round',
+  'Name three {topic} that would start a WhatsApp argument',
   'Name three {topic} you would never admit you like',
-  'Name three {topic} you would put on a tier list S-row',
-  'Name three {topic} you would put on a tier list F-row',
+  'Name three {topic} you would put top tier in a ranking',
+  'Name three {topic} you would put bottom tier in a ranking',
   'Name three {topic} that feel very “main character”',
   'Name three {topic} that feel very “side quest”',
   'Name three {topic} you would use as icebreakers',
-  'Name three {topic} you would put in a care package',
+  'Name three {topic} you would put in a comfort parcel',
   'Name three {topic} that belong in a chaotic bundle',
   'Name three {topic} your group chat would argue about',
-  'Name three {topic} you would put on a bracket',
+  'Name three {topic} you would pit head-to-head in a knockout draw',
   'Name three {topic} that feel like a fever dream',
   'Name three {topic} you would use in a presentation',
 ];
 
 const TWO_TRUTHS_ADULT_FRAME_TEMPLATES = [
   'Name three {topic} from a messy night out',
-  'Name three {topic} you would not put on a work Slack',
+  'Name three {topic} you would not post on the work Slack',
   'Name three {topic} that are a little too honest',
   'Name three {topic} from a chaotic weekend',
-  'Name three {topic} you would whisper at 2AM',
+  'Name three {topic} you would whisper at 2 a.m.',
   'Name three {topic} that are NSFW-ish but not illegal',
   'Name three {topic} you would delete from your search history',
   'Name three {topic} that spell trouble on a first date',
   'Name three {topic} you would not tell your parents about',
-  'Name three {topic} from a “what happens in Vegas” story',
-  'Name three {topic} that are horny on main energy',
+  'Name three {topic} from a lads’ or hen-do disaster story',
+  'Name three {topic} that are horny-on-main energy',
   'Name three {topic} you would blame on the group chat',
   'Name three {topic} that are after-hours only',
-  'Name three {topic} you would swap stories about at brunch',
+  'Name three {topic} you would swap stories about over brunch',
   'Name three {topic} that are spicy hot takes',
   'Name three {topic} you would put in a “no context” collage',
   'Name three {topic} that feel like a walk of shame',
@@ -93,13 +93,37 @@ const TWO_TRUTHS_ADULT_FRAME_TEMPLATES = [
   'Name three {topic} you would not put on LinkedIn',
   'Name three {topic} from a hotel story you barely remember',
   'Name three {topic} that are “no receipts” energy',
-  'Name three {topic} you would roast a friend for liking',
+  'Name three {topic} you would roast a mate for liking',
   'Name three {topic} that are unhinged but legal',
   'Name three {topic} you would put in an anonymous confession',
 ];
 
 const STACKED_QUALIFIER_PATTERN =
-  /\b(underrated|overrated|classic|iconic|nostalgic|retro|modern|mainstream|underground|obscure|polarizing|unexpected|chaotic|wholesome|guilty-pleasure|debate-starting|all-time favorite)\s+(underrated|overrated|classic|iconic|nostalgic|retro|modern|mainstream|underground|obscure|polarizing|unexpected|chaotic|wholesome|guilty-pleasure|debate-starting|all-time favorite)\b/i;
+  /\b(underrated|overrated|classic|iconic|nostalgic|retro|modern|mainstream|underground|obscure|polarising|unexpected|chaotic|wholesome|guilty-pleasure|debate-starting|all-time favourite)\s+(underrated|overrated|classic|iconic|nostalgic|retro|modern|mainstream|underground|obscure|polarising|unexpected|chaotic|wholesome|guilty-pleasure|debate-starting|all-time favourite)\b/i;
+
+/** Common US spellings / terms we do not want in generated Two Truths copy. */
+export const TWO_TRUTHS_AMERICANISM_RULES = [
+  { id: 'favorite', pattern: /\bfavorites?\b/i },
+  { id: 'color', pattern: /\bcolors?\b/i },
+  { id: 'organize', pattern: /\borganiz(e|ed|es|ing)\b/i },
+  { id: 'vacation', pattern: /\bvacations?\b/i },
+  { id: 'candy', pattern: /\bcand(y|ies)\b/i },
+  { id: 'soccer', pattern: /\bsoccer\b/i },
+  { id: 'mom', pattern: /\bmom\b/i },
+  { id: 'movies', pattern: /\bmovies\b/i },
+  { id: 'movie', pattern: /\bmovie\b/i },
+  { id: 'bracket', pattern: /\bbrackets?\b/i },
+  { id: 'newbie', pattern: /\bnewbies?\b/i },
+  { id: 'starter-pack', pattern: /\bstarter packs?\b/i },
+  { id: 'tier-list', pattern: /\btier lists?\b/i },
+  { id: 'playoff', pattern: /\bplayoffs?\b/i },
+  { id: 'coworker', pattern: /\bcoworkers?\b/i },
+  { id: 'knock-on-wood', pattern: /\bknock-on-wood\b/i },
+  { id: 'theater', pattern: /\btheaters?\b/i },
+  { id: 'apartment', pattern: /\bapartments?\b/i },
+  { id: 'elevator', pattern: /\belevators?\b/i },
+  { id: 'college', pattern: /\bcolleges?\b/i },
+];
 
 /** Bare mass-noun category labels — invalid before a “that …” clause (need plural phrases from the map). */
 const BARE_UNCOUNTABLE_TOPIC_WORDS = new Set([
@@ -141,6 +165,17 @@ export function getTwoTruthsTopicNounsForCategory(category) {
 }
 
 /**
+ * Returns matched Americanism rule ids for this text (empty if none).
+ */
+export function findAmericanismsInTwoTruthsCopy(text) {
+  const value = String(text || '');
+  if (!value) return [];
+  return TWO_TRUTHS_AMERICANISM_RULES.filter((rule) => rule.pattern.test(value)).map(
+    (rule) => rule.id,
+  );
+}
+
+/**
  * Returns an error string if the prompt main is invalid, otherwise null.
  */
 export function validateTwoTruthsPromptMain(main) {
@@ -151,8 +186,9 @@ export function validateTwoTruthsPromptMain(main) {
   if (STACKED_QUALIFIER_PATTERN.test(text)) return 'stacked qualifiers';
   if (/\byou grew up with\b/i.test(text)) return 'invalid topic phrase';
   if (/\bthat aged poorly\b/i.test(text)) return 'invalid topic phrase';
-  if (/\biconic .+ moments\b/i.test(text) && /\bthat\b/i.test(text.split(' that ')[0] || '')) {
-    // rare garble from old generator paths
+  const americanisms = findAmericanismsInTwoTruthsCopy(text);
+  if (americanisms.length) {
+    return `Americanism(s): ${americanisms.join(', ')}`;
   }
   const thatClause = text.match(/^Name three (.+?)\s+that\s+/i);
   if (thatClause) {
@@ -185,7 +221,7 @@ function buildPromptList(category, frameTemplates, targetCount, adultOnly) {
     rounds.push({
       hint: `${TWO_TRUTHS_HINTS[rounds.length % TWO_TRUTHS_HINTS.length]} • ${topicLabel}`,
       main,
-      previewLabel: 'Type two truths and one lie that blend together.',
+      previewLabel: 'Type two truths and one lie that fit together.',
       ...(adultOnly ? { adultOnly: true } : {}),
     });
   }

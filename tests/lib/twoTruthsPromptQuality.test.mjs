@@ -4,6 +4,8 @@ import { DEFAULT_CATEGORIES, TWO_TRUTHS_ONE_FIRE_ROUNDS } from '../../src/data/c
 import {
   validateTwoTruthsPromptMain,
   buildTwoTruthsOneFireRoundsForCategory,
+  findAmericanismsInTwoTruthsCopy,
+  TWO_TRUTHS_AMERICANISM_RULES,
 } from '../../src/data/twoTruthsOneFirePrompts.js';
 
 const BAD_EXAMPLES = [
@@ -24,11 +26,50 @@ test('validateTwoTruthsPromptMain rejects known bad patterns', () => {
 test('validateTwoTruthsPromptMain accepts clean Name three prompts', () => {
   const good = [
     'Name three bands that instantly date you',
-    'Name three comfort foods you would put on a starter pack',
+    'Name three comfort foods you would put on a meme starter kit',
     'Name three Eurovision staging gimmicks from your childhood',
   ];
   for (const main of good) {
     assert.equal(validateTwoTruthsPromptMain(main), null, main);
+  }
+});
+
+test('findAmericanismsInTwoTruthsCopy flags common US spellings and terms', () => {
+  const samples = [
+    ['Name three favorite movies', ['favorite', 'movies']],
+    ['Name three vacation spots', ['vacation']],
+    ['Name three candies from childhood', ['candy']],
+    ['Name three soccer teams', ['soccer']],
+    ['Name three playoff moments', ['playoff']],
+    ['Name three colour palettes', []],
+  ];
+  for (const [line, expected] of samples) {
+    const hits = findAmericanismsInTwoTruthsCopy(line);
+    for (const id of expected) {
+      assert.ok(hits.includes(id), `${line} should hit ${id}, got ${hits}`);
+    }
+    if (!expected.length) {
+      assert.equal(hits.length, 0, line);
+    }
+  }
+  assert.ok(TWO_TRUTHS_AMERICANISM_RULES.length >= 15);
+});
+
+test('no Americanisms in generated Two Truths mains or preview labels', () => {
+  const failures = [];
+  for (const category of DEFAULT_CATEGORIES) {
+    const pool = TWO_TRUTHS_ONE_FIRE_ROUNDS[category.id] || [];
+    for (const entry of pool) {
+      for (const field of [entry.main, entry.previewLabel]) {
+        const hits = findAmericanismsInTwoTruthsCopy(field);
+        if (hits.length) {
+          failures.push(`${category.id}: ${field} (${hits.join(', ')})`);
+        }
+      }
+    }
+  }
+  if (failures.length) {
+    assert.fail(failures.slice(0, 10).join('\n'));
   }
 });
 

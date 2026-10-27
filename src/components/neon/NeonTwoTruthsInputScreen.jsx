@@ -97,7 +97,7 @@ export default function NeonTwoTruthsInputScreen({
             {promptText}
           </p>
           <p className="pof-body mt-3 text-sm text-white/75">
-            Type two truths and one lie. Mark which line is the lie, then submit.
+            Type two truths and one lie. Mark which line is the fib, then submit.
           </p>
           <div className="mt-4 space-y-3">
             {[0, 1, 2].map((index) => (
