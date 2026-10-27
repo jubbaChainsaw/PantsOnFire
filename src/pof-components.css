@@ -60,6 +60,7 @@
 .pof-heading{font-family:'PoF Display',Inter,sans-serif;font-style:italic;text-transform:uppercase;letter-spacing:.05em}
 /* PoF Display omits a clean “?” — use UI font for punctuation in headings */
 .pof-display-punct{font-family:Inter,system-ui,sans-serif;font-style:normal;font-weight:800;text-transform:none;letter-spacing:0}
+.content-pack-prompt-copy,.content-pack-prompt-copy .content-pack-prompt-body{text-align:center}
 .pof-desc,.pof-root .pof-desc{font-family:Inter,system-ui,sans-serif;text-transform:none;letter-spacing:normal;text-align:left}
 .pof-settings-toggle-col{width:3.9rem;flex-shrink:0;display:flex;justify-content:flex-end;align-items:center}
 .pof-range{width:100%;height:.35rem;accent-color:#fde047;cursor:pointer}

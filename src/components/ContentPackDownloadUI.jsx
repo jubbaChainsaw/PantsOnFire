@@ -43,7 +43,7 @@ export function ContentPackPromptModal({
         >
           <X className="h-4 w-4" />
         </button>
-        <div className="px-2 text-center">
+        <div className="content-pack-prompt-copy px-6 text-center">
           <div className="text-xs font-black uppercase tracking-[0.28em] text-cyan-200/90">
             Extra content
           </div>
@@ -51,7 +51,7 @@ export function ContentPackPromptModal({
             Download theme packs
             <span className="pof-display-punct" aria-hidden="true">?</span>
           </h2>
-          <p className="pof-desc mt-2 text-sm text-white/75">
+          <p className="content-pack-prompt-body mt-2 text-sm text-white/75">
             The offline app ships with the Default theme only. Grab {packCount} free pack
             {packCount === 1 ? '' : 's'} ({totalLabel}) for full personas, hosts, and art.
           </p>
