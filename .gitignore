@@ -1,4 +1,5 @@
 node_modules
+android/
 .local-secrets/
 scripts/royaltyFreeApiKeys.local.json
 scripts/royaltyFreeApiKeys.json

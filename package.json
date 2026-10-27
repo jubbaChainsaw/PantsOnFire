@@ -11,6 +11,7 @@
     "build": "vite build",
     "preview": "vite preview",
     "test": "node --test \"tests/**/*.test.mjs\"",
+    "test:e2e": "npm run build && playwright test",
     "test:server": "node --test \"tests/server/*.test.mjs\"",
     "media:validate-videos": "node scripts/validateVideoAssets.cjs",
     "media:validate": "node scripts/validateVideoAssets.cjs",
@@ -23,6 +24,8 @@
     "dlc:generate-persona-roster": "node scripts/generateDlcPersonaRoster.mjs",
     "expo:start": "expo start",
     "expo:android": "expo run:android",
+    "android:bundle-web": "npm run build && node scripts/copy-web-to-android-assets.cjs",
+    "android:apk": "npm run android:bundle-web && EXPO_PUBLIC_USE_BUNDLED_WEB=1 npx expo prebuild --platform android --clean && node scripts/patch-android-gradle.cjs && npm run android:bundle-web && cd android && ./gradlew assembleDebug",
     "expo:ios": "expo run:ios",
     "expo:web": "expo start --web",
     "host:export-default-ssml": "node scripts/exportDefaultHostSsmlCsv.cjs",
@@ -55,7 +58,7 @@
     "lucide-react": "^0.453.0",
     "react": "^19.2.5",
     "react-dom": "^19.2.5",
-    "react-native": "^0.85.2",
+    "react-native": "0.83.10",
     "react-native-purchases": "^8.6.2",
     "react-native-webview": "^13.16.1",
     "redis": "^5.12.1",
@@ -64,6 +67,7 @@
     "socket.io-client": "^4.8.3"
   },
   "devDependencies": {
+    "@playwright/test": "^1.52.0",
     "@vitejs/plugin-react": "^4.3.1",
     "autoprefixer": "^10.4.20",
     "postcss": "^8.4.47",

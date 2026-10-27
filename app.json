@@ -17,6 +17,7 @@
       "supportsTablet": true
     },
     "android": {
+      "package": "app.pantsonfire.liar",
       "adaptiveIcon": {
         "backgroundColor": "#120038"
       }

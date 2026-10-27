@@ -17,7 +17,16 @@ const DEFAULT_WEB_URL = Platform.select({
   default: 'http://localhost:5173',
 });
 
-const GAME_URL = process.env.EXPO_PUBLIC_GAME_URL || DEFAULT_WEB_URL;
+const BUNDLED_WEB_URL =
+  Platform.OS === 'android'
+    ? 'file:///android_asset/pof-web/index.html'
+    : DEFAULT_WEB_URL;
+
+const GAME_URL =
+  process.env.EXPO_PUBLIC_GAME_URL ||
+  (process.env.EXPO_PUBLIC_USE_BUNDLED_WEB === '1'
+    ? BUNDLED_WEB_URL
+    : DEFAULT_WEB_URL);
 
 const IOS_KEY = process.env.EXPO_PUBLIC_REVENUECAT_IOS_KEY || '';
 const ANDROID_KEY = process.env.EXPO_PUBLIC_REVENUECAT_ANDROID_KEY || '';
