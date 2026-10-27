@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Old vs PoF Display comparison sheet (yellow on dark, mobile-ish sizes)."""
+"""Old vs PoF Display comparison sheet (yellow on dark, 360px mobile width)."""
 from __future__ import annotations
 
 from pathlib import Path
@@ -23,41 +23,52 @@ YELLOW = (253, 224, 71)
 LABEL = (148, 163, 184)
 WIDTH = 360
 PAD = 16
+GAP = 10
 
 
 def load_font(path: Path, size: int) -> ImageFont.FreeTypeFont:
     return ImageFont.truetype(str(path), size=size)
 
 
+def text_height(draw: ImageDraw.ImageDraw, text: str, font: ImageFont.FreeTypeFont) -> int:
+    box = draw.textbbox((0, 0), text, font=font)
+    return box[3] - box[1]
+
+
 def main() -> None:
-    row_h = 0
-    blocks = []
+    probe = ImageDraw.Draw(Image.new("RGB", (1, 1)))
+    label_font = load_font(OLD_FONT, 11)
+
+    y = PAD
     for text, size in PHRASES:
         old_f = load_font(OLD_FONT, size)
         new_f = load_font(NEW_FONT, size)
-        old_box = ImageDraw.Draw(Image.new("RGB", (1, 1))).textbbox(
-            (0, 0), text, font=old_f
-        )
-        new_box = ImageDraw.Draw(Image.new("RGB", (1, 1))).textbbox(
-            (0, 0), text, font=new_f
-        )
-        h = max(old_box[3] - old_box[1], new_box[3] - new_box[1]) + 8
-        blocks.append((text, size, h))
-        row_h += h + 36
+        y += text_height(probe, "OLD", label_font) + 4
+        y += max(text_height(probe, text, old_f), text_height(probe, text, new_f)) + 4
+        y += text_height(probe, "NEW", label_font) + 4
+        y += max(text_height(probe, text, new_f), text_height(probe, text, old_f)) + GAP + 20
 
-    height = PAD * 2 + 40 + row_h + 20
+    height = y + PAD
     img = Image.new("RGB", (WIDTH, height), BG)
     draw = ImageDraw.Draw(img)
-    draw.text((PAD, PAD), "Pants on Fire Narrow (current)", fill=LABEL, font=load_font(OLD_FONT, 14))
-    draw.text((WIDTH // 2 + 4, PAD), "PoF Display (derived)", fill=LABEL, font=load_font(OLD_FONT, 14))
 
-    y = PAD + 28
-    for text, size, h in blocks:
+    y = PAD
+    draw.text((PAD, y), "Pants on Fire Narrow → PoF Display", fill=LABEL, font=label_font)
+    y += 22
+
+    for text, size in PHRASES:
         old_f = load_font(OLD_FONT, size)
         new_f = load_font(NEW_FONT, size)
+
+        draw.text((PAD, y), "Current", fill=LABEL, font=label_font)
+        y += 14
         draw.text((PAD, y), text, fill=YELLOW, font=old_f)
-        draw.text((WIDTH // 2 + 4, y), text, fill=YELLOW, font=new_f)
-        y += h + 36
+        y += text_height(draw, text, old_f) + GAP
+
+        draw.text((PAD, y), "PoF Display", fill=LABEL, font=label_font)
+        y += 14
+        draw.text((PAD, y), text, fill=YELLOW, font=new_f)
+        y += text_height(draw, text, new_f) + 20
 
     OUT.parent.mkdir(parents=True, exist_ok=True)
     img.save(OUT)

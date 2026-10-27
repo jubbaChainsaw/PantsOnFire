@@ -170,9 +170,8 @@ def update_names(font: TTFont, family: str, style: str) -> None:
     for name_id, text in strings.items():
         name.setName(text, name_id, 3, 1, 0x409)
         name.setName(text, name_id, 3, 1, 0x409)
-    # Derived from Pants on Fire Narrow (proprietary project typeface).
     name.setName(
-        "Derived from Pants on Fire Narrow for Pants on Fire: Find the Liar UI trials.",
+        "Derived from Pants on Fire Narrow for Pants on Fire: Find the Liar.",
         13,
         3,
         1,
