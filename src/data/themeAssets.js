@@ -1,5 +1,6 @@
 import { toCanonicalThemeName } from './themeAliases';
 import { THEME_GENERATED_HOST_MEDIA } from './generatedHostMedia';
+import { resolveBundledAssetSrc } from '../lib/publicAssetUrl.js';
 
 export const THEME_ASSETS = {
   Default: {
@@ -314,7 +315,7 @@ export function getThemeHostAssets(themeName = 'Default') {
     ? selectedFrames
     : [selectedIdle].filter(Boolean);
 
-  return {
+  const raw = {
     // For non-default themes, never fall back to default host assets.
     idle: isDefaultTheme ? (selectedIdle || fallbackIdle || null) : selectedIdle,
     talkingFrames: isDefaultTheme
@@ -340,5 +341,15 @@ export function getThemeHostAssets(themeName = 'Default') {
       )
       : (selectedTalkingVideoWebm || selectedTalkingVideoMp4 || ''),
     overlay: isDefaultTheme ? (selectedOverlay || fallbackOverlay || null) : selectedOverlay,
+  };
+  return {
+    idle: resolveBundledAssetSrc(raw.idle),
+    talkingFrames: (raw.talkingFrames || [])
+      .map((frame) => resolveBundledAssetSrc(frame))
+      .filter(Boolean),
+    talkingVideoWebm: resolveBundledAssetSrc(raw.talkingVideoWebm),
+    talkingVideoMp4: resolveBundledAssetSrc(raw.talkingVideoMp4),
+    talkingVideo: resolveBundledAssetSrc(raw.talkingVideo),
+    overlay: resolveBundledAssetSrc(raw.overlay),
   };
 }

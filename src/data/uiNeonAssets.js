@@ -49,5 +49,5 @@ export const CATEGORY_DRAW_COUNT = 6;
 export const ONLINE_SELECTION_TIMER_SEC = 30;
 export const SELECTION_FLASH_LAST_SEC = 3;
 
-/** Round types removed from player-facing selection (legacy data may still reference grill). */
-export const EXCLUDED_PLAYER_ROUND_TYPE_IDS = new Set(['grill']);
+/** Round types removed from player-facing selection (legacy data may still reference these ids). */
+export const EXCLUDED_PLAYER_ROUND_TYPE_IDS = new Set(['grill', 'prompt']);

@@ -14,6 +14,7 @@ import {
   assertRoundTypeCardsVisible,
   assertCategoryCardsVisible,
   assertVisibleImagesLoaded,
+  assertHostIntroMedia,
 } from './mobile-flow.helpers.js';
 
 const shotsDir = path.join(
@@ -45,8 +46,9 @@ async function runMobileGameFlow(page, { shotsDirectory, viewportLabel }) {
     });
   };
 
-  const assertChoiceOrIntroViewport = async () => {
+  const assertChoiceOrIntroViewport = async ({ scopeHostIntro = false } = {}) => {
     await assertNoVerticalScroll(page);
+    if (scopeHostIntro) return;
     const visibleImages = await page.locator('img:visible').count();
     if (visibleImages > 0) {
       await assertVisibleImagesLoaded(page, { minCount: visibleImages });
@@ -85,7 +87,8 @@ async function runMobileGameFlow(page, { shotsDirectory, viewportLabel }) {
 
   const hostSkip = page.getByTestId('host-intro-skip');
   await expect(hostSkip).toBeVisible({ timeout: 20_000 });
-  await assertChoiceOrIntroViewport();
+  await assertHostIntroMedia(page);
+  await assertChoiceOrIntroViewport({ scopeHostIntro: true });
   await shot(`06-host-intro-${viewportLabel}.png`);
   await hostSkip.click();
 

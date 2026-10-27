@@ -20,7 +20,7 @@ export async function skipIntroAndRules(page) {
 }
 
 export async function pickFirstRoundTypeAndCategory(page) {
-  const roundBtn = page.locator('[data-testid^="round-type-"]').first();
+  const roundBtn = page.locator('button[data-testid^="round-type-"]').first();
   await expect(roundBtn).toBeVisible({ timeout: 15_000 });
   await roundBtn.click();
   const cat = page.locator('[data-testid^="category-"]');

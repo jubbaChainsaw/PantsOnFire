@@ -107,8 +107,7 @@ export function getUiCategoryIconSrc(categoryId = '') {
 export function getUiGameModeIconSrc(roundTypeId = 'prompt') {
   const id = String(roundTypeId || 'prompt').trim().toLowerCase();
   if (!id) return UI_GAME_MODE_ICON_BY_ID.prompt;
-  if (id === 'offtopic') return UI_GAME_MODE_ICON_BY_ID.prompt;
-  return UI_GAME_MODE_ICON_BY_ID[id] || UI_GAME_MODE_ICON_BY_ID.prompt;
+  return UI_GAME_MODE_ICON_BY_ID[id] || '';
 }
 
 /** Sources to preload on startup (wallpapers, cards, modes, categories). */

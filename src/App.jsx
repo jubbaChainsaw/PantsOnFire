@@ -169,6 +169,7 @@ import { createVoicePartyTransport } from "./online/voicePartyTransport";
 import NeonHomeScreen from "./components/neon/NeonHomeScreen.jsx";
 import { drawTurnOptions, pickRandomFromShown } from "./lib/turnDraw.js";
 import { usePofViewportHeight } from "./hooks/usePofViewportHeight.js";
+import { resolveBundledAssetSrc } from "./lib/publicAssetUrl.js";
 import { useTimedChoice } from "./hooks/useTimedChoice.js";
 import {
   loadFx,
@@ -1595,7 +1596,7 @@ function ThemedIcon({ src, alt = "", className = "" }) {
     />
   );
 }
-function ThemeArt({ src, alt, className = "" }) {
+function ThemeArt({ src, alt, className = "", ...rest }) {
   const [isBroken, setIsBroken] = useState(false);
   useEffect(() => {
     setIsBroken(false);
@@ -1607,6 +1608,7 @@ function ThemeArt({ src, alt, className = "" }) {
       alt={alt}
       className={className}
       onError={() => setIsBroken(true)}
+      {...rest}
     />
   );
 }
@@ -1630,6 +1632,7 @@ function MultiSourceVideo({
   onError,
 }) {
   const [isBroken, setIsBroken] = useState(false);
+  const videoRef = useRef(null);
   const normalizedSrc = String(src || "").trim();
   const isWebmSrc = normalizedSrc.toLowerCase().endsWith(".webm");
   const webmSrc = isWebmSrc ? normalizedSrc : toWebmSrc(normalizedSrc);
@@ -1637,9 +1640,18 @@ function MultiSourceVideo({
   useEffect(() => {
     setIsBroken(false);
   }, [normalizedSrc, webmSrc, mp4Src, poster]);
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video || !autoPlay || isBroken) return;
+    video.play().catch(() => {
+      setIsBroken(true);
+      if (typeof onError === "function") onError();
+    });
+  }, [autoPlay, isBroken, normalizedSrc, webmSrc, mp4Src]);
   if (!normalizedSrc || isBroken) return null;
   return (
     <video
+      ref={videoRef}
       className={className}
       autoPlay={autoPlay}
       loop={loop}
@@ -1665,53 +1677,65 @@ function ThemeHostVisual({
   isTalking = false,
   alt = "",
   className = "",
+  testId = "theme-host-visual",
+  preferVideo = false,
 }) {
   const hostAssets = useMemo(() => getThemeHostAssets(themeName), [themeName]);
-  const animatedHostSrc = useTalkingAnimation({
+  const animatedHostRaw = useTalkingAnimation({
     enabled: isTalking,
     themeName,
   });
-  const talkingVideoSrc =
+  const animatedHostSrc = resolveBundledAssetSrc(animatedHostRaw);
+  const idlePosterSrc = resolveBundledAssetSrc(
+    hostAssets?.idle || getThemeHostFrameSources(themeName, "idle")[0] || "",
+  );
+  const talkingVideoSrc = resolveBundledAssetSrc(
     hostAssets?.talkingVideoWebm ||
-    hostAssets?.talkingVideo ||
-    hostAssets?.talkingVideoMp4 ||
-    "";
+      hostAssets?.talkingVideo ||
+      hostAssets?.talkingVideoMp4 ||
+      "",
+  );
+  const posterSrc = animatedHostSrc || idlePosterSrc;
   const [videoBroken, setVideoBroken] = useState(false);
+  const shouldTryVideo = Boolean(talkingVideoSrc) && (isTalking || preferVideo);
 
   useEffect(() => {
     setVideoBroken(false);
   }, [talkingVideoSrc, themeName]);
 
-  if (talkingVideoSrc && !videoBroken) {
-    return (
-      <div className={className}>
-        <div className="h-full w-full">
-          <MultiSourceVideo
-            src={talkingVideoSrc}
-            className="h-full w-full object-cover"
-            autoPlay={isTalking}
-            loop={isTalking}
-            muted
-            playsInline
-            preload="metadata"
-            poster={animatedHostSrc || undefined}
-            ariaHidden
-            onError={() => setVideoBroken(true)}
-          />
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className={className}>
-      <div className="grid h-full w-full [grid-template-areas:'stack']">
+    <div
+      data-testid={testId}
+      className={`relative h-full w-full overflow-hidden bg-black ${className}`}
+    >
+      {posterSrc ? (
+        <img
+          src={posterSrc}
+          alt={alt}
+          data-testid="host-idle-image"
+          className="absolute inset-0 h-full w-full object-cover"
+        />
+      ) : null}
+      {shouldTryVideo && !videoBroken ? (
+        <MultiSourceVideo
+          src={talkingVideoSrc}
+          className="absolute inset-0 h-full w-full object-cover"
+          autoPlay={isTalking || preferVideo}
+          loop={isTalking || preferVideo}
+          muted
+          playsInline
+          preload="auto"
+          poster={posterSrc || undefined}
+          ariaHidden
+          onError={() => setVideoBroken(true)}
+        />
+      ) : posterSrc ? null : (
         <ThemeArt
           src={animatedHostSrc}
           alt={alt}
-          className="[grid-area:stack] h-full w-full object-contain"
+          className="absolute inset-0 h-full w-full object-cover"
         />
-      </div>
+      )}
     </div>
   );
 }
@@ -2174,14 +2198,16 @@ function getRoundRuleText(roundTypeId = "prompt") {
 function getCategoryIconSrc(categoryId = "") {
   return getUiCategoryIconSrc(categoryId);
 }
-function getRoundTypeIconSrc(roundTypeId = "prompt") {
-  const normalizedId = String(roundTypeId || "prompt").trim().toLowerCase();
-  return (
-    getUiGameModeIconSrc(normalizedId) ||
-    ROUND_TYPES[normalizedId]?.logoSrc ||
-    getUiGameModeIconSrc("prompt")
-  );
+function getRoundTypeIconSrc(roundTypeId = "") {
+  const normalizedId = String(roundTypeId || "").trim().toLowerCase();
+  if (!normalizedId) return "";
+  const uiIcon = getUiGameModeIconSrc(normalizedId);
+  if (uiIcon) return resolveBundledAssetSrc(uiIcon);
+  const logoSrc = ROUND_TYPES[normalizedId]?.logoSrc;
+  if (logoSrc) return resolveBundledAssetSrc(logoSrc);
+  return "";
 }
+
 function getRoundCardBackSrc(themeName = "Default") {
   return getUiCardBackSrc(themeName);
 }
@@ -2545,8 +2571,8 @@ function HostIntroScreen({ round, stingerLine, onContinue, theme }) {
       speechBubbleTextRef.current,
       speechBubbleFitRef.current,
       {
-        maxSize: 28,
-        minSize: 12,
+        maxSize: 26,
+        minSize: 15,
         lineHeight: 1.12,
       },
     );
@@ -2571,27 +2597,22 @@ function HostIntroScreen({ round, stingerLine, onContinue, theme }) {
       wallpaperSrc={UI_WALLPAPER_IN_GAME_SRC}
       overlayClassName="bg-black/65"
       lockViewport
-      contentClassName="!min-h-0 !py-2 !px-3"
+      contentClassName="!min-h-0 !py-2 !px-3 flex flex-col"
     >
-      <div className="relative mx-auto flex h-full min-h-0 w-full max-w-[28rem] flex-col items-center justify-center gap-2 overflow-hidden">
-        <div
-          className="pointer-events-none absolute inset-x-[-30%] bottom-[7rem] h-28 opacity-80 blur-[0.3px]"
-          style={{
-            background:
-              "radial-gradient(circle at 50% 100%, rgba(255,130,0,0.95), rgba(255,0,160,0.55) 18%, rgba(0,180,255,0.28) 33%, transparent 62%)",
-          }}
-        />
-        <div className="relative z-10 w-full max-w-[15rem] shrink-0 rounded-[1.65rem] bg-[#e60096] p-2 shadow-[0_20px_45px_rgba(0,0,0,0.7)] sm:max-w-[16rem]">
-          <div className="aspect-[2/3] max-h-[min(38vh,calc(var(--pof-vh,1vh)*38))] overflow-hidden rounded-[1.15rem] bg-black">
+      <div className="relative mx-auto flex h-full min-h-0 w-full max-w-[28rem] flex-col gap-2 overflow-hidden">
+        <div className="relative z-10 flex min-h-0 flex-[1.15] w-full flex-col rounded-[1.65rem] bg-[#e60096] p-2 shadow-[0_20px_45px_rgba(0,0,0,0.7)]">
+          <div className="min-h-0 flex-1 overflow-hidden rounded-[1.15rem] bg-black">
             <ThemeHostVisual
               themeName={theme}
               isTalking={isTalking}
+              preferVideo
+              testId="host-intro-visual"
               alt={`${theme} presenter`}
               className="h-full w-full"
             />
           </div>
         </div>
-        <div className="relative z-10 flex w-full min-h-0 max-h-[46%] shrink-0 flex-col justify-end gap-2">
+        <div className="relative z-10 flex min-h-0 flex-[0.85] flex-col justify-end gap-2">
           <motion.div
             key={`${round.id || round.roundNumber}-${speechIndex}`}
             initial={{ opacity: 0, y: 12 }}
@@ -2599,7 +2620,8 @@ function HostIntroScreen({ round, stingerLine, onContinue, theme }) {
             transition={{ duration: 0.28, ease: "easeOut" }}
             role={canContinue ? undefined : "button"}
             tabIndex={canContinue ? undefined : 0}
-            className={`${HOST_DIALOGUE_PANEL_CLASS} flex min-h-[4.5rem] max-h-[min(22vh,calc(var(--pof-vh,1vh)*22))] cursor-pointer items-center justify-center px-4 py-3 text-center ${canContinue ? "" : "pof-focus"}`}
+            data-testid="host-intro-caption"
+            className={`${HOST_DIALOGUE_PANEL_CLASS} flex min-h-[4.5rem] flex-1 cursor-pointer items-center justify-center px-4 py-3 text-center ${canContinue ? "" : "pof-focus"}`}
             onClick={() => {
               if (!canContinue) advanceSpeechLine();
             }}
@@ -2617,8 +2639,9 @@ function HostIntroScreen({ round, stingerLine, onContinue, theme }) {
             >
               <p
                 ref={speechBubbleTextRef}
-                className="pof-heading w-full text-white [text-shadow:0_3px_10px_rgba(0,0,0,0.35)]"
+                className="pof-heading w-full !text-white [text-shadow:0_2px_0_#000,0_4px_14px_rgba(0,0,0,0.85)]"
                 style={{
+                  color: "#ffffff",
                   fontSize: `${speechBubbleFontSize}px`,
                   lineHeight: 1.12,
                   wordBreak: "normal",
@@ -3806,7 +3829,6 @@ function BrandedScreen({
 }
 function RoundTypeChoiceGrid({
   roundTypeOptions,
-  categoryChoiceGridClass,
   onlineMode,
   onSelectRoundType,
 }) {
@@ -3820,57 +3842,53 @@ function RoundTypeChoiceGrid({
     onPick: (id) => onSelectRoundType(id),
   });
   return (
-    <>
+    <div
+      className="flex min-h-0 flex-1 flex-col gap-3 pt-2"
+      data-testid="round-type-choice-grid"
+    >
       {onlineMode && optionIds.length > 0 && (
-        <div className="mt-4">
+        <div className="shrink-0">
           <NeonTimerBar
             secondsLeft={timed.secondsLeft}
             totalSeconds={ONLINE_SELECTION_TIMER_SEC}
           />
         </div>
       )}
-      <div className={categoryChoiceGridClass}>
-        {roundTypeOptions.map((type, index) => {
-          const centeredOnSm =
-            roundTypeOptions.length % 2 === 1 &&
-            index === roundTypeOptions.length - 1;
-          const roundTypeLogoSrc = getRoundTypeIconSrc(type.id);
-          const highlighted =
-            onlineMode &&
-            timed.highlightedId === type.id &&
-            (timed.isFlashing || timed.secondsLeft <= 3);
-          return (
-            <div
-              key={type.id}
-              className={
-                centeredOnSm
-                  ? "sm:col-span-2 sm:flex sm:justify-center"
-                  : ""
-              }
-            >
-              <button
-                type="button"
-                className={`w-full transition-transform duration-200 hover:scale-[1.03] ${centeredOnSm ? "sm:max-w-[20rem]" : ""} ${highlighted ? "pof-choice-flash rounded-2xl" : ""}`}
-                onClick={() => {
-                  if (onlineMode) timed.pick(type.id);
-                  else onSelectRoundType(type.id);
-                }}
-                aria-label={`Choose ${type.name}`}
-                data-testid={`round-type-${type.id}`}
-              >
-                <div className="mx-auto aspect-square w-full max-w-[9.5rem] sm:max-w-[10.5rem]">
-                  <ThemeArt
-                    src={roundTypeLogoSrc}
-                    alt={`${type.name} mode icon`}
-                    className="h-full w-full object-contain drop-shadow-[0_12px_22px_rgba(0,0,0,0.72)]"
-                  />
-                </div>
-              </button>
+      {roundTypeOptions.map((type) => {
+        const roundTypeLogoSrc = getRoundTypeIconSrc(type.id);
+        const highlighted =
+          onlineMode &&
+          timed.highlightedId === type.id &&
+          (timed.isFlashing || timed.secondsLeft <= 3);
+        return (
+          <button
+            key={type.id}
+            type="button"
+            className={`flex min-h-0 flex-1 flex-col items-stretch overflow-hidden rounded-[1.75rem] border-2 border-white/25 bg-black/40 px-3 py-3 text-left shadow-[0_16px_34px_rgba(0,0,0,0.55)] transition-transform duration-200 hover:scale-[1.01] ${highlighted ? "pof-choice-flash" : ""}`}
+            onClick={() => {
+              if (onlineMode) timed.pick(type.id);
+              else onSelectRoundType(type.id);
+            }}
+            aria-label={`Choose ${type.name}`}
+            data-testid={`round-type-${type.id}`}
+            data-round-type-id={type.id}
+            data-round-type-name={type.name}
+          >
+            <div className="flex min-h-0 flex-1 items-center justify-center">
+              <ThemeArt
+                src={roundTypeLogoSrc}
+                alt={`${type.name} mode icon`}
+                data-testid={`round-type-icon-${type.id}`}
+                className="max-h-full max-w-full object-contain drop-shadow-[0_12px_22px_rgba(0,0,0,0.72)]"
+              />
             </div>
-          );
-        })}
-      </div>
-    </>
+            <div className="shrink-0 pt-2 text-center text-lg font-black uppercase tracking-wide text-yellow-300 [text-shadow:0_2px_10px_rgba(0,0,0,0.75)] sm:text-xl">
+              {type.name}
+            </div>
+          </button>
+        );
+      })}
+    </div>
   );
 }
 function CategoryChoiceGrid({
@@ -10340,23 +10358,20 @@ export default function App() {
           wallpaperSrc={UI_WALLPAPER_IN_GAME_SRC}
           overlayClassName="bg-black/45"
           lockViewport
-          contentClassName="!py-3"
+          contentClassName="!py-3 flex flex-col min-h-0"
         >
           <div className="mx-auto flex min-h-0 w-full max-w-4xl flex-1 flex-col">
-            <div className="shrink-0 px-1 text-center">
-              <h2 className="text-2xl font-black leading-tight text-yellow-300 [text-shadow:0_4px_16px_rgba(0,0,0,0.65)] sm:text-3xl">
-                Choose the game mode
-              </h2>
-              <RoundTypeChoiceGrid
-                roundTypeOptions={roundTypeOptions}
-                categoryChoiceGridClass={categoryChoiceGridClass}
-                onlineMode={onlineMode}
-                onSelectRoundType={(typeId) => {
-                  setSelectedRoundType(typeId);
-                  setScreen("category-choice");
-                }}
-              />
-            </div>
+            <h2 className="shrink-0 px-1 text-center text-2xl font-black leading-tight text-yellow-300 [text-shadow:0_4px_16px_rgba(0,0,0,0.65)] sm:text-3xl">
+              Choose the game mode
+            </h2>
+            <RoundTypeChoiceGrid
+              roundTypeOptions={roundTypeOptions}
+              onlineMode={onlineMode}
+              onSelectRoundType={(typeId) => {
+                setSelectedRoundType(typeId);
+                setScreen("category-choice");
+              }}
+            />
           </div>
         </BrandedScreen>
       )}

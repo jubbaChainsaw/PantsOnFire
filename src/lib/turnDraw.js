@@ -58,10 +58,17 @@ export function drawTurnOptions(activeCategories, { excludeRoundTypeId = null } 
   const fallbackRoundTypes = roundTypes.length
     ? roundTypes
     : getPlayerSelectableRoundTypes(activeCategories);
-  const roundTypeOptions = shuffle(fallbackRoundTypes).slice(
-    0,
-    Math.min(ROUND_TYPE_DRAW_COUNT, fallbackRoundTypes.length),
-  );
+  const shuffled = shuffle(fallbackRoundTypes);
+  const roundTypeOptions = [];
+  const seenRoundTypeIds = new Set();
+  for (const roundType of shuffled) {
+    const id = roundType?.id;
+    if (!id || seenRoundTypeIds.has(id)) continue;
+    if (EXCLUDED_PLAYER_ROUND_TYPE_IDS.has(id)) continue;
+    seenRoundTypeIds.add(id);
+    roundTypeOptions.push(roundType);
+    if (roundTypeOptions.length >= ROUND_TYPE_DRAW_COUNT) break;
+  }
   const roundTypeIds = roundTypeOptions.map((t) => t.id);
   const pool = unionCategoriesForRoundTypes(activeCategories, roundTypeIds);
   const categoryOptions = shuffle(pool).slice(
