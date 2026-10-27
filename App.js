@@ -1,5 +1,13 @@
 import React, { useCallback, useEffect } from 'react';
-import { Platform, SafeAreaView, StatusBar, StyleSheet, Text, View } from 'react-native';
+import {
+  Platform,
+  SafeAreaView,
+  StatusBar,
+  StyleSheet,
+  Text,
+  Vibration,
+  View,
+} from 'react-native';
 import { WebView } from 'react-native-webview';
 import Purchases from 'react-native-purchases';
 
@@ -36,6 +44,16 @@ export default function App() {
       }
       if (msg.type === 'POF_REFRESH_ENTITLEMENTS') {
         Purchases.syncPurchases().catch(() => {});
+      }
+      if (msg.type === 'POF_HAPTIC') {
+        const pattern = msg.pattern;
+        if (Array.isArray(pattern)) {
+          Vibration.vibrate(pattern);
+        } else if (typeof pattern === 'number') {
+          Vibration.vibrate(pattern);
+        } else {
+          Vibration.vibrate(12);
+        }
       }
     } catch {
       /* ignore malformed messages */

@@ -166,6 +166,17 @@ import {
   toGamePlayers,
 } from "./online/lobbyTransport";
 import { createVoicePartyTransport } from "./online/voicePartyTransport";
+import NeonHomeScreen from "./components/neon/NeonHomeScreen.jsx";
+import { drawTurnOptions, pickRandomFromShown } from "./lib/turnDraw.js";
+import { useTimedChoice } from "./hooks/useTimedChoice.js";
+import {
+  loadFx,
+  music,
+  saveFx,
+  syncMusicForScreen,
+  tapFx,
+} from "./lib/pofFx.js";
+import { EXCLUDED_PLAYER_ROUND_TYPE_IDS } from "./data/uiNeonAssets.js";
 
 const LOGO_SRC = "/assets/images/logo.png";
 const LOGO_18PLUS_SRC = "/assets/images/logo-18plus.png";
@@ -935,10 +946,12 @@ function getCompatibleRoundTypes(
   { excludeRoundTypeId = null } = {},
 ) {
   return PASS_THE_PHONE_ROUND_TYPES.filter(
-    (roundType) => roundType.id !== excludeRoundTypeId,
-  ).filter((roundType) =>
-    hasAllowedCategoriesForRoundType(categories, roundType.id),
-  );
+    (roundType) => !EXCLUDED_PLAYER_ROUND_TYPE_IDS.has(roundType.id),
+  )
+    .filter((roundType) => roundType.id !== excludeRoundTypeId)
+    .filter((roundType) =>
+      hasAllowedCategoriesForRoundType(categories, roundType.id),
+    );
 }
 
 function pickCompatibleRoundTypeId(
@@ -3491,8 +3504,6 @@ function OnlineLobbySetupScreen({
   setPointsToWin,
   roundsPerPlayer,
   setRoundsPerPlayer,
-  adultMode,
-  setAdultMode,
   grillSettings,
   setGrillSettings,
   themeOptions = [],
@@ -3634,12 +3645,6 @@ function OnlineLobbySetupScreen({
             </div>
             <div className="grid grid-cols-2 gap-2">
               <Button
-                className={`rounded-2xl px-4 py-3 ${adultMode ? "bg-red-500 text-white" : "border border-white/10 bg-white/5 text-white"}`}
-                onClick={() => setAdultMode(!adultMode)}
-              >
-                {adultMode ? "18+ On" : "18+ Off"}
-              </Button>
-              <Button
                 className={`rounded-2xl px-4 py-3 ${grillSettings.micEnabled ? "bg-emerald-400 text-zinc-950" : "border border-white/10 bg-white/5 text-white"}`}
                 onClick={() =>
                   setGrillSettings((current) => ({
@@ -3747,6 +3752,7 @@ function BrandedScreen({
   overlayClassName = "bg-black/35",
   frameClassName = "",
   contentClassName = "",
+  allowScroll = false,
 }) {
   const resolvedWallpaperSrc = String(wallpaperSrc || "").trim();
   return (
@@ -3776,7 +3782,7 @@ function BrandedScreen({
       )}
       <div className={`fixed inset-0 ${overlayClassName}`} />
       <div
-        className={`relative z-10 mx-auto flex min-h-screen min-h-[100dvh] w-full max-w-[460px] flex-col px-5 py-6 ${contentClassName}`}
+        className={`relative z-10 mx-auto flex min-h-screen min-h-[100dvh] w-full max-w-[460px] flex-col px-5 py-6 ${allowScroll ? "overflow-y-auto" : ""} ${contentClassName}`}
         style={{
           paddingTop: "max(1.25rem, env(safe-area-inset-top))",
           paddingBottom: "max(1.25rem, env(safe-area-inset-bottom))",
@@ -3785,6 +3791,149 @@ function BrandedScreen({
         {children}
       </div>
     </div>
+  );
+}
+function RoundTypeChoiceGrid({
+  roundTypeOptions,
+  categoryChoiceGridClass,
+  onlineMode,
+  onSelectRoundType,
+}) {
+  const optionIds = useMemo(
+    () => roundTypeOptions.map((type) => type.id),
+    [roundTypeOptions],
+  );
+  const timed = useTimedChoice({
+    enabled: Boolean(onlineMode),
+    optionIds,
+    onPick: (id) => onSelectRoundType(id),
+  });
+  return (
+    <>
+      {onlineMode && optionIds.length > 0 && (
+        <div className="mt-4 text-sm font-semibold tabular-nums text-cyan-200">
+          {timed.secondsLeft}s left
+        </div>
+      )}
+      <div className={categoryChoiceGridClass}>
+        {roundTypeOptions.map((type, index) => {
+          const centeredOnSm =
+            roundTypeOptions.length % 2 === 1 &&
+            index === roundTypeOptions.length - 1;
+          const roundTypeLogoSrc = getRoundTypeIconSrc(type.id);
+          const highlighted =
+            onlineMode &&
+            timed.highlightedId === type.id &&
+            (timed.isFlashing || timed.secondsLeft <= 3);
+          return (
+            <div
+              key={type.id}
+              className={
+                centeredOnSm
+                  ? "sm:col-span-2 sm:flex sm:justify-center"
+                  : ""
+              }
+            >
+              <button
+                type="button"
+                className={`w-full transition-transform duration-200 hover:scale-[1.03] ${centeredOnSm ? "sm:max-w-[20rem]" : ""} ${highlighted ? "pof-choice-flash rounded-2xl" : ""}`}
+                onClick={() => {
+                  if (onlineMode) timed.pick(type.id);
+                  else onSelectRoundType(type.id);
+                }}
+                aria-label={`Choose ${type.name}`}
+              >
+                <div className="mx-auto aspect-square w-full max-w-[11.5rem] sm:max-w-[13rem]">
+                  <ThemeArt
+                    src={roundTypeLogoSrc}
+                    alt={`${type.name} mode icon`}
+                    className="h-full w-full object-contain drop-shadow-[0_12px_22px_rgba(0,0,0,0.72)]"
+                  />
+                </div>
+              </button>
+            </div>
+          );
+        })}
+      </div>
+    </>
+  );
+}
+function CategoryChoiceGrid({
+  categoryOptions,
+  categoryChoiceGridClass,
+  onlineMode,
+  canonicalThemeName,
+  onChooseCategory,
+}) {
+  const optionIds = useMemo(
+    () => categoryOptions.map((category) => category.id),
+    [categoryOptions],
+  );
+  const timed = useTimedChoice({
+    enabled: Boolean(onlineMode),
+    optionIds,
+    onPick: (id) => onChooseCategory(id),
+  });
+  const pickRandomCategory = () => {
+    const picked = pickRandomFromShown(categoryOptions);
+    if (!picked?.id) return;
+    if (onlineMode) timed.pick(picked.id);
+    else onChooseCategory(picked.id);
+  };
+  return (
+    <>
+      {onlineMode && optionIds.length > 0 && (
+        <div className="mt-4 text-sm font-semibold tabular-nums text-cyan-200">
+          {timed.secondsLeft}s left
+        </div>
+      )}
+      <div className="mt-4 flex justify-center">
+        <Button
+          type="button"
+          className="rounded-[1.4rem] border border-cyan-300/35 bg-cyan-500/15 px-6 py-2 text-cyan-100"
+          onClick={() => {
+            tapFx();
+            pickRandomCategory();
+          }}
+        >
+          <Dice6 className="mr-2 inline h-4 w-4" />
+          Choose for me
+        </Button>
+      </div>
+      <div className={categoryChoiceGridClass}>
+        {categoryOptions.map((category) => {
+          const categoryIconSrc =
+            category?.iconSrc ||
+            getCategoryIconSrc(category.id) ||
+            resolveCategoryChoiceCardArt(category, canonicalThemeName);
+          const highlighted =
+            onlineMode &&
+            timed.highlightedId === category.id &&
+            (timed.isFlashing || timed.secondsLeft <= 3);
+          return (
+            <div key={category.id} className="flex">
+              <button
+                type="button"
+                className={`w-full transition-transform duration-200 hover:scale-[1.03] ${highlighted ? "pof-choice-flash rounded-2xl" : ""}`}
+                onClick={() => {
+                  if (onlineMode) timed.pick(category.id);
+                  else onChooseCategory(category.id);
+                }}
+                aria-label={`Choose ${category.name}`}
+              >
+                <div className="mx-auto aspect-square w-full max-w-[11.5rem] sm:max-w-[13rem]">
+                  <ThemeArt
+                    src={categoryIconSrc}
+                    alt={`${category.name} category icon`}
+                    className="h-full w-full object-contain drop-shadow-[0_12px_22px_rgba(0,0,0,0.72)]"
+                  />
+                </div>
+              </button>
+            </div>
+          );
+        })}
+      </div>
+    </>
   );
 }
 function OnlineJoinLobbyScreen({
@@ -3947,7 +4096,7 @@ function OnlineLobbyCodeScreen({
             </span>
           </p>
           <div className="mt-6 rounded-[1.8rem] border border-cyan-300/40 bg-cyan-500/10 p-5 flex items-center justify-between gap-4">
-            <div className="text-4xl font-black tracking-[0.35em] text-cyan-100">
+            <div className="font-mono text-4xl font-bold tracking-widest text-cyan-100">
               {lobbyCode || "------"}
             </div>
             <Button
@@ -4219,6 +4368,7 @@ function SetupScreen(props) {
       ];
   return (
     <BrandedScreen
+      allowScroll
       wallpaperSrc={UI_WALLPAPER_IN_GAME_SRC}
       overlayClassName="bg-black/45"
       contentClassName={desktopLandscape ? "max-w-[1320px]" : "max-w-[1120px]"}
@@ -4539,40 +4689,6 @@ function SetupScreen(props) {
                     </div>
                   </>
                 )}
-              </GlassPanel>
-              <GlassPanel className="rounded-[1.5rem] bg-white/5 p-4">
-                <div className="mb-3 font-semibold">Grill 'Em Defaults</div>
-                <div className="mb-2 text-xs text-white/55">
-                  Questions are auto-set each round to target ~20 total
-                  questions (based on player count).
-                </div>
-                <div className="mt-2 grid grid-cols-2 gap-2">
-                  <Button
-                    className={`rounded-2xl px-4 py-3 ${grillSettings.micEnabled ? "bg-emerald-400 text-zinc-950" : "border border-white/10 bg-white/5 text-white"}`}
-                    onClick={() =>
-                      setGrillSettings((current) => ({
-                        ...current,
-                        micEnabled: !current.micEnabled,
-                      }))
-                    }
-                  >
-                    Mic {grillSettings.micEnabled ? "On" : "Off"}
-                  </Button>
-                  <Button
-                    className={`rounded-2xl px-4 py-3 ${grillSettings.ttsEnabled ? "bg-emerald-400 text-zinc-950" : "border border-white/10 bg-white/5 text-white"}`}
-                    onClick={() =>
-                      setGrillSettings((current) => ({
-                        ...current,
-                        ttsEnabled: !current.ttsEnabled,
-                      }))
-                    }
-                  >
-                    Voice {grillSettings.ttsEnabled ? "On" : "Off"}
-                  </Button>
-                </div>
-                <div className="mt-3 text-xs text-cyan-200">
-                  Example: 7 players gives 3 each, 4 players gives 5 each.
-                </div>
               </GlassPanel>
               <GlassPanel className="rounded-[1.5rem] bg-white/5 p-4">
                 <div className="flex items-center justify-between">
@@ -6100,12 +6216,18 @@ function VotingScreen({
   playSfx = () => {},
   talkingPlayers = {},
   onToggleChat = () => {},
+  votingPlayerOrder = [],
 }) {
   const leader = players.find((p) => p.id === round.leaderId);
-  const localVoters = useMemo(
-    () => players.filter((player) => player.id),
-    [players],
-  );
+  const localVoters = useMemo(() => {
+    if (Array.isArray(votingPlayerOrder) && votingPlayerOrder.length) {
+      const byId = new Map(players.map((player) => [player.id, player]));
+      return votingPlayerOrder
+        .map((playerId) => byId.get(playerId))
+        .filter(Boolean);
+    }
+    return players.filter((player) => player.id);
+  }, [players, votingPlayerOrder]);
   const activeLocalVoter = useMemo(
     () => localVoters.find((player) => !votesByPlayerId[player.id]) || null,
     [localVoters, votesByPlayerId],
@@ -7127,8 +7249,6 @@ function SettingsScreen({
   onBack,
   premiumEnabled,
   setPremiumEnabled,
-  adultMode,
-  setAdultMode,
   audioSettings,
   setAudioSettings,
   theme,
@@ -7259,15 +7379,6 @@ function SettingsScreen({
           <GlassPanel className="rounded-[2.5rem] p-8 border-cyan-400/20 bg-black/25 space-y-5">
             <div className="rounded-[1.75rem] border border-white/10 bg-white/5 p-5 flex items-center justify-between gap-4">
               <div>
-                <div className="font-black text-lg">18+ Mode</div>
-                <div className="text-sm text-white/60 mt-1">
-                  Enables risqué / non-PC prompts for adult groups.
-                </div>
-              </div>
-              <Switch checked={adultMode} onCheckedChange={setAdultMode} />
-            </div>
-            <div className="rounded-[1.75rem] border border-white/10 bg-white/5 p-5 flex items-center justify-between gap-4">
-              <div>
                 <div className="font-black text-lg">Premium Mode Toggle</div>
                 <div className="text-sm text-white/60 mt-1">
                   Prototype switch for premium/admin features.
@@ -7282,7 +7393,7 @@ function SettingsScreen({
               <div>
                 <div className="font-black text-lg">Background Music</div>
                 <div className="text-sm text-white/60 mt-1">
-                  Enable or disable background tracks (intro/setup/voting).
+                  Menu vocal and in-game instrumental tracks.
                 </div>
               </div>
               <Switch
@@ -7290,6 +7401,29 @@ function SettingsScreen({
                 onCheckedChange={(next) =>
                   setAudioSettings((cur) => ({ ...cur, musicEnabled: next }))
                 }
+              />
+            </div>
+            <div className="rounded-[1.75rem] border border-white/10 bg-white/5 p-5">
+              <div className="flex items-center justify-between gap-4">
+                <div>
+                  <div className="font-black text-lg">Music Volume</div>
+                  <div className="text-sm text-white/60 mt-1">
+                    {audioSettings.musicVol ?? 60}%
+                  </div>
+                </div>
+              </div>
+              <input
+                type="range"
+                min={0}
+                max={100}
+                value={audioSettings.musicVol ?? 60}
+                onChange={(event) =>
+                  setAudioSettings((cur) => ({
+                    ...cur,
+                    musicVol: Number(event.target.value),
+                  }))
+                }
+                className="mt-3 w-full accent-yellow-300"
               />
             </div>
             <div className="rounded-[1.75rem] border border-white/10 bg-white/5 p-5 flex items-center justify-between gap-4">
@@ -7303,6 +7437,57 @@ function SettingsScreen({
                 checked={audioSettings.sfxEnabled}
                 onCheckedChange={(next) =>
                   setAudioSettings((cur) => ({ ...cur, sfxEnabled: next }))
+                }
+              />
+            </div>
+            <div className="rounded-[1.75rem] border border-white/10 bg-white/5 p-5">
+              <div className="flex items-center justify-between gap-4">
+                <div>
+                  <div className="font-black text-lg">SFX Volume</div>
+                  <div className="text-sm text-white/60 mt-1">
+                    {audioSettings.sfxVol ?? 80}%
+                  </div>
+                </div>
+              </div>
+              <input
+                type="range"
+                min={0}
+                max={100}
+                value={audioSettings.sfxVol ?? 80}
+                onChange={(event) =>
+                  setAudioSettings((cur) => ({
+                    ...cur,
+                    sfxVol: Number(event.target.value),
+                  }))
+                }
+                className="mt-3 w-full accent-yellow-300"
+              />
+            </div>
+            <div className="rounded-[1.75rem] border border-white/10 bg-white/5 p-5 flex items-center justify-between gap-4">
+              <div>
+                <div className="font-black text-lg">Haptics</div>
+                <div className="text-sm text-white/60 mt-1">
+                  Vibration on taps and timed selections.
+                </div>
+              </div>
+              <Switch
+                checked={audioSettings.hapticsEnabled !== false}
+                onCheckedChange={(next) =>
+                  setAudioSettings((cur) => ({ ...cur, hapticsEnabled: next }))
+                }
+              />
+            </div>
+            <div className="rounded-[1.75rem] border border-white/10 bg-white/5 p-5 flex items-center justify-between gap-4">
+              <div>
+                <div className="font-black text-lg">Voice Chat</div>
+                <div className="text-sm text-white/60 mt-1">
+                  Online party voice preference.
+                </div>
+              </div>
+              <Switch
+                checked={audioSettings.voiceChatEnabled !== false}
+                onCheckedChange={(next) =>
+                  setAudioSettings((cur) => ({ ...cur, voiceChatEnabled: next }))
                 }
               />
             </div>
@@ -7623,9 +7808,7 @@ export default function App() {
     getStored("imposter-persona-only-v1", false),
   );
   const [premiumEnabled, setPremiumEnabled] = useState(false);
-  const [adultMode, setAdultMode] = useState(
-    getStored("imposter-adult-mode-v1", false),
-  );
+  const [adultMode] = useState(false);
   const [customCategories, setCustomCategories] = useState(
     getStored("imposter-custom-categories-v2", []),
   );
@@ -7729,16 +7912,26 @@ export default function App() {
   const [revealIndex, setRevealIndex] = useState(0);
   const [categoryOptions, setCategoryOptions] = useState([]);
   const [votesByPlayerId, setVotesByPlayerId] = useState({});
+  const [votingPlayerOrder, setVotingPlayerOrder] = useState([]);
   const [tally, setTally] = useState({});
   const [roundGains, setRoundGains] = useState({});
   const [roundBreakdown, setRoundBreakdown] = useState({});
   const [imposterCaught, setImposterCaught] = useState(false);
-  const [audioSettings, setAudioSettings] = useState(
-    getStored("imposter-audio-settings-v1", {
-      musicEnabled: true,
-      sfxEnabled: true,
-    }),
-  );
+  const [audioSettings, setAudioSettings] = useState(() => {
+    const fxSettings = loadFx();
+    return {
+      musicEnabled: Boolean(fxSettings.music),
+      sfxEnabled: Boolean(fxSettings.sfx),
+      hapticsEnabled: Boolean(fxSettings.haptics),
+      voiceChatEnabled: Boolean(fxSettings.voiceChat),
+      musicVol: Number(fxSettings.musicVol) || 60,
+      sfxVol: Number(fxSettings.sfxVol) || 80,
+    };
+  });
+  const [joinHostEditorWarningOpen, setJoinHostEditorWarningOpen] =
+    useState(false);
+  const [joinHostEditorWarningAccepted, setJoinHostEditorWarningAccepted] =
+    useState(false);
   const [adminOpen, setAdminOpen] = useState(false);
   const [recentPromptKeys, setRecentPromptKeys] = useState([]);
   const [copyState, setCopyState] = useState({
@@ -7887,7 +8080,6 @@ export default function App() {
     () => setStored("imposter-custom-categories-v2", customCategories),
     [customCategories],
   );
-  useEffect(() => setStored("imposter-adult-mode-v1", adultMode), [adultMode]);
   useEffect(
     () => setStored("imposter-enabled-picture-packs-v1", enabledPicturePacks),
     [enabledPicturePacks],
@@ -7920,10 +8112,16 @@ export default function App() {
     () => setStored("imposter-persona-only-v1", Boolean(personaOnlyMode)),
     [personaOnlyMode],
   );
-  useEffect(
-    () => setStored("imposter-audio-settings-v1", audioSettings),
-    [audioSettings],
-  );
+  useEffect(() => {
+    saveFx({
+      music: audioSettings.musicEnabled,
+      sfx: audioSettings.sfxEnabled,
+      haptics: audioSettings.hapticsEnabled !== false,
+      voiceChat: audioSettings.voiceChatEnabled !== false,
+      musicVol: audioSettings.musicVol ?? 60,
+      sfxVol: audioSettings.sfxVol ?? 80,
+    });
+  }, [audioSettings]);
   useEffect(
     () =>
       setStored(
@@ -7952,19 +8150,20 @@ export default function App() {
       ),
     [selectedFriendInviteUsernames],
   );
-  const bgmAudioRef = useRef(null);
-  const playSfx = useCallback(
-    (src, { volume = 0.55 } = {}) => {
-      if (!audioSettings?.sfxEnabled) return;
-      if (!src) return;
-      try {
-        const audio = new Audio(src);
-        audio.volume = Math.max(0, Math.min(1, Number(volume) || 0.55));
-        audio.play().catch(() => {});
-      } catch {}
-    },
-    [audioSettings?.sfxEnabled],
-  );
+  const playSfx = useCallback((src, { volume = 0.55 } = {}) => {
+    const fxSettings = loadFx();
+    if (!fxSettings.sfx) return;
+    if (!src) return;
+    const volScale = (Number(fxSettings.sfxVol) || 80) / 100;
+    try {
+      const audio = new Audio(src);
+      audio.volume = Math.max(
+        0,
+        Math.min(1, (Number(volume) || 0.55) * volScale),
+      );
+      audio.play().catch(() => {});
+    } catch {}
+  }, []);
   const disconnectOnlineVoiceTransport = useCallback(async () => {
     const activeTransport = onlineVoiceTransportRef.current;
     if (!activeTransport) return;
@@ -7973,50 +8172,15 @@ export default function App() {
       await activeTransport.transport.disconnect();
     } catch {}
   }, []);
-  const resolveBgmForScreen = useCallback((currentScreen) => {
-    if (currentScreen === "home") return INTRO_THEME_BGM_SRC;
-    if (currentScreen === "setup") return INTRO_THEME_BGM_SRC;
-    if (currentScreen === "game-intro") return INTRO_THEME_BGM_SRC;
-    if (currentScreen === "voting") return VOTING_THEME_BGM_SRC;
-    return "";
-  }, []);
   useEffect(() => {
-    const trackSrc = resolveBgmForScreen(screen);
-    if (!audioSettings?.musicEnabled || !trackSrc) {
-      try {
-        bgmAudioRef.current?.pause();
-      } catch {}
-      bgmAudioRef.current = null;
-      return;
-    }
-    const currentAudio = bgmAudioRef.current;
-    if (currentAudio && currentAudio.src.includes(trackSrc)) {
-      currentAudio.volume = 0.42;
-      if (currentAudio.paused) currentAudio.play().catch(() => {});
-      return;
-    }
-    try {
-      currentAudio?.pause();
-    } catch {}
-    try {
-      const next = new Audio(trackSrc);
-      next.loop = true;
-      next.volume = 0.42;
-      bgmAudioRef.current = next;
-      next.play().catch(() => {});
-    } catch {
-      bgmAudioRef.current = null;
-    }
-  }, [screen, audioSettings?.musicEnabled, resolveBgmForScreen]);
-  useEffect(
-    () => () => {
-      try {
-        bgmAudioRef.current?.pause();
-      } catch {}
-      bgmAudioRef.current = null;
-    },
-    [],
-  );
+    syncMusicForScreen(screen);
+  }, [screen]);
+  useEffect(() => {
+    if (typeof window === "undefined") return undefined;
+    const unlock = () => music.unlock();
+    window.addEventListener("pointerdown", unlock, { once: true });
+    return () => window.removeEventListener("pointerdown", unlock);
+  }, []);
   useEffect(() => {
     if (nameTheme !== normalizedThemeName) setNameTheme(normalizedThemeName);
   }, [nameTheme, normalizedThemeName]);
@@ -8801,6 +8965,11 @@ export default function App() {
       return serverRound;
     }
     if (normalizedPhase === "voting") {
+      setVotingPlayerOrder(
+        shuffle(
+          (Array.isArray(players) ? players : []).map((player) => player.id),
+        ),
+      );
       refreshCopy(["voting"]);
       setScreen("voting");
       return serverRound;
@@ -9002,27 +9171,28 @@ export default function App() {
     setScreen("discussion");
   }
 
+  function beginVotingPhase() {
+    setVotesByPlayerId(
+      Object.fromEntries(players.map((player) => [player.id, ""])),
+    );
+    setVotingPlayerOrder(shuffle(players.map((player) => player.id)));
+    refreshCopy(["voting"]);
+    setScreen("voting");
+  }
+
   function startGame(seedPlayers = null) {
     const basePlayers =
       seedPlayers && seedPlayers.length ? seedPlayers : players;
-    const starterTypeId = pickCompatibleRoundTypeId(activeCategories);
-    const allowedCategories = categoriesAllowedForRoundType(
-      activeCategories,
-      starterTypeId,
-    );
-    const options = shuffle(allowedCategories).slice(
-      0,
-      Math.min(4, allowedCategories.length),
-    );
-    if (!options.length) return;
+    const drawn = drawTurnOptions(activeCategories);
+    if (!drawn.categoryOptions.length) return;
     const resetPlayers = basePlayers.map((player) => ({ ...player, score: 0 }));
     setPlayers(resetPlayers);
     setRoundNumber(1);
     setCurrentRoundOwnerIndex(0);
     setPreviousRoundType(null);
-    setSelectedRoundType(starterTypeId);
-    setRoundTypeOptions([]);
-    setCategoryOptions(options);
+    setSelectedRoundType(null);
+    setRoundTypeOptions(drawn.roundTypeOptions);
+    setCategoryOptions(drawn.categoryOptions);
     setRound({ chooserId: resetPlayers[0]?.id, roundNumber: 1 });
     setRecentPromptKeys([]);
     setVotesByPlayerId({});
@@ -9134,32 +9304,14 @@ export default function App() {
     }
     const next = roundNumber + 1;
     const nextOwner = (currentRoundOwnerIndex + 1) % players.length;
-    const compatibleRoundTypes = getCompatibleRoundTypes(activeCategories, {
+    const drawn = drawTurnOptions(activeCategories, {
       excludeRoundTypeId: previousRoundType,
     });
-    const fallbackRoundTypes = compatibleRoundTypes.length
-      ? compatibleRoundTypes
-      : getCompatibleRoundTypes(activeCategories);
-    const options = shuffle(fallbackRoundTypes).slice(
-      0,
-      Math.min(2, fallbackRoundTypes.length),
-    );
-    const defaultRoundTypeId =
-      options[0]?.id || PASS_THE_PHONE_ROUND_TYPES[0]?.id || "prompt";
-    const allowedCategories = categoriesAllowedForRoundType(
-      activeCategories,
-      defaultRoundTypeId,
-    );
     setRoundNumber(next);
     setCurrentRoundOwnerIndex(nextOwner);
-    setRoundTypeOptions(options);
+    setRoundTypeOptions(drawn.roundTypeOptions);
     setSelectedRoundType(null);
-    setCategoryOptions(
-      shuffle(allowedCategories).slice(
-        0,
-        Math.min(4, allowedCategories.length),
-      ),
-    );
+    setCategoryOptions(drawn.categoryOptions);
     setRound({ chooserId: players[nextOwner]?.id, roundNumber: next });
     refreshCopy(["chooser"]);
     setScreen("round-type-choice");
@@ -9236,7 +9388,8 @@ export default function App() {
           winCondition,
           pointsToWin,
           roundsPerPlayer,
-          adultMode,
+          adultMode: false,
+          hostPromptEditorUnlocked: Boolean(entitlements.categoryEditorAdmin),
           grillSettings,
           allowFriendsJoinLobby: Boolean(allowFriendsJoinLobby),
           inviteUsernames: selectedFriendInviteUsernames,
@@ -9303,7 +9456,6 @@ export default function App() {
           ? Number(lobbySettings.roundsPerPlayer)
           : roundsPerPlayer,
       );
-      setAdultMode(Boolean(lobbySettings.adultMode));
       setGrillSettings({
         micEnabled: lobbySettings.grillSettings?.micEnabled !== false,
         ttsEnabled: lobbySettings.grillSettings?.ttsEnabled !== false,
@@ -9314,6 +9466,7 @@ export default function App() {
     setPartyChatOpen(false);
     setOnlineJoinPreview(null);
     setOnlineJoinStep("code");
+    setJoinHostEditorWarningAccepted(false);
     const session = {
       lobbyCode: snapshot.code,
       role: "host",
@@ -9395,7 +9548,19 @@ export default function App() {
       return normalizePersonaProfile(personaProfile).inGameName || "Player 1";
     });
     setOnlineJoinStep("player");
+    setJoinHostEditorWarningAccepted(false);
     setOnlineLobbyError("");
+  }
+  function requestJoinOnlineLobby() {
+    const previewSettings = onlineJoinPreview?.settings || {};
+    if (
+      previewSettings.hostPromptEditorUnlocked &&
+      !joinHostEditorWarningAccepted
+    ) {
+      setJoinHostEditorWarningOpen(true);
+      return;
+    }
+    void joinOnlineLobby();
   }
   async function joinOnlineLobby() {
     const activePreview = onlineJoinPreview;
@@ -9499,12 +9664,12 @@ export default function App() {
           ? Number(nextSettings.roundsPerPlayer)
           : roundsPerPlayer,
       );
-      setAdultMode(Boolean(nextSettings.adultMode));
       setGrillSettings({
         micEnabled: nextSettings.grillSettings?.micEnabled !== false,
         ttsEnabled: nextSettings.grillSettings?.ttsEnabled !== false,
       });
     }
+    setJoinHostEditorWarningOpen(false);
     const session = {
       lobbyCode: normalizedCode,
       role: "player",
@@ -9753,8 +9918,8 @@ export default function App() {
     setPartyChatInput("");
   };
   const categoryChoiceGridClass = isDesktopLandscapeWeb
-    ? "mt-8 grid grid-cols-4 gap-4 items-stretch"
-    : "mt-8 grid grid-cols-2 gap-4 items-stretch";
+    ? "mt-8 grid grid-cols-3 gap-4 items-stretch"
+    : "mt-8 grid grid-cols-2 gap-4 sm:grid-cols-3 items-stretch";
   const startupGraphicsReady = useGlobalGraphicsPreload();
   useCategoryAndModeIconPreload({
     screen,
@@ -9811,7 +9976,7 @@ export default function App() {
         />
       )}
       {screen === "home" && (
-        <HomeScreen
+        <NeonHomeScreen
           onNavigate={(to) => {
             if (to === "setup") {
               refreshCopy(["setup"]);
@@ -9843,15 +10008,7 @@ export default function App() {
             setScreen(to);
           }}
           homeLine={copyState.home}
-          adultMode={adultMode}
           joinOnlyMode={WEB_JOIN_ONLY_MODE}
-          personaProfile={personaProfile}
-          profileMenuOpen={homeProfileMenuOpen}
-          onToggleProfileMenu={() =>
-            setHomeProfileMenuOpen((current) => !current)
-          }
-          onSelectProfileMenu={handleSelectHomeProfileMenu}
-          accountTierLabel={accountTierLabel}
           canCreateLocalGame={entitlements.canCreateLocalGame}
           canCreateOnlineLobby={entitlements.canCreateOnlineLobby}
         />
@@ -9884,7 +10041,6 @@ export default function App() {
           setRoundsPerPlayer={setRoundsPerPlayer}
           grillSettings={grillSettings}
           setGrillSettings={setGrillSettings}
-          adultMode={adultMode}
           enabledCategories={enabledCategories}
           onToggleCategory={(id) =>
             setEnabledCategories((cur) => ({ ...cur, [id]: !cur[id] }))
@@ -9921,8 +10077,6 @@ export default function App() {
           setPointsToWin={setPointsToWin}
           roundsPerPlayer={roundsPerPlayer}
           setRoundsPerPlayer={setRoundsPerPlayer}
-          adultMode={adultMode}
-          setAdultMode={setAdultMode}
           grillSettings={grillSettings}
           setGrillSettings={setGrillSettings}
           themeOptions={themeOptions}
@@ -9967,7 +10121,7 @@ export default function App() {
             setScreen("home");
           }}
           onContinueCode={runOnlineJoinCodeStep}
-          onJoin={joinOnlineLobby}
+          onJoin={requestJoinOnlineLobby}
           onRandomizeName={() =>
             setOnlinePlayerName(
               randomNameFromTheme(
@@ -10132,7 +10286,7 @@ export default function App() {
       )}
       {screen === "rules" && (
         <RulesSplashScreen
-          onContinue={() => setScreen("category-choice")}
+          onContinue={() => setScreen("round-type-choice")}
           theme={canonicalThemeName}
           isOnlineMode={onlineMode}
         />
@@ -10147,51 +10301,15 @@ export default function App() {
               <h2 className="mt-3 text-4xl font-black text-yellow-300 [text-shadow:0_4px_16px_rgba(0,0,0,0.65)]">
                 Choose the game mode
               </h2>
-              <div className={categoryChoiceGridClass}>
-                {roundTypeOptions.map((type, index) => {
-                  const centeredOnSm =
-                    roundTypeOptions.length % 2 === 1 &&
-                    index === roundTypeOptions.length - 1;
-                  const roundTypeLogoSrc = getRoundTypeIconSrc(type.id);
-                  return (
-                    <div
-                      key={type.id}
-                      className={
-                        centeredOnSm
-                          ? "sm:col-span-2 sm:flex sm:justify-center"
-                          : ""
-                      }
-                    >
-                      <button
-                        type="button"
-                        className={`w-full transition-transform duration-200 hover:scale-[1.03] ${centeredOnSm ? "sm:max-w-[20rem]" : ""}`}
-                        onClick={() => {
-                          const allowedCategories =
-                            categoriesAllowedForRoundType(
-                              activeCategories,
-                              type.id,
-                            );
-                          const nextCategoryOptions = shuffle(
-                            allowedCategories,
-                          ).slice(0, Math.min(4, allowedCategories.length));
-                          setSelectedRoundType(type.id);
-                          setCategoryOptions(nextCategoryOptions);
-                          setScreen("category-choice");
-                        }}
-                        aria-label={`Choose ${type.name}`}
-                      >
-                        <div className="mx-auto aspect-square w-full max-w-[11.5rem] sm:max-w-[13rem]">
-                          <ThemeArt
-                            src={roundTypeLogoSrc}
-                            alt={`${type.name} mode icon`}
-                            className="h-full w-full object-contain drop-shadow-[0_12px_22px_rgba(0,0,0,0.72)]"
-                          />
-                        </div>
-                      </button>
-                    </div>
-                  );
-                })}
-              </div>
+              <RoundTypeChoiceGrid
+                roundTypeOptions={roundTypeOptions}
+                categoryChoiceGridClass={categoryChoiceGridClass}
+                onlineMode={onlineMode}
+                onSelectRoundType={(typeId) => {
+                  setSelectedRoundType(typeId);
+                  setScreen("category-choice");
+                }}
+              />
             </div>
           </div>
         </BrandedScreen>
@@ -10226,32 +10344,13 @@ export default function App() {
                   </p>
                 </div>
               ) : (
-                <div className={categoryChoiceGridClass}>
-                  {categoryOptions.map((category) => {
-                  const categoryIconSrc =
-                    category?.iconSrc ||
-                    getCategoryIconSrc(category.id) ||
-                    resolveCategoryChoiceCardArt(category, canonicalThemeName);
-                  return (
-                    <div key={category.id} className="flex">
-                      <button
-                        type="button"
-                        className="w-full transition-transform duration-200 hover:scale-[1.03]"
-                        onClick={() => chooseCategory(category.id)}
-                        aria-label={`Choose ${category.name}`}
-                      >
-                        <div className="mx-auto aspect-square w-full max-w-[11.5rem] sm:max-w-[13rem]">
-                          <ThemeArt
-                            src={categoryIconSrc}
-                            alt={`${category.name} category icon`}
-                            className="h-full w-full object-contain drop-shadow-[0_12px_22px_rgba(0,0,0,0.72)]"
-                          />
-                        </div>
-                      </button>
-                    </div>
-                  );
-                  })}
-                </div>
+                <CategoryChoiceGrid
+                  categoryOptions={categoryOptions}
+                  categoryChoiceGridClass={categoryChoiceGridClass}
+                  onlineMode={onlineMode}
+                  canonicalThemeName={canonicalThemeName}
+                  onChooseCategory={chooseCategory}
+                />
               )}
             </div>
           </div>
@@ -10309,15 +10408,11 @@ export default function App() {
                 players,
               ),
             );
-            setVotesByPlayerId(
-              Object.fromEntries(players.map((p) => [p.id, ""])),
-            );
             if (onlineMode) {
               void runOnlinePhaseAdvance();
               return;
             }
-            refreshCopy(["voting"]);
-            setScreen("voting");
+            beginVotingPhase();
           }}
           theme={canonicalThemeName}
           playSfx={playSfx}
@@ -10342,15 +10437,11 @@ export default function App() {
           round={round}
           totalRounds={totalRounds}
           onContinue={() => {
-            setVotesByPlayerId(
-              Object.fromEntries(players.map((p) => [p.id, ""])),
-            );
             if (onlineMode) {
               void runOnlinePhaseAdvance();
               return;
             }
-            refreshCopy(["voting"]);
-            setScreen("voting");
+            beginVotingPhase();
           }}
           line={copyState.discussion}
           theme={canonicalThemeName}
@@ -10375,6 +10466,7 @@ export default function App() {
           line={copyState.voting}
           theme={canonicalThemeName}
           onlineMode={onlineMode}
+          votingPlayerOrder={votingPlayerOrder}
           onlinePlayerId={onlineJoinedPlayerId}
           onlineVoiceEnabled={onlineMode}
           onlineVoiceMuted={onlineVoiceMuted}
@@ -10512,8 +10604,6 @@ export default function App() {
           onBack={() => setScreen("home")}
           premiumEnabled={premiumEnabled}
           setPremiumEnabled={setPremiumEnabled}
-          adultMode={adultMode}
-          setAdultMode={setAdultMode}
           audioSettings={audioSettings}
           setAudioSettings={setAudioSettings}
           theme={canonicalThemeName}
@@ -10541,6 +10631,42 @@ export default function App() {
         onInputChange={setPartyChatInput}
         onSend={sendPartyChatMessage}
       />
+      <Dialog
+        open={joinHostEditorWarningOpen}
+        onOpenChange={setJoinHostEditorWarningOpen}
+      >
+        <DialogContent className="max-w-md rounded-[2rem] border border-amber-300/30 bg-[#13002d] p-6 text-white">
+          <DialogHeader>
+            <DialogTitle className="text-xl text-amber-200">
+              Host can edit prompts
+            </DialogTitle>
+            <DialogDescription className="text-white/70">
+              This lobby host has category editor access. Custom prompts may
+              appear during the match.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="mt-4 gap-2 sm:justify-end">
+            <Button
+              type="button"
+              className="rounded-2xl border border-white/15 bg-white/5 text-white"
+              onClick={() => setJoinHostEditorWarningOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="button"
+              className="rounded-2xl bg-yellow-300 text-zinc-950"
+              onClick={() => {
+                setJoinHostEditorWarningAccepted(true);
+                setJoinHostEditorWarningOpen(false);
+                void joinOnlineLobby();
+              }}
+            >
+              Continue
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
       <AdminDialog
         open={adminOpen}
         onOpenChange={setAdminOpen}
