@@ -2760,51 +2760,53 @@ function HostIntroScreen({ round, stingerLine, onContinue, theme }) {
           </div>
         </div>
         <div className="relative z-10 flex min-h-0 flex-[0.85] flex-col justify-end gap-2">
-          <motion.div
-            key={`${round.id || round.roundNumber}-${speechIndex}`}
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.28, ease: "easeOut" }}
-            className="flex min-h-[4.5rem] flex-1"
+          <div
+            role={canContinue ? undefined : "button"}
+            tabIndex={canContinue ? undefined : 0}
+            data-testid="host-intro-caption"
+            className={`pof-host-intro-caption-panel relative z-20 flex min-h-[4.5rem] flex-1 cursor-pointer items-center justify-center rounded-[1.5rem] border border-fuchsia-200/35 px-4 py-3 text-center ${canContinue ? "" : "pof-focus"}`}
+            style={{
+              backgroundColor: "#b8007a",
+              backgroundImage: "none",
+            }}
+            onClick={() => {
+              if (!canContinue) advanceSpeechLine();
+            }}
+            onKeyDown={(event) => {
+              if (canContinue) return;
+              if (event.key === "Enter" || event.key === " ") {
+                event.preventDefault();
+                advanceSpeechLine();
+              }
+            }}
           >
             <div
-              role={canContinue ? undefined : "button"}
-              tabIndex={canContinue ? undefined : 0}
-              data-testid="host-intro-caption"
-              className={`pof-host-intro-caption-panel ${HOST_DIALOGUE_PANEL_CLASS} relative z-20 flex h-full w-full cursor-pointer items-center justify-center rounded-[1.5rem] border border-fuchsia-200/35 px-4 py-3 text-center ${canContinue ? "" : "pof-focus"}`}
-              onClick={() => {
-                if (!canContinue) advanceSpeechLine();
-              }}
-              onKeyDown={(event) => {
-                if (canContinue) return;
-                if (event.key === "Enter" || event.key === " ") {
-                  event.preventDefault();
-                  advanceSpeechLine();
-                }
-              }}
+              ref={speechBubbleFitRef}
+              className="flex h-full max-h-[26dvh] w-full items-center justify-center overflow-hidden"
             >
-              <div
-                ref={speechBubbleFitRef}
-                className="flex h-full max-h-[26dvh] w-full items-center justify-center overflow-hidden"
+              <motion.p
+                key={`${round.id || round.roundNumber}-${speechIndex}`}
+                ref={speechBubbleTextRef}
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.22, ease: "easeOut" }}
+                className="pof-host-intro-caption-text w-full"
+                style={{
+                  color: "#ffffff",
+                  fontFamily: "Inter, system-ui, sans-serif",
+                  fontSize: `${speechBubbleFontSize}px`,
+                  lineHeight: 1.12,
+                  wordBreak: "normal",
+                  overflowWrap: "break-word",
+                  whiteSpace: "normal",
+                  hyphens: "manual",
+                  WebkitHyphens: "manual",
+                }}
               >
-                <p
-                  ref={speechBubbleTextRef}
-                  className="pof-host-intro-caption-text w-full"
-                  style={{
-                    fontSize: `${speechBubbleFontSize}px`,
-                    lineHeight: 1.12,
-                    wordBreak: "normal",
-                    overflowWrap: "break-word",
-                    whiteSpace: "normal",
-                    hyphens: "manual",
-                    WebkitHyphens: "manual",
-                  }}
-                >
-                  {speechSentences[speechIndex]}
-                </p>
-              </div>
+                {speechSentences[speechIndex]}
+              </motion.p>
             </div>
-          </motion.div>
+          </div>
           <div className="flex gap-3">
             <Button className={HOST_DIALOGUE_BUTTON_CLASS} onClick={handleNextSpeechAction}>
               Next
@@ -4059,45 +4061,30 @@ function CategoryChoiceGrid({
     optionIds,
     onPick: (id) => onChooseCategory(id),
   });
-  const pickRandomCategory = () => {
-    const picked = pickRandomFromShown(categoryOptions);
-    if (!picked?.id) return;
-    if (onlineMode) timed.pick(picked.id);
-    else onChooseCategory(picked.id);
-  };
   return (
-    <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-hidden">
+    <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
       {onlineMode && optionIds.length > 0 && (
-        <div className="mt-4 shrink-0">
+        <div className="shrink-0 pb-2">
           <NeonTimerBar
             secondsLeft={timed.secondsLeft}
             totalSeconds={ONLINE_SELECTION_TIMER_SEC}
           />
         </div>
       )}
-      <div className="mt-4 flex shrink-0 justify-center">
-        <button
-          type="button"
-          className="pof-btn pof-btn-blue pof-btn-sm pof-focus px-6"
-          data-testid="choose-category-random"
-          onClick={() => {
-            tapFx();
-            pickRandomCategory();
-          }}
-        >
-          <Dice6 className="h-5 w-5" />
-          Choose for me
-        </button>
-      </div>
       <div
         data-testid="category-choice-scroll"
         className="min-h-0 flex-1 overflow-y-auto overscroll-y-contain pof-scroll"
         style={{
+          paddingTop: "0.25rem",
           paddingBottom:
             "max(1.5rem, calc(env(safe-area-inset-bottom, 0px) + 1rem))",
         }}
       >
-        <div className={categoryChoiceGridClass} data-testid="category-choice-grid">
+        <div
+          className={categoryChoiceGridClass}
+          data-testid="category-choice-grid"
+          data-category-count={categoryOptions.length}
+        >
         {categoryOptions.map((category) => {
           const categoryIconSrc =
             category?.iconSrc ||
@@ -10018,15 +10005,8 @@ export default function App() {
       round?.roundTypeId ||
       roundTypeOptions[0]?.id ||
       "prompt";
-    const fullList = getCategoriesForRoundType(activeCategories, roundTypeId);
-    return fullList.length ? fullList : categoryOptions;
-  }, [
-    activeCategories,
-    categoryOptions,
-    round?.roundTypeId,
-    roundTypeOptions,
-    selectedRoundType,
-  ]);
+    return getCategoriesForRoundType(activeCategories, roundTypeId);
+  }, [activeCategories, round?.roundTypeId, roundTypeOptions, selectedRoundType]);
   const bugReportAppContext = useMemo(
     () => ({
       screen,
@@ -10451,8 +10431,11 @@ export default function App() {
           contentClassName="!min-h-0 !py-3 flex flex-col overflow-hidden"
         >
           <div className="mx-auto flex min-h-0 w-full max-w-4xl flex-1 flex-col overflow-hidden">
-            <div className="shrink-0 px-1 text-center">
-              <div className="pof-ui-muted text-xs font-semibold uppercase tracking-[0.3em]">
+            <div
+              className="shrink-0 px-2 pb-1 pt-11 text-center sm:pt-10"
+              data-testid="category-choice-header"
+            >
+              <div className="pof-ui-muted text-xs font-semibold uppercase tracking-[0.3em] pl-14 sm:pl-0">
                 Round owner: {players[currentRoundOwnerIndex]?.name}
               </div>
               <h2 className="mt-3 text-4xl font-black text-yellow-300 [text-shadow:0_4px_16px_rgba(0,0,0,0.65)]">
@@ -10463,7 +10446,7 @@ export default function App() {
               <RoundTypeLogo
                 src={getRoundTypeIconSrc(selectedRoundType || round.roundTypeId)}
                 alt={`${ROUND_TYPES[selectedRoundType]?.name || round.roundTypeName || "Round"} mode icon`}
-                className="mx-auto mt-4 h-20 w-20 sm:h-24 sm:w-24 object-contain drop-shadow-[0_8px_20px_rgba(0,0,0,0.7)]"
+                className="mx-auto mt-3 h-16 w-16 object-contain drop-shadow-[0_8px_20px_rgba(0,0,0,0.7)] sm:h-20 sm:w-20"
               />
             </div>
             {selectedRoundType && usesNoCategorySelection(selectedRoundType) ? (
@@ -10476,15 +10459,37 @@ export default function App() {
                 </p>
               </div>
             ) : (
-              <div className="mt-2 flex min-h-0 flex-1 flex-col overflow-hidden">
-                <CategoryChoiceGrid
-                  categoryOptions={categoriesForChoiceScreen}
-                  categoryChoiceGridClass={categoryChoiceGridClass}
-                  onlineMode={onlineMode}
-                  canonicalThemeName={canonicalThemeName}
-                  onChooseCategory={chooseCategory}
-                />
-              </div>
+              <>
+                <div
+                  className="relative z-20 shrink-0 border-b border-white/10 bg-[#05010f]/95 px-3 py-3 backdrop-blur-sm"
+                  data-testid="category-choice-random-bar"
+                >
+                  <button
+                    type="button"
+                    className="pof-btn pof-btn-blue pof-btn-sm pof-focus mx-auto max-w-xs px-6"
+                    data-testid="choose-category-random"
+                    onClick={() => {
+                      tapFx();
+                      const picked = pickRandomFromShown(
+                        categoriesForChoiceScreen,
+                      );
+                      if (picked?.id) chooseCategory(picked.id);
+                    }}
+                  >
+                    <Dice6 className="h-5 w-5" />
+                    Choose for me
+                  </button>
+                </div>
+                <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+                  <CategoryChoiceGrid
+                    categoryOptions={categoriesForChoiceScreen}
+                    categoryChoiceGridClass={categoryChoiceGridClass}
+                    onlineMode={onlineMode}
+                    canonicalThemeName={canonicalThemeName}
+                    onChooseCategory={chooseCategory}
+                  />
+                </div>
+              </>
             )}
           </div>
         </BrandedScreen>

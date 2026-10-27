@@ -71,6 +71,8 @@ export function drawTurnOptions(activeCategories, { excludeRoundTypeId = null } 
   }
   const roundTypeIds = roundTypeOptions.map((t) => t.id);
   const pool = unionCategoriesForRoundTypes(activeCategories, roundTypeIds);
+  // Legacy draw for setup/online previews: random subset only. Category choice UI uses
+  // getCategoriesForRoundType() so players always see every enabled category for the round.
   const categoryOptions = shuffle(pool).slice(
     0,
     Math.min(CATEGORY_DRAW_COUNT, pool.length),

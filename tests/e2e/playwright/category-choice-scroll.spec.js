@@ -25,6 +25,10 @@ async function openCategoryChoice(page) {
   await expect(page.getByTestId('category-choice-scroll')).toBeVisible({
     timeout: 15_000,
   });
+  const count = await page
+    .getByTestId('category-choice-grid')
+    .getAttribute('data-category-count');
+  expect(Number(count || 0)).toBeGreaterThanOrEqual(15);
 }
 
 test.describe('Category choice scroll', () => {
@@ -41,6 +45,14 @@ test.describe('Category choice scroll', () => {
   test('scrolls to last categories and captures bottom', async ({ page }) => {
     await openCategoryChoice(page);
     const scroll = page.getByTestId('category-choice-scroll');
+    await scroll.evaluate((el) => {
+      el.scrollTop = 0;
+    });
+    fs.mkdirSync(OUT_DIR, { recursive: true });
+    await page.screenshot({
+      path: path.join(OUT_DIR, 'category-choice-top-360x780.png'),
+      fullPage: false,
+    });
     const tiles = page.locator('[data-testid^="category-"]');
     const tileCount = await tiles.count();
     expect(tileCount).toBeGreaterThanOrEqual(6);
@@ -62,6 +74,13 @@ test.describe('Category choice scroll', () => {
     );
 
     fs.mkdirSync(OUT_DIR, { recursive: true });
+    await page.screenshot({
+      path: path.join(OUT_DIR, 'category-choice-header-pause-clearance.png'),
+      fullPage: false,
+    });
+    await scroll.evaluate((el) => {
+      el.scrollTop = el.scrollHeight;
+    });
     await page.screenshot({
       path: path.join(OUT_DIR, 'category-choice-bottom-360x780.png'),
       fullPage: false,

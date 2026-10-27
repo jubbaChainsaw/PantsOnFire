@@ -1,5 +1,22 @@
 @import './pof-components.css';
 
+/* Host intro caption — attribute selectors survive mobile/APK builds and beat theme inheritance */
+[data-testid='host-intro-caption'] {
+  background-color: #b8007a !important;
+  background-image: none !important;
+  opacity: 1 !important;
+  isolation: isolate;
+}
+[data-testid='host-intro-caption'] p {
+  color: #ffffff !important;
+  font-family: Inter, system-ui, sans-serif !important;
+  font-style: normal !important;
+  font-weight: 600 !important;
+  text-transform: none !important;
+  letter-spacing: normal !important;
+  opacity: 1 !important;
+}
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;

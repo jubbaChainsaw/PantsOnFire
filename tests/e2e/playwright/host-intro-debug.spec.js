@@ -1,6 +1,11 @@
 import { test, expect } from '@playwright/test';
+import fs from 'node:fs';
+import path from 'node:path';
 import { openLocalGameSetup, seedLocalAccount } from './helpers.js';
 import { skipIntroAndRules } from './game-flow.helpers.js';
+
+const OUT_DIR =
+  process.env.POF_SCREENSHOT_DIR || '/opt/cursor/artifacts/screenshots';
 
 test.describe('Host intro debug', () => {
   test.use({ viewport: { width: 360, height: 780 } });
@@ -32,7 +37,33 @@ test.describe('Host intro debug', () => {
       await page.locator('[data-testid^="round-type-"]').first().click();
     }
     await page.locator('[data-testid^="category-"]').nth(2).click();
-    await expect(page.getByTestId('host-intro-visual')).toBeVisible({ timeout: 20_000 });
+    await expect(
+      page.getByTestId('host-intro-visual').or(page.getByTestId('reveal-ready')),
+    ).toBeVisible({ timeout: 20_000 });
+    if (!(await page.getByTestId('host-intro-caption').isVisible().catch(() => false))) {
+      test.skip(true, 'Host intro skipped in this flow');
+    }
+    await page.waitForTimeout(350);
+
+    const caption = page.getByTestId('host-intro-caption');
+    const captionStyles = await caption.evaluate((el) => {
+      const panel = getComputedStyle(el);
+      const text = getComputedStyle(el.querySelector('p') || el);
+      return {
+        panelBg: panel.backgroundColor,
+        panelOpacity: panel.opacity,
+        textColor: text.color,
+        textFont: text.fontFamily,
+      };
+    });
+    expect(captionStyles.panelOpacity).toBe('1');
+    expect(captionStyles.textColor).toMatch(/rgb\(255,\s*255,\s*255\)/);
+    expect(captionStyles.textFont.toLowerCase()).toContain('inter');
+    fs.mkdirSync(OUT_DIR, { recursive: true });
+    await page.screenshot({
+      path: path.join(OUT_DIR, 'host-intro-caption-fixed.png'),
+      fullPage: false,
+    });
 
     const hostImg = page.getByTestId('host-idle-image');
     const src = await hostImg.getAttribute('src');

@@ -77,7 +77,7 @@ test.describe('Chain Reaction mobile screenshots', () => {
     const categoryTiles = page.locator('[data-testid^="category-"]');
     await expect(categoryTiles.first()).toBeVisible({ timeout: 15_000 });
     const categoryCount = await categoryTiles.count();
-    expect(categoryCount).toBeGreaterThanOrEqual(6);
+    expect(categoryCount).toBeGreaterThanOrEqual(15);
     await snap(page, `${prefix}-02-category-choice`);
 
     await categoryTiles.nth(2).click();
