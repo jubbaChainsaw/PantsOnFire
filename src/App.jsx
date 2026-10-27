@@ -3858,7 +3858,7 @@ function RoundTypeChoiceGrid({
                 aria-label={`Choose ${type.name}`}
                 data-testid={`round-type-${type.id}`}
               >
-                <div className="mx-auto aspect-square w-full max-w-[11.5rem] sm:max-w-[13rem]">
+                <div className="mx-auto aspect-square w-full max-w-[9.5rem] sm:max-w-[10.5rem]">
                   <ThemeArt
                     src={roundTypeLogoSrc}
                     alt={`${type.name} mode icon`}
@@ -9952,8 +9952,8 @@ export default function App() {
     setPartyChatInput("");
   };
   const categoryChoiceGridClass = isDesktopLandscapeWeb
-    ? "mt-8 grid grid-cols-3 gap-4 items-stretch"
-    : "mt-8 grid grid-cols-2 gap-4 sm:grid-cols-3 items-stretch";
+    ? "mt-4 grid flex-1 grid-cols-3 gap-3 items-stretch content-start"
+    : "mt-3 grid flex-1 grid-cols-2 gap-3 sm:grid-cols-3 items-stretch content-start";
   const startupGraphicsReady = useGlobalGraphicsPreload();
   useCategoryAndModeIconPreload({
     screen,
@@ -10340,10 +10340,11 @@ export default function App() {
           wallpaperSrc={UI_WALLPAPER_IN_GAME_SRC}
           overlayClassName="bg-black/45"
           lockViewport
+          contentClassName="!py-3"
         >
-          <div className="mx-auto max-w-4xl space-y-6">
-            <div className="px-1 pt-1 text-center">
-              <h2 className="mt-3 text-4xl font-black text-yellow-300 [text-shadow:0_4px_16px_rgba(0,0,0,0.65)]">
+          <div className="mx-auto flex min-h-0 w-full max-w-4xl flex-1 flex-col">
+            <div className="shrink-0 px-1 text-center">
+              <h2 className="text-2xl font-black leading-tight text-yellow-300 [text-shadow:0_4px_16px_rgba(0,0,0,0.65)] sm:text-3xl">
                 Choose the game mode
               </h2>
               <RoundTypeChoiceGrid
@@ -10364,9 +10365,10 @@ export default function App() {
           wallpaperSrc={UI_WALLPAPER_IN_GAME_SRC}
           overlayClassName="bg-black/45"
           lockViewport
+          contentClassName="!py-3"
         >
-          <div className="mx-auto max-w-4xl space-y-6">
-            <div className="px-1 pt-1 text-center">
+          <div className="mx-auto flex min-h-0 w-full max-w-4xl flex-1 flex-col">
+            <div className="shrink-0 px-1 text-center">
               <div className="text-xs uppercase tracking-[0.3em] text-white/70">
                 Round owner: {players[currentRoundOwnerIndex]?.name}
               </div>
