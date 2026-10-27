@@ -37,8 +37,11 @@ test.describe('content pack download prompt UI', () => {
     await expect(page.getByTestId('content-pack-prompt')).toContainText(
       /Download theme packs/i,
     );
+    await expect(page.getByTestId('content-pack-prompt-settings-hint')).toContainText(
+      'Settings > Downloads',
+    );
     await page.screenshot({
-      path: '/opt/cursor/artifacts/apk-verify-content-pack-prompt-390x844.png',
+      path: 'public/assets/ui/neon/apk-verify/apk-verify-content-pack-prompt-390x844.png',
     });
   });
 

@@ -34,26 +34,27 @@ export function ContentPackPromptModal({
       className="fixed inset-0 z-[80] flex items-center justify-center bg-black/75 p-4 backdrop-blur-sm"
       data-testid="content-pack-prompt"
     >
-      <GlassPanel className="w-full max-w-md rounded-[2rem] border border-cyan-300/30 bg-black/60 p-6 shadow-[0_0_40px_rgba(34,211,238,0.25)]">
-        <div className="flex items-start justify-between gap-3">
-          <div>
-            <div className="text-xs font-black uppercase tracking-[0.28em] text-cyan-200/90">
-              Extra content
-            </div>
-            <h2 className="pof-heading mt-2 text-2xl text-white">Download theme packs?</h2>
-            <p className="pof-desc mt-2 text-sm text-white/75">
-              The offline app ships with the Default theme only. Grab {packCount} free pack
-              {packCount === 1 ? '' : 's'} ({totalLabel}) for full personas, hosts, and art.
-            </p>
+      <GlassPanel className="relative w-full max-w-md rounded-[2rem] border border-cyan-300/30 bg-black/60 p-6 pt-8 shadow-[0_0_40px_rgba(34,211,238,0.25)]">
+        <button
+          type="button"
+          className="absolute right-4 top-4 rounded-full border border-white/15 bg-white/5 p-2 text-white/80"
+          onClick={onLater}
+          aria-label="Close"
+        >
+          <X className="h-4 w-4" />
+        </button>
+        <div className="px-2 text-center">
+          <div className="text-xs font-black uppercase tracking-[0.28em] text-cyan-200/90">
+            Extra content
           </div>
-          <button
-            type="button"
-            className="rounded-full border border-white/15 bg-white/5 p-2 text-white/80"
-            onClick={onLater}
-            aria-label="Close"
-          >
-            <X className="h-4 w-4" />
-          </button>
+          <h2 className="pof-heading mt-2 text-2xl text-white">
+            Download theme packs
+            <span className="pof-display-punct" aria-hidden="true">?</span>
+          </h2>
+          <p className="pof-desc mt-2 text-sm text-white/75">
+            The offline app ships with the Default theme only. Grab {packCount} free pack
+            {packCount === 1 ? '' : 's'} ({totalLabel}) for full personas, hosts, and art.
+          </p>
         </div>
         {downloading ? (
           <div className="mt-5">
@@ -64,17 +65,23 @@ export function ContentPackPromptModal({
             </p>
           </div>
         ) : null}
-        <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+        <div className="mt-6 flex flex-col gap-3">
           <Button
-            className="flex-1 rounded-2xl border border-cyan-300/40 bg-cyan-500/25 py-3 font-black uppercase tracking-wider text-cyan-50"
+            className="w-full rounded-2xl border border-cyan-300/40 bg-cyan-500/25 py-3 font-black uppercase tracking-wider text-cyan-50 sm:flex-1"
             onClick={onDownload}
             data-testid="content-pack-download-btn"
           >
             <Download className="mr-2 h-4 w-4" />
             Download
           </Button>
+          <p
+            className="text-center text-xs leading-snug text-white/55"
+            data-testid="content-pack-prompt-settings-hint"
+          >
+            You can download these later from Settings &gt; Downloads.
+          </p>
           <Button
-            className="flex-1 rounded-2xl border border-white/15 bg-white/5 py-3 font-black uppercase tracking-wider text-white/85"
+            className="w-full rounded-2xl border border-white/15 bg-white/5 py-3 font-black uppercase tracking-wider text-white/85 sm:flex-1"
             onClick={onLater}
             data-testid="content-pack-later-btn"
           >
