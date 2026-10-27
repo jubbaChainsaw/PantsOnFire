@@ -18,3 +18,11 @@ python3 scripts/fonts/build_pof_display.py
 python3 -m fontTools ttLib.woff2 compress -o public/assets/fonts/pants-on-fire/derived/PoFDisplay-Narrow-Regular.woff2 public/assets/fonts/pants-on-fire/derived/PoFDisplay-Narrow-Regular.ttf
 python3 scripts/fonts/render_display_font_preview.py
 ```
+
+### In-game screen mockups (preview CSS only)
+
+```bash
+npm run font-preview:in-game
+```
+
+Writes `in-game-previews/*-font-comparison-390x844.png` — **Current**, **PoF Display middle**, and **middle + outline** in five neon fill/stroke pairs (yellow/black, yellow/white, pink/purple, cyan/deep blue, orange/dark red). Not loaded by the app.

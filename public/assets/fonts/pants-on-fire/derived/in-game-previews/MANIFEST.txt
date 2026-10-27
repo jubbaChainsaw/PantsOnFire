@@ -1,0 +1,3 @@
+/workspace/public/assets/fonts/pants-on-fire/derived/in-game-previews/home-font-comparison-390x844.png
+/workspace/public/assets/fonts/pants-on-fire/derived/in-game-previews/category-choice-font-comparison-390x844.png
+/workspace/public/assets/fonts/pants-on-fire/derived/in-game-previews/results-font-comparison-390x844.png
