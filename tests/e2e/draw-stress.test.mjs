@@ -17,7 +17,7 @@ test('100 draws always satisfy turn draw rules', () => {
   for (let i = 0; i < 100; i += 1) {
     const { roundTypeOptions, categoryOptions } = drawTurnOptions(fakeCategories);
     assert.ok(roundTypeOptions.length <= 2 && roundTypeOptions.length >= 1);
-    assert.ok(categoryOptions.length <= 6 && categoryOptions.length >= 1);
+    assert.equal(categoryOptions.length, 6);
     assert.ok(!roundTypeOptions.some((r) => r.id === 'grill'));
   }
 });

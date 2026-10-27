@@ -181,7 +181,7 @@ import NeonHomeScreen from "./components/neon/NeonHomeScreen.jsx";
 import NeonStoreScreen from "./components/neon/NeonStoreScreen.jsx";
 import {
   drawTurnOptions,
-  getCategoriesForRoundType,
+  drawCategoriesForRoundChoice,
   pickRandomFromShown,
 } from "./lib/turnDraw.js";
 import { usePofViewportHeight } from "./hooks/usePofViewportHeight.js";
@@ -4073,11 +4073,10 @@ function CategoryChoiceGrid({
       )}
       <div
         data-testid="category-choice-scroll"
-        className="min-h-0 flex-1 overflow-y-auto overscroll-y-contain pof-scroll"
+        className="flex min-h-0 flex-1 flex-col overflow-hidden justify-center px-0.5"
         style={{
-          paddingTop: "0.25rem",
           paddingBottom:
-            "max(1.5rem, calc(env(safe-area-inset-bottom, 0px) + 1rem))",
+            "max(0.5rem, calc(env(safe-area-inset-bottom, 0px) + 0.25rem))",
         }}
       >
         <div
@@ -4106,7 +4105,7 @@ function CategoryChoiceGrid({
               aria-label={`Choose ${category.name}`}
               data-testid={`category-${category.id}`}
             >
-              <div className="aspect-square w-full">
+              <div className="aspect-square w-full max-h-[7.25rem] sm:max-h-[9rem] mx-auto">
                 <ThemeArt
                   src={categoryIconSrc}
                   alt={`${category.name} category icon`}
@@ -9997,16 +9996,8 @@ export default function App() {
     setPartyChatInput("");
   };
   const categoryChoiceGridClass = isDesktopLandscapeWeb
-    ? "grid grid-cols-3 gap-3 auto-rows-min pb-4"
-    : "grid grid-cols-2 gap-x-3 gap-y-4 auto-rows-min pb-4";
-  const categoriesForChoiceScreen = useMemo(() => {
-    const roundTypeId =
-      selectedRoundType ||
-      round?.roundTypeId ||
-      roundTypeOptions[0]?.id ||
-      "prompt";
-    return getCategoriesForRoundType(activeCategories, roundTypeId);
-  }, [activeCategories, round?.roundTypeId, roundTypeOptions, selectedRoundType]);
+    ? "grid grid-cols-3 grid-rows-2 gap-3 auto-rows-min w-full max-w-3xl mx-auto"
+    : "grid grid-cols-2 grid-rows-3 gap-x-2.5 gap-y-2 w-full flex-1 min-h-0 content-center";
   const bugReportAppContext = useMemo(
     () => ({
       screen,
@@ -10417,6 +10408,9 @@ export default function App() {
               onlineMode={onlineMode}
               onSelectRoundType={(typeId) => {
                 setSelectedRoundType(typeId);
+                setCategoryOptions(
+                  drawCategoriesForRoundChoice(activeCategories, typeId),
+                );
                 setScreen("category-choice");
               }}
             />
@@ -10470,9 +10464,7 @@ export default function App() {
                     data-testid="choose-category-random"
                     onClick={() => {
                       tapFx();
-                      const picked = pickRandomFromShown(
-                        categoriesForChoiceScreen,
-                      );
+                      const picked = pickRandomFromShown(categoryOptions);
                       if (picked?.id) chooseCategory(picked.id);
                     }}
                   >
@@ -10482,7 +10474,7 @@ export default function App() {
                 </div>
                 <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
                   <CategoryChoiceGrid
-                    categoryOptions={categoriesForChoiceScreen}
+                    categoryOptions={categoryOptions}
                     categoryChoiceGridClass={categoryChoiceGridClass}
                     onlineMode={onlineMode}
                     canonicalThemeName={canonicalThemeName}

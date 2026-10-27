@@ -71,13 +71,54 @@ export function drawTurnOptions(activeCategories, { excludeRoundTypeId = null } 
   }
   const roundTypeIds = roundTypeOptions.map((t) => t.id);
   const pool = unionCategoriesForRoundTypes(activeCategories, roundTypeIds);
-  // Legacy draw for setup/online previews: random subset only. Category choice UI uses
-  // getCategoriesForRoundType() so players always see every enabled category for the round.
-  const categoryOptions = shuffle(pool).slice(
-    0,
-    Math.min(CATEGORY_DRAW_COUNT, pool.length),
-  );
+  const categoryOptions = drawRandomCategorySubset(pool, CATEGORY_DRAW_COUNT);
   return { roundTypeOptions, categoryOptions };
+}
+
+function dedupeCategoriesById(categories) {
+  const byId = new Map();
+  for (const category of categories || []) {
+    if (!category?.id || byId.has(category.id)) continue;
+    byId.set(category.id, category);
+  }
+  return [...byId.values()];
+}
+
+/**
+ * Up to `count` unique random categories from `pool`. Fills from the remainder if the
+ * first shuffle pass yields fewer than `target` (e.g. duplicate ids in input).
+ */
+export function drawRandomCategorySubset(pool, count = CATEGORY_DRAW_COUNT) {
+  const eligible = dedupeCategoriesById(pool);
+  const target = Math.min(count, eligible.length);
+  if (target === 0) return [];
+
+  const shuffled = shuffle(eligible);
+  const picked = [];
+  const seen = new Set();
+  for (const category of shuffled) {
+    if (!category?.id || seen.has(category.id)) continue;
+    seen.add(category.id);
+    picked.push(category);
+    if (picked.length >= target) break;
+  }
+  if (picked.length < target) {
+    for (const category of eligible) {
+      if (!category?.id || seen.has(category.id)) continue;
+      seen.add(category.id);
+      picked.push(category);
+      if (picked.length >= target) break;
+    }
+  }
+  return picked;
+}
+
+/** Six random eligible categories for the category choice screen (pof-enh-1). */
+export function drawCategoriesForRoundChoice(activeCategories, roundTypeId) {
+  return drawRandomCategorySubset(
+    getCategoriesForRoundType(activeCategories, roundTypeId),
+    CATEGORY_DRAW_COUNT,
+  );
 }
 
 /** All enabled categories valid for a round type (sorted for stable UI). */

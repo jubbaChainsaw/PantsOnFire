@@ -28,10 +28,10 @@ async function openCategoryChoice(page) {
   const count = await page
     .getByTestId('category-choice-grid')
     .getAttribute('data-category-count');
-  expect(Number(count || 0)).toBeGreaterThanOrEqual(15);
+  expect(Number(count || 0)).toBe(6);
 }
 
-test.describe('Category choice scroll', () => {
+test.describe('Category choice 2x3 grid', () => {
   test.use({ viewport: { width: 360, height: 780 } });
 
   test.beforeEach(async ({ page }) => {
@@ -42,47 +42,39 @@ test.describe('Category choice scroll', () => {
     }
   });
 
-  test('scrolls to last categories and captures bottom', async ({ page }) => {
+  test('shows six categories in a non-scrolling 2x3 grid', async ({ page }) => {
     await openCategoryChoice(page);
+    const tiles = page.locator(
+      '[data-testid="category-choice-grid"] [data-testid^="category-"]',
+    );
+    await expect(tiles).toHaveCount(6);
+
     const scroll = page.getByTestId('category-choice-scroll');
-    await scroll.evaluate((el) => {
-      el.scrollTop = 0;
-    });
-    fs.mkdirSync(OUT_DIR, { recursive: true });
-    await page.screenshot({
-      path: path.join(OUT_DIR, 'category-choice-top-360x780.png'),
-      fullPage: false,
-    });
-    const tiles = page.locator('[data-testid^="category-"]');
-    const tileCount = await tiles.count();
-    expect(tileCount).toBeGreaterThanOrEqual(6);
-    const lastTile = tiles.nth(tileCount - 1);
-
-    await scroll.evaluate((el) => {
-      el.scrollTop = el.scrollHeight;
-    });
-
-    await expect(lastTile).toBeInViewport();
-
     const scrollMetrics = await scroll.evaluate((el) => ({
-      scrollTop: el.scrollTop,
       scrollHeight: el.scrollHeight,
       clientHeight: el.clientHeight,
     }));
-    expect(scrollMetrics.scrollTop + scrollMetrics.clientHeight).toBeGreaterThanOrEqual(
-      scrollMetrics.scrollHeight - 4,
+    expect(scrollMetrics.scrollHeight).toBeLessThanOrEqual(
+      scrollMetrics.clientHeight + 2,
     );
+
+    const overlap = await page.evaluate(() => {
+      const bar = document.querySelector(
+        '[data-testid="category-choice-random-bar"]',
+      );
+      const tile = document.querySelector(
+        '[data-testid="category-choice-grid"] [data-testid^="category-"]',
+      );
+      if (!bar || !tile) return 999;
+      const b = bar.getBoundingClientRect();
+      const t = tile.getBoundingClientRect();
+      return Math.max(0, b.bottom - t.top);
+    });
+    expect(overlap).toBeLessThanOrEqual(1);
 
     fs.mkdirSync(OUT_DIR, { recursive: true });
     await page.screenshot({
-      path: path.join(OUT_DIR, 'category-choice-header-pause-clearance.png'),
-      fullPage: false,
-    });
-    await scroll.evaluate((el) => {
-      el.scrollTop = el.scrollHeight;
-    });
-    await page.screenshot({
-      path: path.join(OUT_DIR, 'category-choice-bottom-360x780.png'),
+      path: path.join(OUT_DIR, 'category-choice-6grid-360x780.png'),
       fullPage: false,
     });
   });
