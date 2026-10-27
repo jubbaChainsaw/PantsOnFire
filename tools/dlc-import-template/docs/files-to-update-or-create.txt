@@ -14,7 +14,11 @@ src/data/packs/<category-id>/promptRoundData.js
 src/data/packs/categoryPromptPacks.js
 
 # Optional: add a new selectable theme
-public/assets/themes/<theme-id>/characters/presenter.(png|svg)
+public/assets/themes/<theme-id>/hosts/persona-host-idle.png
+public/assets/themes/<theme-id>/hosts/persona-host-talk-1.png
+public/assets/themes/<theme-id>/hosts/persona-host-talk-2.png
+public/assets/themes/<theme-id>/hosts/persona-host-talk-3.png
+public/assets/themes/<theme-id>/hosts/persona-host-talking.(webm|mp4)  # optional video loop
 public/assets/themes/<theme-id>/icons/icons-sheet.(png|svg)
 public/assets/themes/<theme-id>/ui/banner.(png|svg)
 public/assets/themes/<theme-id>/cards/prompt-front.(png|svg)
