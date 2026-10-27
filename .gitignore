@@ -1,5 +1,7 @@
 node_modules
 android/
+test-results/
+playwright-report/
 .local-secrets/
 scripts/royaltyFreeApiKeys.local.json
 scripts/royaltyFreeApiKeys.json
