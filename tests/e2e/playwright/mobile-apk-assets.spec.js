@@ -38,7 +38,7 @@ test.describe('mobile bundle assets (APK parity)', () => {
       await assertImgLoaded(menuImgs.nth(i));
     }
 
-    const deckImgs = page.locator('.neon-home-deck img, [class*="deck"] img');
+    const deckImgs = page.locator('img.pof-deck');
     const deckCount = await deckImgs.count();
     if (deckCount > 0) {
       for (let i = 0; i < deckCount; i += 1) {

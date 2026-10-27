@@ -17,7 +17,7 @@ import {
   TIER_RANK,
 } from '../../account/tierModel.js';
 import { CORE_THEME_NAMES, DLC_THEME_PACKS } from '../../data/themeCatalog.js';
-import { getThemeAssets } from '../../data/themeAssets.js';
+import { getStoreThemeThumbSrc } from '../../data/themeAssets.js';
 import { NEON_ASSETS, neonThemeVars } from '../../data/uiNeonAssets.js';
 import { resolveBundledAssetSrc } from '../../lib/publicAssetUrl.js';
 import { readStoreSectionPrefs, writeStoreSectionPrefs } from '../../lib/storeSectionPrefs.js';
@@ -226,10 +226,7 @@ export default function NeonStoreScreen({
   const packArt = (pack) => {
     const firstTheme = pack?.themes?.[0];
     if (!firstTheme) return '';
-    const assets = getThemeAssets(firstTheme);
-    return resolveBundledAssetSrc(
-      assets?.uiBanner || assets?.personaHostIdle || '',
-    );
+    return getStoreThemeThumbSrc(firstTheme);
   };
 
   const downloadStateForIds = (ids) => {
@@ -357,7 +354,7 @@ export default function NeonStoreScreen({
               <div className="pof-heading mb-2 text-sm text-cyan-100">Core themes</div>
               <div className="flex flex-wrap gap-2">
                 {coreThemeNames.map((name) => {
-                  const art = resolveBundledAssetSrc(getThemeAssets(name)?.uiBanner || '');
+                  const art = getStoreThemeThumbSrc(name);
                   const packId = coreThemeContentPackId(name, contentPackManifest);
                   const dlState = packId ? downloadStateForIds([packId]) : 'none';
                   return (

@@ -93,6 +93,8 @@ export function ContentPackSettingsPanel({
   onDownload,
   onDelete,
   onRetry,
+  onOpenDownloadOffer,
+  missingPackCount = 0,
   isNativeBridge,
 }) {
   const installed = new Set(installedPackIds || []);
@@ -101,9 +103,22 @@ export function ContentPackSettingsPanel({
       className="rounded-[2.2rem] border-fuchsia-300/25 bg-black/25 p-5"
       data-testid="content-pack-settings"
     >
-      <div className="flex items-center gap-2 text-xs uppercase tracking-[0.3em] text-fuchsia-200/90">
-        <HardDrive className="h-4 w-4" />
-        Downloaded content
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <div className="flex items-center gap-2 text-xs uppercase tracking-[0.3em] text-fuchsia-200/90">
+          <HardDrive className="h-4 w-4" />
+          Downloaded content
+        </div>
+        {missingPackCount > 0 && onOpenDownloadOffer ? (
+          <Button
+            type="button"
+            className="rounded-xl border border-cyan-300/35 bg-cyan-500/20 px-3 py-1.5 text-xs font-bold text-cyan-50"
+            onClick={onOpenDownloadOffer}
+            data-testid="content-pack-open-offer-btn"
+          >
+            <Download className="mr-1 h-3.5 w-3.5" />
+            Download packs ({missingPackCount})
+          </Button>
+        ) : null}
       </div>
       <p className="mt-2 text-sm text-white/75">
         Manage optional theme and picture packs stored on this device.

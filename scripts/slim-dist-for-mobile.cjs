@@ -24,6 +24,24 @@ function rmrf(target) {
   fs.rmSync(target, { recursive: true, force: true });
 }
 
+/** Keep a single host still for Shop thumbnails; drop talk frames and videos. */
+function stripHostsKeepingStoreThumbs(hostsPath) {
+  if (!fs.existsSync(hostsPath)) return;
+  for (const file of fs.readdirSync(hostsPath)) {
+    if (file.toLowerCase() === 'persona-host-idle.png') continue;
+    const abs = path.join(hostsPath, file);
+    const st = fs.statSync(abs);
+    if (st.isDirectory()) {
+      removedBytes += statSize(abs);
+      rmrf(abs);
+      continue;
+    }
+    removedBytes += st.size;
+    fs.unlinkSync(abs);
+    removedFiles += 1;
+  }
+}
+
 function walk(dir, onFile) {
   if (!fs.existsSync(dir)) return;
   for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
@@ -77,6 +95,11 @@ if (fs.existsSync(themesDir)) {
     for (const sub of fs.readdirSync(themePath)) {
       if (!THEME_STRIP_SUBDIRS.has(sub)) continue;
       const abs = path.join(themePath, sub);
+      if (sub === 'hosts') {
+        stripHostsKeepingStoreThumbs(abs);
+        console.log(`Stripped themes/${name}/hosts (kept store thumb idle)`);
+        continue;
+      }
       removedBytes += statSize(abs);
       rmrf(abs);
       console.log(`Stripped themes/${name}/${sub}`);
