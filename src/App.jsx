@@ -167,6 +167,7 @@ import {
 } from "./online/lobbyTransport";
 import { createVoicePartyTransport } from "./online/voicePartyTransport";
 import NeonHomeScreen from "./components/neon/NeonHomeScreen.jsx";
+import NeonStoreScreen from "./components/neon/NeonStoreScreen.jsx";
 import { drawTurnOptions, pickRandomFromShown } from "./lib/turnDraw.js";
 import { usePofViewportHeight } from "./hooks/usePofViewportHeight.js";
 import { resolveBundledAssetSrc } from "./lib/publicAssetUrl.js";
@@ -6928,291 +6929,6 @@ function FinalScreen({ players, onRestart, line, theme }) {
     </TopFrame>
   );
 }
-function StoreScreen({
-  onBack,
-  theme,
-  dlcThemePacks = [],
-  unlockedThemePackIds = [],
-  onUnlockThemePack = () => {},
-  onRedeemThemeCode = () => ({ status: "invalid-code" }),
-  accountSession = null,
-  allDlcIncluded = false,
-  hasTwistAddon = false,
-  disableDlcDemo = false,
-  onSimulateTierPurchase = () => {},
-  onSimulateTwistAddon = () => {},
-}) {
-  const unlocked = new Set(unlockedThemePackIds || []);
-  const [redeemCodeInput, setRedeemCodeInput] = useState("");
-  const [redeemFeedback, setRedeemFeedback] = useState(null);
-  const [storeNotice, setStoreNotice] = useState(null);
-  const currentTierRank = accountSession
-    ? TIER_RANK[accountSession.tierId] ?? 0
-    : 0;
-  const packNameById = useMemo(
-    () =>
-      Object.fromEntries(
-        (dlcThemePacks || []).map((pack) => [pack.id, pack.name || pack.id]),
-      ),
-    [dlcThemePacks],
-  );
-  const handleRedeemSubmit = (event) => {
-    event.preventDefault();
-    const redemption = onRedeemThemeCode(redeemCodeInput);
-    if (!redemption || redemption.status === "invalid-code") {
-      setRedeemFeedback({
-        tone: "error",
-        message: "Invalid code. Double-check the code and try again.",
-      });
-      return;
-    }
-    if (redemption.status === "already-unlocked") {
-      setRedeemFeedback({
-        tone: "neutral",
-        message:
-          "Code accepted, but those DLC packs are already unlocked on this device.",
-      });
-      setRedeemCodeInput("");
-      return;
-    }
-    if (redemption.status === "unlocked") {
-      const unlockedNames = (redemption.newlyUnlockedPackIds || []).map(
-        (packId) => packNameById[packId] || packId,
-      );
-      setRedeemFeedback({
-        tone: "success",
-        message: unlockedNames.length
-          ? `Code redeemed! Unlocked: ${unlockedNames.join(", ")}.`
-          : "Code redeemed! New DLC unlocked.",
-      });
-      setRedeemCodeInput("");
-      return;
-    }
-    setRedeemFeedback({
-      tone: "error",
-      message: "Could not redeem this code right now. Please try again.",
-    });
-  };
-  return (
-    <TopFrame theme={theme}>
-      <div className="mx-auto max-w-4xl space-y-6">
-        <div className="flex justify-between items-center gap-4">
-          <Button
-            className="rounded-[1.4rem] bg-white/5 border border-white/10 px-4 py-2 text-white"
-            onClick={onBack}
-          >
-            Back
-          </Button>
-          <div className="text-center">
-            <div className="text-xs uppercase tracking-[0.35em] text-cyan-200/80">
-              Store
-            </div>
-            <div className="text-white/80 text-sm mt-1">
-              Subscriptions, add-ons, and DLC theme packs.
-            </div>
-          </div>
-          <div className="w-[72px]" />
-        </div>
-        {storeNotice && (
-          <div
-            className={`rounded-2xl border px-4 py-3 text-sm ${
-              String(storeNotice).startsWith("Successfully")
-                ? "border-emerald-400/30 bg-emerald-500/15 text-emerald-50"
-                : "border-red-300/40 bg-red-500/15 text-red-100"
-            }`}
-          >
-            {storeNotice}
-          </div>
-        )}
-        <GlassPanel className="rounded-[2.5rem] border border-amber-300/25 bg-black/30 p-8">
-          <div className="flex items-center gap-3 mb-3">
-            <Star className="h-6 w-6 text-amber-200" />
-            <h2 className="text-2xl font-black text-amber-200">Subscriptions</h2>
-          </div>
-          {accountSession && (
-            <p className="text-sm text-white/70 mb-4">
-              Signed in as{" "}
-              <span className="font-semibold text-cyan-100">
-                {accountSession.displayName}
-              </span>
-              . Buttons below simulate checkout on this device only.
-            </p>
-          )}
-          <div className="space-y-4">
-            {SUBSCRIPTION_TIERS.map((tier) => {
-              const targetRank = TIER_RANK[tier.tierId] ?? 0;
-              const owned = currentTierRank >= targetRank;
-              const isFibber = tier.tierId === TIER_FIBBER;
-              return (
-                <div
-                  key={tier.tierId}
-                  className="rounded-2xl border border-white/10 bg-black/25 p-4"
-                >
-                  <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
-                    <div>
-                      <div className="font-black text-lg text-white">
-                        {tier.name}{" "}
-                        <span className="text-yellow-300">{tier.priceLabel}</span>
-                      </div>
-                      <ul className="mt-2 list-disc space-y-1 pl-5 text-xs text-white/70">
-                        {tier.bullets.map((line) => (
-                          <li key={line}>{line}</li>
-                        ))}
-                      </ul>
-                      {tier.upgradeHint && (
-                        <div className="mt-2 text-[0.7rem] text-cyan-100/80">
-                          {tier.upgradeHint}
-                        </div>
-                      )}
-                    </div>
-                    {!isFibber && (
-                      <Button
-                        className="mt-2 shrink-0 rounded-xl bg-yellow-300 text-zinc-950 border border-white disabled:opacity-50 sm:mt-0"
-                        disabled={owned || !accountSession}
-                        onClick={() => {
-                          const msg = onSimulateTierPurchase(tier.tierId);
-                          setStoreNotice(msg || "");
-                        }}
-                      >
-                        {owned ? "Owned" : "Simulate purchase"}
-                      </Button>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </GlassPanel>
-        <GlassPanel className="rounded-[2.5rem] border border-fuchsia-400/20 bg-black/25 p-8">
-          <div className="flex items-center gap-3 mb-3">
-            <Flame className="h-6 w-6 text-fuchsia-200" />
-            <h2 className="text-2xl font-black text-fuchsia-100">
-              {ADDON_TWIST_TRUTH.name}
-            </h2>
-          </div>
-          <p className="text-sm text-white/75 mb-4">{ADDON_TWIST_TRUTH.description}</p>
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <div className="text-yellow-300 font-black">
-              {ADDON_TWIST_TRUTH.priceLabel}
-            </div>
-            <Button
-              className="rounded-xl bg-yellow-300 text-zinc-950 border border-white disabled:opacity-50"
-              disabled={
-                !accountSession ||
-                allDlcIncluded ||
-                hasTwistAddon ||
-                currentTierRank >= TIER_RANK[TIER_HOST_MOST]
-              }
-              onClick={() => {
-                const msg = onSimulateTwistAddon();
-                setStoreNotice(msg || "");
-              }}
-            >
-              {hasTwistAddon || allDlcIncluded
-                ? "Included"
-                : "Simulate purchase"}
-            </Button>
-          </div>
-        </GlassPanel>
-        <GlassPanel className="rounded-[2.5rem] p-8 border-fuchsia-400/20 bg-black/25">
-          <div className="flex items-center gap-3 mb-4">
-            <ShoppingBag className="h-6 w-6 text-yellow-300" />
-            <h2 className="text-2xl font-black text-yellow-300">
-              Theme DLC packs
-            </h2>
-          </div>
-          <p className="text-white/75 mb-5">{DLC_STORE_BLURB}</p>
-          <div className="space-y-3">
-            {(dlcThemePacks || []).map((pack) => {
-              const isUnlocked = allDlcIncluded || unlocked.has(pack.id);
-              return (
-                <div
-                  key={pack.id}
-                  className="rounded-2xl border border-white/10 bg-black/25 p-4"
-                >
-                  <div className="flex items-center justify-between gap-4">
-                    <div>
-                      <div className="font-black text-lg text-white">
-                        {pack.name}
-                      </div>
-                      <div className="text-xs text-cyan-200 mt-1">
-                        {(pack.themes || [])
-                          .map((themeName) => `${themeName} 🔥`)
-                          .join(" • ")}
-                      </div>
-                      {pack.description && (
-                        <div className="text-xs text-white/65 mt-2">
-                          {pack.description}
-                        </div>
-                      )}
-                    </div>
-                    <div className="text-right">
-                      <div className="text-yellow-300 font-black">
-                        {pack.priceLabel || "99p"}
-                      </div>
-                      <Button
-                        className="mt-2 rounded-xl bg-yellow-300 text-zinc-950 border border-white disabled:opacity-60"
-                        disabled={isUnlocked || disableDlcDemo}
-                        title={
-                          disableDlcDemo
-                            ? "DLC packs for cloud accounts are unlocked via App Store / Play (RevenueCat)."
-                            : undefined
-                        }
-                        onClick={() => onUnlockThemePack(pack.id)}
-                      >
-                        {isUnlocked ? "Unlocked" : "Unlock"}
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-          <div className="mt-6 rounded-2xl border border-cyan-400/25 bg-cyan-500/10 p-4">
-            <div className="flex items-center gap-2 text-cyan-100">
-              <KeyRound className="h-5 w-5" />
-              <div className="font-black">Redeem promo code</div>
-            </div>
-            <p className="text-sm text-white/75 mt-2">
-              Enter giveaway or marketing codes to unlock certain DLC bundles
-              instantly.
-            </p>
-            <form
-              className="mt-3 flex flex-col gap-2 sm:flex-row"
-              onSubmit={handleRedeemSubmit}
-            >
-              <Input
-                value={redeemCodeInput}
-                onChange={(event) => setRedeemCodeInput(event.target.value)}
-                placeholder="e.g. HISTORY-99"
-                className="rounded-xl bg-white/10 border-white/20 text-white"
-              />
-              <Button
-                type="submit"
-                className="rounded-xl bg-cyan-300 text-zinc-950 border border-white"
-              >
-                Redeem
-              </Button>
-            </form>
-            {redeemFeedback && (
-              <div
-                className={`mt-3 rounded-xl border px-3 py-2 text-sm ${
-                  redeemFeedback.tone === "success"
-                    ? "border-emerald-300/40 bg-emerald-500/20 text-emerald-100"
-                    : redeemFeedback.tone === "neutral"
-                      ? "border-amber-300/40 bg-amber-500/15 text-amber-100"
-                      : "border-red-300/40 bg-red-500/15 text-red-100"
-                }`}
-              >
-                {redeemFeedback.message}
-              </div>
-            )}
-          </div>
-        </GlassPanel>
-      </div>
-    </TopFrame>
-  );
-}
 
 function normalizeThemeSelection(themeName, themeOptions = []) {
   const canonicalTheme = toCanonicalThemeName(themeName || "Default");
@@ -7859,9 +7575,17 @@ export default function App() {
     session: supabaseSession,
     signOutCloud,
   } = useAuth();
-  const [screen, setScreen] = useState(() =>
-    readAccountSession() ? "home" : "account-gate",
-  );
+  const [screen, setScreen] = useState(() => {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get("pofScreen") === "store" && readAccountSession()) {
+        return "store";
+      }
+    } catch {
+      /* ignore */
+    }
+    return readAccountSession() ? "home" : "account-gate";
+  });
   usePofViewportHeight();
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -10647,15 +10371,22 @@ export default function App() {
         themeName={canonicalThemeName}
       />
       {screen === "store" && (
-        <StoreScreen
+        <NeonStoreScreen
           onBack={() => setScreen("home")}
-          theme={canonicalThemeName}
+          onOpenAccount={() => setScreen("account-gate")}
           dlcThemePacks={DLC_THEME_PACKS}
           unlockedThemePackIds={unlockedThemePackIds}
           accountSession={accountSession}
           allDlcIncluded={entitlements.allDlcIncluded}
           hasTwistAddon={Boolean(accountSession?.addonTwistTruth)}
           disableDlcDemo={accountSession?.authProvider === "supabase"}
+          contentPackManifest={contentPacks.manifest}
+          installedContentPackIds={contentPacks.installedPackIds}
+          onDownloadContentPack={(packId) => {
+            const pack = contentPacks.manifest?.packs?.find((p) => p.id === packId);
+            if (pack) contentPacks.downloadPack(pack);
+          }}
+          downloadByPackId={contentPacks.downloadByPackId}
           onSimulateTierPurchase={(tierId) => {
             if (!accountSession) return "Sign in from the account screen first.";
             if (accountSession.authProvider === "supabase") {
