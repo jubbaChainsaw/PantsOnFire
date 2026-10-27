@@ -1,7 +1,13 @@
-import { CATEGORY_TOPIC_NOUNS } from './twoTruthsOneFire/categoryTopicNouns.js';
+import {
+  CURATED_PHRASES_BY_CATEGORY,
+  getCuratedPhraseCount,
+} from './twoTruthsOneFire/curatedPhraseBanks.js';
+import { dedupeMains, phraseToMain } from './twoTruthsOneFire/buildCuratedMains.js';
 
 export const TWO_TRUTHS_ROUNDS_PER_CATEGORY = 100;
 export const TWO_TRUTHS_ADULT_ROUNDS_PER_CATEGORY = 35;
+
+export { getCuratedPhraseCount };
 
 const TWO_TRUTHS_HINTS = [
   'Three Picks',
@@ -16,99 +22,10 @@ const TWO_TRUTHS_HINTS = [
   'Fire Round',
 ];
 
-/** Natural UK frames — `{topic}` plural phrase, `{category}` lowercase category label. */
-const TWO_TRUTHS_FRAME_TEMPLATES = [
-  'Name three {topic}',
-  'Name three {topic} you would defend in an argument',
-  'Name three {topic} everyone here should know',
-  'Name three {topic} that sum up {category}',
-  'Name three {topic} you are weirdly fussy about',
-  'Name three {topic} that are overrated',
-  'Name three {topic} that are underrated',
-  'Name three {topic} you would recommend to a beginner',
-  'Name three {topic} that always start a debate',
-  'Name three {topic} you secretly judge people for liking',
-  'Name three {topic} you would strike off a {category} list',
-  'Name three {topic} that feel nostalgic',
-  'Name three {topic} that feel overrated online',
-  'Name three {topic} that are guilty pleasures',
-  'Name three {topic} that sound made up but are real',
-  'Name three {topic} you would put in a pub quiz',
-  'Name three {topic} that would start a WhatsApp row',
-  'Name three {topic} you would never admit you like',
-  'Name three {topic} you would rate as the best',
-  'Name three {topic} you would rate as the worst',
-  'Name three {topic} you would use as icebreakers',
-  'Name three {topic} your mates would argue about',
-  'Name three {topic} you came to too late in life',
-  'Name three {topic} you loved when you were younger',
-  'Name three {topic} everyone pretends to like',
-  'Name three {topic} that are hard to explain',
-  'Name three {topic} that remind you of {category}',
-  'Name three {topic} you would add to a {category} pub quiz',
-  'Name three {topic} that split the room',
-  'Name three {topic} you would put on a {category} bingo card',
-  'Name three {topic} that instantly show your age',
-  'Name three {topic} you would ban from a {category} night',
-  'Name three {topic} you have strong opinions on',
-  'Name three {topic} you would back in a trivia round',
-  'Name three {topic} you would nominate for a hall of fame',
-  'Name three {topic} you would send to a mate new to {category}',
-  'Name three {topic} that are comforting',
-  'Name three {topic} that are chaotic',
-  'Name three {topic} you would queue for',
-  'Name three {topic} you would not shut up about',
-];
-
-const TWO_TRUTHS_ADULT_FRAME_TEMPLATES = [
-  'Name three {topic} from a messy night out',
-  'Name three {topic} you would not post on the work Slack',
-  'Name three {topic} that are a little too honest',
-  'Name three {topic} from a chaotic weekend',
-  'Name three {topic} you would whisper at 2 a.m.',
-  'Name three {topic} that are NSFW-ish but not illegal',
-  'Name three {topic} you would delete from your search history',
-  'Name three {topic} that spell trouble on a first date',
-  'Name three {topic} you would not tell your parents about',
-  'Name three {topic} from a lads’ or hen-do disaster story',
-  'Name three {topic} you would blame on the group chat',
-  'Name three {topic} that are after-hours only',
-  'Name three {topic} you would swap stories about over brunch',
-  'Name three {topic} that are spicy hot takes',
-  'Name three {topic} you would put in a “no context” collage',
-  'Name three {topic} that feel like a walk of shame',
-  'Name three {topic} you would overshare at a party',
-  'Name three {topic} that are “we do not talk about that”',
-  'Name three {topic} you would use as red flags (playfully)',
-  'Name three {topic} from a festival after dark',
-  'Name three {topic} you would not put in the family group chat',
-  'Name three {topic} that are dangerously relatable',
-  'Name three {topic} you would confess over drinks',
-  'Name three {topic} you would only admit after midnight',
-  'Name three {topic} that are too spicy for polite company',
-  'Name three {topic} you would put on a dare list',
-  'Name three {topic} that are late-night DM material',
-  'Name three {topic} you would not put on LinkedIn',
-  'Name three {topic} from a hotel story you barely remember',
-  'Name three {topic} you would roast a mate for liking',
-  'Name three {topic} that are unhinged but legal',
-  'Name three {topic} you would put in an anonymous confession',
-  'Name three {topic} you would avoid on a first date',
-  'Name three {topic} you would not bring home to meet your parents',
-  'Name three {topic} you would only discuss after the second pint',
-];
-
 const STACKED_QUALIFIER_PATTERN =
   /\b(underrated|overrated|classic|iconic|nostalgic|retro|modern|mainstream|underground|obscure|polarising|unexpected|chaotic|wholesome|guilty-pleasure|debate-starting|all-time favourite)\s+(underrated|overrated|classic|iconic|nostalgic|retro|modern|mainstream|underground|obscure|polarising|unexpected|chaotic|wholesome|guilty-pleasure|debate-starting|all-time favourite)\b/i;
 
-/** Stem groups: topic and tail must not repeat the same idea. */
-const REDUNDANCY_STEM_GROUPS = [
-  ['childhood', 'child', 'children', 'kid', 'kids', 'younger', 'young', 'schoolyard', 'playground'],
-  ['holiday', 'holidays', 'festive', 'christmas'],
-  ['school', 'uni', 'university', 'lecture', 'exam'],
-];
-
-/** Common US spellings / terms we do not want in generated Two Truths copy. */
+/** Common US spellings / terms we do not want in Two Truths copy. */
 export const TWO_TRUTHS_AMERICANISM_RULES = [
   { id: 'favorite', pattern: /\bfavorites?\b/i },
   { id: 'color', pattern: /\bcolors?\b/i },
@@ -134,85 +51,33 @@ export const TWO_TRUTHS_AMERICANISM_RULES = [
   { id: 'college', pattern: /\bcolleges?\b/i },
 ];
 
-/** Bare mass-noun category labels — invalid before a “that …” clause (need plural phrases from the map). */
-const BARE_UNCOUNTABLE_TOPIC_WORDS = new Set([
-  'music',
-  'food',
-  'art',
-  'science',
-  'comedy',
-  'horror',
-  'party',
-  'weird',
-  'tech',
-  'tv',
-  'anime',
-]);
+/** Curated phrase tails we reject (meta, gluing residue, or nonsense). */
+const DISALLOWED_PHRASE_TAIL_PATTERN =
+  /\b(not horror|not horror but|not you it's me|collaboration|collaborations)\b/i;
 
 function simplifyLabel(text, fallback = 'things') {
   const cleaned = String(text || '').split(/[(/:-]/)[0].trim();
   return cleaned || fallback;
 }
 
-function categoryPhraseFor(category) {
-  return simplifyLabel(category?.name, 'topic').toLowerCase();
+export function isCuratedPhraseTailAcceptable(phrase) {
+  const tail = String(phrase || '').trim();
+  if (!tail) return false;
+  if (DISALLOWED_PHRASE_TAIL_PATTERN.test(tail)) return false;
+  const main = phraseToMain(tail);
+  return validateTwoTruthsPromptMain(main) === null;
 }
 
-function fallbackTopicsForCategory(category) {
-  const label = simplifyLabel(category.name, 'things').toLowerCase();
-  return [
-    `${label} picks`,
-    `iconic ${label} moments`,
-    `underrated ${label} deep cuts`,
-    `chaotic ${label} stories`,
-    `${label} hot takes`,
-  ];
-}
-
-export function getTwoTruthsTopicNounsForCategory(category) {
-  const fromMap = CATEGORY_TOPIC_NOUNS[category?.id];
-  if (fromMap?.length) {
-    return [...new Map(fromMap.map((t) => [String(t).trim().toLowerCase(), String(t).trim()])).values()];
-  }
-  return fallbackTopicsForCategory(category);
-}
-
-function tokenizeCopy(text) {
-  return String(text || '')
-    .toLowerCase()
-    .replace(/[^a-z0-9\s]/g, ' ')
-    .split(/\s+/)
-    .filter(Boolean);
-}
-
-/**
- * Returns an error string if topic wording is repeated in the prompt tail, else null.
- */
-export function detectTwoTruthsTopicRedundancy(topic, main) {
-  const topicText = String(topic || '').trim();
-  const mainText = String(main || '').trim();
-  if (!topicText || !mainText.startsWith('Name three ')) return null;
-  const expectedPrefix = `Name three ${topicText}`;
-  if (!mainText.startsWith(expectedPrefix)) return null;
-  const suffix = mainText.slice(expectedPrefix.length);
-  const topicWords = tokenizeCopy(topicText).filter((w) => w.length >= 4);
-  const suffixWords = new Set(tokenizeCopy(suffix));
-  for (const word of topicWords) {
-    if (suffixWords.has(word)) {
-      return `redundant content word “${word}” in topic and tail`;
-    }
-  }
-  const topicTokens = new Set(tokenizeCopy(topicText));
-  const suffixTokens = tokenizeCopy(suffix);
-  for (const group of REDUNDANCY_STEM_GROUPS) {
-    const topicHit = group.some((stem) => topicTokens.has(stem));
-    if (!topicHit) continue;
-    const suffixHit = group.some((stem) => suffixTokens.includes(stem));
-    if (suffixHit) {
-      return 'redundant stem overlap between topic and tail';
-    }
-  }
-  return null;
+export function getCuratedMainsForCategory(categoryId, limit = Infinity) {
+  const phrases = CURATED_PHRASES_BY_CATEGORY[categoryId] || [];
+  const mains = dedupeMains(
+    phrases
+      .filter(isCuratedPhraseTailAcceptable)
+      .map(phraseToMain)
+      .filter(Boolean),
+  );
+  if (!Number.isFinite(limit)) return mains;
+  return mains.slice(0, Math.max(0, limit));
 }
 
 /**
@@ -228,72 +93,65 @@ export function findAmericanismsInTwoTruthsCopy(text) {
 
 /**
  * Returns an error string if the prompt main is invalid, otherwise null.
- * Pass `topic` when validating a fully built main string.
  */
-export function validateTwoTruthsPromptMain(main, options = {}) {
+export function validateTwoTruthsPromptMain(main) {
   const text = String(main || '').trim();
   if (!text) return 'empty prompt';
   if (!text.startsWith('Name three ')) return 'must start with “Name three ”';
   if (/^Pick three /i.test(text)) return 'use “Name three”, not “Pick three”';
   if (/\bthis category\b/i.test(text)) return 'generic “this category” placeholder';
   if (STACKED_QUALIFIER_PATTERN.test(text)) return 'stacked qualifiers';
-  if (/\byou grew up with\b/i.test(text)) return 'invalid topic phrase';
-  if (/\bthat aged poorly\b/i.test(text)) return 'invalid topic phrase';
   const americanisms = findAmericanismsInTwoTruthsCopy(text);
   if (americanisms.length) {
     return `Americanism(s): ${americanisms.join(', ')}`;
   }
-  const topic = options.topic;
-  if (topic) {
-    const redundancy = detectTwoTruthsTopicRedundancy(topic, text);
-    if (redundancy) return redundancy;
+  const tail = text.slice('Name three '.length);
+  if (/\bthat (are|feel|would|spell|belong|sound|remind|split|instantly)\b/i.test(tail)) {
+    return 'template-style tail clause';
   }
-  const thatClause = text.match(/^Name three (.+?)\s+that\s+/i);
-  if (thatClause) {
-    const topicPhrase = thatClause[1].trim();
-    const words = topicPhrase.split(/\s+/);
-    if (words.length === 1 && BARE_UNCOUNTABLE_TOPIC_WORDS.has(words[0].toLowerCase())) {
-      return `uncountable bare topic “${words[0]}” before “that …”`;
-    }
+  if (/\bfrom a (hotel|festival|messy|chaotic|lads)/i.test(tail)) {
+    return 'narrative tail clause';
+  }
+  if (/\byou would (not |never |put |rate |strike |ban |defend |recommend )/i.test(tail)) {
+    return 'second-person tail clause';
   }
   return null;
 }
 
-function renderPromptFrame(frame, topic, categoryPhrase) {
-  return frame.replace(/\{topic\}/g, topic).replace(/\{category\}/g, categoryPhrase);
+/** @deprecated Curated banks replace topic nouns; kept for tests importing the symbol. */
+export function getTwoTruthsTopicNounsForCategory(category) {
+  return getCuratedMainsForCategory(category?.id).map((main) =>
+    main.slice('Name three '.length),
+  );
 }
 
-function buildPromptList(category, frameTemplates, targetCount, adultOnly) {
-  const topics = getTwoTruthsTopicNounsForCategory(category);
+export function detectTwoTruthsTopicRedundancy() {
+  return null;
+}
+
+export function buildTwoTruthsCuratedShortfallReport(categories, targetCountForCategory) {
+  return (categories || []).map((category) => {
+    const target = targetCountForCategory(category);
+    const available = getCuratedMainsForCategory(category.id).length;
+    const shortfall = Math.max(0, target - available);
+    return {
+      categoryId: category.id,
+      categoryName: category.name,
+      target,
+      available,
+      shortfall,
+    };
+  });
+}
+
+function toRoundEntries(mains, category, adultOnly) {
   const topicLabel = simplifyLabel(category.name, 'Category');
-  const categoryPhrase = categoryPhraseFor(category);
-  const seen = new Set();
-  const rounds = [];
-  let guard = 0;
-  const maxGuard = Math.max(targetCount * frameTemplates.length * topics.length * 2, 800);
-  while (rounds.length < targetCount && guard < maxGuard) {
-    const frame = frameTemplates[guard % frameTemplates.length];
-    const topic =
-      topics[Math.floor(guard / frameTemplates.length) % topics.length];
-    guard += 1;
-    const main = renderPromptFrame(frame, topic, categoryPhrase);
-    const validationError = validateTwoTruthsPromptMain(main, { topic });
-    if (validationError) continue;
-    if (seen.has(main)) continue;
-    seen.add(main);
-    rounds.push({
-      hint: `${TWO_TRUTHS_HINTS[rounds.length % TWO_TRUTHS_HINTS.length]} • ${topicLabel}`,
-      main,
-      previewLabel: 'Type two truths and one lie that fit together.',
-      ...(adultOnly ? { adultOnly: true } : {}),
-    });
-  }
-  if (rounds.length < targetCount) {
-    throw new Error(
-      `Two Truths prompt generation fell short for ${category.id}: ${rounds.length}/${targetCount}`,
-    );
-  }
-  return rounds;
+  return mains.map((main, index) => ({
+    hint: `${TWO_TRUTHS_HINTS[index % TWO_TRUTHS_HINTS.length]} • ${topicLabel}`,
+    main,
+    previewLabel: 'Type two truths and one lie that fit together.',
+    ...(adultOnly ? { adultOnly: true } : {}),
+  }));
 }
 
 export function buildTwoTruthsOneFireRoundsForCategory(
@@ -301,19 +159,12 @@ export function buildTwoTruthsOneFireRoundsForCategory(
   count = TWO_TRUTHS_ROUNDS_PER_CATEGORY,
   adultCount = TWO_TRUTHS_ADULT_ROUNDS_PER_CATEGORY,
 ) {
+  const allMains = getCuratedMainsForCategory(category.id);
   const regularCount = Math.max(0, count - adultCount);
-  const regular = buildPromptList(
-    category,
-    TWO_TRUTHS_FRAME_TEMPLATES,
-    regularCount,
-    false,
-  );
-  const adult = buildPromptList(
-    category,
-    TWO_TRUTHS_ADULT_FRAME_TEMPLATES,
-    adultCount,
-    true,
-  );
+  const regularMains = allMains.slice(0, regularCount);
+  const adultMains = allMains.slice(regularCount, regularCount + adultCount);
+  const regular = toRoundEntries(regularMains, category, false);
+  const adult = toRoundEntries(adultMains, category, true);
   return [...regular, ...adult].slice(0, count);
 }
 
