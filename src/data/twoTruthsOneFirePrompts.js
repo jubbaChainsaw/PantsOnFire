@@ -16,18 +16,15 @@ const TWO_TRUTHS_HINTS = [
   'Fire Round',
 ];
 
+/** Frames use `{topic}` as a plural noun phrase only (from categoryTopicNouns). */
 const TWO_TRUTHS_FRAME_TEMPLATES = [
   'Name three {topic}',
-  'Name your three favorite {topic}',
-  'Pick three {topic} you would defend in an argument',
+  'Name three {topic} you would defend in an argument',
   'Name three {topic} everyone here should know',
   'Name three {topic} that scream this category',
   'Name three {topic} you are weirdly picky about',
   'Name three {topic} you would put on a starter pack',
-  'Name three underrated {topic}',
   'Name three {topic} that are overrated',
-  'Name three chaotic {topic}',
-  'Name three wholesome {topic}',
   'Name three {topic} from your childhood',
   'Name three {topic} you discovered too late',
   'Name three {topic} you would recommend to a newbie',
@@ -57,25 +54,10 @@ const TWO_TRUTHS_FRAME_TEMPLATES = [
   'Name three {topic} you would use as icebreakers',
   'Name three {topic} you would put in a care package',
   'Name three {topic} that belong in a chaotic bundle',
-];
-
-/** Rotating openers that stay grammatical before plural topic nouns. */
-const TWO_TRUTHS_TOPIC_QUALIFIERS = [
-  'classic',
-  'underrated',
-  'overrated',
-  'nostalgic',
-  'iconic',
-  'obscure',
-  'mainstream',
-  'underground',
-  'retro',
-  'modern',
-  'unexpected',
-  'polarizing',
-  'all-time favorite',
-  'guilty-pleasure',
-  'debate-starting',
+  'Name three {topic} your group chat would argue about',
+  'Name three {topic} you would put on a bracket',
+  'Name three {topic} that feel like a fever dream',
+  'Name three {topic} you would use in a presentation',
 ];
 
 const TWO_TRUTHS_ADULT_FRAME_TEMPLATES = [
@@ -116,70 +98,88 @@ const TWO_TRUTHS_ADULT_FRAME_TEMPLATES = [
   'Name three {topic} you would put in an anonymous confession',
 ];
 
-function simplifyLabel(text, fallback = 'topic') {
+const STACKED_QUALIFIER_PATTERN =
+  /\b(underrated|overrated|classic|iconic|nostalgic|retro|modern|mainstream|underground|obscure|polarizing|unexpected|chaotic|wholesome|guilty-pleasure|debate-starting|all-time favorite)\s+(underrated|overrated|classic|iconic|nostalgic|retro|modern|mainstream|underground|obscure|polarizing|unexpected|chaotic|wholesome|guilty-pleasure|debate-starting|all-time favorite)\b/i;
+
+/** Bare mass-noun category labels — invalid before a “that …” clause (need plural phrases from the map). */
+const BARE_UNCOUNTABLE_TOPIC_WORDS = new Set([
+  'music',
+  'food',
+  'art',
+  'science',
+  'comedy',
+  'horror',
+  'party',
+  'weird',
+  'tech',
+  'tv',
+  'anime',
+]);
+
+function simplifyLabel(text, fallback = 'things') {
   const cleaned = String(text || '').split(/[(/:-]/)[0].trim();
   return cleaned || fallback;
 }
 
-function deriveTopicNouns(category) {
-  const topics = [];
-  const fromMap = CATEGORY_TOPIC_NOUNS[category.id];
-  if (fromMap?.length) topics.push(...fromMap);
-  const label = simplifyLabel(category.name, 'topic');
-  topics.push(
-    label,
-    `${label} icons`,
-    `${label} legends`,
-    `${label} deep cuts`,
+function fallbackTopicsForCategory(category) {
+  const label = simplifyLabel(category.name, 'things').toLowerCase();
+  return [
+    `${label} picks`,
     `iconic ${label} moments`,
-    `controversial ${label} takes`,
-    `${label} you grew up with`,
-    `${label} that aged poorly`,
-    `underrated ${label}`,
-    `overrated ${label}`,
-  );
-  for (const prompt of category.prompts || []) {
-    const main = String(prompt?.main || '').trim();
-    if (!main || main.length > 42) continue;
-    if (/[.!?]/.test(main)) continue;
-    topics.push(main);
-  }
-  return [...new Set(topics.map((t) => String(t).trim()).filter(Boolean))];
+    `underrated ${label} deep cuts`,
+    `chaotic ${label} stories`,
+    `${label} hot takes`,
+  ];
 }
 
-function qualifyTopic(topic, qualifierIndex, frameIndex) {
-  if (frameIndex % 3 !== 0) return topic;
-  const qualifier =
-    TWO_TRUTHS_TOPIC_QUALIFIERS[
-      qualifierIndex % TWO_TRUTHS_TOPIC_QUALIFIERS.length
-    ];
-  if (!qualifier) return topic;
-  const lower = topic.toLowerCase();
-  if (lower.startsWith(qualifier.toLowerCase())) return topic;
-  if (/^(name|pick|list|choose)\b/i.test(topic)) return topic;
-  return `${qualifier} ${topic}`;
+export function getTwoTruthsTopicNounsForCategory(category) {
+  const fromMap = CATEGORY_TOPIC_NOUNS[category?.id];
+  if (fromMap?.length) {
+    return [...new Map(fromMap.map((t) => [String(t).trim().toLowerCase(), String(t).trim()])).values()];
+  }
+  return fallbackTopicsForCategory(category);
+}
+
+/**
+ * Returns an error string if the prompt main is invalid, otherwise null.
+ */
+export function validateTwoTruthsPromptMain(main) {
+  const text = String(main || '').trim();
+  if (!text) return 'empty prompt';
+  if (!text.startsWith('Name three ')) return 'must start with “Name three ”';
+  if (/^Pick three /i.test(text)) return 'use “Name three”, not “Pick three”';
+  if (STACKED_QUALIFIER_PATTERN.test(text)) return 'stacked qualifiers';
+  if (/\byou grew up with\b/i.test(text)) return 'invalid topic phrase';
+  if (/\bthat aged poorly\b/i.test(text)) return 'invalid topic phrase';
+  if (/\biconic .+ moments\b/i.test(text) && /\bthat\b/i.test(text.split(' that ')[0] || '')) {
+    // rare garble from old generator paths
+  }
+  const thatClause = text.match(/^Name three (.+?)\s+that\s+/i);
+  if (thatClause) {
+    const topicPhrase = thatClause[1].trim();
+    const words = topicPhrase.split(/\s+/);
+    if (words.length === 1 && BARE_UNCOUNTABLE_TOPIC_WORDS.has(words[0].toLowerCase())) {
+      return `uncountable bare topic “${words[0]}” before “that …”`;
+    }
+  }
+  return null;
 }
 
 function buildPromptList(category, frameTemplates, targetCount, adultOnly) {
-  const topics = deriveTopicNouns(category);
-  if (!topics.length) topics.push(simplifyLabel(category.name, 'things'));
+  const topics = getTwoTruthsTopicNounsForCategory(category);
   const topicLabel = simplifyLabel(category.name, 'Category');
   const seen = new Set();
   const rounds = [];
-  let frameIndex = 0;
-  let topicIndex = 0;
-  let qualifierIndex = 0;
   let guard = 0;
-  const maxGuard = Math.max(targetCount * frameTemplates.length * 4, 500);
+  const maxGuard = Math.max(targetCount * frameTemplates.length * topics.length * 2, 800);
   while (rounds.length < targetCount && guard < maxGuard) {
+    const frame = frameTemplates[guard % frameTemplates.length];
+    const topic =
+      topics[Math.floor(guard / frameTemplates.length) % topics.length];
     guard += 1;
-    const frame = frameTemplates[frameIndex % frameTemplates.length];
-    const baseTopic = topics[topicIndex % topics.length];
-    const topic = qualifyTopic(baseTopic, qualifierIndex, frameIndex);
-    frameIndex += 1;
-    topicIndex += 1;
-    qualifierIndex += 1;
     const main = frame.replace(/\{topic\}/g, topic);
+    const validationError = validateTwoTruthsPromptMain(main);
+    if (validationError) continue;
     if (seen.has(main)) continue;
     seen.add(main);
     rounds.push({

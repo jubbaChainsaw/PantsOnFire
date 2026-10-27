@@ -32,10 +32,10 @@ export default function NeonTwoTruthsRevealScreen({
     <TopFrame theme={theme}>
       <div className="mx-auto max-w-3xl space-y-4 px-1 py-4">
         <GlassPanel className="rounded-[2.5rem] border-orange-400/30 bg-black/35 p-6 text-center">
-          <div className="text-xs uppercase tracking-[0.35em] text-orange-200/80">
+          <div className="pof-heading text-xs tracking-[0.35em] text-orange-200/80">
             Two Truths, One Fire
           </div>
-          <h2 className="mt-2 text-3xl font-black text-yellow-300">The lies are lit</h2>
+          <h2 className="pof-heading mt-2 text-3xl text-yellow-300">The lies are lit</h2>
         </GlassPanel>
         {rows.map(({ player, presentation, submission, gain, breakdown }) => {
           const burnedOut = submission?.burnedOut || presentation?.burnedOut;
@@ -46,12 +46,12 @@ export default function NeonTwoTruthsRevealScreen({
               data-testid={`twotruths-reveal-${player.id}`}
             >
               <div className="flex items-center justify-between gap-2">
-                <div className="text-lg font-black text-cyan-200">{player.name}</div>
-                <div className="text-sm font-bold text-yellow-300">+{gain}</div>
+                <div className="pof-heading text-lg text-cyan-200">{player.name}</div>
+                <div className="pof-heading text-sm text-yellow-300">+{gain}</div>
               </div>
               {burnedOut ? (
                 <div
-                  className="mt-3 rounded-xl border border-red-400/40 bg-red-500/15 px-3 py-4 text-center font-black text-red-200"
+                  className="pof-heading mt-3 rounded-xl border border-red-400/40 bg-red-500/15 px-3 py-4 text-center text-red-200"
                   data-testid="twotruths-burned-out"
                 >
                   Burned out
@@ -63,7 +63,7 @@ export default function NeonTwoTruthsRevealScreen({
                     return (
                       <li
                         key={index}
-                        className={`rounded-xl border px-3 py-2 text-sm font-semibold ${
+                        className={`pof-body rounded-xl border px-3 py-2 text-sm font-medium ${
                           isLie
                             ? 'border-orange-300 bg-gradient-to-r from-orange-500/35 to-red-600/30 text-yellow-100 shadow-[0_0_18px_rgba(255,90,0,0.45)]'
                             : 'border-white/10 bg-white/5 text-white/85'
@@ -80,7 +80,7 @@ export default function NeonTwoTruthsRevealScreen({
                 </ul>
               )}
               {!burnedOut && (
-                <div className="mt-2 text-xs text-white/55">
+                <div className="pof-body mt-2 text-xs text-white/55">
                   Fooled {breakdown.fooledCount || 0} · Correct spots{' '}
                   {breakdown.voteHit || 0}
                 </div>
@@ -91,7 +91,7 @@ export default function NeonTwoTruthsRevealScreen({
         <div className="flex justify-center pt-2">
           <Button
             data-testid="twotruths-reveal-continue"
-            className="pof-btn pof-btn-fire pof-focus h-14 px-10"
+            className="pof-btn pof-btn-fire pof-focus pof-heading h-14 px-10"
             onClick={() => {
               playSfx();
               onComplete();

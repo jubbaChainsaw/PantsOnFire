@@ -1,7 +1,6 @@
 /** Category-specific nouns/phrases for “Name three …” Two Truths prompts. */
 export const CATEGORY_TOPIC_NOUNS = {
   sports: [
-    'sports',
     'ball sports',
     'Olympic events',
     'stadium snacks',

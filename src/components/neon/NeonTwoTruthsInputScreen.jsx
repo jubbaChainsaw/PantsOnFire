@@ -74,7 +74,7 @@ export default function NeonTwoTruthsInputScreen({
           </div>
         )}
         <h2
-          className="text-center text-2xl font-black text-yellow-300"
+          className="pof-heading text-center text-2xl text-yellow-300"
           data-testid="twotruths-pass-heading"
         >
           {onlineMode && localPlayerId === player.id
@@ -82,27 +82,27 @@ export default function NeonTwoTruthsInputScreen({
             : `Pass the phone to ${player.name}`}
         </h2>
         {passLine && (
-          <div className="rounded-2xl border border-fuchsia-200/35 bg-fuchsia-500/25 px-4 py-2 text-center text-sm font-semibold text-white/90">
+          <div className="pof-body rounded-2xl border border-fuchsia-200/35 bg-fuchsia-500/25 px-4 py-2 text-center text-sm font-semibold text-white/90">
             {passLine}
           </div>
         )}
         <GlassPanel className="flex-1 rounded-[2rem] border-cyan-400/25 bg-black/30 p-5">
-          <div className="text-xs uppercase tracking-[0.28em] text-cyan-200/80">
+          <div className="pof-heading text-xs tracking-[0.28em] text-cyan-200/80">
             Two Truths, One Fire
           </div>
           <p
-            className="mt-3 text-lg font-black leading-snug text-white"
+            className="pof-body mt-4 text-xl font-semibold leading-snug text-white sm:text-2xl"
             data-testid="twotruths-prompt"
           >
             {promptText}
           </p>
-          <p className="mt-2 text-sm text-white/70">
+          <p className="pof-body mt-3 text-sm text-white/75">
             Type two truths and one lie. Mark which line is the lie, then submit.
           </p>
           <div className="mt-4 space-y-3">
             {[0, 1, 2].map((index) => (
               <div key={index}>
-                <Label className="text-white/75">Item {index + 1}</Label>
+                <Label className="pof-body text-white/75">Item {index + 1}</Label>
                 <Input
                   data-testid={`twotruths-item-${index}`}
                   value={items[index]}
@@ -111,13 +111,13 @@ export default function NeonTwoTruthsInputScreen({
                     next[index] = event.target.value.slice(0, 120);
                     setItems(next);
                   }}
-                  className="mt-1 rounded-2xl border border-white/15 bg-white/5 text-white"
+                  className="pof-body mt-1 rounded-2xl border border-white/15 bg-white/5 text-base text-white font-sans tracking-normal"
                   disabled={onlineMode && localPlayerId && localPlayerId !== player.id}
                 />
                 <button
                   type="button"
                   data-testid={`twotruths-lie-${index}`}
-                  className={`mt-2 w-full rounded-xl border px-3 py-2 text-sm font-bold ${
+                  className={`pof-heading mt-2 w-full rounded-xl border px-3 py-2 text-sm ${
                     lieIndex === index
                       ? 'border-orange-300 bg-orange-500/30 text-yellow-100'
                       : 'border-white/15 bg-white/5 text-white/80'
@@ -133,7 +133,7 @@ export default function NeonTwoTruthsInputScreen({
           <div className="mt-6 flex justify-center">
             <Button
               data-testid="twotruths-submit"
-              className="pof-btn pof-btn-fire pof-focus h-14 px-10 text-lg font-black"
+              className="pof-btn pof-btn-fire pof-focus pof-heading h-14 px-10 text-lg"
               onClick={submitManual}
             >
               Submit

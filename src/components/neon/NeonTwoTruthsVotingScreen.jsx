@@ -76,8 +76,8 @@ export default function NeonTwoTruthsVotingScreen({
           themeName={theme}
         />
         <GlassPanel className="rounded-[2.5rem] border-fuchsia-400/20 bg-black/25 p-6">
-          <h2 className="text-3xl font-black text-yellow-300">Spot the lie</h2>
-          <p className="mt-2 text-white/75" data-testid="twotruths-voting-pass">
+          <h2 className="pof-heading text-3xl text-yellow-300">Spot the lie</h2>
+          <p className="pof-body mt-2 text-white/75" data-testid="twotruths-voting-pass">
             {activeVoter ? (
               <>
                 Pass the phone to{' '}
@@ -99,14 +99,14 @@ export default function NeonTwoTruthsVotingScreen({
                 <GlassPanel
                   className="mt-5 rounded-2xl border-white/10 bg-black/20 p-4"
                 >
-                  <div className="font-black text-lg text-cyan-200">{author.name}</div>
+                  <div className="pof-heading text-lg text-cyan-200">{author.name}</div>
                   <div className="mt-3 grid gap-2">
                     {deck.items.map((text, index) => (
                       <button
                         key={index}
                         type="button"
                         data-testid={`twotruths-vote-${author.id}-${index}`}
-                        className={`rounded-xl border px-3 py-3 text-left text-sm font-semibold ${
+                        className={`pof-body rounded-xl border px-3 py-3 text-left text-sm font-medium ${
                           votesByVoterId[activeVoter.id]?.[author.id] === index
                             ? 'border-yellow-300 bg-yellow-300/20 text-yellow-100'
                             : 'border-white/15 bg-white/5 text-white/90'
@@ -127,7 +127,7 @@ export default function NeonTwoTruthsVotingScreen({
               <button
                 type="button"
                 data-testid="twotruths-submit-votes"
-                className="pof-btn pof-btn-fire pof-focus h-14 px-8"
+                className="pof-btn pof-btn-fire pof-focus pof-heading h-14 px-8"
                 disabled={submitPending || !activeVoter}
                 onClick={onSubmitVotes}
               >
@@ -139,7 +139,7 @@ export default function NeonTwoTruthsVotingScreen({
                 <button
                   type="button"
                   data-testid="twotruths-submit-votes"
-                  className="pof-btn pof-btn-fire pof-focus h-14 px-8"
+                  className="pof-btn pof-btn-fire pof-focus pof-heading h-14 px-8"
                   onClick={onSubmitVotes}
                 >
                   Reveal results

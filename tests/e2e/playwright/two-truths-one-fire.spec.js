@@ -74,6 +74,10 @@ async function runTwoTruthsFlow(page, viewportLabel) {
   await expect(page.getByTestId('round-type-twotruths')).toBeVisible({
     timeout: 20_000,
   });
+  await page.screenshot({
+    path: path.join(shotsDir, 'mode-picker-twotruths.png'),
+    fullPage: false,
+  });
   await page.getByTestId('round-type-twotruths').click();
   const cat = page.locator('[data-testid^="category-"]').first();
   await expect(cat).toBeVisible({ timeout: 15_000 });
