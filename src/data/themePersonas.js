@@ -1,3 +1,4 @@
+import { publicAssetUrl } from '../lib/publicAssetUrl.js';
 import { toCanonicalThemeName } from './themeAliases.js';
 import { NAME_POOLS } from './names.js';
 import { ALL_THEME_NAMES } from './themeCatalog.js';
@@ -996,7 +997,7 @@ function buildProceduralThemePersonas(themeName = 'Default', count = PROCEDURAL_
       id,
       name,
       bio,
-      imageSrc: `/assets/themes/${themeSlug}/personas/${filenameStem}.png`,
+      imageSrc: publicAssetUrl(`themes/${themeSlug}/personas/${filenameStem}.png`),
     });
   }
 
@@ -1047,7 +1048,11 @@ export function pickRandomThemePersona(themeName = 'Default', excludeNames = [])
       .map((name) => String(name || '').trim().toLowerCase())
       .filter(Boolean)
   );
-  const filtered = pool.filter((persona) => !blockedNames.has(persona.name.toLowerCase()));
-  const selectionPool = filtered.length ? filtered : pool;
-  return selectionPool[Math.floor(Math.random() * selectionPool.length)] || pool[0] || null;
+  const filtered = pool.filter(
+    (persona) => !blockedNames.has(String(persona.name || '').toLowerCase()),
+  );
+  if (!filtered.length) return null;
+  return (
+    filtered[Math.floor(Math.random() * filtered.length)] || filtered[0] || null
+  );
 }
