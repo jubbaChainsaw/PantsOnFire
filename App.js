@@ -1,4 +1,7 @@
 import React, { useCallback, useEffect } from 'react';
+import * as SplashScreen from 'expo-splash-screen';
+
+SplashScreen.preventAutoHideAsync().catch(() => {});
 import {
   Platform,
   SafeAreaView,
@@ -19,14 +22,22 @@ const DEFAULT_WEB_URL = Platform.select({
 
 const BUNDLED_WEB_URL =
   Platform.OS === 'android'
-    ? 'file:///android_asset/pof-web/index.html'
+    ? 'https://appassets.androidplatform.net/pof-web/index.html'
     : DEFAULT_WEB_URL;
+
+const USE_BUNDLED_WEB =
+  process.env.EXPO_PUBLIC_USE_BUNDLED_WEB === '1' ||
+  process.env.EXPO_PUBLIC_USE_BUNDLED_WEB === 'true';
 
 const GAME_URL =
   process.env.EXPO_PUBLIC_GAME_URL ||
-  (process.env.EXPO_PUBLIC_USE_BUNDLED_WEB === '1'
-    ? BUNDLED_WEB_URL
-    : DEFAULT_WEB_URL);
+  (USE_BUNDLED_WEB ? BUNDLED_WEB_URL : DEFAULT_WEB_URL);
+
+const isBundledFileWeb =
+  Platform.OS === 'android' &&
+  typeof GAME_URL === 'string' &&
+  (GAME_URL.startsWith('file:///android_asset/') ||
+    GAME_URL.includes('appassets.androidplatform.net'));
 
 const IOS_KEY = process.env.EXPO_PUBLIC_REVENUECAT_IOS_KEY || '';
 const ANDROID_KEY = process.env.EXPO_PUBLIC_REVENUECAT_ANDROID_KEY || '';
@@ -81,13 +92,36 @@ export default function App() {
       <WebView
         source={{ uri: GAME_URL }}
         style={styles.webview}
-        originWhitelist={['https://*', 'http://localhost*', 'http://10.0.2.2*']}
+        originWhitelist={
+          isBundledFileWeb
+            ? ['file://*', 'https://*', 'http://*']
+            : ['https://*', 'http://localhost*', 'http://10.0.2.2*']
+        }
+        allowFileAccess
+        allowFileAccessFromFileURLs={isBundledFileWeb}
+        allowUniversalAccessFromFileURLs={isBundledFileWeb}
         setSupportMultipleWindows={false}
         startInLoadingState
         javaScriptEnabled
         domStorageEnabled
-        mediaPlaybackRequiresUserAction
+        mixedContentMode="always"
+        mediaPlaybackRequiresUserAction={false}
         onMessage={onWebMessage}
+        onError={(e) => {
+          // eslint-disable-next-line no-console
+          console.error('[WebView]', e.nativeEvent);
+        }}
+        onHttpError={(e) => {
+          // eslint-disable-next-line no-console
+          console.error('[WebView HTTP]', e.nativeEvent);
+        }}
+        onConsoleMessage={(e) => {
+          // eslint-disable-next-line no-console
+          console.log('[WebViewConsole]', e.nativeEvent.message);
+        }}
+        onLoadEnd={() => {
+          SplashScreen.hideAsync().catch(() => {});
+        }}
       />
     </SafeAreaView>
   );

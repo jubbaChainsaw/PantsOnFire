@@ -8,6 +8,9 @@ const path = require('node:path');
 const root = path.resolve(__dirname, '..');
 const gradleProps = path.join(root, 'android/gradle.properties');
 const appGradle = path.join(root, 'android/app/build.gradle');
+const abis =
+  process.env.POF_ANDROID_ABIS ||
+  (process.env.POF_ANDROID_EMULATOR_APK === '1' ? 'x86_64' : 'arm64-v8a');
 const wrapperProps = path.join(
   root,
   'android/gradle/wrapper/gradle-wrapper.properties',
@@ -40,15 +43,19 @@ if (!app.includes('debuggableVariants = []')) {
     `react {\n    // Embed JS in debug APKs (no Metro required)\n    debuggableVariants = []\n`,
   );
 }
+app = app.replace(
+  /ndk \{\s*abiFilters[^\n]*\n\s*\}/,
+  `ndk {\n            abiFilters "${abis}"\n        }`,
+);
 if (!app.includes('ndk { abiFilters')) {
   app = app.replace(
     /versionName "0.1.0"\n/,
-    `versionName "0.1.0"\n\n        ndk {\n            abiFilters "arm64-v8a"\n        }\n`,
+    `versionName "0.1.0"\n\n        ndk {\n            abiFilters "${abis}"\n        }\n`,
   );
 }
 fs.writeFileSync(appGradle, app);
 
-setGradleProp(gradleProps, 'reactNativeArchitectures', 'arm64-v8a');
+setGradleProp(gradleProps, 'reactNativeArchitectures', abis);
 setGradleProp(gradleProps, 'android.enableMinifyInReleaseBuilds', 'true');
 setGradleProp(
   gradleProps,
@@ -56,4 +63,16 @@ setGradleProp(
   'true',
 );
 
-console.log('Patched android native build (bundle in debug, arm64, R8 shrink)');
+const appGradlePath = appGradle;
+let gradleApp = fs.readFileSync(appGradlePath, 'utf8');
+if (!gradleApp.includes('androidx.webkit:webkit')) {
+  gradleApp = gradleApp.replace(
+    /dependencies \{\n/,
+    `dependencies {\n    implementation 'androidx.webkit:webkit:1.11.0'\n`,
+  );
+  fs.writeFileSync(appGradlePath, gradleApp);
+}
+
+console.log(
+  `Patched android native build (bundle in debug, ABIs=${abis}, R8 shrink)`,
+);
