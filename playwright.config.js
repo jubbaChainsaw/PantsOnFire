@@ -36,6 +36,13 @@ export default defineConfig({
       reuseExistingServer: !process.env.CI,
       timeout: 300_000,
     },
+    {
+      command:
+        'VITE_E2E_FORCE_ROUND_TYPE=chain VITE_E2E_FAST_TIMERS=1 npm run build:mobile && npm run preview -- --host 127.0.0.1 --port 4177',
+      port: 4177,
+      reuseExistingServer: false,
+      timeout: 300_000,
+    },
   ],
   projects: [
     {
@@ -62,6 +69,14 @@ export default defineConfig({
       use: {
         viewport: { width: 360, height: 780 },
         baseURL: 'http://127.0.0.1:4173',
+      },
+    },
+    {
+      name: 'pof-display-ship',
+      testMatch: '**/pof-display-ship-verify.spec.js',
+      use: {
+        viewport: { width: 390, height: 844 },
+        baseURL: 'http://127.0.0.1:4177',
       },
     },
     {

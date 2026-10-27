@@ -110,12 +110,24 @@ walk(dist, (file) => {
   }
 });
 
+const KEEP_PANTS_ON_FIRE_FONT_FILES = new Set([
+  'PoFDisplay-Narrow-Regular.woff2',
+  'PoFDisplay-Narrow-Regular.ttf',
+  'README.md',
+]);
+
 const fontsDir = path.join(dist, 'assets/fonts/pants-on-fire');
 if (fs.existsSync(fontsDir)) {
   for (const name of fs.readdirSync(fontsDir)) {
-    if (name === 'PantsOnFireNarrow-Regular.woff2') continue;
-    if (name === 'README.md') continue;
+    if (KEEP_PANTS_ON_FIRE_FONT_FILES.has(name)) continue;
     const abs = path.join(fontsDir, name);
+    if (fs.statSync(abs).isDirectory()) {
+      if (name === 'derived') {
+        rmrf(abs);
+        console.log('Removed fonts/pants-on-fire/derived from mobile bundle');
+      }
+      continue;
+    }
     if (fs.statSync(abs).isFile()) {
       removedBytes += statSize(abs);
       fs.unlinkSync(abs);

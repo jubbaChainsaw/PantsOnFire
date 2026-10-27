@@ -112,7 +112,7 @@ function fontPreviewCss(modeConfig) {
   }
   let css = `@font-face {
     font-family: 'PoF Display';
-    src: url('/assets/fonts/pants-on-fire/derived/PoFDisplay-Narrow-Regular.woff2') format('woff2');
+    src: url('/assets/fonts/pants-on-fire/PoFDisplay-Narrow-Regular.woff2') format('woff2');
     font-display: block;
   }
   :root { --pof-font-preview-family: 'PoF Display'; }
