@@ -5,6 +5,8 @@ import {
   validateTwoTruthsPromptMain,
   buildTwoTruthsOneFireRoundsForCategory,
   findAmericanismsInTwoTruthsCopy,
+  detectTwoTruthsTopicRedundancy,
+  getTwoTruthsTopicNounsForCategory,
   TWO_TRUTHS_AMERICANISM_RULES,
 } from '../../src/data/twoTruthsOneFirePrompts.js';
 
@@ -25,13 +27,39 @@ test('validateTwoTruthsPromptMain rejects known bad patterns', () => {
 
 test('validateTwoTruthsPromptMain accepts clean Name three prompts', () => {
   const good = [
-    'Name three bands that instantly date you',
-    'Name three comfort foods you would put on a meme starter kit',
-    'Name three Eurovision staging gimmicks from your childhood',
+    ['Name three martial arts', 'martial arts'],
+    ['Name three comfort foods you would rate as the worst', 'comfort foods'],
+    ['Name three bands you would rate as the best', 'bands'],
   ];
-  for (const main of good) {
-    assert.equal(validateTwoTruthsPromptMain(main), null, main);
+  for (const [main, topic] of good) {
+    assert.equal(validateTwoTruthsPromptMain(main, { topic }), null, main);
   }
+});
+
+test('validateTwoTruthsPromptMain rejects placeholders, redundancy, and flatmate fixes', () => {
+  assert.ok(
+    validateTwoTruthsPromptMain('Name three films that scream this category'),
+  );
+  assert.ok(
+    validateTwoTruthsPromptMain('Name three flatmate arguments', { topic: 'flatmate arguments' }) === null,
+  );
+  assert.ok(validateTwoTruthsPromptMain('Name three roommate arguments'));
+  assert.ok(
+    detectTwoTruthsTopicRedundancy(
+      'childhood games',
+      'Name three childhood games from your childhood',
+    ),
+  );
+  assert.ok(
+    validateTwoTruthsPromptMain('Name three childhood games from your childhood', {
+      topic: 'childhood games',
+    }),
+  );
+  assert.ok(
+    validateTwoTruthsPromptMain('Name three bands you would pitch as a collab', {
+      topic: 'bands',
+    }),
+  );
 });
 
 test('findAmericanismsInTwoTruthsCopy flags common US spellings and terms', () => {
@@ -41,6 +69,8 @@ test('findAmericanismsInTwoTruthsCopy flags common US spellings and terms', () =
     ['Name three candies from childhood', ['candy']],
     ['Name three soccer teams', ['soccer']],
     ['Name three playoff moments', ['playoff']],
+    ['Name three roommate rows', ['roommate']],
+    ['Name three music collabs', ['collab']],
     ['Name three colour palettes', []],
   ];
   for (const [line, expected] of samples) {
@@ -73,12 +103,29 @@ test('no Americanisms in generated Two Truths mains or preview labels', () => {
   }
 });
 
+test('no Two Truths main uses “this category”', () => {
+  for (const category of DEFAULT_CATEGORIES) {
+    for (const entry of TWO_TRUTHS_ONE_FIRE_ROUNDS[category.id] || []) {
+      assert.ok(
+        !/\bthis category\b/i.test(entry.main),
+        `${category.id}: ${entry.main}`,
+      );
+    }
+  }
+});
+
 test('every generated Two Truths main passes validation', () => {
   const failures = [];
   for (const category of DEFAULT_CATEGORIES) {
     const pool = TWO_TRUTHS_ONE_FIRE_ROUNDS[category.id] || [];
+    const topics = getTwoTruthsTopicNounsForCategory(category);
     for (const entry of pool) {
-      const err = validateTwoTruthsPromptMain(entry.main);
+      const topic = topics.find((t) => entry.main.startsWith(`Name three ${t}`));
+      if (!topic) {
+        failures.push(`${category.id}: could not resolve topic for ${entry.main}`);
+        continue;
+      }
+      const err = validateTwoTruthsPromptMain(entry.main, { topic });
       if (err) failures.push(`${category.id}: ${entry.main} (${err})`);
     }
   }
@@ -90,8 +137,11 @@ test('every generated Two Truths main passes validation', () => {
 test('freshly built category pools pass validation', () => {
   for (const category of DEFAULT_CATEGORIES.slice(0, 5)) {
     const pool = buildTwoTruthsOneFireRoundsForCategory(category, 40, 10);
+    const topics = getTwoTruthsTopicNounsForCategory(category);
     for (const entry of pool) {
-      assert.equal(validateTwoTruthsPromptMain(entry.main), null, entry.main);
+      const topic = topics.find((t) => entry.main.startsWith(`Name three ${t}`));
+      assert.ok(topic, entry.main);
+      assert.equal(validateTwoTruthsPromptMain(entry.main, { topic }), null, entry.main);
     }
   }
 });
