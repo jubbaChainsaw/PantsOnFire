@@ -79,7 +79,7 @@ export const PHRASES = [
   'photo aspect ratios for social media',
   'cinematic letterbox crops',
   'black and white photo subjects',
-  'film grain overlay styles',
+  'film grain photo edits',
   'vintage VHS filter looks',
   'polaroid frame colours',
   'photo booth prop types',

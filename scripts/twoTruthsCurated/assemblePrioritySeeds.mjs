@@ -8,7 +8,17 @@ import { fileURLToPath } from 'node:url';
 import { EXPECTED_COUNTS } from './expectedCounts.mjs';
 import { isValidPhrase } from './aggressiveClean.mjs';
 import { isCuratedPhraseTailAcceptable } from '../../src/data/twoTruthsOneFirePrompts.js';
-import { HOBBIES_TOP_UP, PIC_MIX_TOP_UP } from './topUpPhrases.mjs';
+import {
+  HOBBIES_TOP_UP,
+  PIC_MIX_TOP_UP,
+  JOBS_TOP_UP,
+  ANIME_TOP_UP,
+  TRAVEL_TOP_UP,
+  INTERNET_SLANG_TOP_UP,
+  DATING_BIOS_TOP_UP,
+  CONSPIRACY_TOP_UP,
+  MUSICALS_TOP_UP,
+} from './topUpPhrases.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const CURATED_DIR = path.join(__dirname, '../../src/data/twoTruthsOneFire/curated/categories');
@@ -87,14 +97,30 @@ function sanitizePhrase(phrase) {
   if (/\bfilter choices$/i.test(p)) return '';
   if (/\bcaption ideas$/i.test(p)) return '';
   if (/\bcommon mistakes$/i.test(p)) return '';
+  if (/\bresponsibilities\b/i.test(p)) return '';
+  if (/\bfamous directors\b/i.test(p)) return '';
+  if (/\bpeople warn about\b/i.test(p)) return '';
+  if (/\bconfusion$/i.test(p)) return '';
+  if (/\bmeltdowns\b/i.test(p)) return '';
+  if (/\boverlay styles\b/i.test(p)) return '';
+  if (/\bGreat Reset phrases\b/i.test(p)) return '';
 
   return p.trim();
 }
 
 function topUpPool(categoryId) {
-  if (categoryId === 'hobbies') return HOBBIES_TOP_UP;
-  if (categoryId === 'pic-mix') return PIC_MIX_TOP_UP;
-  return [];
+  const pools = {
+    hobbies: HOBBIES_TOP_UP,
+    'pic-mix': PIC_MIX_TOP_UP,
+    jobs: JOBS_TOP_UP,
+    anime: ANIME_TOP_UP,
+    'travel-disasters': TRAVEL_TOP_UP,
+    'internet-slang': INTERNET_SLANG_TOP_UP,
+    'dating-bios': DATING_BIOS_TOP_UP,
+    'conspiracy-lite': CONSPIRACY_TOP_UP,
+    musicals: MUSICALS_TOP_UP,
+  };
+  return pools[categoryId] || [];
 }
 
 async function loadCuratedPhrases(categoryId) {
@@ -118,9 +144,13 @@ function mergeUnique(phrases, target) {
   return out;
 }
 
-async function buildCategory(categoryId, target, overrideList) {
-  const source = overrideList ?? (await loadCuratedPhrases(categoryId));
-  let list = mergeUnique(source, target);
+async function buildCategory(categoryId, target, overrideList, existingList) {
+  const fromPriority = overrideList ?? existingList;
+  let list = mergeUnique(fromPriority || [], target);
+  if (list.length < target) {
+    const curated = await loadCuratedPhrases(categoryId);
+    list = mergeUnique([...list, ...curated], target);
+  }
   if (list.length < target) {
     const extra = topUpPool(categoryId);
     list = mergeUnique([...list, ...extra], target);
@@ -140,7 +170,12 @@ async function main() {
       PRIORITY_OVERRIDE_KEYS.has(categoryId) && Array.isArray(existingPriority[categoryId])
         ? existingPriority[categoryId]
         : null;
-    out[categoryId] = await buildCategory(categoryId, target, override);
+    out[categoryId] = await buildCategory(
+      categoryId,
+      target,
+      override,
+      existingPriority[categoryId],
+    );
   }
 
   fs.writeFileSync(PRIORITY_PATH, `${JSON.stringify(out, null, 2)}\n`, 'utf8');

@@ -71,7 +71,6 @@ export const PHRASES = [
   'soft ghosting signs',
   'orbiting signs',
   'situationship definitions',
-  'DTR talk phrases',
   'exclusive dating definitions',
   'monogamy definitions',
   'open relationship rules',
@@ -100,4 +99,5 @@ export const PHRASES = [
   'must love dogs bios',
   'must love cats bios',
   'must love travel bios mocked',
+  'dating app names in the UK',
 ];

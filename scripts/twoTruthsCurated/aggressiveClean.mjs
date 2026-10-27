@@ -31,6 +31,13 @@ const GLOBAL_BAD = [
   /\bhorror stories people\b/i,
   /\bmacro photos\b/i,
   /\bfilter era\b/i,
+  /\bresponsibilities\b/i,
+  /\bpeople warn about\b/i,
+  /\bconfusion$/i,
+  /\bmeltdowns\b/i,
+  /\boverlay styles\b/i,
+  /\bfamous directors\b/i,
+  /\bphrases$/i,
 ];
 
 export function isValidPhrase(phrase) {
