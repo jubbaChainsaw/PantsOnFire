@@ -6,12 +6,13 @@ Uses planar offset (negative buffer) on flattened glyph outlines. Not wired into
 from __future__ import annotations
 
 import argparse
-import math
 from pathlib import Path
 
+from fontTools.pens.boundsPen import BoundsPen
 from fontTools.pens.recordingPen import RecordingPen
 from fontTools.pens.ttGlyphPen import TTGlyphPen
 from fontTools.ttLib import TTFont
+from shapely import affinity
 from shapely.geometry import MultiPolygon, Polygon
 from shapely.ops import unary_union
 
@@ -94,6 +95,12 @@ def contours_to_polygon(contours: list[list[tuple[float, float]]]) -> Polygon | 
     return merged if isinstance(merged, Polygon) else None
 
 
+def glyph_bounds(glyph_set, glyph_name: str):
+    pen = BoundsPen(glyph_set)
+    glyph_set[glyph_name].draw(pen)
+    return pen.bounds
+
+
 def polygon_to_pen(poly: Polygon, pen: TTGlyphPen) -> None:
     if poly.is_empty:
         return
@@ -125,7 +132,7 @@ def thin_glyph(
     glyph_name: str,
     inset_units: float,
     curve_steps: int,
-) -> tuple[object, float] | None:
+) -> object | None:
     if glyph_name not in glyph_set:
         return None
     pen = RecordingPen()
@@ -133,7 +140,7 @@ def thin_glyph(
     if not pen.value:
         return None
 
-    width = glyph_set.hMetrics[glyph_name][0]
+    orig_bounds = glyph_bounds(glyph_set, glyph_name)
     poly = contours_to_polygon(flatten_recording(pen.value, curve_steps))
     if poly is None or poly.is_empty:
         return None
@@ -142,8 +149,13 @@ def thin_glyph(
     if thinned.is_empty:
         return None
 
-    # Light cleanup: simplify jaggies from flattening
-    thinned = thinned.simplify(max(inset_units * 0.15, 2.0), preserve_topology=True)
+    thinned = thinned.simplify(max(inset_units * 0.15, 1.5), preserve_topology=True)
+
+    if orig_bounds is not None:
+        new_bounds = thinned.bounds
+        dx = orig_bounds[0] - new_bounds[0]
+        if abs(dx) > 0.01:
+            thinned = affinity.translate(thinned, xoff=dx, yoff=0)
 
     out_pen = TTGlyphPen(None)
     if isinstance(thinned, MultiPolygon):
@@ -152,7 +164,7 @@ def thin_glyph(
     else:
         polygon_to_pen(thinned, out_pen)
 
-    return out_pen.glyph(), width
+    return out_pen.glyph()
 
 
 def update_names(font: TTFont, family: str, style: str) -> None:
@@ -160,15 +172,14 @@ def update_names(font: TTFont, family: str, style: str) -> None:
     strings = {
         1: family,
         2: style,
-        3: f"{family} {style} 1.001",
+        3: f"{family} {style} 1.002",
         4: f"{family} {style}",
-        5: "Version 1.001",
+        5: "Version 1.002",
         6: family,
         16: family,
         17: style,
     }
     for name_id, text in strings.items():
-        name.setName(text, name_id, 3, 1, 0x409)
         name.setName(text, name_id, 3, 1, 0x409)
     name.setName(
         "Derived from Pants on Fire Narrow for Pants on Fire: Find the Liar.",
@@ -180,6 +191,8 @@ def update_names(font: TTFont, family: str, style: str) -> None:
 
 
 def build(source: Path, dest: Path, inset_units: float, curve_steps: int) -> None:
+    source_font = TTFont(source)
+    source_hmtx = source_font["hmtx"].metrics
     font = TTFont(source)
     glyph_set = font.getGlyphSet()
     glyf = font["glyf"]
@@ -188,15 +201,15 @@ def build(source: Path, dest: Path, inset_units: float, curve_steps: int) -> Non
     for glyph_name in font.getGlyphOrder():
         if glyph_name in (".notdef", ".null"):
             continue
-        result = thin_glyph(glyph_set, glyph_name, inset_units, curve_steps)
-        if result is None:
+        new_glyph = thin_glyph(glyph_set, glyph_name, inset_units, curve_steps)
+        if new_glyph is None:
             continue
-        new_glyph, width = result
         glyf[glyph_name] = new_glyph
-        hmtx[glyph_name] = (width, hmtx[glyph_name][1])
+        if glyph_name in source_hmtx:
+            hmtx[glyph_name] = source_hmtx[glyph_name]
 
     update_names(font, "PoF Display", "Regular")
-    font["OS/2"].usWeightClass = 350
+    font["OS/2"].usWeightClass = 375
     dest.parent.mkdir(parents=True, exist_ok=True)
     font.save(dest)
     print(f"Wrote {dest} (inset={inset_units} units)")
@@ -219,8 +232,8 @@ def main() -> None:
     parser.add_argument(
         "--inset",
         type=float,
-        default=22.0,
-        help="Inward offset in font units (~18%% stroke reduction at UPM 1000)",
+        default=11.0,
+        help="Inward offset in font units (~9%% stroke reduction at UPM 1000)",
     )
     parser.add_argument("--curve-steps", type=int, default=12)
     args = parser.parse_args()

@@ -10,7 +10,7 @@ Derived from **`PantsOnFireNarrow-Regular`** (CSS family `Pants on Fire Narrow`)
 | `pof-display-comparison.png` | Current vs PoF Display at 360px width |
 
 **CSS family name (trial):** `PoF Display`  
-**Build:** `scripts/fonts/build_pof_display.py` — inward offset **22 u** (~18% thinning at UPM 1000), `usWeightClass` **350**.
+**Build:** `scripts/fonts/build_pof_display.py` — inward offset **11 u** (~9% thinning at UPM 1000), original `hmtx` and left-edge alignment preserved, `usWeightClass` **375**. Preview includes a **stroke + glow** row (Pillow `stroke_width`, not in app CSS yet).
 
 ```bash
 pip install fonttools shapely pillow
