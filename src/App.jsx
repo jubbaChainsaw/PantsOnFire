@@ -176,7 +176,26 @@ import {
   syncMusicForScreen,
   tapFx,
 } from "./lib/pofFx.js";
-import { EXCLUDED_PLAYER_ROUND_TYPE_IDS } from "./data/uiNeonAssets.js";
+import {
+  EXCLUDED_PLAYER_ROUND_TYPE_IDS,
+  NEON_ASSETS,
+  neonThemeVars,
+  ONLINE_SELECTION_TIMER_SEC,
+} from "./data/uiNeonAssets.js";
+import NeonTimerBar from "./components/neon/NeonTimerBar.jsx";
+
+const E2E_FORCE_ROUND_TYPE = String(
+  import.meta.env.VITE_E2E_FORCE_ROUND_TYPE || "",
+).trim();
+
+function withE2eRoundTypeDraw(drawn) {
+  if (!E2E_FORCE_ROUND_TYPE) return drawn;
+  const match = PASS_THE_PHONE_ROUND_TYPES.find(
+    (type) => type.id === E2E_FORCE_ROUND_TYPE,
+  );
+  if (!match) return drawn;
+  return { ...drawn, roundTypeOptions: [match] };
+}
 
 const LOGO_SRC = "/assets/images/logo.png";
 const LOGO_18PLUS_SRC = "/assets/images/logo-18plus.png";
@@ -1301,11 +1320,7 @@ function applyGrillRoundDataToRound(round, grillData = {}, players = []) {
 
 function GlassPanel({ children, className = "" }) {
   return (
-    <div
-      className={`backdrop-blur-xl bg-white/8 border border-white/10 shadow-2xl ${className}`}
-    >
-      {children}
-    </div>
+    <div className={`pof-glass rounded-[1.4rem] ${className}`}>{children}</div>
   );
 }
 function ZanyAccentBurst({ className = "", glowClass = "bg-fuchsia-500/25" }) {
@@ -1333,38 +1348,16 @@ function LightningBolt({ className = "", boltClass = "text-yellow-300" }) {
   );
 }
 function TopFrame({ children, theme = "Default", allowScroll = false }) {
-  const themeMeta = THEME_META[theme] || THEME_META.Default;
-  const gradient = themeMeta.gradient || THEME_META.Default.gradient;
-  const uiGlowClass =
-    themeMeta.uiGlowClass ||
-    THEME_META.Default.uiGlowClass ||
-    "bg-fuchsia-500/25";
-  const uiBoltClass =
-    themeMeta.uiBoltClass ||
-    THEME_META.Default.uiBoltClass ||
-    "text-yellow-300";
   return (
     <div
-      className={`relative min-h-screen min-h-[100dvh] overflow-x-hidden ${allowScroll ? "overflow-y-auto" : "overflow-y-hidden"} bg-black text-white`}
+      className={`relative min-h-screen min-h-[100dvh] overflow-x-hidden text-white ${allowScroll ? "overflow-y-auto pof-scroll" : "overflow-y-hidden"}`}
+      style={neonThemeVars()}
     >
       <div
-        className="fixed inset-0 bg-cover bg-center bg-no-repeat"
-        style={{ backgroundImage: `url(${UI_WALLPAPER_IN_GAME_SRC})` }}
+        className="pof-wall fixed inset-0"
+        style={{ backgroundImage: `url(${NEON_ASSETS.wallGame})` }}
       />
-      <div className="fixed inset-0 bg-black/45" />
-      <div
-        className={`fixed inset-0 opacity-20 bg-gradient-to-br ${gradient}`}
-      />
-      <ZanyAccentBurst className="left-5 top-12" glowClass={uiGlowClass} />
-      <ZanyAccentBurst
-        className="right-5 bottom-20 scale-125"
-        glowClass={uiGlowClass}
-      />
-      <LightningBolt className="left-8 bottom-28" boltClass={uiBoltClass} />
-      <LightningBolt
-        className="right-8 top-24 -rotate-12"
-        boltClass={uiBoltClass}
-      />
+      <div className="fixed inset-0 bg-gradient-to-b from-black/40 via-black/25 to-black/55" />
       <div
         className="relative z-10 md:p-8"
         style={{
@@ -2141,7 +2134,11 @@ function GameIntroScreen({
             <Button className={HOST_DIALOGUE_BUTTON_CLASS} onClick={handleNextIntroAction}>
               Next
             </Button>
-            <Button className={HOST_DIALOGUE_BUTTON_CLASS} onClick={onContinue}>
+            <Button
+              className={HOST_DIALOGUE_BUTTON_CLASS}
+              data-testid="intro-skip"
+              onClick={onContinue}
+            >
               Skip
             </Button>
           </div>
@@ -2622,7 +2619,11 @@ function HostIntroScreen({ round, stingerLine, onContinue, theme }) {
             <Button className={HOST_DIALOGUE_BUTTON_CLASS} onClick={handleNextSpeechAction}>
               Next
             </Button>
-            <Button className={HOST_DIALOGUE_BUTTON_CLASS} onClick={onContinue}>
+            <Button
+              className={HOST_DIALOGUE_BUTTON_CLASS}
+              data-testid="host-intro-skip"
+              onClick={onContinue}
+            >
               Skip
             </Button>
           </div>
@@ -2670,12 +2671,14 @@ function RulesSplashScreen({ onContinue, theme, isOnlineMode = false }) {
               score extra.
             </div>
           </div>
-          <Button
-            className="rounded-[1.5rem] h-14 px-8 mt-8 bg-yellow-300 text-zinc-950 hover:bg-yellow-200 border-2 border-white"
+          <button
+            type="button"
+            className="pof-btn pof-btn-fire pof-focus mt-8"
+            data-testid="rules-continue"
             onClick={onContinue}
           >
             Start Round One
-          </Button>
+          </button>
         </GlassPanel>
       </div>
     </TopFrame>
@@ -3748,41 +3751,25 @@ function OnlineLobbySetupScreen({
 }
 function BrandedScreen({
   children,
-  wallpaperSrc = UI_WALLPAPER_IN_GAME_SRC,
+  wallpaperSrc = NEON_ASSETS.wallGame,
   overlayClassName = "bg-black/35",
   frameClassName = "",
   contentClassName = "",
   allowScroll = false,
 }) {
-  const resolvedWallpaperSrc = String(wallpaperSrc || "").trim();
+  const resolvedWallpaperSrc = String(wallpaperSrc || NEON_ASSETS.wallGame).trim();
   return (
     <div
-      className={`relative min-h-screen min-h-[100dvh] overflow-hidden bg-[#12002d] text-white ${frameClassName}`}
+      className={`relative min-h-screen min-h-[100dvh] overflow-hidden bg-[#05010f] text-white ${frameClassName}`}
+      style={neonThemeVars()}
     >
       <div
-        className="fixed inset-0 bg-cover bg-center bg-no-repeat"
-        style={
-          resolvedWallpaperSrc
-            ? { backgroundImage: `url(${resolvedWallpaperSrc})` }
-            : {
-                background:
-                  "radial-gradient(circle at 15% 8%, rgba(255,0,200,0.35), transparent 28%), radial-gradient(circle at 85% 18%, rgba(0,218,255,0.28), transparent 26%), linear-gradient(160deg, #260061 0%, #11002f 48%, #05010f 100%)",
-              }
-        }
+        className="pof-wall fixed inset-0"
+        style={{ backgroundImage: `url(${resolvedWallpaperSrc})` }}
       />
-      {!resolvedWallpaperSrc && (
-        <div
-          className="fixed inset-0 opacity-[0.16]"
-          style={{
-            backgroundImage:
-              "linear-gradient(135deg, rgba(255,255,255,0.18) 1px, transparent 1px), linear-gradient(45deg, rgba(255,255,255,0.08) 1px, transparent 1px)",
-            backgroundSize: "34px 34px",
-          }}
-        />
-      )}
       <div className={`fixed inset-0 ${overlayClassName}`} />
       <div
-        className={`relative z-10 mx-auto flex min-h-screen min-h-[100dvh] w-full max-w-[460px] flex-col px-5 py-6 ${allowScroll ? "overflow-y-auto" : ""} ${contentClassName}`}
+        className={`relative z-10 mx-auto flex min-h-screen min-h-[100dvh] w-full max-w-[460px] flex-col px-5 py-6 ${allowScroll ? "overflow-y-auto pof-scroll" : ""} ${contentClassName}`}
         style={{
           paddingTop: "max(1.25rem, env(safe-area-inset-top))",
           paddingBottom: "max(1.25rem, env(safe-area-inset-bottom))",
@@ -3811,8 +3798,11 @@ function RoundTypeChoiceGrid({
   return (
     <>
       {onlineMode && optionIds.length > 0 && (
-        <div className="mt-4 text-sm font-semibold tabular-nums text-cyan-200">
-          {timed.secondsLeft}s left
+        <div className="mt-4">
+          <NeonTimerBar
+            secondsLeft={timed.secondsLeft}
+            totalSeconds={ONLINE_SELECTION_TIMER_SEC}
+          />
         </div>
       )}
       <div className={categoryChoiceGridClass}>
@@ -3842,6 +3832,7 @@ function RoundTypeChoiceGrid({
                   else onSelectRoundType(type.id);
                 }}
                 aria-label={`Choose ${type.name}`}
+                data-testid={`round-type-${type.id}`}
               >
                 <div className="mx-auto aspect-square w-full max-w-[11.5rem] sm:max-w-[13rem]">
                   <ThemeArt
@@ -3883,22 +3874,26 @@ function CategoryChoiceGrid({
   return (
     <>
       {onlineMode && optionIds.length > 0 && (
-        <div className="mt-4 text-sm font-semibold tabular-nums text-cyan-200">
-          {timed.secondsLeft}s left
+        <div className="mt-4">
+          <NeonTimerBar
+            secondsLeft={timed.secondsLeft}
+            totalSeconds={ONLINE_SELECTION_TIMER_SEC}
+          />
         </div>
       )}
       <div className="mt-4 flex justify-center">
-        <Button
+        <button
           type="button"
-          className="rounded-[1.4rem] border border-cyan-300/35 bg-cyan-500/15 px-6 py-2 text-cyan-100"
+          className="pof-btn pof-btn-blue pof-btn-sm pof-focus px-6"
+          data-testid="choose-category-random"
           onClick={() => {
             tapFx();
             pickRandomCategory();
           }}
         >
-          <Dice6 className="mr-2 inline h-4 w-4" />
+          <Dice6 className="h-5 w-5" />
           Choose for me
-        </Button>
+        </button>
       </div>
       <div className={categoryChoiceGridClass}>
         {categoryOptions.map((category) => {
@@ -3920,6 +3915,7 @@ function CategoryChoiceGrid({
                   else onChooseCategory(category.id);
                 }}
                 aria-label={`Choose ${category.name}`}
+                data-testid={`category-${category.id}`}
               >
                 <div className="mx-auto aspect-square w-full max-w-[11.5rem] sm:max-w-[13rem]">
                   <ThemeArt
@@ -4707,13 +4703,15 @@ function SetupScreen(props) {
                 </div>
               </GlassPanel>
               <div className="grid gap-3 sm:grid-cols-2">
-                <Button
-                  className="h-14 rounded-[1.5rem] border-2 border-white bg-yellow-300 text-zinc-950"
+                <button
+                  type="button"
+                  className="pof-btn pof-btn-fire pof-focus"
+                  data-testid="start-match"
                   onClick={onStart}
                   disabled={!canStart}
                 >
                   {startLabel}
-                </Button>
+                </button>
                 <Button
                   className="h-14 rounded-[1.5rem] border border-fuchsia-400/30 bg-fuchsia-500/10 text-white disabled:opacity-40"
                   onClick={onOpenAdmin}
@@ -5141,17 +5139,21 @@ function RevealScreen({
           </div>
 
           {cardFace === "back" && !readyToReveal && !isCountingDown && (
-            <Button
-              className="rounded-[1.5rem] h-12 sm:h-13 px-6 mt-3 bg-yellow-300 text-zinc-950 border-2 border-white"
+            <button
+              type="button"
+              className="pof-btn pof-btn-fire pof-btn-sm pof-focus mt-3"
+              data-testid="reveal-ready"
               onClick={startRevealCountdown}
             >
               I&apos;m Ready
-            </Button>
+            </button>
           )}
 
           {cardFace === "front" && (
-            <Button
-              className="rounded-[1.5rem] h-12 sm:h-13 px-6 mt-3 bg-white/10 border border-white/10 text-white"
+            <button
+              type="button"
+              className="pof-btn pof-btn-blue pof-btn-sm pof-focus mt-3"
+              data-testid="reveal-next"
               onClick={onNext}
             >
               <EyeOff className="mr-2 h-5 w-5 inline" />
@@ -5160,7 +5162,7 @@ function RevealScreen({
                 : isLast
                   ? "Start discussion"
                   : `Hide & pass to ${players[currentRevealIndex + 1].name}`}
-            </Button>
+            </button>
           )}
         </div>
       </div>
@@ -6183,14 +6185,16 @@ function DiscussionScreen({
             Discussion
           </h2>
           <div className="mt-8 flex justify-center">
-            <Button
-              className="h-16 min-w-[16rem] rounded-[1.5rem] border-2 border-white bg-yellow-300 px-8 text-zinc-950"
+            <button
+              type="button"
+              className="pof-btn pof-btn-fire pof-focus min-w-[16rem]"
+              data-testid="discussion-continue"
               onClick={onContinue}
               disabled={submitPending}
             >
               <SkipForward className="mr-2 inline h-5 w-5" />
               {submitPending ? "Syncing..." : "Finish discussion and vote"}
-            </Button>
+            </button>
           </div>
         </GlassPanel>
       </div>
@@ -6328,9 +6332,11 @@ function VotingScreen({
                   {players
                     .filter((player) => player.id !== voter.id)
                     .map((target) => (
-                      <Button
+                      <button
+                        type="button"
                         key={target.id}
-                        className={`rounded-2xl h-11 ${votesByPlayerId[voter.id] === target.id ? "bg-yellow-300 text-zinc-950" : "bg-white/5 border border-white/10 text-white"}`}
+                        data-testid={`vote-for-${target.id}`}
+                        className={`pof-chip pof-focus h-11 ${votesByPlayerId[voter.id] === target.id ? "!border-yellow-300 !bg-yellow-300/90 !text-zinc-950" : ""}`}
                         onClick={() =>
                           setVotesByPlayerId((cur) => ({
                             ...cur,
@@ -6340,7 +6346,7 @@ function VotingScreen({
                         disabled={submitPending}
                       >
                         {target.name}
-                      </Button>
+                      </button>
                     ))}
                 </div>
               </GlassPanel>
@@ -6378,14 +6384,16 @@ function VotingScreen({
                 {submitPending ? "Submitting vote..." : "Submit my vote"}
               </Button>
             ) : (
-              <Button
-                className="rounded-[1.5rem] h-14 px-8 bg-yellow-300 text-zinc-950 border-2 border-white"
+              <button
+                type="button"
+                className="pof-btn pof-btn-fire pof-focus"
+                data-testid="submit-votes"
                 disabled={!canRevealResults || submitPending}
                 onClick={onSubmitVotes}
               >
                 <Vote className="mr-2 h-5 w-5 inline" />
                 Reveal results
-              </Button>
+              </button>
             )}
           </div>
         </GlassPanel>
@@ -9183,7 +9191,7 @@ export default function App() {
   function startGame(seedPlayers = null) {
     const basePlayers =
       seedPlayers && seedPlayers.length ? seedPlayers : players;
-    const drawn = drawTurnOptions(activeCategories);
+    const drawn = withE2eRoundTypeDraw(drawTurnOptions(activeCategories));
     if (!drawn.categoryOptions.length) return;
     const resetPlayers = basePlayers.map((player) => ({ ...player, score: 0 }));
     setPlayers(resetPlayers);
@@ -9304,9 +9312,11 @@ export default function App() {
     }
     const next = roundNumber + 1;
     const nextOwner = (currentRoundOwnerIndex + 1) % players.length;
-    const drawn = drawTurnOptions(activeCategories, {
-      excludeRoundTypeId: previousRoundType,
-    });
+    const drawn = withE2eRoundTypeDraw(
+      drawTurnOptions(activeCategories, {
+        excludeRoundTypeId: previousRoundType,
+      }),
+    );
     setRoundNumber(next);
     setCurrentRoundOwnerIndex(nextOwner);
     setRoundTypeOptions(drawn.roundTypeOptions);
@@ -9960,7 +9970,7 @@ export default function App() {
   ]);
 
   return (
-    <>
+    <div className="pof-root min-h-[100dvh]" style={neonThemeVars()}>
       {screen === "account-gate" && (
         <AccountGateScreen
           onSignedIn={(session) => {
@@ -10635,27 +10645,33 @@ export default function App() {
         open={joinHostEditorWarningOpen}
         onOpenChange={setJoinHostEditorWarningOpen}
       >
-        <DialogContent className="max-w-md rounded-[2rem] border border-amber-300/30 bg-[#13002d] p-6 text-white">
+        <DialogContent
+          className="max-w-md rounded-[2rem] border border-amber-300/30 bg-[#13002d] p-6 text-white"
+          data-testid="editor-warning-dialog"
+        >
           <DialogHeader>
-            <DialogTitle className="text-xl text-amber-200">
-              Host can edit prompts
+            <DialogTitle className="pof-title text-xl text-amber-200">
+              Custom prompts warning
             </DialogTitle>
-            <DialogDescription className="text-white/70">
-              This lobby host has category editor access. Custom prompts may
-              appear during the match.
+            <DialogDescription className="pof-body text-white/80">
+              The host of this game has unlocked the prompt editor, so some
+              prompts may have been added by them and might not be suitable for
+              all ages. Do you wish to continue?
             </DialogDescription>
           </DialogHeader>
-          <DialogFooter className="mt-4 gap-2 sm:justify-end">
-            <Button
+          <DialogFooter className="mt-4 flex flex-col gap-2 sm:flex-row sm:justify-end">
+            <button
               type="button"
-              className="rounded-2xl border border-white/15 bg-white/5 text-white"
+              className="pof-btn pof-btn-steel pof-btn-sm pof-focus"
+              data-testid="editor-warning-cancel"
               onClick={() => setJoinHostEditorWarningOpen(false)}
             >
               Cancel
-            </Button>
-            <Button
+            </button>
+            <button
               type="button"
-              className="rounded-2xl bg-yellow-300 text-zinc-950"
+              className="pof-btn pof-btn-fire pof-btn-sm pof-focus"
+              data-testid="editor-warning-continue"
               onClick={() => {
                 setJoinHostEditorWarningAccepted(true);
                 setJoinHostEditorWarningOpen(false);
@@ -10663,7 +10679,7 @@ export default function App() {
               }}
             >
               Continue
-            </Button>
+            </button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -10678,7 +10694,7 @@ export default function App() {
         setCustomCategories={setCustomCategories}
       />
       <StartupPreloadOverlay show={!startupGraphicsReady} />
-    </>
+    </div>
   );
 }
 

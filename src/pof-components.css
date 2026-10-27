@@ -38,3 +38,10 @@
 .pof-switch[aria-checked=true]>span{left:2rem;background:#67e8f9;box-shadow:0 0 12px #67e8f9}
 .pof-scroll{scrollbar-color:rgba(255,43,214,.5) transparent}
 .pof-choice-flash{box-shadow:0 0 28px rgba(253,224,71,.95),0 0 12px rgba(34,211,238,.85);transform:scale(1.04)}
+.pof-field{width:100%;border-radius:1rem;background:rgba(6,2,22,.85);border:2px solid rgba(34,211,238,.75);box-shadow:0 0 10px rgba(34,211,238,.45),inset 0 0 8px rgba(34,211,238,.15);color:#fff;padding:.7rem .9rem;font-family:'Pants on Fire Narrow',sans-serif;font-size:1.2rem;letter-spacing:.06em;text-align:center;outline:none}
+.pof-field:focus{border-color:#ff2bd6;box-shadow:0 0 16px rgba(255,43,214,.75)}
+.pof-select{appearance:none;-webkit-appearance:none;cursor:pointer;padding-right:2.6rem;text-align:left}
+.pof-chip{font-family:'Pants on Fire Narrow',sans-serif;letter-spacing:.06em;font-size:1.15rem;border-radius:.9rem;padding:.55rem .8rem;color:#fff;background:rgba(6,2,22,.8);border:2px solid rgba(34,211,238,.55);box-shadow:0 0 8px rgba(34,211,238,.3)}
+.pof-sq{display:flex;align-items:center;justify-content:center;height:2.4rem;width:2.4rem;border-radius:.8rem;background:rgba(6,2,22,.85);border:2px solid rgba(255,43,214,.7);box-shadow:0 0 10px rgba(255,43,214,.45);color:#fff}
+.pof-sq.cyan{border-color:rgba(34,211,238,.75);box-shadow:0 0 10px rgba(34,211,238,.45)}
+.pof-root h1,.pof-root h2,.pof-root h3,.pof-root .font-black{font-family:'Pants on Fire Narrow',Inter,sans-serif;font-style:italic}

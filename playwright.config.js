@@ -16,10 +16,11 @@ export default defineConfig({
       timeout: 120_000,
     },
     {
-      command: 'npm run preview -- --host 127.0.0.1 --port 4173',
+      command:
+        'VITE_E2E_FAST_TIMERS=1 npm run build:mobile && npm run preview -- --host 127.0.0.1 --port 4173',
       port: 4173,
-      reuseExistingServer: true,
-      timeout: 120_000,
+      reuseExistingServer: !process.env.CI,
+      timeout: 300_000,
     },
   ],
   projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],

@@ -13,8 +13,14 @@ export function useTimedChoice({
   enabled,
   optionIds = [],
   onPick,
-  durationSec = ONLINE_SELECTION_TIMER_SEC,
-  flashLastSec = SELECTION_FLASH_LAST_SEC,
+  durationSec =
+    import.meta.env.VITE_E2E_FAST_TIMERS === '1'
+      ? 3
+      : durationSec ?? ONLINE_SELECTION_TIMER_SEC,
+  flashLastSec =
+    import.meta.env.VITE_E2E_FAST_TIMERS === '1'
+      ? 1
+      : flashLastSec ?? SELECTION_FLASH_LAST_SEC,
 }) {
   const [secondsLeft, setSecondsLeft] = useState(durationSec);
   const [highlightIndex, setHighlightIndex] = useState(0);
