@@ -17,12 +17,11 @@ Checks **public/** (full game) and flags **offline APK** gaps per `scripts/slim-
 | --- | --- | --- | --- | --- |
 | meme (orphan icon) | icon on disk but no active round type id `meme` in roundTypes.js | `assets/ui/game-modes/meme.png` | 768×768 PNG | Use or remove |
 | noise | dual art paths (legacy logo + ui/game-modes); ensure they match visually | `assets/ui/game-modes/noise.png` | 768×768 PNG | Legacy: assets/images/round-types/noise-logo.svg |
-| Off Topic Defense | no assets/ui/game-modes/offtopic.png (legacy SVG only in roundTypes) | `assets/ui/game-modes/offtopic.png` | 768×768 PNG | Legacy: `assets/images/round-types/offtopic-logo.svg` (exists) |
+| offtopic | dual art paths (legacy logo + ui/game-modes); ensure they match visually | `assets/ui/game-modes/offtopic.png` | 768×768 PNG | Legacy: assets/ui/game-modes/offtopic.png |
 | opinion | dual art paths (legacy logo + ui/game-modes); ensure they match visually | `assets/ui/game-modes/opinion.png` | 768×768 PNG | Legacy: assets/images/round-types/opinion-logo-top.png |
 | picture | dual art paths (legacy logo + ui/game-modes); ensure they match visually | `assets/ui/game-modes/picture.png` | 768×768 PNG | Legacy: assets/images/round-types/picture-logo.svg |
 | sound | dual art paths (legacy logo + ui/game-modes); ensure they match visually | `assets/ui/game-modes/sound.png` | 768×768 PNG | Legacy: assets/images/round-types/sound-logo.svg |
 | video | dual art paths (legacy logo + ui/game-modes); ensure they match visually | `assets/ui/game-modes/video.png` | 768×768 PNG | Legacy: assets/images/round-types/video-logo.svg |
-| twotruths (Two Truths, One Fire) | placeholder reuses Off Topic SVG; needs dedicated mode art | `assets/ui/game-modes/twotruths.png` + `assets/images/round-types/twotruths-logo.svg` | 768×768 PNG + SVG | Currently: `offtopic-logo.svg` |
 
 ## Category icon
 
