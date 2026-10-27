@@ -59,14 +59,27 @@ for (const rel of DROP_TOP_LEVEL) {
   }
 }
 
+/** Strip heavy theme art from non-default packs but keep store thumbnails (`ui/banner`). */
+const THEME_STRIP_SUBDIRS = new Set([
+  'hosts',
+  'cards',
+  'personas',
+  'icons',
+  'audio',
+]);
+
 const themesDir = path.join(dist, 'assets/themes');
 if (fs.existsSync(themesDir)) {
   for (const name of fs.readdirSync(themesDir)) {
-    if (!CORE_THEME_DIRS.has(name)) {
-      const abs = path.join(themesDir, name);
+    const themePath = path.join(themesDir, name);
+    if (!fs.existsSync(themePath) || !fs.statSync(themePath).isDirectory()) continue;
+    if (CORE_THEME_DIRS.has(name)) continue;
+    for (const sub of fs.readdirSync(themePath)) {
+      if (!THEME_STRIP_SUBDIRS.has(sub)) continue;
+      const abs = path.join(themePath, sub);
       removedBytes += statSize(abs);
       rmrf(abs);
-      console.log(`Removed theme assets: ${name}`);
+      console.log(`Stripped themes/${name}/${sub}`);
     }
   }
 }
