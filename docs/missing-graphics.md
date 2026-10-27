@@ -22,6 +22,7 @@ Checks **public/** (full game) and flags **offline APK** gaps per `scripts/slim-
 | picture | dual art paths (legacy logo + ui/game-modes); ensure they match visually | `assets/ui/game-modes/picture.png` | 768×768 PNG | Legacy: assets/images/round-types/picture-logo.svg |
 | sound | dual art paths (legacy logo + ui/game-modes); ensure they match visually | `assets/ui/game-modes/sound.png` | 768×768 PNG | Legacy: assets/images/round-types/sound-logo.svg |
 | video | dual art paths (legacy logo + ui/game-modes); ensure they match visually | `assets/ui/game-modes/video.png` | 768×768 PNG | Legacy: assets/images/round-types/video-logo.svg |
+| twotruths (Two Truths, One Fire) | placeholder reuses Off Topic SVG; needs dedicated mode art | `assets/ui/game-modes/twotruths.png` + `assets/images/round-types/twotruths-logo.svg` | 768×768 PNG + SVG | Currently: `offtopic-logo.svg` |
 
 ## Category icon
 

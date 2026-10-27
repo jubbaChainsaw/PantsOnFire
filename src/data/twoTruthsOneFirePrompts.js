@@ -59,37 +59,23 @@ const TWO_TRUTHS_FRAME_TEMPLATES = [
   'Name three {topic} that belong in a chaotic bundle',
 ];
 
+/** Rotating openers that stay grammatical before plural topic nouns. */
 const TWO_TRUTHS_TOPIC_QUALIFIERS = [
-  'famous',
+  'classic',
   'underrated',
   'overrated',
-  'chaotic',
-  'wholesome',
   'nostalgic',
   'iconic',
-  'cringe',
-  'elite',
-  'mid',
-  'forbidden',
-  'unhinged',
-  'cozy',
-  'cursed',
-  'legendary',
   'obscure',
   'mainstream',
   'underground',
   'retro',
   'modern',
-  'classic',
-  'spicy',
-  'mild',
   'unexpected',
   'polarizing',
-  'comfort',
+  'all-time favorite',
   'guilty-pleasure',
   'debate-starting',
-  'room-dividing',
-  'all-time',
 ];
 
 const TWO_TRUTHS_ADULT_FRAME_TEMPLATES = [
@@ -161,13 +147,16 @@ function deriveTopicNouns(category) {
   return [...new Set(topics.map((t) => String(t).trim()).filter(Boolean))];
 }
 
-function qualifyTopic(topic, qualifierIndex) {
+function qualifyTopic(topic, qualifierIndex, frameIndex) {
+  if (frameIndex % 3 !== 0) return topic;
   const qualifier =
     TWO_TRUTHS_TOPIC_QUALIFIERS[
       qualifierIndex % TWO_TRUTHS_TOPIC_QUALIFIERS.length
     ];
   if (!qualifier) return topic;
-  if (topic.toLowerCase().startsWith(qualifier)) return topic;
+  const lower = topic.toLowerCase();
+  if (lower.startsWith(qualifier.toLowerCase())) return topic;
+  if (/^(name|pick|list|choose)\b/i.test(topic)) return topic;
   return `${qualifier} ${topic}`;
 }
 
@@ -186,7 +175,7 @@ function buildPromptList(category, frameTemplates, targetCount, adultOnly) {
     guard += 1;
     const frame = frameTemplates[frameIndex % frameTemplates.length];
     const baseTopic = topics[topicIndex % topics.length];
-    const topic = qualifyTopic(baseTopic, qualifierIndex);
+    const topic = qualifyTopic(baseTopic, qualifierIndex, frameIndex);
     frameIndex += 1;
     topicIndex += 1;
     qualifierIndex += 1;

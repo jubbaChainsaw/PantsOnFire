@@ -90,8 +90,6 @@ function TierCard({
   const isCurrent = accountSession && currentRank === targetRank;
   const owned = currentRank >= targetRank;
   const isFibber = tier.tierId === TIER_FIBBER;
-  const rcId = REVENUE_CAT_ENTITLEMENTS[tier.tierId];
-
   return (
     <div
       className={`rounded-2xl border p-4 transition ${
@@ -479,9 +477,6 @@ export default function NeonStoreScreen({
             <div className="rounded-2xl border border-white/10 bg-white/5 p-4 text-left">
               <div className="pof-heading text-lg text-fuchsia-100">{ADDON_TWIST_TRUTH.name}</div>
               <p className="pof-desc mt-2 text-sm text-white/75">{ADDON_TWIST_TRUTH.description}</p>
-              <p className="pof-desc mt-2 font-mono text-[0.65rem] text-white/45">
-                Store ID: {REVENUE_CAT_ENTITLEMENTS.twistTruth}
-              </p>
               <div className="mt-3 flex items-center justify-between gap-3">
                 <span className="pof-desc text-lg font-semibold text-yellow-300">
                   {ADDON_TWIST_TRUTH.priceLabel}

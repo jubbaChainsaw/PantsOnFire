@@ -136,9 +136,18 @@ import {
   OPINION_ROUNDS,
   MEDIA_ROUNDS,
   GRILL_EM_ROUNDS,
+  TWO_TRUTHS_ONE_FIRE_ROUNDS,
   BANNED_WORD_BANK,
   sanitizeBannedWords,
 } from "./data/categories";
+import {
+  buildPresentationsFromSubmissions,
+  calculateTwoTruthsRoundResolution,
+  createEmptyTwoTruthsData,
+} from "./lib/twoTruthsOneFire.js";
+import NeonTwoTruthsInputScreen from "./components/neon/NeonTwoTruthsInputScreen.jsx";
+import NeonTwoTruthsVotingScreen from "./components/neon/NeonTwoTruthsVotingScreen.jsx";
+import NeonTwoTruthsRevealScreen from "./components/neon/NeonTwoTruthsRevealScreen.jsx";
 import { PICTURE_DLC_MANIFESTS } from "./data/pictureDlcManifests";
 import { getHostVoiceSrcCandidatesForLine } from "./data/hostVoiceLineMap";
 import {
@@ -299,6 +308,9 @@ const ONLINE_VOICE_ACTIVE_SCREENS = new Set([
   "discussion",
   "grill",
   "voting",
+  "twotruths-input",
+  "twotruths-voting",
+  "twotruths-reveal",
   "results",
 ]);
 const ONLINE_CONNECTION_ACTIVE_SCREENS = new Set([
@@ -310,6 +322,9 @@ const ONLINE_CONNECTION_ACTIVE_SCREENS = new Set([
   "discussion",
   "grill",
   "voting",
+  "twotruths-input",
+  "twotruths-voting",
+  "twotruths-reveal",
   "liar-reveal",
   "results",
   "final",
@@ -322,6 +337,9 @@ const ONLINE_IN_SESSION_LEAVE_SCREENS = new Set([
   "discussion",
   "grill",
   "voting",
+  "twotruths-input",
+  "twotruths-voting",
+  "twotruths-reveal",
   "liar-reveal",
   "results",
   "final",
@@ -336,6 +354,9 @@ const ONLINE_PARTY_CHAT_ACTIVE_SCREENS = new Set([
   "discussion",
   "grill",
   "voting",
+  "twotruths-input",
+  "twotruths-voting",
+  "twotruths-reveal",
   "liar-reveal",
   "results",
   "final",
@@ -633,6 +654,11 @@ const VOTING_STINGER_BY_ROUND_TYPE = {
     "AI grilling done. Vote who sounded too prepared.",
     "Pass the phone and call out the over-confident answerer.",
     "Blaze Byte is done talking. Now it's your turn to judge.",
+  ],
+  twotruths: [
+    "Three items, one lie. Pass the phone and pick the fib.",
+    "Shuffle complete — vote for the lie in each list.",
+    "Spot the blaze: which line was the lie?",
   ],
 };
 function pickVotingStinger(roundTypeId = "prompt") {
@@ -1060,6 +1086,13 @@ function buildLocalRound(
       prompt,
       key: `grill::global::${index}`,
     }));
+  } else if (selectedRoundType.id === "twotruths") {
+    promptOptions = (TWO_TRUTHS_ONE_FIRE_ROUNDS[effectiveCategory.id] || []).map(
+      (prompt, index) => ({
+        prompt,
+        key: `twotruths::${effectiveCategory.id}::${index}`,
+      }),
+    );
   } else {
     promptOptions = (MEDIA_ROUNDS[selectedRoundType.id] || []).map(
       (prompt, index) => ({
@@ -1087,14 +1120,17 @@ function buildLocalRound(
   const selected = pickRandom(
     filteredOptions.length ? filteredOptions : ageFilteredOptions,
   );
-  const liarIds = shuffle(players)
-    .slice(0, Math.max(1, Math.min(liarCount, players.length - 1)))
-    .map((p) => p.id);
+  const isTwoTruthsRound = selectedRoundType.id === "twotruths";
+  const liarIds = isTwoTruthsRound
+    ? []
+    : shuffle(players)
+        .slice(0, Math.max(1, Math.min(liarCount, players.length - 1)))
+        .map((p) => p.id);
   const bannedWords = sanitizeBannedWords(
     effectiveCategory.name,
     selected.prompt.hint,
     selected.prompt.main,
-    selected.prompt.imposter,
+    isTwoTruthsRound ? "" : selected.prompt.imposter,
     BANNED_WORD_BANK[selected.key] || [],
   );
   const truthDeck = shuffle(selected.prompt.mainWords || []);
@@ -1187,10 +1223,25 @@ function buildLocalRound(
         ];
       }),
     ),
+    ...(isTwoTruthsRound
+      ? {
+          twoTruthsData: {
+            ...createEmptyTwoTruthsData(),
+            promptText: selected.prompt.main,
+          },
+        }
+      : {}),
   };
 }
 
 function calculateRoundResolutionLocal(players, round, votesByPlayerId = {}) {
+  if (round?.roundTypeId === "twotruths") {
+    return calculateTwoTruthsRoundResolution(
+      players,
+      round,
+      votesByPlayerId,
+    );
+  }
   const validPlayerIds = new Set(players.map((player) => player.id));
   const normalizedVotes = Object.fromEntries(
     Object.entries(votesByPlayerId || {}).filter(([voterId, targetId]) => {
@@ -1783,6 +1834,11 @@ const MASCOT_BY_ROUND_TYPE = {
     blurb: "Connect the clues, expose the break.",
   },
   grill: { name: "Blaze Byte", face: "🤖", blurb: "AI host for Grill 'Em." },
+  twotruths: {
+    name: "Ian Poster",
+    face: "🔥",
+    blurb: "Two truths, one lie — blend it or burn.",
+  },
 };
 function RoundMascot({ roundTypeId }) {
   const mascot =
@@ -2199,6 +2255,9 @@ function getRoundRuleText(roundTypeId = "prompt") {
   if (roundTypeId === "grill") {
     return "Grill 'Em: players ask by microphone and Blaze Byte talks back with AI answers. Liars already saw the hidden prompt and will try to steer the room.";
   }
+  if (roundTypeId === "twotruths") {
+    return "Two Truths, One Fire: everyone lists three related items — two truths and one lie. After the shuffle, spot each player's lie to score.";
+  }
   return "Give one clue, blend in, and avoid revealing your exact prompt.";
 }
 function getCategoryIconSrc(categoryId = "") {
@@ -2519,6 +2578,12 @@ function getHostExamplePrompts(roundTypeId = "prompt") {
     return {
       normal: "Stonehenge",
       liar: "Eiffel Tower",
+    };
+  }
+  if (roundTypeId === "twotruths") {
+    return {
+      normal: "Name three martial arts",
+      liar: "Name three bands",
     };
   }
   return {
@@ -7717,6 +7782,8 @@ export default function App() {
   const [selectedRoundType, setSelectedRoundType] = useState(null);
   const [round, setRound] = useState(null);
   const [revealIndex, setRevealIndex] = useState(0);
+  const [twoTruthsInputIndex, setTwoTruthsInputIndex] = useState(0);
+  const [twoTruthsVotesByVoterId, setTwoTruthsVotesByVoterId] = useState({});
   const [categoryOptions, setCategoryOptions] = useState([]);
   const [votesByPlayerId, setVotesByPlayerId] = useState({});
   const [votingPlayerOrder, setVotingPlayerOrder] = useState([]);
@@ -8779,6 +8846,19 @@ export default function App() {
       setScreen("host-intro");
       return serverRound;
     }
+    if (normalizedPhase === "twotruths-input") {
+      refreshCopy(["passPhone"]);
+      setTwoTruthsInputIndex(0);
+      setScreen("twotruths-input");
+      return serverRound;
+    }
+    if (normalizedPhase === "twotruths-voting") {
+      setTwoTruthsVotesByVoterId(serverRound.twoTruthsData?.votesByVoterId || {});
+      setVotingPlayerOrder(shuffle(players.map((player) => player.id)));
+      refreshCopy(["voting"]);
+      setScreen("twotruths-voting");
+      return serverRound;
+    }
     if (normalizedPhase === "reveal") {
       refreshCopy(["passPhone", "revealNormal", "revealLiar"]);
       setScreen("reveal");
@@ -9005,6 +9085,48 @@ export default function App() {
     setScreen("voting");
   }
 
+  function finalizeTwoTruthsInputPhase(nextRound) {
+    const submissions =
+      nextRound?.twoTruthsData?.submissionsByPlayerId &&
+      typeof nextRound.twoTruthsData.submissionsByPlayerId === "object"
+        ? nextRound.twoTruthsData.submissionsByPlayerId
+        : {};
+    const presentationsByPlayerId = buildPresentationsFromSubmissions(submissions);
+    setRound((current) => ({
+      ...current,
+      twoTruthsData: {
+        ...(current?.twoTruthsData || createEmptyTwoTruthsData()),
+        presentationsByPlayerId,
+      },
+    }));
+    setTwoTruthsVotesByVoterId({});
+    setVotingPlayerOrder(shuffle(players.map((player) => player.id)));
+    refreshCopy(["voting"]);
+    setScreen("twotruths-voting");
+  }
+
+  function handleTwoTruthsPlayerSubmission(submission) {
+    const player = players[twoTruthsInputIndex];
+    if (!player?.id || !round) return;
+    const nextSubmissions = {
+      ...(round.twoTruthsData?.submissionsByPlayerId || {}),
+      [player.id]: submission,
+    };
+    const nextRound = {
+      ...round,
+      twoTruthsData: {
+        ...(round.twoTruthsData || createEmptyTwoTruthsData()),
+        submissionsByPlayerId: nextSubmissions,
+      },
+    };
+    setRound(nextRound);
+    if (twoTruthsInputIndex < players.length - 1) {
+      setTwoTruthsInputIndex((index) => index + 1);
+      return;
+    }
+    finalizeTwoTruthsInputPhase(nextRound);
+  }
+
   function startGame(seedPlayers = null) {
     const basePlayers =
       seedPlayers && seedPlayers.length ? seedPlayers : players;
@@ -9072,6 +9194,8 @@ export default function App() {
     setPreviousRoundType(built.roundTypeId);
     setRecentPromptKeys((cur) => [...cur, built.promptKey]);
     setRevealIndex(0);
+    setTwoTruthsInputIndex(0);
+    setTwoTruthsVotesByVoterId({});
     setVotesByPlayerId({});
     setOnlinePrivatePrompt(null);
     setOnlinePrivatePromptError("");
@@ -9087,6 +9211,21 @@ export default function App() {
     setScreen("host-intro");
   }
   async function revealResults() {
+    if (round?.roundTypeId === "twotruths") {
+      const resolution = calculateRoundResolutionLocal(
+        players,
+        round,
+        twoTruthsVotesByVoterId,
+      );
+      setPlayers(resolution.nextPlayers);
+      setTally(resolution.tally);
+      setRoundGains(resolution.roundGains);
+      setRoundBreakdown(resolution.roundBreakdown);
+      setImposterCaught(false);
+      playSfx(IMPOSTER_FOUND_SFX_SRC, { volume: 0.74 });
+      setScreen("twotruths-reveal");
+      return;
+    }
     if (onlineMode) {
       const syncedRound = await submitOnlineVotes();
       if (syncedRound?.resolution) {
@@ -9704,6 +9843,8 @@ export default function App() {
     setRoundTypeOptions([]);
     setSelectedRoundType(null);
     setRevealIndex(0);
+    setTwoTruthsInputIndex(0);
+    setTwoTruthsVotesByVoterId({});
     setVotesByPlayerId({});
     setTally({});
     setRoundGains({});
@@ -10199,6 +10340,11 @@ export default function App() {
           round={round}
           stingerLine={copyState.hostStinger}
           onContinue={() => {
+            if (round.roundTypeId === "twotruths") {
+              setTwoTruthsInputIndex(0);
+              setScreen("twotruths-input");
+              return;
+            }
             if (onlineMode) {
               void runOnlinePhaseAdvance();
               return;
@@ -10206,6 +10352,56 @@ export default function App() {
             setScreen("reveal");
           }}
           theme={canonicalThemeName}
+        />
+      )}
+      {screen === "twotruths-input" && round && (
+        <NeonTwoTruthsInputScreen
+          players={players}
+          round={round}
+          inputPlayerIndex={twoTruthsInputIndex}
+          passLine={copyState.passPhone}
+          onSubmitSubmission={handleTwoTruthsPlayerSubmission}
+          onlineMode={onlineMode}
+          localPlayerId={onlineJoinedPlayerId}
+          theme={canonicalThemeName}
+          TopFrame={TopFrame}
+          GlassPanel={GlassPanel}
+          Button={Button}
+          Input={Input}
+          Label={Label}
+        />
+      )}
+      {screen === "twotruths-voting" && round && (
+        <NeonTwoTruthsVotingScreen
+          players={players}
+          round={round}
+          votesByVoterId={twoTruthsVotesByVoterId}
+          setVotesByVoterId={setTwoTruthsVotesByVoterId}
+          onSubmitVotes={revealResults}
+          votingPlayerOrder={votingPlayerOrder}
+          onlineMode={onlineMode}
+          onlinePlayerId={onlineJoinedPlayerId}
+          submitPending={onlineVoteSubmissionPending}
+          totalRounds={totalRounds}
+          theme={canonicalThemeName}
+          TopFrame={TopFrame}
+          GlassPanel={GlassPanel}
+          Progress={Progress}
+          ScoreStrip={ScoreStrip}
+        />
+      )}
+      {screen === "twotruths-reveal" && round && (
+        <NeonTwoTruthsRevealScreen
+          players={players}
+          round={round}
+          roundGains={roundGains}
+          roundBreakdown={roundBreakdown}
+          onComplete={finishLiarReveal}
+          theme={canonicalThemeName}
+          TopFrame={TopFrame}
+          GlassPanel={GlassPanel}
+          Button={Button}
+          playSfx={() => playSfx(IMPOSTER_FOUND_SFX_SRC, { volume: 0.7 })}
         />
       )}
       {screen === "reveal" && round && (

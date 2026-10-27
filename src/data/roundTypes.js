@@ -54,6 +54,14 @@ export const ROUND_TYPES = {
     passThePhoneReady: true,
     onlineOnly: false,
   },
+  twotruths: {
+    id: 'twotruths',
+    name: 'Two Truths, One Fire',
+    tagline: 'Three items each — two truths, one lie. Spot the fib after the shuffle.',
+    logoSrc: '/assets/images/round-types/offtopic-logo.svg',
+    passThePhoneReady: true,
+    onlineOnly: false,
+  },
   grill: {
     id: 'grill',
     name: "Grill 'Em",

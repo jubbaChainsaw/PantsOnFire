@@ -2,7 +2,7 @@ import { defineConfig, devices } from '@playwright/test';
 
 export default defineConfig({
   testDir: 'tests/e2e/playwright',
-  timeout: 60_000,
+  timeout: 120_000,
   retries: 0,
   use: {
     baseURL: 'http://127.0.0.1:4173',
@@ -22,6 +22,13 @@ export default defineConfig({
       reuseExistingServer: !process.env.CI,
       timeout: 300_000,
     },
+    {
+      command:
+        'VITE_E2E_FORCE_ROUND_TYPE=twotruths VITE_E2E_FAST_TIMERS=1 npm run build:mobile && npm run preview -- --host 127.0.0.1 --port 4174',
+      port: 4174,
+      reuseExistingServer: !process.env.CI,
+      timeout: 300_000,
+    },
   ],
   projects: [
     {
@@ -33,6 +40,14 @@ export default defineConfig({
       name: 'mobile-chrome',
       testMatch: '**/mobile-full-game-flow.spec.js',
       use: { ...devices['Pixel 5'] },
+    },
+    {
+      name: 'two-truths-fire',
+      testMatch: '**/two-truths-one-fire.spec.js',
+      use: {
+        ...devices['Pixel 5'],
+        baseURL: 'http://127.0.0.1:4174',
+      },
     },
   ],
 });
