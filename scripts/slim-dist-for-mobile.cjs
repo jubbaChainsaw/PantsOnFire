@@ -98,6 +98,20 @@ walk(dist, (file) => {
   }
 });
 
+const fontsDir = path.join(dist, 'assets/fonts/pants-on-fire');
+if (fs.existsSync(fontsDir)) {
+  for (const name of fs.readdirSync(fontsDir)) {
+    if (name === 'PantsOnFireNarrow-Regular.woff2') continue;
+    if (name === 'README.md') continue;
+    const abs = path.join(fontsDir, name);
+    if (fs.statSync(abs).isFile()) {
+      removedBytes += statSize(abs);
+      fs.unlinkSync(abs);
+      removedFiles += 1;
+    }
+  }
+}
+
 console.log(
   `Slim complete: dropped ${removedFiles} files, ~${(removedBytes / 1024 / 1024).toFixed(1)} MiB`,
 );
