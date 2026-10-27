@@ -1,5 +1,6 @@
 import React, { useCallback, useMemo, useState } from 'react';
 import {
+  ArrowLeft,
   ChevronDown,
   Crown,
   KeyRound,
@@ -17,16 +18,11 @@ import {
   TIER_RANK,
 } from '../../account/tierModel.js';
 import { CORE_THEME_NAMES, DLC_THEME_PACKS } from '../../data/themeCatalog.js';
-import { getStoreThemeThumbSrc } from '../../data/themeAssets.js';
 import { NEON_ASSETS, neonThemeVars } from '../../data/uiNeonAssets.js';
-import { resolveBundledAssetSrc } from '../../lib/publicAssetUrl.js';
 import { readStoreSectionPrefs, writeStoreSectionPrefs } from '../../lib/storeSectionPrefs.js';
-import {
-  contentPackIdsForDlcPack,
-  coreThemeContentPackId,
-} from '../../lib/contentPacks/storeThemeDownloads.js';
 import { requestNativeEntitlementsRefresh } from '../../billing/nativePurchasesBridge.js';
 import { tapFx } from '../../lib/pofFx.js';
+import NeonStoreThemesPanel from './NeonStoreThemesPanel.jsx';
 
 function StoreSection({
   id,
@@ -138,41 +134,6 @@ function TierCard({
   );
 }
 
-function DownloadBadge({ label, tone = 'neutral' }) {
-  const cls =
-    tone === 'success'
-      ? 'border-emerald-300/40 bg-emerald-500/20 text-emerald-100'
-      : tone === 'action'
-        ? 'border-cyan-300/40 bg-cyan-500/15 text-cyan-50'
-        : 'border-white/15 bg-white/10 text-white/80';
-  return (
-    <span
-      className={`pof-heading rounded-full border px-2 py-0.5 text-[0.65rem] tracking-wide ${cls}`}
-    >
-      {label}
-    </span>
-  );
-}
-
-function StoreActionChip({ label, onClick, variant = 'cyan' }) {
-  const tone =
-    variant === 'amber'
-      ? 'border-yellow-300/45 bg-yellow-400/15 text-yellow-100'
-      : 'border-cyan-300/45 bg-cyan-500/15 text-cyan-100';
-  return (
-    <button
-      type="button"
-      className={`pof-heading inline-flex min-h-0 w-auto shrink-0 rounded-full border px-2.5 py-0.5 text-[0.65rem] tracking-wide ${tone}`}
-      onClick={() => {
-        tapFx();
-        onClick?.();
-      }}
-    >
-      {label}
-    </button>
-  );
-}
-
 export default function NeonStoreScreen({
   onBack,
   onOpenAccount,
@@ -197,8 +158,6 @@ export default function NeonStoreScreen({
   const [redeemCodeInput, setRedeemCodeInput] = useState('');
   const [redeemFeedback, setRedeemFeedback] = useState(null);
 
-  const unlocked = useMemo(() => new Set(unlockedThemePackIds || []), [unlockedThemePackIds]);
-  const installed = useMemo(() => new Set(installedContentPackIds || []), [installedContentPackIds]);
   const currentTierRank = accountSession ? TIER_RANK[accountSession.tierId] ?? 0 : 0;
   const currentTierName =
     SUBSCRIPTION_TIERS.find((t) => TIER_RANK[t.tierId] === currentTierRank)?.name || 'Fibber';
@@ -212,29 +171,17 @@ export default function NeonStoreScreen({
   }, []);
 
   const themesSummary = useMemo(() => {
+    const unlockedSet = new Set(unlockedThemePackIds || []);
     const ownedDlc = allDlcIncluded
       ? dlcThemePacks.length
-      : dlcThemePacks.filter((p) => unlocked.has(p.id)).length;
+      : dlcThemePacks.filter((p) => unlockedSet.has(p.id)).length;
     return `${ownedDlc}/${dlcThemePacks.length} DLC packs · Core themes included`;
-  }, [allDlcIncluded, dlcThemePacks, unlocked]);
+  }, [allDlcIncluded, dlcThemePacks, unlockedThemePackIds]);
 
   const addonSummary = useMemo(() => {
     if (hasTwistAddon || allDlcIncluded) return 'Twist the Truth unlocked';
     return 'Twist the Truth · 99p';
   }, [hasTwistAddon, allDlcIncluded]);
-
-  const packArt = (pack) => {
-    const firstTheme = pack?.themes?.[0];
-    if (!firstTheme) return '';
-    return getStoreThemeThumbSrc(firstTheme);
-  };
-
-  const downloadStateForIds = (ids) => {
-    if (!ids.length) return 'none';
-    if (ids.every((id) => installed.has(id))) return 'installed';
-    if (ids.some((id) => downloadByPackId[id]?.status === 'downloading')) return 'downloading';
-    return 'available';
-  };
 
   const handleRedeemSubmit = (event) => {
     event.preventDefault();
@@ -278,15 +225,30 @@ export default function NeonStoreScreen({
       <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/35 to-black/70" />
 
       <div className="relative z-10 mx-auto flex min-h-screen w-full max-w-[28rem] flex-col px-3 pb-8 pt-3">
-        <header className="flex items-center gap-3">
-          <button type="button" className="pof-btn pof-btn-steel pof-btn-sm pof-focus px-4" onClick={onBack}>
-            Back
+        <header className="flex items-center gap-2" data-testid="store-header">
+          <button
+            type="button"
+            className="pof-btn pof-btn-steel pof-btn-sm pof-focus flex h-10 w-10 items-center justify-center p-0"
+            aria-label="Back"
+            data-testid="store-back"
+            onClick={() => {
+              tapFx();
+              onBack?.();
+            }}
+          >
+            <ArrowLeft className="h-5 w-5" />
           </button>
           <div className="flex-1 text-center">
-            <div className="pof-heading text-2xl text-yellow-200">Shop</div>
-            <p className="pof-desc text-xs text-white/70">Unlock access, themes, and extras</p>
+            <div className="pof-heading text-3xl text-yellow-200">Shop</div>
           </div>
-          <img src={NEON_ASSETS.icons.shop} alt="" className="h-10 w-10 opacity-90" />
+          <span
+            className="pof-heading flex max-w-[7.5rem] items-center gap-1 rounded-full border border-amber-300/45 bg-amber-400/15 px-2.5 py-1 text-[0.62rem] text-amber-100"
+            data-testid="store-tier-chip"
+            title="Your access tier"
+          >
+            <Crown className="h-3.5 w-3.5 shrink-0 text-amber-200" />
+            <span className="truncate">{currentTierName}</span>
+          </span>
         </header>
 
         {storeNotice ? (
@@ -346,115 +308,18 @@ export default function NeonStoreScreen({
             onToggle={() => toggleSection('themes')}
             accent="fuchsia"
           >
-            <p className="pof-desc mb-3 text-xs text-white/70">
-              Five core themes ship free. DLC bundles add three themed experiences each (99p) or
-              unlock everything with Host with the Most.
-            </p>
-            <div className="mb-4">
-              <div className="pof-heading mb-2 text-sm text-cyan-100">Core themes</div>
-              <div className="flex flex-wrap gap-2">
-                {coreThemeNames.map((name) => {
-                  const art = getStoreThemeThumbSrc(name);
-                  const packId = coreThemeContentPackId(name, contentPackManifest);
-                  const dlState = packId ? downloadStateForIds([packId]) : 'none';
-                  return (
-                    <div
-                      key={name}
-                      className="relative w-[calc(50%-0.25rem)] overflow-hidden rounded-xl border border-white/15 bg-black/30"
-                      data-testid={`store-core-theme-${name.replace(/\s+/g, '-')}`}
-                    >
-                      {art ? (
-                        <img src={art} alt="" className="h-16 w-full object-cover opacity-90" />
-                      ) : (
-                        <div className="h-16 bg-white/5" />
-                      )}
-                      <div className="p-2">
-                        <div className="pof-heading text-xs text-white">{name}</div>
-                        <div className="mt-1 flex flex-wrap items-center gap-1">
-                          <DownloadBadge label="Included" tone="success" />
-                          {packId && dlState === 'installed' ? (
-                            <DownloadBadge label="Downloaded" tone="success" />
-                          ) : null}
-                          {packId && dlState === 'available' ? (
-                            <StoreActionChip
-                              label="Download"
-                              onClick={() => onDownloadContentPack(packId)}
-                            />
-                          ) : null}
-                          {packId && dlState === 'downloading' ? (
-                            <DownloadBadge label="Downloading…" tone="action" />
-                          ) : null}
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-
-            <div className="pof-heading mb-2 text-sm text-fuchsia-100">DLC theme packs</div>
-            <div className="grid grid-cols-2 gap-2">
-              {dlcThemePacks.map((pack) => {
-                const isUnlocked = allDlcIncluded || unlocked.has(pack.id);
-                const art = packArt(pack);
-                const contentIds = contentPackIdsForDlcPack(pack, contentPackManifest);
-                const dlState = downloadStateForIds(contentIds);
-                return (
-                  <div
-                    key={pack.id}
-                    className="overflow-hidden rounded-xl border border-white/15 bg-black/35"
-                    data-testid={`store-dlc-pack-${pack.id}`}
-                  >
-                    {art ? (
-                      <img
-                        src={art}
-                        alt=""
-                        className="h-20 w-full object-cover"
-                        data-testid="store-dlc-pack-art"
-                      />
-                    ) : (
-                      <div className="h-20 bg-white/5" />
-                    )}
-                    <div className="p-2 text-left">
-                      <div className="pof-heading text-[0.7rem] leading-tight text-white">
-                        {pack.name}
-                      </div>
-                      <p className="pof-desc mt-1 line-clamp-2 text-[0.65rem] text-white/60">
-                        {(pack.themes || []).join(' · ')}
-                      </p>
-                      <div className="mt-2 flex flex-wrap items-center gap-1">
-                        {isUnlocked ? (
-                          <DownloadBadge label="Owned" tone="success" />
-                        ) : (
-                          <DownloadBadge label={pack.priceLabel || '99p'} />
-                        )}
-                        {!isUnlocked && !disableDlcDemo ? (
-                          <StoreActionChip
-                            label="Buy"
-                            variant="amber"
-                            onClick={() => onUnlockThemePack(pack.id)}
-                          />
-                        ) : null}
-                        {isUnlocked && contentIds.length && dlState === 'installed' ? (
-                          <DownloadBadge label="Downloaded" tone="success" />
-                        ) : null}
-                        {isUnlocked && contentIds.length && dlState === 'available' ? (
-                          <StoreActionChip
-                            label="Download"
-                            onClick={() =>
-                              contentIds.forEach((id) => onDownloadContentPack(id))
-                            }
-                          />
-                        ) : null}
-                        {isUnlocked && contentIds.length && dlState === 'downloading' ? (
-                          <DownloadBadge label="Downloading…" tone="action" />
-                        ) : null}
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
+            <NeonStoreThemesPanel
+              coreThemeNames={coreThemeNames}
+              dlcThemePacks={dlcThemePacks}
+              unlockedThemePackIds={unlockedThemePackIds}
+              allDlcIncluded={allDlcIncluded}
+              disableDlcDemo={disableDlcDemo}
+              contentPackManifest={contentPackManifest}
+              installedContentPackIds={installedContentPackIds}
+              onDownloadContentPack={onDownloadContentPack}
+              onUnlockThemePack={onUnlockThemePack}
+              downloadByPackId={downloadByPackId}
+            />
 
             <div className="mt-4 rounded-xl border border-cyan-400/25 bg-cyan-500/10 p-3">
               <div className="flex items-center gap-2 text-cyan-100">

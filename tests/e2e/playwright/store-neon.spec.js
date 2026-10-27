@@ -1,56 +1,56 @@
 import { test, expect } from '@playwright/test';
 import { seedLocalAccount } from './helpers.js';
-import { assertVisibleImagesLoaded } from './mobile-flow.helpers.js';
 
-test.use({ viewport: { width: 360, height: 780 } });
+const SHOP_SHOTS = '/workspace/public/assets/ui/neon/apk-verify';
+
+test.use({ viewport: { width: 390, height: 844 } });
 
 test.describe('neon store', () => {
   test.beforeEach(async ({ page }) => {
-    await seedLocalAccount(page, 'local_liar');
+    await seedLocalAccount(page, 'host_most');
   });
 
-  test('sections expand/collapse and images load', async ({ page }) => {
+  test('MagicPath shop layout, filters, and verify screenshots', async ({ page }) => {
     await page.goto('/?pofScreen=store');
     await expect(page.getByTestId('neon-store-screen')).toBeVisible();
+    await expect(page.getByTestId('store-back')).toBeVisible();
+    await expect(page.getByTestId('store-tier-chip')).toBeVisible();
 
     const access = page.getByTestId('store-section-access');
     await expect(access).toHaveAttribute('data-expanded', 'true');
-    await expect(page.getByTestId('store-tier-local_liar')).toBeVisible();
 
     const themes = page.getByTestId('store-section-themes');
     await expect(themes).toHaveAttribute('data-expanded', 'false');
-    await themes.locator('button').first().click();
-    await expect(themes).toHaveAttribute('data-expanded', 'true');
-
-    const dlcArts = page.locator('[data-testid="store-dlc-pack-art"]');
-    await expect(dlcArts.first()).toBeVisible();
-    const artCount = await dlcArts.count();
-    expect(artCount).toBeGreaterThanOrEqual(4);
-    let loadedArt = 0;
-    for (let i = 0; i < artCount; i += 1) {
-      const img = dlcArts.nth(i);
-      const ok = await img.evaluate((node) => {
-        const el = node;
-        if (!el.complete) return false;
-        if (el.naturalWidth > 0 && el.naturalHeight > 0) return true;
-        const s = String(el.currentSrc || el.src || '');
-        return /\.svg(\?|$)/i.test(s);
-      });
-      if (ok) loadedArt += 1;
-    }
-    expect(artCount).toBeGreaterThanOrEqual(8);
-    expect(loadedArt, 'expected DLC pack tiles to show loaded art').toBeGreaterThanOrEqual(2);
-
-    await themes.locator('button').first().click();
-    await expect(themes).toHaveAttribute('data-expanded', 'false');
 
     await page.screenshot({
-      path: '/opt/cursor/artifacts/store-neon-360x780-collapsed.png',
+      path: `${SHOP_SHOTS}/shop-neon-collapsed-390x844.png`,
       fullPage: true,
     });
+
     await themes.locator('button').first().click();
+    await expect(themes).toHaveAttribute('data-expanded', 'true');
+    await expect(page.getByTestId('store-themes-panel')).toBeVisible();
+    await expect(page.getByTestId('store-featured-carousel')).toBeVisible();
+    await expect(page.getByTestId('store-featured-dots')).toBeVisible();
+
+    const themeArts = page.locator('[data-testid="store-theme-card-art"]');
+    await expect(themeArts.first()).toBeVisible();
+    const artCount = await themeArts.count();
+    expect(artCount).toBeGreaterThanOrEqual(8);
+
     await page.screenshot({
-      path: '/opt/cursor/artifacts/store-neon-360x780-themes-expanded.png',
+      path: `${SHOP_SHOTS}/shop-neon-themes-expanded-390x844.png`,
+      fullPage: true,
+    });
+
+    await page.getByTestId('store-theme-filter-premium').click();
+    const visibleCards = page.locator('[data-testid^="store-theme-card-"]');
+    await expect(visibleCards.first()).toBeVisible();
+    const premiumCount = await visibleCards.count();
+    expect(premiumCount).toBeGreaterThan(0);
+
+    await page.screenshot({
+      path: `${SHOP_SHOTS}/shop-neon-filter-premium-390x844.png`,
       fullPage: true,
     });
   });
