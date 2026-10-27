@@ -34,6 +34,28 @@
   font-display: swap;
 }
 
+@font-face {
+  font-family: 'Pants on Fire Narrow';
+  src:
+    url('/assets/fonts/pants-on-fire/PantsOnFireNarrow-Regular.woff2') format('woff2'),
+    url('/assets/fonts/pants-on-fire/PantsOnFireNarrow-Regular-otf.woff2') format('woff2'),
+    url('/assets/fonts/pants-on-fire/PantsOnFireNarrow-Regular.ttf') format('truetype'),
+    url('/assets/fonts/pants-on-fire/PantsOnFireNarrow-Regular.otf') format('opentype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Pants on Fire Narrow Color';
+  src:
+    url('/assets/fonts/pants-on-fire/PantsOnFireNarrowColor-Regular.woff2') format('woff2'),
+    url('/assets/fonts/pants-on-fire/PantsOnFireNarrowColor-Regular.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
 html, body, #root {
   min-height: 100%;
 }
