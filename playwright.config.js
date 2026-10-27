@@ -66,7 +66,11 @@ export default defineConfig({
     },
     {
       name: 'chain-mobile-screens',
-      testMatch: '**/chain-reaction-mobile-screens.spec.js',
+      testMatch: [
+        '**/chain-reaction-mobile-screens.spec.js',
+        '**/host-intro-debug.spec.js',
+        '**/category-choice-scroll.spec.js',
+      ],
       use: {
         viewport: { width: 360, height: 780 },
         baseURL: 'http://127.0.0.1:4175',

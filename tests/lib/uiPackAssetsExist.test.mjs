@@ -23,6 +23,7 @@ const REQUIRED_RELATIVE_PATHS = [
   'ui/neon/btn-2.png',
   'ui/neon/btn-3.png',
   'themes/default/hosts/persona-host-idle.png',
+  'themes/default/hosts/persona-host-intro-poster.png',
   'themes/default/hosts/persona-host-talking.mp4',
 ];
 

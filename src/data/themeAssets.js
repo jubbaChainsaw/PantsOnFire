@@ -4,10 +4,9 @@ import { resolveBundledAssetSrc } from '../lib/publicAssetUrl.js';
 
 export const THEME_ASSETS = {
   Default: {
-    personaHostIdle: '/assets/themes/default/hosts/persona-host-idle.png',
-    personaHostTalk1: '/assets/themes/default/hosts/persona-host-talk-1.png',
-    personaHostTalk2: '/assets/themes/default/hosts/persona-host-talk-2.png',
-    personaHostTalk3: '/assets/themes/default/hosts/persona-host-talk-3.png',
+    personaHostIdle: '/assets/themes/default/hosts/persona-host-intro-poster.png',
+    talkingVideoWebm: '/assets/themes/default/hosts/persona-host-talking.webm',
+    talkingVideoMp4: '/assets/themes/default/hosts/persona-host-talking.mp4',
     iconSheet: '/assets/themes/default/icons/icons-sheet.png',
     uiBanner: '/assets/themes/default/ui/banner.png',
     promptCardFront: '/assets/themes/default/cards/prompt-front.png',

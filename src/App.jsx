@@ -1720,6 +1720,7 @@ function MultiSourceVideo({
   preload = "metadata",
   ariaHidden = true,
   onLoadedData,
+  onTimeUpdate,
   onEnded,
   onError,
 }) {
@@ -1754,6 +1755,7 @@ function MultiSourceVideo({
       poster={poster || undefined}
       aria-hidden={ariaHidden ? "true" : undefined}
       onLoadedData={onLoadedData}
+      onTimeUpdate={onTimeUpdate}
       onEnded={onEnded}
       onError={(event) => {
         setIsBroken(true);
@@ -1791,15 +1793,23 @@ function ThemeHostVisual({
   const fallbackHostPoster = resolveBundledAssetSrc(
     "/assets/themes/default/hosts/persona-host-idle.png",
   );
-  const posterSrc = animatedHostSrc || idlePosterSrc || fallbackHostPoster;
+  const posterImgSrc =
+    idlePosterSrc || fallbackHostPoster || animatedHostSrc || "";
   const [videoBroken, setVideoBroken] = useState(false);
   const [videoReady, setVideoReady] = useState(false);
+  const [videoHasPaintedFrame, setVideoHasPaintedFrame] = useState(false);
   const shouldTryVideo = Boolean(talkingVideoSrc) && (isTalking || preferVideo);
-  const showVideoLayer = shouldTryVideo && !videoBroken && videoReady;
+  const showVideoLayer =
+    shouldTryVideo &&
+    !videoBroken &&
+    videoReady &&
+    videoHasPaintedFrame &&
+    isTalking;
 
   useEffect(() => {
     setVideoBroken(false);
     setVideoReady(false);
+    setVideoHasPaintedFrame(false);
   }, [talkingVideoSrc, themeName]);
 
   return (
@@ -1807,12 +1817,23 @@ function ThemeHostVisual({
       data-testid={testId}
       className={`relative h-full w-full overflow-hidden bg-black ${className}`}
     >
-      {posterSrc ? (
+      {posterImgSrc ? (
         <img
-          src={posterSrc}
+          src={posterImgSrc}
           alt={alt}
           data-testid="host-idle-image"
-          className={`absolute inset-0 z-0 h-full w-full object-cover object-top transition-opacity duration-200 ${showVideoLayer ? "opacity-0" : "opacity-100"}`}
+          className={`absolute inset-0 z-20 h-full w-full object-cover object-top transition-opacity duration-200 ${showVideoLayer ? "opacity-0" : "opacity-100"}`}
+          onError={(event) => {
+            const img = event.currentTarget;
+            if (
+              fallbackHostPoster &&
+              img.src !== fallbackHostPoster &&
+              !img.dataset.fallbackTried
+            ) {
+              img.dataset.fallbackTried = "1";
+              img.src = fallbackHostPoster;
+            }
+          }}
         />
       ) : null}
       {shouldTryVideo && !videoBroken ? (
@@ -1824,15 +1845,20 @@ function ThemeHostVisual({
           muted
           playsInline
           preload="auto"
-          poster={posterSrc || undefined}
+          poster={posterImgSrc || undefined}
           ariaHidden
           onLoadedData={() => setVideoReady(true)}
+          onTimeUpdate={(event) => {
+            const video = event.currentTarget;
+            if (video?.currentTime > 0.05) setVideoHasPaintedFrame(true);
+          }}
           onError={() => {
             setVideoBroken(true);
             setVideoReady(false);
+            setVideoHasPaintedFrame(false);
           }}
         />
-      ) : !posterSrc ? (
+      ) : !posterImgSrc ? (
         <ThemeArt
           src={animatedHostSrc}
           alt={alt}
@@ -2128,7 +2154,7 @@ const HOST_DIALOGUE_TIMINGS = {
 const POF_VIEWPORT_HEIGHT_CLASS =
   "h-[calc(var(--pof-vh,1vh)*100)] max-h-[calc(var(--pof-vh,1vh)*100)]";
 const HOST_DIALOGUE_PANEL_CLASS =
-  "pof-ui-copy rounded-[1.5rem] border border-fuchsia-200/35 bg-[#b8007a] text-white shadow-[0_18px_38px_rgba(0,0,0,0.55)] text-base sm:text-lg leading-relaxed";
+  "pof-ui-copy rounded-[1.5rem] border border-fuchsia-200/35 bg-[#b8007a] text-white shadow-[0_18px_38px_rgba(0,0,0,0.55)] text-base sm:text-lg leading-relaxed [background-color:#b8007a]";
 const HOST_DIALOGUE_BUTTON_CLASS =
   "h-16 flex-1 rounded-[1.25rem] bg-[#e60096] px-4 text-xl font-black uppercase tracking-[0.04em] text-white shadow-[0_12px_24px_rgba(0,0,0,0.5)] hover:bg-[#ff16ac]";
 
@@ -2739,40 +2765,44 @@ function HostIntroScreen({ round, stingerLine, onContinue, theme }) {
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.28, ease: "easeOut" }}
-            role={canContinue ? undefined : "button"}
-            tabIndex={canContinue ? undefined : 0}
-            data-testid="host-intro-caption"
-            className={`${HOST_DIALOGUE_PANEL_CLASS} flex min-h-[4.5rem] flex-1 cursor-pointer items-center justify-center px-4 py-3 text-center ${canContinue ? "" : "pof-focus"}`}
-            onClick={() => {
-              if (!canContinue) advanceSpeechLine();
-            }}
-            onKeyDown={(event) => {
-              if (canContinue) return;
-              if (event.key === "Enter" || event.key === " ") {
-                event.preventDefault();
-                advanceSpeechLine();
-              }
-            }}
+            className="flex min-h-[4.5rem] flex-1"
           >
             <div
-              ref={speechBubbleFitRef}
-              className="flex h-full max-h-[26dvh] w-full items-center justify-center overflow-hidden"
+              role={canContinue ? undefined : "button"}
+              tabIndex={canContinue ? undefined : 0}
+              data-testid="host-intro-caption"
+              className={`pof-host-intro-caption-panel ${HOST_DIALOGUE_PANEL_CLASS} relative z-20 flex h-full w-full cursor-pointer items-center justify-center rounded-[1.5rem] border border-fuchsia-200/35 px-4 py-3 text-center ${canContinue ? "" : "pof-focus"}`}
+              onClick={() => {
+                if (!canContinue) advanceSpeechLine();
+              }}
+              onKeyDown={(event) => {
+                if (canContinue) return;
+                if (event.key === "Enter" || event.key === " ") {
+                  event.preventDefault();
+                  advanceSpeechLine();
+                }
+              }}
             >
-              <p
-                ref={speechBubbleTextRef}
-                className="pof-ui-copy w-full font-semibold text-white [text-shadow:0_1px_0_#000,0_2px_8px_rgba(0,0,0,0.9)]"
-                style={{
-                  fontSize: `${speechBubbleFontSize}px`,
-                  lineHeight: 1.12,
-                  wordBreak: "normal",
-                  overflowWrap: "break-word",
-                  whiteSpace: "normal",
-                  hyphens: "manual",
-                  WebkitHyphens: "manual",
-                }}
+              <div
+                ref={speechBubbleFitRef}
+                className="flex h-full max-h-[26dvh] w-full items-center justify-center overflow-hidden"
               >
-                {speechSentences[speechIndex]}
-              </p>
+                <p
+                  ref={speechBubbleTextRef}
+                  className="pof-host-intro-caption-text w-full"
+                  style={{
+                    fontSize: `${speechBubbleFontSize}px`,
+                    lineHeight: 1.12,
+                    wordBreak: "normal",
+                    overflowWrap: "break-word",
+                    whiteSpace: "normal",
+                    hyphens: "manual",
+                    WebkitHyphens: "manual",
+                  }}
+                >
+                  {speechSentences[speechIndex]}
+                </p>
+              </div>
             </div>
           </motion.div>
           <div className="flex gap-3">
@@ -4036,16 +4066,16 @@ function CategoryChoiceGrid({
     else onChooseCategory(picked.id);
   };
   return (
-    <div className="flex min-h-0 flex-1 flex-col gap-3">
+    <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-hidden">
       {onlineMode && optionIds.length > 0 && (
-        <div className="mt-4">
+        <div className="mt-4 shrink-0">
           <NeonTimerBar
             secondsLeft={timed.secondsLeft}
             totalSeconds={ONLINE_SELECTION_TIMER_SEC}
           />
         </div>
       )}
-      <div className="mt-4 flex justify-center">
+      <div className="mt-4 flex shrink-0 justify-center">
         <button
           type="button"
           className="pof-btn pof-btn-blue pof-btn-sm pof-focus px-6"
@@ -4059,7 +4089,15 @@ function CategoryChoiceGrid({
           Choose for me
         </button>
       </div>
-      <div className={categoryChoiceGridClass} data-testid="category-choice-grid">
+      <div
+        data-testid="category-choice-scroll"
+        className="min-h-0 flex-1 overflow-y-auto overscroll-y-contain pof-scroll"
+        style={{
+          paddingBottom:
+            "max(1.5rem, calc(env(safe-area-inset-bottom, 0px) + 1rem))",
+        }}
+      >
+        <div className={categoryChoiceGridClass} data-testid="category-choice-grid">
         {categoryOptions.map((category) => {
           const categoryIconSrc =
             category?.iconSrc ||
@@ -4091,6 +4129,7 @@ function CategoryChoiceGrid({
             </button>
           );
         })}
+        </div>
       </div>
     </div>
   );
@@ -9971,8 +10010,8 @@ export default function App() {
     setPartyChatInput("");
   };
   const categoryChoiceGridClass = isDesktopLandscapeWeb
-    ? "grid grid-cols-3 gap-3 auto-rows-min pb-6"
-    : "grid grid-cols-2 gap-x-3 gap-y-4 auto-rows-min pb-6";
+    ? "grid grid-cols-3 gap-3 auto-rows-min pb-4"
+    : "grid grid-cols-2 gap-x-3 gap-y-4 auto-rows-min pb-4";
   const categoriesForChoiceScreen = useMemo(() => {
     const roundTypeId =
       selectedRoundType ||
@@ -10409,10 +10448,9 @@ export default function App() {
           wallpaperSrc={UI_WALLPAPER_IN_GAME_SRC}
           overlayClassName="bg-black/45"
           lockViewport
-          allowScroll
-          contentClassName="!py-3 flex min-h-0 flex-col"
+          contentClassName="!min-h-0 !py-3 flex flex-col overflow-hidden"
         >
-          <div className="mx-auto flex min-h-0 w-full max-w-4xl flex-1 flex-col">
+          <div className="mx-auto flex min-h-0 w-full max-w-4xl flex-1 flex-col overflow-hidden">
             <div className="shrink-0 px-1 text-center">
               <div className="pof-ui-muted text-xs font-semibold uppercase tracking-[0.3em]">
                 Round owner: {players[currentRoundOwnerIndex]?.name}
@@ -10438,7 +10476,7 @@ export default function App() {
                 </p>
               </div>
             ) : (
-              <div className="mt-2 flex min-h-0 flex-1 flex-col overflow-y-auto pof-scroll">
+              <div className="mt-2 flex min-h-0 flex-1 flex-col overflow-hidden">
                 <CategoryChoiceGrid
                   categoryOptions={categoriesForChoiceScreen}
                   categoryChoiceGridClass={categoryChoiceGridClass}
