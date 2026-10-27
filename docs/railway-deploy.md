@@ -41,7 +41,7 @@ In **Variables**, add (names match `.env.example`):
 
 | Variable | Purpose |
 |----------|---------|
-| `LOBBY_CLIENT_ORIGINS` | **Required in production.** Comma-separated exact origins allowed for CORS + Socket.IO, e.g. `https://yourgame.com,https://www.yourgame.com`. For early testing you may use `*`; tighten before launch. |
+| `LOBBY_CLIENT_ORIGINS` | **Required in production.** Comma-separated exact origins for CORS + Socket.IO. Include your web app **and** the Android WebView origin used by bundled APKs: `https://appassets.androidplatform.net`. Example: `https://pantsonfire.app,https://www.pantsonfire.app,https://appassets.androidplatform.net`. For early testing you may use `*`; tighten before launch. |
 | `SUPABASE_URL` | Same value as your Supabase project URL (server-side). |
 | `SUPABASE_SERVICE_ROLE_KEY` | Supabase **service role** secret (server only). |
 | `REVENUECAT_WEBHOOK_SECRET` | Long random string; RevenueCat webhook will send `Authorization: Bearer <this>`. |

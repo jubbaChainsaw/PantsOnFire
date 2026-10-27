@@ -39,6 +39,8 @@ import {
   UsersRound,
   Bell,
   Upload,
+  Bug,
+  Pause,
 } from "lucide-react";
 import { Button } from "./components/ui/button";
 import { Input } from "./components/ui/input";
@@ -136,9 +138,18 @@ import {
   OPINION_ROUNDS,
   MEDIA_ROUNDS,
   GRILL_EM_ROUNDS,
+  TWO_TRUTHS_ONE_FIRE_ROUNDS,
   BANNED_WORD_BANK,
   sanitizeBannedWords,
 } from "./data/categories";
+import {
+  buildPresentationsFromSubmissions,
+  calculateTwoTruthsRoundResolution,
+  createEmptyTwoTruthsData,
+} from "./lib/twoTruthsOneFire.js";
+import NeonTwoTruthsInputScreen from "./components/neon/NeonTwoTruthsInputScreen.jsx";
+import NeonTwoTruthsVotingScreen from "./components/neon/NeonTwoTruthsVotingScreen.jsx";
+import NeonTwoTruthsRevealScreen from "./components/neon/NeonTwoTruthsRevealScreen.jsx";
 import { PICTURE_DLC_MANIFESTS } from "./data/pictureDlcManifests";
 import { getHostVoiceSrcCandidatesForLine } from "./data/hostVoiceLineMap";
 import {
@@ -167,7 +178,12 @@ import {
 } from "./online/lobbyTransport";
 import { createVoicePartyTransport } from "./online/voicePartyTransport";
 import NeonHomeScreen from "./components/neon/NeonHomeScreen.jsx";
-import { drawTurnOptions, pickRandomFromShown } from "./lib/turnDraw.js";
+import NeonStoreScreen from "./components/neon/NeonStoreScreen.jsx";
+import {
+  drawTurnOptions,
+  drawCategoriesForRoundChoice,
+  pickRandomFromShown,
+} from "./lib/turnDraw.js";
 import { usePofViewportHeight } from "./hooks/usePofViewportHeight.js";
 import { resolveBundledAssetSrc } from "./lib/publicAssetUrl.js";
 import { useTimedChoice } from "./hooks/useTimedChoice.js";
@@ -185,6 +201,14 @@ import {
   ONLINE_SELECTION_TIMER_SEC,
 } from "./data/uiNeonAssets.js";
 import NeonTimerBar from "./components/neon/NeonTimerBar.jsx";
+import { useContentPacks } from "./hooks/useContentPacks.js";
+import {
+  ContentPackPromptModal,
+  ContentPackSettingsPanel,
+} from "./components/ContentPackDownloadUI.jsx";
+import { BugReportScreen } from "./components/BugReportScreen.jsx";
+import { anonymizeLobbyId } from "./lib/bugReportClient.js";
+import { installNativeDiagnosticsBridge } from "./lib/nativeDiagnosticsBridge.js";
 
 const E2E_FORCE_ROUND_TYPE = String(
   import.meta.env.VITE_E2E_FORCE_ROUND_TYPE || "",
@@ -293,6 +317,9 @@ const ONLINE_VOICE_ACTIVE_SCREENS = new Set([
   "discussion",
   "grill",
   "voting",
+  "twotruths-input",
+  "twotruths-voting",
+  "twotruths-reveal",
   "results",
 ]);
 const ONLINE_CONNECTION_ACTIVE_SCREENS = new Set([
@@ -304,6 +331,9 @@ const ONLINE_CONNECTION_ACTIVE_SCREENS = new Set([
   "discussion",
   "grill",
   "voting",
+  "twotruths-input",
+  "twotruths-voting",
+  "twotruths-reveal",
   "liar-reveal",
   "results",
   "final",
@@ -316,6 +346,9 @@ const ONLINE_IN_SESSION_LEAVE_SCREENS = new Set([
   "discussion",
   "grill",
   "voting",
+  "twotruths-input",
+  "twotruths-voting",
+  "twotruths-reveal",
   "liar-reveal",
   "results",
   "final",
@@ -330,9 +363,28 @@ const ONLINE_PARTY_CHAT_ACTIVE_SCREENS = new Set([
   "discussion",
   "grill",
   "voting",
+  "twotruths-input",
+  "twotruths-voting",
+  "twotruths-reveal",
   "liar-reveal",
   "results",
   "final",
+]);
+const LOCAL_GAME_PAUSE_SCREENS = new Set([
+  "game-intro",
+  "rules",
+  "host-intro",
+  "category-choice",
+  "round-type-choice",
+  "reveal",
+  "discussion",
+  "grill",
+  "voting",
+  "twotruths-input",
+  "twotruths-voting",
+  "twotruths-reveal",
+  "liar-reveal",
+  "results",
 ]);
 
 const DESKTOP_LANDSCAPE_MIN_WIDTH = 1100;
@@ -627,6 +679,11 @@ const VOTING_STINGER_BY_ROUND_TYPE = {
     "AI grilling done. Vote who sounded too prepared.",
     "Pass the phone and call out the over-confident answerer.",
     "Blaze Byte is done talking. Now it's your turn to judge.",
+  ],
+  twotruths: [
+    "Three items, one lie. Pass the phone and pick the fib.",
+    "Shuffle complete — vote for the lie in each list.",
+    "Spot the blaze: which line was the lie?",
   ],
 };
 function pickVotingStinger(roundTypeId = "prompt") {
@@ -1054,6 +1111,13 @@ function buildLocalRound(
       prompt,
       key: `grill::global::${index}`,
     }));
+  } else if (selectedRoundType.id === "twotruths") {
+    promptOptions = (TWO_TRUTHS_ONE_FIRE_ROUNDS[effectiveCategory.id] || []).map(
+      (prompt, index) => ({
+        prompt,
+        key: `twotruths::${effectiveCategory.id}::${index}`,
+      }),
+    );
   } else {
     promptOptions = (MEDIA_ROUNDS[selectedRoundType.id] || []).map(
       (prompt, index) => ({
@@ -1081,14 +1145,17 @@ function buildLocalRound(
   const selected = pickRandom(
     filteredOptions.length ? filteredOptions : ageFilteredOptions,
   );
-  const liarIds = shuffle(players)
-    .slice(0, Math.max(1, Math.min(liarCount, players.length - 1)))
-    .map((p) => p.id);
+  const isTwoTruthsRound = selectedRoundType.id === "twotruths";
+  const liarIds = isTwoTruthsRound
+    ? []
+    : shuffle(players)
+        .slice(0, Math.max(1, Math.min(liarCount, players.length - 1)))
+        .map((p) => p.id);
   const bannedWords = sanitizeBannedWords(
     effectiveCategory.name,
     selected.prompt.hint,
     selected.prompt.main,
-    selected.prompt.imposter,
+    isTwoTruthsRound ? "" : selected.prompt.imposter,
     BANNED_WORD_BANK[selected.key] || [],
   );
   const truthDeck = shuffle(selected.prompt.mainWords || []);
@@ -1181,10 +1248,25 @@ function buildLocalRound(
         ];
       }),
     ),
+    ...(isTwoTruthsRound
+      ? {
+          twoTruthsData: {
+            ...createEmptyTwoTruthsData(),
+            promptText: selected.prompt.main,
+          },
+        }
+      : {}),
   };
 }
 
 function calculateRoundResolutionLocal(players, round, votesByPlayerId = {}) {
+  if (round?.roundTypeId === "twotruths") {
+    return calculateTwoTruthsRoundResolution(
+      players,
+      round,
+      votesByPlayerId,
+    );
+  }
   const validPlayerIds = new Set(players.map((player) => player.id));
   const normalizedVotes = Object.fromEntries(
     Object.entries(votesByPlayerId || {}).filter(([voterId, targetId]) => {
@@ -1350,6 +1432,7 @@ function LightningBolt({ className = "", boltClass = "text-yellow-300" }) {
   );
 }
 function TopFrame({ children, theme = "Default", allowScroll = false }) {
+  const wallSrc = resolveBundledAssetSrc(UI_WALLPAPER_IN_GAME_SRC);
   return (
     <div
       className={`relative min-h-screen min-h-[100dvh] overflow-x-hidden text-white ${allowScroll ? "overflow-y-auto pof-scroll" : "overflow-y-hidden"}`}
@@ -1357,7 +1440,12 @@ function TopFrame({ children, theme = "Default", allowScroll = false }) {
     >
       <div
         className="pof-wall fixed inset-0"
-        style={{ backgroundImage: `url(${NEON_ASSETS.wallGame})` }}
+        style={{
+          backgroundImage: wallSrc ? `url("${wallSrc}")` : undefined,
+          backgroundSize: "cover",
+          backgroundRepeat: "no-repeat",
+          backgroundPosition: "center top",
+        }}
       />
       <div className="fixed inset-0 bg-gradient-to-b from-black/40 via-black/25 to-black/55" />
       <div
@@ -1598,13 +1686,17 @@ function ThemedIcon({ src, alt = "", className = "" }) {
 }
 function ThemeArt({ src, alt, className = "", ...rest }) {
   const [isBroken, setIsBroken] = useState(false);
+  const resolvedSrc = useMemo(
+    () => resolveBundledAssetSrc(String(src || "").trim()),
+    [src],
+  );
   useEffect(() => {
     setIsBroken(false);
-  }, [src]);
-  if (!src || isBroken) return null;
+  }, [resolvedSrc]);
+  if (!resolvedSrc || isBroken) return null;
   return (
     <img
-      src={src}
+      src={resolvedSrc}
       alt={alt}
       className={className}
       onError={() => setIsBroken(true)}
@@ -1628,18 +1720,20 @@ function MultiSourceVideo({
   preload = "metadata",
   ariaHidden = true,
   onLoadedData,
+  onTimeUpdate,
   onEnded,
   onError,
 }) {
   const [isBroken, setIsBroken] = useState(false);
   const videoRef = useRef(null);
   const normalizedSrc = String(src || "").trim();
-  const isWebmSrc = normalizedSrc.toLowerCase().endsWith(".webm");
-  const webmSrc = isWebmSrc ? normalizedSrc : toWebmSrc(normalizedSrc);
-  const mp4Src = isWebmSrc ? "" : normalizedSrc;
+  const resolvedSrc = resolveBundledAssetSrc(normalizedSrc);
+  const isWebmSrc = resolvedSrc.toLowerCase().endsWith(".webm");
+  const webmSrc = isWebmSrc ? resolvedSrc : toWebmSrc(resolvedSrc);
+  const mp4Src = isWebmSrc ? "" : resolvedSrc;
   useEffect(() => {
     setIsBroken(false);
-  }, [normalizedSrc, webmSrc, mp4Src, poster]);
+  }, [resolvedSrc, webmSrc, mp4Src, poster]);
   useEffect(() => {
     const video = videoRef.current;
     if (!video || !autoPlay || isBroken) return;
@@ -1647,8 +1741,8 @@ function MultiSourceVideo({
       setIsBroken(true);
       if (typeof onError === "function") onError();
     });
-  }, [autoPlay, isBroken, normalizedSrc, webmSrc, mp4Src]);
-  if (!normalizedSrc || isBroken) return null;
+  }, [autoPlay, isBroken, resolvedSrc, webmSrc, mp4Src]);
+  if (!resolvedSrc || isBroken) return null;
   return (
     <video
       ref={videoRef}
@@ -1661,6 +1755,7 @@ function MultiSourceVideo({
       poster={poster || undefined}
       aria-hidden={ariaHidden ? "true" : undefined}
       onLoadedData={onLoadedData}
+      onTimeUpdate={onTimeUpdate}
       onEnded={onEnded}
       onError={(event) => {
         setIsBroken(true);
@@ -1675,7 +1770,7 @@ function MultiSourceVideo({
 function ThemeHostVisual({
   themeName = "Default",
   isTalking = false,
-  alt = "",
+  alt = "host",
   className = "",
   testId = "theme-host-visual",
   preferVideo = false,
@@ -1695,12 +1790,26 @@ function ThemeHostVisual({
       hostAssets?.talkingVideoMp4 ||
       "",
   );
-  const posterSrc = animatedHostSrc || idlePosterSrc;
+  const fallbackHostPoster = resolveBundledAssetSrc(
+    "/assets/themes/default/hosts/persona-host-idle.png",
+  );
+  const posterImgSrc =
+    idlePosterSrc || fallbackHostPoster || animatedHostSrc || "";
   const [videoBroken, setVideoBroken] = useState(false);
+  const [videoReady, setVideoReady] = useState(false);
+  const [videoHasPaintedFrame, setVideoHasPaintedFrame] = useState(false);
   const shouldTryVideo = Boolean(talkingVideoSrc) && (isTalking || preferVideo);
+  const showVideoLayer =
+    shouldTryVideo &&
+    !videoBroken &&
+    videoReady &&
+    videoHasPaintedFrame &&
+    isTalking;
 
   useEffect(() => {
     setVideoBroken(false);
+    setVideoReady(false);
+    setVideoHasPaintedFrame(false);
   }, [talkingVideoSrc, themeName]);
 
   return (
@@ -1708,42 +1817,66 @@ function ThemeHostVisual({
       data-testid={testId}
       className={`relative h-full w-full overflow-hidden bg-black ${className}`}
     >
-      {posterSrc ? (
+      {posterImgSrc ? (
         <img
-          src={posterSrc}
+          src={posterImgSrc}
           alt={alt}
           data-testid="host-idle-image"
-          className="absolute inset-0 h-full w-full object-cover"
+          className={`absolute inset-0 z-20 h-full w-full object-cover object-top transition-opacity duration-200 ${showVideoLayer ? "opacity-0" : "opacity-100"}`}
+          onError={(event) => {
+            const img = event.currentTarget;
+            if (
+              fallbackHostPoster &&
+              img.src !== fallbackHostPoster &&
+              !img.dataset.fallbackTried
+            ) {
+              img.dataset.fallbackTried = "1";
+              img.src = fallbackHostPoster;
+            }
+          }}
         />
       ) : null}
       {shouldTryVideo && !videoBroken ? (
         <MultiSourceVideo
           src={talkingVideoSrc}
-          className="absolute inset-0 h-full w-full object-cover"
+          className={`absolute inset-0 z-10 h-full w-full object-cover object-top transition-opacity duration-200 ${showVideoLayer ? "opacity-100" : "opacity-0"}`}
           autoPlay={isTalking || preferVideo}
           loop={isTalking || preferVideo}
           muted
           playsInline
           preload="auto"
-          poster={posterSrc || undefined}
+          poster={posterImgSrc || undefined}
           ariaHidden
-          onError={() => setVideoBroken(true)}
+          onLoadedData={() => setVideoReady(true)}
+          onTimeUpdate={(event) => {
+            const video = event.currentTarget;
+            if (video?.currentTime > 0.05) setVideoHasPaintedFrame(true);
+          }}
+          onError={() => {
+            setVideoBroken(true);
+            setVideoReady(false);
+            setVideoHasPaintedFrame(false);
+          }}
         />
-      ) : posterSrc ? null : (
+      ) : !posterImgSrc ? (
         <ThemeArt
           src={animatedHostSrc}
           alt={alt}
-          className="absolute inset-0 h-full w-full object-cover"
+          className="absolute inset-0 h-full w-full object-cover object-top"
         />
-      )}
+      ) : null}
     </div>
   );
 }
 function RoundTypeLogo({ src, alt, className = "" }) {
-  if (!src) return null;
+  const resolvedSrc = useMemo(
+    () => resolveBundledAssetSrc(String(src || "").trim()),
+    [src],
+  );
+  if (!resolvedSrc) return null;
   return (
     <img
-      src={src}
+      src={resolvedSrc}
       alt={alt}
       className={className}
       onError={(event) => {
@@ -1777,6 +1910,11 @@ const MASCOT_BY_ROUND_TYPE = {
     blurb: "Connect the clues, expose the break.",
   },
   grill: { name: "Blaze Byte", face: "🤖", blurb: "AI host for Grill 'Em." },
+  twotruths: {
+    name: "Ian Poster",
+    face: "🔥",
+    blurb: "Two truths, one lie — blend it or burn.",
+  },
 };
 function RoundMascot({ roundTypeId }) {
   const mascot =
@@ -2016,7 +2154,7 @@ const HOST_DIALOGUE_TIMINGS = {
 const POF_VIEWPORT_HEIGHT_CLASS =
   "h-[calc(var(--pof-vh,1vh)*100)] max-h-[calc(var(--pof-vh,1vh)*100)]";
 const HOST_DIALOGUE_PANEL_CLASS =
-  "rounded-[1.5rem] bg-[#e60096] text-white shadow-[0_18px_38px_rgba(0,0,0,0.55)]";
+  "pof-ui-copy rounded-[1.5rem] border border-fuchsia-200/35 bg-[#b8007a] text-white shadow-[0_18px_38px_rgba(0,0,0,0.55)] text-base sm:text-lg leading-relaxed [background-color:#b8007a]";
 const HOST_DIALOGUE_BUTTON_CLASS =
   "h-16 flex-1 rounded-[1.25rem] bg-[#e60096] px-4 text-xl font-black uppercase tracking-[0.04em] text-white shadow-[0_12px_24px_rgba(0,0,0,0.5)] hover:bg-[#ff16ac]";
 
@@ -2123,7 +2261,7 @@ function GameIntroScreen({
             <ThemeHostVisual
               themeName={theme}
               isTalking={isTalking}
-              alt={`${theme} host ${themedHostPersona.name}`}
+              alt="host"
               className="h-full w-full"
             />
           </div>
@@ -2192,6 +2330,9 @@ function getRoundRuleText(roundTypeId = "prompt") {
   }
   if (roundTypeId === "grill") {
     return "Grill 'Em: players ask by microphone and Blaze Byte talks back with AI answers. Liars already saw the hidden prompt and will try to steer the room.";
+  }
+  if (roundTypeId === "twotruths") {
+    return "Two Truths, One Fire: everyone lists three related items — two truths and one lie. After the shuffle, spot each player's lie to score.";
   }
   return "Give one clue, blend in, and avoid revealing your exact prompt.";
 }
@@ -2515,6 +2656,12 @@ function getHostExamplePrompts(roundTypeId = "prompt") {
       liar: "Eiffel Tower",
     };
   }
+  if (roundTypeId === "twotruths") {
+    return {
+      normal: "Name three martial arts",
+      liar: "Name three bands",
+    };
+  }
   return {
     normal: "Street market in Bangkok",
     liar: "Souk in Marrakech",
@@ -2607,21 +2754,21 @@ function HostIntroScreen({ round, stingerLine, onContinue, theme }) {
               isTalking={isTalking}
               preferVideo
               testId="host-intro-visual"
-              alt={`${theme} presenter`}
+              alt="host"
               className="h-full w-full"
             />
           </div>
         </div>
         <div className="relative z-10 flex min-h-0 flex-[0.85] flex-col justify-end gap-2">
-          <motion.div
-            key={`${round.id || round.roundNumber}-${speechIndex}`}
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.28, ease: "easeOut" }}
+          <div
             role={canContinue ? undefined : "button"}
             tabIndex={canContinue ? undefined : 0}
             data-testid="host-intro-caption"
-            className={`${HOST_DIALOGUE_PANEL_CLASS} flex min-h-[4.5rem] flex-1 cursor-pointer items-center justify-center px-4 py-3 text-center ${canContinue ? "" : "pof-focus"}`}
+            className={`pof-host-intro-caption-panel relative z-20 flex min-h-[4.5rem] flex-1 cursor-pointer items-center justify-center rounded-[1.5rem] border border-fuchsia-200/35 px-4 py-3 text-center ${canContinue ? "" : "pof-focus"}`}
+            style={{
+              backgroundColor: "#b8007a",
+              backgroundImage: "none",
+            }}
             onClick={() => {
               if (!canContinue) advanceSpeechLine();
             }}
@@ -2637,11 +2784,16 @@ function HostIntroScreen({ round, stingerLine, onContinue, theme }) {
               ref={speechBubbleFitRef}
               className="flex h-full max-h-[26dvh] w-full items-center justify-center overflow-hidden"
             >
-              <p
+              <motion.p
+                key={`${round.id || round.roundNumber}-${speechIndex}`}
                 ref={speechBubbleTextRef}
-                className="pof-heading w-full !text-white [text-shadow:0_2px_0_#000,0_4px_14px_rgba(0,0,0,0.85)]"
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.22, ease: "easeOut" }}
+                className="pof-host-intro-caption-text w-full"
                 style={{
                   color: "#ffffff",
+                  fontFamily: "Inter, system-ui, sans-serif",
                   fontSize: `${speechBubbleFontSize}px`,
                   lineHeight: 1.12,
                   wordBreak: "normal",
@@ -2652,9 +2804,9 @@ function HostIntroScreen({ round, stingerLine, onContinue, theme }) {
                 }}
               >
                 {speechSentences[speechIndex]}
-              </p>
+              </motion.p>
             </div>
-          </motion.div>
+          </div>
           <div className="flex gap-3">
             <Button className={HOST_DIALOGUE_BUTTON_CLASS} onClick={handleNextSpeechAction}>
               Next
@@ -2684,12 +2836,12 @@ function RulesSplashScreen({ onContinue, theme, isOnlineMode = false }) {
             Quick Rules
           </h2>
           <div className="mt-6 grid gap-3 text-center">
-            <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+            <div className="pof-ui-copy rounded-2xl border border-white/15 bg-black/35 p-4 text-base leading-relaxed">
               {isOnlineMode
                 ? "Online mode: each player checks prompts on their own device. No phone passing."
                 : "Pass the phone one player at a time so only that player sees their card."}
             </div>
-            <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+            <div className="pof-ui-copy rounded-2xl border border-white/15 bg-black/35 p-4 text-base leading-relaxed">
               Give one related clue out loud during discussion, but never say
               your exact prompt.
             </div>
@@ -2699,14 +2851,14 @@ function RulesSplashScreen({ onContinue, theme, isOnlineMode = false }) {
                 auto-pauses during prompt/instruction phases.
               </div>
             )}
-            <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+            <div className="pof-ui-copy rounded-2xl border border-white/15 bg-black/35 p-4 text-base leading-relaxed">
               You cannot use any words from the{" "}
               <span className="font-semibold text-cyan-200">category</span>,{" "}
               your exact prompt, or any of the{" "}
               <span className="font-semibold text-cyan-200">5 banned words</span>{" "}
               shown on your reveal card.
             </div>
-            <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+            <div className="pof-ui-copy rounded-2xl border border-white/15 bg-black/35 p-4 text-base leading-relaxed">
               Vote for the liar. Correct votes score points. Uncaught liars
               score extra.
             </div>
@@ -3798,7 +3950,9 @@ function BrandedScreen({
   allowScroll = false,
   lockViewport = false,
 }) {
-  const resolvedWallpaperSrc = String(wallpaperSrc || NEON_ASSETS.wallGame).trim();
+  const resolvedWallpaperSrc = resolveBundledAssetSrc(
+    String(wallpaperSrc || UI_WALLPAPER_IN_GAME_SRC || NEON_ASSETS.wallGame).trim(),
+  );
   const viewportClass = lockViewport || !allowScroll ? POF_VIEWPORT_HEIGHT_CLASS : "min-h-screen min-h-[100dvh]";
   return (
     <div
@@ -3907,37 +4061,29 @@ function CategoryChoiceGrid({
     optionIds,
     onPick: (id) => onChooseCategory(id),
   });
-  const pickRandomCategory = () => {
-    const picked = pickRandomFromShown(categoryOptions);
-    if (!picked?.id) return;
-    if (onlineMode) timed.pick(picked.id);
-    else onChooseCategory(picked.id);
-  };
   return (
-    <>
+    <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
       {onlineMode && optionIds.length > 0 && (
-        <div className="mt-4">
+        <div className="shrink-0 pb-2">
           <NeonTimerBar
             secondsLeft={timed.secondsLeft}
             totalSeconds={ONLINE_SELECTION_TIMER_SEC}
           />
         </div>
       )}
-      <div className="mt-4 flex justify-center">
-        <button
-          type="button"
-          className="pof-btn pof-btn-blue pof-btn-sm pof-focus px-6"
-          data-testid="choose-category-random"
-          onClick={() => {
-            tapFx();
-            pickRandomCategory();
-          }}
+      <div
+        data-testid="category-choice-scroll"
+        className="flex min-h-0 flex-1 flex-col overflow-hidden justify-center px-0.5"
+        style={{
+          paddingBottom:
+            "max(0.5rem, calc(env(safe-area-inset-bottom, 0px) + 0.25rem))",
+        }}
+      >
+        <div
+          className={categoryChoiceGridClass}
+          data-testid="category-choice-grid"
+          data-category-count={categoryOptions.length}
         >
-          <Dice6 className="h-5 w-5" />
-          Choose for me
-        </button>
-      </div>
-      <div className={categoryChoiceGridClass}>
         {categoryOptions.map((category) => {
           const categoryIconSrc =
             category?.iconSrc ||
@@ -3948,30 +4094,30 @@ function CategoryChoiceGrid({
             timed.highlightedId === category.id &&
             (timed.isFlashing || timed.secondsLeft <= 3);
           return (
-            <div key={category.id} className="flex">
-              <button
-                type="button"
-                className={`w-full transition-transform duration-200 hover:scale-[1.03] ${highlighted ? "pof-choice-flash rounded-2xl" : ""}`}
-                onClick={() => {
-                  if (onlineMode) timed.pick(category.id);
-                  else onChooseCategory(category.id);
-                }}
-                aria-label={`Choose ${category.name}`}
-                data-testid={`category-${category.id}`}
-              >
-                <div className="mx-auto aspect-square w-full max-w-[11.5rem] sm:max-w-[13rem]">
-                  <ThemeArt
-                    src={categoryIconSrc}
-                    alt={`${category.name} category icon`}
-                    className="h-full w-full object-contain drop-shadow-[0_12px_22px_rgba(0,0,0,0.72)]"
-                  />
-                </div>
-              </button>
-            </div>
+            <button
+              key={category.id}
+              type="button"
+              className={`block w-full transition-transform duration-200 hover:scale-[1.02] ${highlighted ? "pof-choice-flash rounded-2xl" : ""}`}
+              onClick={() => {
+                if (onlineMode) timed.pick(category.id);
+                else onChooseCategory(category.id);
+              }}
+              aria-label={`Choose ${category.name}`}
+              data-testid={`category-${category.id}`}
+            >
+              <div className="aspect-square w-full max-h-[7.25rem] sm:max-h-[9rem] mx-auto">
+                <ThemeArt
+                  src={categoryIconSrc}
+                  alt={`${category.name} category icon`}
+                  className="h-full w-full object-contain drop-shadow-[0_8px_16px_rgba(0,0,0,0.65)]"
+                />
+              </div>
+            </button>
           );
         })}
+        </div>
       </div>
-    </>
+    </div>
   );
 }
 function OnlineJoinLobbyScreen({
@@ -4900,10 +5046,16 @@ function RevealScreen({
   const fireAudioRef = useRef(null);
   const promptTextRef = useRef(null);
   const promptFitContainerRef = useRef(null);
-  const cardBackSrc = getRoundCardBackSrc(theme);
-  const themedCardFrontSrc = getRoundCardFrontSrc(theme);
+  const cardBackSrc = useMemo(
+    () => resolveBundledAssetSrc(getRoundCardBackSrc(theme)),
+    [theme],
+  );
+  const themedCardFrontSrc = useMemo(
+    () => resolveBundledAssetSrc(getRoundCardFrontSrc(theme)),
+    [theme],
+  );
   const cardFrontSrc = isImposter
-    ? getImposterCardFrontSrc()
+    ? resolveBundledAssetSrc(getImposterCardFrontSrc())
     : themedCardFrontSrc;
   const roundTypeLogoSrc = getRoundTypeIconSrc(round.roundTypeId);
 
@@ -5004,7 +5156,7 @@ function RevealScreen({
               ? `Reveal for ${localPlayerName || player.name}`
               : `Pass the phone to ${player.name}`}
           </h2>
-          <div className="mt-2 rounded-[1.5rem] border border-fuchsia-200/40 bg-fuchsia-500/35 px-4 py-3 text-sm sm:text-base font-semibold text-white/95 shadow-[0_8px_20px_rgba(0,0,0,0.28)]">
+          <div className="pof-ui-copy mt-2 rounded-[1.5rem] border border-fuchsia-200/50 bg-fuchsia-950/75 px-4 py-3 text-sm sm:text-base font-semibold shadow-[0_8px_20px_rgba(0,0,0,0.28)]">
             {passLine}
           </div>
           {onlineMode && onlinePrivatePromptError && (
@@ -5167,10 +5319,10 @@ function RevealScreen({
                   </div>
                   {bannedWords.length > 0 && (
                     <div className="mt-4 rounded-xl border border-fuchsia-200/40 bg-fuchsia-500/35 px-3 py-2">
-                      <div className="text-xs uppercase tracking-[0.2em] text-red-300">
+                      <div className="pof-ui-copy text-xs font-bold uppercase tracking-[0.2em] text-red-200">
                         Banned Words
                       </div>
-                      <div className="mt-1 text-xs text-red-200">
+                      <div className="pof-ui-copy mt-1 text-sm font-medium text-red-100">
                         {bannedWords.join(" • ")}
                       </div>
                     </div>
@@ -5194,7 +5346,7 @@ function RevealScreen({
           {cardFace === "front" && (
             <button
               type="button"
-              className="pof-btn pof-btn-blue pof-btn-sm pof-focus mt-3"
+              className="pof-btn pof-btn-blue pof-btn-sm pof-btn-wrap pof-focus mt-3 max-w-full"
               data-testid="reveal-next"
               onClick={onNext}
             >
@@ -6229,7 +6381,7 @@ function DiscussionScreen({
           <div className="mt-8 flex justify-center">
             <button
               type="button"
-              className="pof-btn pof-btn-fire pof-focus min-w-[16rem]"
+              className="pof-btn pof-btn-fire pof-btn-wrap pof-focus w-full max-w-[20rem] px-3"
               data-testid="discussion-continue"
               onClick={onContinue}
               disabled={submitPending}
@@ -6335,13 +6487,13 @@ function VotingScreen({
               <h2 className="text-4xl font-black mt-3 text-yellow-300">
                 Vote now
               </h2>
-              <p className="text-white/70 mt-2">
+              <p className="pof-ui-copy mt-2 text-base">
                 {onlineMode ? (
                   "Vote from your own device. Pick one suspect and submit."
                 ) : activeLocalVoter ? (
                   <>
                     Pass the phone to{" "}
-                    <span className="font-semibold text-cyan-300">
+                    <span className="font-semibold text-cyan-200">
                       {activeLocalVoter.name}
                     </span>
                     .{" "}
@@ -6367,7 +6519,7 @@ function VotingScreen({
                 className="rounded-[1.75rem] p-4 border-white/10 bg-black/20"
               >
                 <div className="font-black text-lg">{voter.name}</div>
-                <div className="text-sm text-white/55 mt-1">
+                <div className="pof-ui-muted mt-1 text-sm font-medium">
                   Who do they vote for?
                 </div>
                 <div className="grid grid-cols-2 gap-2 mt-4">
@@ -6378,7 +6530,7 @@ function VotingScreen({
                         type="button"
                         key={target.id}
                         data-testid={`vote-for-${target.id}`}
-                        className={`pof-chip pof-focus h-11 ${votesByPlayerId[voter.id] === target.id ? "!border-yellow-300 !bg-yellow-300/90 !text-zinc-950" : ""}`}
+                        className={`pof-chip pof-vote-chip pof-focus ${votesByPlayerId[voter.id] === target.id ? "!border-yellow-300 !bg-yellow-300/90 !text-zinc-950" : ""}`}
                         onClick={() =>
                           setVotesByPlayerId((cur) => ({
                             ...cur,
@@ -6428,7 +6580,7 @@ function VotingScreen({
             ) : (
               <button
                 type="button"
-                className="pof-btn pof-btn-fire pof-focus"
+                className="pof-btn pof-btn-fire pof-btn-wrap pof-focus max-w-full px-4"
                 data-testid="submit-votes"
                 disabled={!canRevealResults || submitPending}
                 onClick={onSubmitVotes}
@@ -6554,19 +6706,19 @@ function LiarRevealScreen({
     );
   }
   return (
-    <TopFrame theme={theme}>
-      <div className="mx-auto flex h-[calc(100dvh-2rem)] w-full max-w-4xl flex-col justify-center">
-        <GlassPanel className="relative overflow-hidden rounded-[2.5rem] border-red-400/25 bg-black/35 p-6 sm:p-8 text-center">
+    <TopFrame theme={theme} allowScroll>
+      <div className="mx-auto flex min-h-[calc(100dvh-2rem)] w-full max-w-4xl flex-col justify-center py-2">
+        <GlassPanel className="relative overflow-visible rounded-[2.5rem] border-red-400/25 bg-black/35 p-6 sm:p-8 text-center">
           <div className="absolute inset-0 animate-pulse bg-[radial-gradient(circle,_rgba(255,0,80,0.16)_0%,_rgba(255,0,80,0.08)_35%,_transparent_70%)]" />
           <div className="relative z-10">
             <div className="text-xs uppercase tracking-[0.35em] text-white/50">
               Final accusation
             </div>
-            <div className="relative mx-auto mt-4 w-full max-w-3xl min-h-[230px] sm:min-h-[280px]">
+            <div className="relative mx-auto mt-4 w-full max-w-3xl min-h-[200px] sm:min-h-[240px]">
               <ThemeHostVisual
                 themeName={theme}
                 isTalking={isTalking}
-                alt={`${theme} presenter`}
+                alt="host"
                 className={`pointer-events-none absolute bottom-0 left-0 ${hostSizeConfig.liarReveal}`}
               />
               <motion.div
@@ -6574,16 +6726,16 @@ function LiarRevealScreen({
                 initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3, ease: "easeOut" }}
-                className={`${hostSizeConfig.liarBubbleMargin} h-[11rem] sm:h-[12rem] p-1 text-white`}
+                className={`${hostSizeConfig.liarBubbleMargin} min-h-[11rem] sm:min-h-[12rem] p-1 text-white`}
               >
                 <div
                   ref={announcementBubbleFitRef}
-                  className="relative mx-auto flex h-full max-w-2xl flex-col items-center justify-center overflow-hidden rounded-[2rem] border-2 border-red-300/70 bg-[#2a0f2e] px-4 py-4 shadow-[0_12px_24px_rgba(0,0,0,0.42)]"
+                  className="relative mx-auto flex max-h-[14rem] min-h-[10rem] w-full max-w-2xl flex-col items-center justify-center overflow-y-auto overflow-x-hidden rounded-[2rem] border-2 border-red-300/70 bg-[#2a0f2e] px-4 py-4 shadow-[0_12px_24px_rgba(0,0,0,0.42)] pof-scroll"
                 >
                   <div className="absolute -left-3 top-[58%] h-6 w-6 -translate-y-1/2 rotate-45 border-b-2 border-l-2 border-red-300/70 bg-[#2a0f2e]" />
                   <p
                     ref={announcementBubbleTextRef}
-                    className="font-black text-red-200"
+                    className="pof-ui-copy font-bold text-red-100"
                     style={{
                       fontSize: `${announcementBubbleFontSize}px`,
                       lineHeight: 1.1,
@@ -6625,14 +6777,15 @@ function LiarRevealScreen({
               </motion.div>
             </div>
             <div className="mt-6 flex justify-center">
-              <Button
-                className="h-14 rounded-[1.5rem] border border-white/30 bg-white/10 px-6 text-white"
+              <button
+                type="button"
+                className="pof-btn pof-btn-pink pof-btn-sm pof-btn-wrap pof-focus max-w-full px-5"
                 onClick={advanceAnnouncementLine}
               >
                 {announcementIndex >= announcementLines.length - 1
                   ? "Continue"
                   : "Next line"}
-              </Button>
+              </button>
             </div>
           </div>
         </GlassPanel>
@@ -6923,291 +7076,6 @@ function FinalScreen({ players, onRestart, line, theme }) {
     </TopFrame>
   );
 }
-function StoreScreen({
-  onBack,
-  theme,
-  dlcThemePacks = [],
-  unlockedThemePackIds = [],
-  onUnlockThemePack = () => {},
-  onRedeemThemeCode = () => ({ status: "invalid-code" }),
-  accountSession = null,
-  allDlcIncluded = false,
-  hasTwistAddon = false,
-  disableDlcDemo = false,
-  onSimulateTierPurchase = () => {},
-  onSimulateTwistAddon = () => {},
-}) {
-  const unlocked = new Set(unlockedThemePackIds || []);
-  const [redeemCodeInput, setRedeemCodeInput] = useState("");
-  const [redeemFeedback, setRedeemFeedback] = useState(null);
-  const [storeNotice, setStoreNotice] = useState(null);
-  const currentTierRank = accountSession
-    ? TIER_RANK[accountSession.tierId] ?? 0
-    : 0;
-  const packNameById = useMemo(
-    () =>
-      Object.fromEntries(
-        (dlcThemePacks || []).map((pack) => [pack.id, pack.name || pack.id]),
-      ),
-    [dlcThemePacks],
-  );
-  const handleRedeemSubmit = (event) => {
-    event.preventDefault();
-    const redemption = onRedeemThemeCode(redeemCodeInput);
-    if (!redemption || redemption.status === "invalid-code") {
-      setRedeemFeedback({
-        tone: "error",
-        message: "Invalid code. Double-check the code and try again.",
-      });
-      return;
-    }
-    if (redemption.status === "already-unlocked") {
-      setRedeemFeedback({
-        tone: "neutral",
-        message:
-          "Code accepted, but those DLC packs are already unlocked on this device.",
-      });
-      setRedeemCodeInput("");
-      return;
-    }
-    if (redemption.status === "unlocked") {
-      const unlockedNames = (redemption.newlyUnlockedPackIds || []).map(
-        (packId) => packNameById[packId] || packId,
-      );
-      setRedeemFeedback({
-        tone: "success",
-        message: unlockedNames.length
-          ? `Code redeemed! Unlocked: ${unlockedNames.join(", ")}.`
-          : "Code redeemed! New DLC unlocked.",
-      });
-      setRedeemCodeInput("");
-      return;
-    }
-    setRedeemFeedback({
-      tone: "error",
-      message: "Could not redeem this code right now. Please try again.",
-    });
-  };
-  return (
-    <TopFrame theme={theme}>
-      <div className="mx-auto max-w-4xl space-y-6">
-        <div className="flex justify-between items-center gap-4">
-          <Button
-            className="rounded-[1.4rem] bg-white/5 border border-white/10 px-4 py-2 text-white"
-            onClick={onBack}
-          >
-            Back
-          </Button>
-          <div className="text-center">
-            <div className="text-xs uppercase tracking-[0.35em] text-cyan-200/80">
-              Store
-            </div>
-            <div className="text-white/80 text-sm mt-1">
-              Subscriptions, add-ons, and DLC theme packs.
-            </div>
-          </div>
-          <div className="w-[72px]" />
-        </div>
-        {storeNotice && (
-          <div
-            className={`rounded-2xl border px-4 py-3 text-sm ${
-              String(storeNotice).startsWith("Successfully")
-                ? "border-emerald-400/30 bg-emerald-500/15 text-emerald-50"
-                : "border-red-300/40 bg-red-500/15 text-red-100"
-            }`}
-          >
-            {storeNotice}
-          </div>
-        )}
-        <GlassPanel className="rounded-[2.5rem] border border-amber-300/25 bg-black/30 p-8">
-          <div className="flex items-center gap-3 mb-3">
-            <Star className="h-6 w-6 text-amber-200" />
-            <h2 className="text-2xl font-black text-amber-200">Subscriptions</h2>
-          </div>
-          {accountSession && (
-            <p className="text-sm text-white/70 mb-4">
-              Signed in as{" "}
-              <span className="font-semibold text-cyan-100">
-                {accountSession.displayName}
-              </span>
-              . Buttons below simulate checkout on this device only.
-            </p>
-          )}
-          <div className="space-y-4">
-            {SUBSCRIPTION_TIERS.map((tier) => {
-              const targetRank = TIER_RANK[tier.tierId] ?? 0;
-              const owned = currentTierRank >= targetRank;
-              const isFibber = tier.tierId === TIER_FIBBER;
-              return (
-                <div
-                  key={tier.tierId}
-                  className="rounded-2xl border border-white/10 bg-black/25 p-4"
-                >
-                  <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
-                    <div>
-                      <div className="font-black text-lg text-white">
-                        {tier.name}{" "}
-                        <span className="text-yellow-300">{tier.priceLabel}</span>
-                      </div>
-                      <ul className="mt-2 list-disc space-y-1 pl-5 text-xs text-white/70">
-                        {tier.bullets.map((line) => (
-                          <li key={line}>{line}</li>
-                        ))}
-                      </ul>
-                      {tier.upgradeHint && (
-                        <div className="mt-2 text-[0.7rem] text-cyan-100/80">
-                          {tier.upgradeHint}
-                        </div>
-                      )}
-                    </div>
-                    {!isFibber && (
-                      <Button
-                        className="mt-2 shrink-0 rounded-xl bg-yellow-300 text-zinc-950 border border-white disabled:opacity-50 sm:mt-0"
-                        disabled={owned || !accountSession}
-                        onClick={() => {
-                          const msg = onSimulateTierPurchase(tier.tierId);
-                          setStoreNotice(msg || "");
-                        }}
-                      >
-                        {owned ? "Owned" : "Simulate purchase"}
-                      </Button>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </GlassPanel>
-        <GlassPanel className="rounded-[2.5rem] border border-fuchsia-400/20 bg-black/25 p-8">
-          <div className="flex items-center gap-3 mb-3">
-            <Flame className="h-6 w-6 text-fuchsia-200" />
-            <h2 className="text-2xl font-black text-fuchsia-100">
-              {ADDON_TWIST_TRUTH.name}
-            </h2>
-          </div>
-          <p className="text-sm text-white/75 mb-4">{ADDON_TWIST_TRUTH.description}</p>
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <div className="text-yellow-300 font-black">
-              {ADDON_TWIST_TRUTH.priceLabel}
-            </div>
-            <Button
-              className="rounded-xl bg-yellow-300 text-zinc-950 border border-white disabled:opacity-50"
-              disabled={
-                !accountSession ||
-                allDlcIncluded ||
-                hasTwistAddon ||
-                currentTierRank >= TIER_RANK[TIER_HOST_MOST]
-              }
-              onClick={() => {
-                const msg = onSimulateTwistAddon();
-                setStoreNotice(msg || "");
-              }}
-            >
-              {hasTwistAddon || allDlcIncluded
-                ? "Included"
-                : "Simulate purchase"}
-            </Button>
-          </div>
-        </GlassPanel>
-        <GlassPanel className="rounded-[2.5rem] p-8 border-fuchsia-400/20 bg-black/25">
-          <div className="flex items-center gap-3 mb-4">
-            <ShoppingBag className="h-6 w-6 text-yellow-300" />
-            <h2 className="text-2xl font-black text-yellow-300">
-              Theme DLC packs
-            </h2>
-          </div>
-          <p className="text-white/75 mb-5">{DLC_STORE_BLURB}</p>
-          <div className="space-y-3">
-            {(dlcThemePacks || []).map((pack) => {
-              const isUnlocked = allDlcIncluded || unlocked.has(pack.id);
-              return (
-                <div
-                  key={pack.id}
-                  className="rounded-2xl border border-white/10 bg-black/25 p-4"
-                >
-                  <div className="flex items-center justify-between gap-4">
-                    <div>
-                      <div className="font-black text-lg text-white">
-                        {pack.name}
-                      </div>
-                      <div className="text-xs text-cyan-200 mt-1">
-                        {(pack.themes || [])
-                          .map((themeName) => `${themeName} 🔥`)
-                          .join(" • ")}
-                      </div>
-                      {pack.description && (
-                        <div className="text-xs text-white/65 mt-2">
-                          {pack.description}
-                        </div>
-                      )}
-                    </div>
-                    <div className="text-right">
-                      <div className="text-yellow-300 font-black">
-                        {pack.priceLabel || "99p"}
-                      </div>
-                      <Button
-                        className="mt-2 rounded-xl bg-yellow-300 text-zinc-950 border border-white disabled:opacity-60"
-                        disabled={isUnlocked || disableDlcDemo}
-                        title={
-                          disableDlcDemo
-                            ? "DLC packs for cloud accounts are unlocked via App Store / Play (RevenueCat)."
-                            : undefined
-                        }
-                        onClick={() => onUnlockThemePack(pack.id)}
-                      >
-                        {isUnlocked ? "Unlocked" : "Unlock"}
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-          <div className="mt-6 rounded-2xl border border-cyan-400/25 bg-cyan-500/10 p-4">
-            <div className="flex items-center gap-2 text-cyan-100">
-              <KeyRound className="h-5 w-5" />
-              <div className="font-black">Redeem promo code</div>
-            </div>
-            <p className="text-sm text-white/75 mt-2">
-              Enter giveaway or marketing codes to unlock certain DLC bundles
-              instantly.
-            </p>
-            <form
-              className="mt-3 flex flex-col gap-2 sm:flex-row"
-              onSubmit={handleRedeemSubmit}
-            >
-              <Input
-                value={redeemCodeInput}
-                onChange={(event) => setRedeemCodeInput(event.target.value)}
-                placeholder="e.g. HISTORY-99"
-                className="rounded-xl bg-white/10 border-white/20 text-white"
-              />
-              <Button
-                type="submit"
-                className="rounded-xl bg-cyan-300 text-zinc-950 border border-white"
-              >
-                Redeem
-              </Button>
-            </form>
-            {redeemFeedback && (
-              <div
-                className={`mt-3 rounded-xl border px-3 py-2 text-sm ${
-                  redeemFeedback.tone === "success"
-                    ? "border-emerald-300/40 bg-emerald-500/20 text-emerald-100"
-                    : redeemFeedback.tone === "neutral"
-                      ? "border-amber-300/40 bg-amber-500/15 text-amber-100"
-                      : "border-red-300/40 bg-red-500/15 text-red-100"
-                }`}
-              >
-                {redeemFeedback.message}
-              </div>
-            )}
-          </div>
-        </GlassPanel>
-      </div>
-    </TopFrame>
-  );
-}
 
 function normalizeThemeSelection(themeName, themeOptions = []) {
   const canonicalTheme = toCanonicalThemeName(themeName || "Default");
@@ -7362,14 +7230,26 @@ function SettingsScreen({
   enabledCategories = {},
   onToggleCategory = () => {},
   defaultTab = "general",
+  contentPacks = null,
+  onReportBug = () => {},
 }) {
   const [effectsEnabled, setEffectsEnabled] = useState(true);
   const [largeText, setLargeText] = useState(false);
   const [activeTab, setActiveTab] = useState(
-    defaultTab === "categories" ? "categories" : "general",
+    defaultTab === "downloads"
+      ? "downloads"
+      : defaultTab === "categories"
+        ? "categories"
+        : "general",
   );
   useEffect(() => {
-    setActiveTab(defaultTab === "categories" ? "categories" : "general");
+    setActiveTab(
+      defaultTab === "downloads"
+        ? "downloads"
+        : defaultTab === "categories"
+          ? "categories"
+          : "general",
+    );
   }, [defaultTab]);
   const categoryRows = useMemo(
     () =>
@@ -7432,7 +7312,26 @@ function SettingsScreen({
           >
             Categories
           </Button>
+          <Button
+            className={`rounded-xl px-4 py-2 text-xs font-black uppercase tracking-[0.12em] ${activeTab === "downloads" ? "border border-yellow-300/35 bg-yellow-500/20 text-yellow-100" : "border border-white/10 bg-white/5 text-white/80"}`}
+            onClick={() => setActiveTab("downloads")}
+          >
+            Downloads
+          </Button>
         </div>
+        {activeTab === "downloads" && contentPacks ? (
+          <ContentPackSettingsPanel
+            packs={contentPacks.downloadablePacks}
+            installedPackIds={contentPacks.installedPackIds}
+            downloadByPackId={contentPacks.downloadByPackId}
+            onDownload={contentPacks.downloadPack}
+            onDelete={contentPacks.deletePack}
+            onRetry={contentPacks.retryPack}
+            onOpenDownloadOffer={contentPacks.reopenPrompt}
+            missingPackCount={contentPacks.missingPacks.length}
+            isNativeBridge={contentPacks.isNativeBridge}
+          />
+        ) : null}
         {activeTab === "categories" ? (
           <GlassPanel className="rounded-[2.2rem] p-5 border-fuchsia-300/25 bg-black/25">
             <div className="text-xs uppercase tracking-[0.3em] text-fuchsia-200/90">
@@ -7471,7 +7370,7 @@ function SettingsScreen({
               })}
             </div>
           </GlassPanel>
-        ) : (
+        ) : activeTab === "general" ? (
           <GlassPanel className="rounded-[2.5rem] p-8 border-cyan-400/20 bg-black/25 space-y-5">
             <SettingsToggleRow
               title="Premium Mode Toggle"
@@ -7547,6 +7446,22 @@ function SettingsScreen({
               checked={largeText}
               onCheckedChange={setLargeText}
             />
+            <div className="rounded-[1.75rem] border border-rose-400/25 bg-rose-500/10 p-5">
+              <div className="font-black text-lg text-rose-100">Support</div>
+              <p className="pof-ui-copy mt-2 text-sm text-white/80">
+                Something broken? Send a report with diagnostics and an optional
+                screenshot.
+              </p>
+              <Button
+                type="button"
+                className="mt-4 w-full rounded-2xl border border-rose-200/40 bg-rose-500/20 px-4 py-3 text-sm font-bold text-rose-50"
+                onClick={onReportBug}
+                data-testid="settings-report-bug"
+              >
+                <Bug className="mr-2 inline h-4 w-4" />
+                Report a bug
+              </Button>
+            </div>
             <div className="rounded-[1.75rem] border border-cyan-400/25 bg-cyan-500/10 p-5">
               <div className="font-black text-lg text-cyan-100">
                 Picture Release Channels
@@ -7685,7 +7600,7 @@ function SettingsScreen({
               </div>
             </div>
           </GlassPanel>
-        )}
+        ) : null}
       </div>
     </TopFrame>
   );
@@ -7826,9 +7741,17 @@ export default function App() {
     session: supabaseSession,
     signOutCloud,
   } = useAuth();
-  const [screen, setScreen] = useState(() =>
-    readAccountSession() ? "home" : "account-gate",
-  );
+  const [screen, setScreen] = useState(() => {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get("pofScreen") === "store" && readAccountSession()) {
+        return "store";
+      }
+    } catch {
+      /* ignore */
+    }
+    return readAccountSession() ? "home" : "account-gate";
+  });
   usePofViewportHeight();
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -7919,6 +7842,9 @@ export default function App() {
         : [];
     });
   const [homeProfileMenuOpen, setHomeProfileMenuOpen] = useState(false);
+  const [bugReportReturnScreen, setBugReportReturnScreen] = useState("home");
+  const [nativeDiagnostics, setNativeDiagnostics] = useState({});
+  const [gamePauseOpen, setGamePauseOpen] = useState(false);
   const [activeSettingsTab, setActiveSettingsTab] = useState("general");
   const [joinLobbyCodeInput, setJoinLobbyCodeInput] = useState("");
   const [onlineVoiceEnabled, setOnlineVoiceEnabled] = useState(false);
@@ -7960,6 +7886,8 @@ export default function App() {
   const [selectedRoundType, setSelectedRoundType] = useState(null);
   const [round, setRound] = useState(null);
   const [revealIndex, setRevealIndex] = useState(0);
+  const [twoTruthsInputIndex, setTwoTruthsInputIndex] = useState(0);
+  const [twoTruthsVotesByVoterId, setTwoTruthsVotesByVoterId] = useState({});
   const [categoryOptions, setCategoryOptions] = useState([]);
   const [votesByPlayerId, setVotesByPlayerId] = useState({});
   const [votingPlayerOrder, setVotingPlayerOrder] = useState([]);
@@ -7998,13 +7926,29 @@ export default function App() {
     onlineLobby: COPY_BANK.onlineLobby[0],
     hostStinger: COPY_BANK.hostStingerPrompt[0],
   });
-  const themeOptions = useMemo(
+  const effectiveUnlockedPacks = useMemo(
     () =>
-      getThemeOptions(
-        effectiveUnlockedThemePackIds(accountSession, unlockedThemePackIds),
-      ),
+      effectiveUnlockedThemePackIds(accountSession, unlockedThemePackIds),
     [accountSession, unlockedThemePackIds],
   );
+  const themeOptions = useMemo(
+    () => getThemeOptions(effectiveUnlockedPacks),
+    [effectiveUnlockedPacks],
+  );
+  const contentPacks = useContentPacks({
+    unlockedThemePackIds: effectiveUnlockedPacks,
+    shouldAutoPrompt: screen === "home",
+  });
+  useEffect(() => {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get("pofForceContentPackPrompt") === "1") {
+        contentPacks.setPromptOpen(true);
+      }
+    } catch {
+      /* ignore */
+    }
+  }, [contentPacks.setPromptOpen]);
   const entitlements = useMemo(
     () => computeEntitlements(accountSession),
     [accountSession],
@@ -8456,6 +8400,14 @@ export default function App() {
       selectedFriendInviteUsernames,
     ],
   );
+  useEffect(() => installNativeDiagnosticsBridge(setNativeDiagnostics), []);
+
+  const openBugReport = useCallback(() => {
+    setBugReportReturnScreen(screen);
+    setGamePauseOpen(false);
+    setScreen("bug-report");
+  }, [screen]);
+
   const handleSelectHomeProfileMenu = useCallback((target) => {
     setHomeProfileMenuOpen(false);
     if (target === "persona") {
@@ -9004,6 +8956,19 @@ export default function App() {
       setScreen("host-intro");
       return serverRound;
     }
+    if (normalizedPhase === "twotruths-input") {
+      refreshCopy(["passPhone"]);
+      setTwoTruthsInputIndex(0);
+      setScreen("twotruths-input");
+      return serverRound;
+    }
+    if (normalizedPhase === "twotruths-voting") {
+      setTwoTruthsVotesByVoterId(serverRound.twoTruthsData?.votesByVoterId || {});
+      setVotingPlayerOrder(shuffle(players.map((player) => player.id)));
+      refreshCopy(["voting"]);
+      setScreen("twotruths-voting");
+      return serverRound;
+    }
     if (normalizedPhase === "reveal") {
       refreshCopy(["passPhone", "revealNormal", "revealLiar"]);
       setScreen("reveal");
@@ -9230,6 +9195,48 @@ export default function App() {
     setScreen("voting");
   }
 
+  function finalizeTwoTruthsInputPhase(nextRound) {
+    const submissions =
+      nextRound?.twoTruthsData?.submissionsByPlayerId &&
+      typeof nextRound.twoTruthsData.submissionsByPlayerId === "object"
+        ? nextRound.twoTruthsData.submissionsByPlayerId
+        : {};
+    const presentationsByPlayerId = buildPresentationsFromSubmissions(submissions);
+    setRound((current) => ({
+      ...current,
+      twoTruthsData: {
+        ...(current?.twoTruthsData || createEmptyTwoTruthsData()),
+        presentationsByPlayerId,
+      },
+    }));
+    setTwoTruthsVotesByVoterId({});
+    setVotingPlayerOrder(shuffle(players.map((player) => player.id)));
+    refreshCopy(["voting"]);
+    setScreen("twotruths-voting");
+  }
+
+  function handleTwoTruthsPlayerSubmission(submission) {
+    const player = players[twoTruthsInputIndex];
+    if (!player?.id || !round) return;
+    const nextSubmissions = {
+      ...(round.twoTruthsData?.submissionsByPlayerId || {}),
+      [player.id]: submission,
+    };
+    const nextRound = {
+      ...round,
+      twoTruthsData: {
+        ...(round.twoTruthsData || createEmptyTwoTruthsData()),
+        submissionsByPlayerId: nextSubmissions,
+      },
+    };
+    setRound(nextRound);
+    if (twoTruthsInputIndex < players.length - 1) {
+      setTwoTruthsInputIndex((index) => index + 1);
+      return;
+    }
+    finalizeTwoTruthsInputPhase(nextRound);
+  }
+
   function startGame(seedPlayers = null) {
     const basePlayers =
       seedPlayers && seedPlayers.length ? seedPlayers : players;
@@ -9297,6 +9304,8 @@ export default function App() {
     setPreviousRoundType(built.roundTypeId);
     setRecentPromptKeys((cur) => [...cur, built.promptKey]);
     setRevealIndex(0);
+    setTwoTruthsInputIndex(0);
+    setTwoTruthsVotesByVoterId({});
     setVotesByPlayerId({});
     setOnlinePrivatePrompt(null);
     setOnlinePrivatePromptError("");
@@ -9312,6 +9321,21 @@ export default function App() {
     setScreen("host-intro");
   }
   async function revealResults() {
+    if (round?.roundTypeId === "twotruths") {
+      const resolution = calculateRoundResolutionLocal(
+        players,
+        round,
+        twoTruthsVotesByVoterId,
+      );
+      setPlayers(resolution.nextPlayers);
+      setTally(resolution.tally);
+      setRoundGains(resolution.roundGains);
+      setRoundBreakdown(resolution.roundBreakdown);
+      setImposterCaught(false);
+      playSfx(IMPOSTER_FOUND_SFX_SRC, { volume: 0.74 });
+      setScreen("twotruths-reveal");
+      return;
+    }
     if (onlineMode) {
       const syncedRound = await submitOnlineVotes();
       if (syncedRound?.resolution) {
@@ -9929,6 +9953,8 @@ export default function App() {
     setRoundTypeOptions([]);
     setSelectedRoundType(null);
     setRevealIndex(0);
+    setTwoTruthsInputIndex(0);
+    setTwoTruthsVotesByVoterId({});
     setVotesByPlayerId({});
     setTally({});
     setRoundGains({});
@@ -9970,8 +9996,21 @@ export default function App() {
     setPartyChatInput("");
   };
   const categoryChoiceGridClass = isDesktopLandscapeWeb
-    ? "mt-4 grid flex-1 grid-cols-3 gap-3 items-stretch content-start"
-    : "mt-3 grid flex-1 grid-cols-2 gap-3 sm:grid-cols-3 items-stretch content-start";
+    ? "grid grid-cols-3 grid-rows-2 gap-3 auto-rows-min w-full max-w-3xl mx-auto"
+    : "grid grid-cols-2 grid-rows-3 gap-x-2.5 gap-y-2 w-full flex-1 min-h-0 content-center";
+  const bugReportAppContext = useMemo(
+    () => ({
+      screen,
+      roundPhase: screen,
+      roundType: round?.roundTypeId || selectedRoundType || "",
+      lobbyIdAnon: anonymizeLobbyId(lobbyCode),
+      appVersion: import.meta.env.VITE_APP_VERSION || "0.1.0",
+      buildVersion: nativeDiagnostics.buildVersion || "",
+      runtimeVersion: nativeDiagnostics.runtimeVersion || "",
+      otaUpdateId: nativeDiagnostics.otaUpdateId || "",
+    }),
+    [screen, round?.roundTypeId, selectedRoundType, lobbyCode, nativeDiagnostics],
+  );
   const startupGraphicsReady = useGlobalGraphicsPreload();
   useCategoryAndModeIconPreload({
     screen,
@@ -10369,6 +10408,9 @@ export default function App() {
               onlineMode={onlineMode}
               onSelectRoundType={(typeId) => {
                 setSelectedRoundType(typeId);
+                setCategoryOptions(
+                  drawCategoriesForRoundChoice(activeCategories, typeId),
+                );
                 setScreen("category-choice");
               }}
             />
@@ -10380,11 +10422,14 @@ export default function App() {
           wallpaperSrc={UI_WALLPAPER_IN_GAME_SRC}
           overlayClassName="bg-black/45"
           lockViewport
-          contentClassName="!py-3"
+          contentClassName="!min-h-0 !py-3 flex flex-col overflow-hidden"
         >
-          <div className="mx-auto flex min-h-0 w-full max-w-4xl flex-1 flex-col">
-            <div className="shrink-0 px-1 text-center">
-              <div className="text-xs uppercase tracking-[0.3em] text-white/70">
+          <div className="mx-auto flex min-h-0 w-full max-w-4xl flex-1 flex-col overflow-hidden">
+            <div
+              className="shrink-0 px-2 pb-1 pt-11 text-center sm:pt-10"
+              data-testid="category-choice-header"
+            >
+              <div className="pof-ui-muted text-xs font-semibold uppercase tracking-[0.3em] pl-14 sm:pl-0">
                 Round owner: {players[currentRoundOwnerIndex]?.name}
               </div>
               <h2 className="mt-3 text-4xl font-black text-yellow-300 [text-shadow:0_4px_16px_rgba(0,0,0,0.65)]">
@@ -10395,27 +10440,49 @@ export default function App() {
               <RoundTypeLogo
                 src={getRoundTypeIconSrc(selectedRoundType || round.roundTypeId)}
                 alt={`${ROUND_TYPES[selectedRoundType]?.name || round.roundTypeName || "Round"} mode icon`}
-                className="mx-auto mt-4 h-24 w-24 sm:h-28 sm:w-28 object-contain drop-shadow-[0_8px_20px_rgba(0,0,0,0.7)]"
+                className="mx-auto mt-3 h-16 w-16 object-contain drop-shadow-[0_8px_20px_rgba(0,0,0,0.7)] sm:h-20 sm:w-20"
               />
-              {selectedRoundType && usesNoCategorySelection(selectedRoundType) ? (
-                <div className="mt-8 rounded-[1.8rem] border border-cyan-300/35 bg-cyan-500/10 px-6 py-8 text-cyan-100">
-                  <div className="text-xs uppercase tracking-[0.25em] text-cyan-200/80">
-                    Global prompt deck
-                  </div>
-                  <p className="mt-3 text-sm text-white/80">
-                    This round type uses one shared prompt pool for all themes.
-                  </p>
-                </div>
-              ) : (
-                <CategoryChoiceGrid
-                  categoryOptions={categoryOptions}
-                  categoryChoiceGridClass={categoryChoiceGridClass}
-                  onlineMode={onlineMode}
-                  canonicalThemeName={canonicalThemeName}
-                  onChooseCategory={chooseCategory}
-                />
-              )}
             </div>
+            {selectedRoundType && usesNoCategorySelection(selectedRoundType) ? (
+              <div className="mt-6 shrink-0 rounded-[1.8rem] border border-cyan-300/35 bg-cyan-500/10 px-6 py-8 text-cyan-100">
+                <div className="text-xs uppercase tracking-[0.25em] text-cyan-200/80">
+                  Global prompt deck
+                </div>
+                <p className="pof-ui-copy mt-3 text-sm">
+                  This round type uses one shared prompt pool for all themes.
+                </p>
+              </div>
+            ) : (
+              <>
+                <div
+                  className="relative z-20 shrink-0 border-b border-white/10 bg-[#05010f]/95 px-3 py-3 backdrop-blur-sm"
+                  data-testid="category-choice-random-bar"
+                >
+                  <button
+                    type="button"
+                    className="pof-btn pof-btn-blue pof-btn-sm pof-focus mx-auto max-w-xs px-6"
+                    data-testid="choose-category-random"
+                    onClick={() => {
+                      tapFx();
+                      const picked = pickRandomFromShown(categoryOptions);
+                      if (picked?.id) chooseCategory(picked.id);
+                    }}
+                  >
+                    <Dice6 className="h-5 w-5" />
+                    Choose for me
+                  </button>
+                </div>
+                <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+                  <CategoryChoiceGrid
+                    categoryOptions={categoryOptions}
+                    categoryChoiceGridClass={categoryChoiceGridClass}
+                    onlineMode={onlineMode}
+                    canonicalThemeName={canonicalThemeName}
+                    onChooseCategory={chooseCategory}
+                  />
+                </div>
+              </>
+            )}
           </div>
         </BrandedScreen>
       )}
@@ -10424,6 +10491,11 @@ export default function App() {
           round={round}
           stingerLine={copyState.hostStinger}
           onContinue={() => {
+            if (round.roundTypeId === "twotruths") {
+              setTwoTruthsInputIndex(0);
+              setScreen("twotruths-input");
+              return;
+            }
             if (onlineMode) {
               void runOnlinePhaseAdvance();
               return;
@@ -10431,6 +10503,56 @@ export default function App() {
             setScreen("reveal");
           }}
           theme={canonicalThemeName}
+        />
+      )}
+      {screen === "twotruths-input" && round && (
+        <NeonTwoTruthsInputScreen
+          players={players}
+          round={round}
+          inputPlayerIndex={twoTruthsInputIndex}
+          passLine={copyState.passPhone}
+          onSubmitSubmission={handleTwoTruthsPlayerSubmission}
+          onlineMode={onlineMode}
+          localPlayerId={onlineJoinedPlayerId}
+          theme={canonicalThemeName}
+          TopFrame={TopFrame}
+          GlassPanel={GlassPanel}
+          Button={Button}
+          Input={Input}
+          Label={Label}
+        />
+      )}
+      {screen === "twotruths-voting" && round && (
+        <NeonTwoTruthsVotingScreen
+          players={players}
+          round={round}
+          votesByVoterId={twoTruthsVotesByVoterId}
+          setVotesByVoterId={setTwoTruthsVotesByVoterId}
+          onSubmitVotes={revealResults}
+          votingPlayerOrder={votingPlayerOrder}
+          onlineMode={onlineMode}
+          onlinePlayerId={onlineJoinedPlayerId}
+          submitPending={onlineVoteSubmissionPending}
+          totalRounds={totalRounds}
+          theme={canonicalThemeName}
+          TopFrame={TopFrame}
+          GlassPanel={GlassPanel}
+          Progress={Progress}
+          ScoreStrip={ScoreStrip}
+        />
+      )}
+      {screen === "twotruths-reveal" && round && (
+        <NeonTwoTruthsRevealScreen
+          players={players}
+          round={round}
+          roundGains={roundGains}
+          roundBreakdown={roundBreakdown}
+          onComplete={finishLiarReveal}
+          theme={canonicalThemeName}
+          TopFrame={TopFrame}
+          GlassPanel={GlassPanel}
+          Button={Button}
+          playSfx={() => playSfx(IMPOSTER_FOUND_SFX_SRC, { volume: 0.7 })}
         />
       )}
       {screen === "reveal" && round && (
@@ -10578,6 +10700,55 @@ export default function App() {
           theme={canonicalThemeName}
         />
       )}
+      {(LOCAL_GAME_PAUSE_SCREENS.has(screen) ||
+        (onlineMode && ONLINE_IN_SESSION_LEAVE_SCREENS.has(screen))) &&
+        screen !== "bug-report" && (
+          <>
+            <button
+              type="button"
+              data-testid="game-pause-fab"
+              className="fixed left-3 top-3 z-[120] rounded-full border border-cyan-300/40 bg-black/55 px-3 py-2 text-xs font-black uppercase tracking-[0.12em] text-cyan-100"
+              onClick={() => setGamePauseOpen(true)}
+              aria-label="Pause game"
+            >
+              <Pause className="mr-1 inline h-3.5 w-3.5" />
+              Pause
+            </button>
+            {gamePauseOpen && (
+              <div
+                className="fixed inset-0 z-[125] flex items-center justify-center bg-black/70 px-6"
+                role="dialog"
+                aria-modal="true"
+                data-testid="game-pause-menu"
+              >
+                <div className="pof-glass w-full max-w-sm rounded-[1.75rem] p-6 text-center">
+                  <div className="pof-heading text-sm text-cyan-200">Paused</div>
+                  <p className="pof-ui-copy mt-2 text-sm text-white/85">
+                    Resume play or send a bug report with diagnostics attached.
+                  </p>
+                  <div className="mt-5 flex flex-col gap-3">
+                    <Button
+                      type="button"
+                      className="w-full rounded-2xl bg-yellow-300 text-zinc-950"
+                      onClick={() => setGamePauseOpen(false)}
+                    >
+                      Resume
+                    </Button>
+                    <Button
+                      type="button"
+                      className="w-full rounded-2xl border border-rose-200/35 bg-rose-500/15 text-rose-50"
+                      data-testid="pause-report-bug"
+                      onClick={openBugReport}
+                    >
+                      <Bug className="mr-2 inline h-4 w-4" />
+                      Report a bug
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            )}
+          </>
+        )}
       {onlineMode && ONLINE_IN_SESSION_LEAVE_SCREENS.has(screen) && (
         <button
           type="button"
@@ -10589,6 +10760,14 @@ export default function App() {
           Leave Session
         </button>
       )}
+      {screen === "bug-report" && (
+        <BugReportScreen
+          onBack={() => setScreen(bugReportReturnScreen || "home")}
+          theme={canonicalThemeName}
+          appContext={bugReportAppContext}
+          nativeBridge={nativeDiagnostics}
+        />
+      )}
       <PartySpeakerOverlay
         onlineMode={onlineMode}
         talkingPlayers={partyTalkingPlayers}
@@ -10596,15 +10775,22 @@ export default function App() {
         themeName={canonicalThemeName}
       />
       {screen === "store" && (
-        <StoreScreen
+        <NeonStoreScreen
           onBack={() => setScreen("home")}
-          theme={canonicalThemeName}
+          onOpenAccount={() => setScreen("account-gate")}
           dlcThemePacks={DLC_THEME_PACKS}
           unlockedThemePackIds={unlockedThemePackIds}
           accountSession={accountSession}
           allDlcIncluded={entitlements.allDlcIncluded}
           hasTwistAddon={Boolean(accountSession?.addonTwistTruth)}
           disableDlcDemo={accountSession?.authProvider === "supabase"}
+          contentPackManifest={contentPacks.manifest}
+          installedContentPackIds={contentPacks.installedPackIds}
+          onDownloadContentPack={(packId) => {
+            const pack = contentPacks.manifest?.packs?.find((p) => p.id === packId);
+            if (pack) contentPacks.downloadPack(pack);
+          }}
+          downloadByPackId={contentPacks.downloadByPackId}
           onSimulateTierPurchase={(tierId) => {
             if (!accountSession) return "Sign in from the account screen first.";
             if (accountSession.authProvider === "supabase") {
@@ -10665,6 +10851,7 @@ export default function App() {
       {screen === "settings" && (
         <SettingsScreen
           onBack={() => setScreen("home")}
+          onReportBug={openBugReport}
           premiumEnabled={premiumEnabled}
           setPremiumEnabled={setPremiumEnabled}
           audioSettings={audioSettings}
@@ -10684,8 +10871,20 @@ export default function App() {
             setEnabledCategories((cur) => ({ ...cur, [id]: !cur[id] }))
           }
           defaultTab={activeSettingsTab}
+          contentPacks={contentPacks}
         />
       )}
+      <ContentPackPromptModal
+        open={contentPacks.promptOpen}
+        totalLabel={contentPacks.totalMissingLabel}
+        packCount={contentPacks.missingPacks.length}
+        progress={contentPacks.progress}
+        downloading={contentPacks.progress.anyActive || contentPacks.batchActive}
+        onDownload={() => {
+          contentPacks.downloadAllMissing();
+        }}
+        onLater={contentPacks.dismissPrompt}
+      />
       <PartyChatDrawer
         open={onlineMode && partyChatOpen}
         onClose={() => setPartyChatOpen(false)}

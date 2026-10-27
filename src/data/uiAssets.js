@@ -44,6 +44,8 @@ export const UI_GAME_MODE_ICON_BY_ID = Object.freeze({
   nameblame: publicAssetUrl('images/round-types/name-and-shame.png'),
   noise: `${UI_GAME_MODE_ICON_BASE}/noise.png`,
   chain: `${UI_GAME_MODE_ICON_BASE}/chain.png`,
+  twotruths: `${UI_GAME_MODE_ICON_BASE}/twotruths.png`,
+  offtopic: `${UI_GAME_MODE_ICON_BASE}/offtopic.png`,
   grill: `${UI_GAME_MODE_ICON_BASE}/grill.png`,
   sound: `${UI_GAME_MODE_ICON_BASE}/sound.png`,
   video: `${UI_GAME_MODE_ICON_BASE}/video.png`,

@@ -1,0 +1,14 @@
+{
+  "lobbyApi": "https://api.pantsonfire.app",
+  "baseUrl": "http://127.0.0.1:4178",
+  "steps": [
+    "host-created-lobby",
+    "guest-joined",
+    "host-guest-ready",
+    "start-disabled-needs-more-ready"
+  ],
+  "status": "partially-works",
+  "healthOk": true,
+  "lobbyCode": "YSA5NX",
+  "canStart": false
+}

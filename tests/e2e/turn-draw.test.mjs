@@ -20,9 +20,8 @@ const fakeCategories = [
 test('drawTurnOptions returns at most 2 round types and 6 categories', () => {
   const { roundTypeOptions, categoryOptions } = drawTurnOptions(fakeCategories);
   assert.ok(roundTypeOptions.length <= 2);
-  assert.ok(categoryOptions.length <= 6);
+  assert.equal(categoryOptions.length, 6);
   assert.ok(roundTypeOptions.length >= 1);
-  assert.ok(categoryOptions.length >= 1);
 });
 
 test('grill is never offered in player round type draw', () => {

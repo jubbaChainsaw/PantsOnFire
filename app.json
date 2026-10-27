@@ -4,6 +4,15 @@
     "icon": "./assets/icon.png",
     "slug": "pants-on-fire-find-the-liar",
     "version": "0.1.0",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "enabled": true,
+      "checkAutomatically": "ON_LOAD",
+      "fallbackToCacheTimeout": 0,
+      "url": "https://u.expo.dev/00000000-0000-0000-0000-000000000000"
+    },
     "orientation": "portrait",
     "scheme": "pantsonfire",
     "userInterfaceStyle": "dark",
@@ -20,6 +29,7 @@
     },
     "android": {
       "package": "app.pantsonfire.liar",
+      "versionCode": 2,
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#120038"
@@ -27,6 +37,14 @@
     },
     "web": {
       "bundler": "metro"
+    },
+    "plugins": [
+      "expo-updates"
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "00000000-0000-0000-0000-000000000000"
+      }
     }
   }
 }

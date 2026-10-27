@@ -7,7 +7,9 @@ test('home shows neon Play and Multiplayer', async ({ page }) => {
   await expect(page.getByRole('navigation', { name: 'Main menu' })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Play', exact: true })).toBeVisible();
   await expect(page.getByRole('button', { name: /Multiplayer/i })).toBeVisible();
-  await expect(page.getByRole('button', { name: /Card Decks/i })).toBeVisible();
+  await expect(
+    page.getByRole('navigation', { name: 'Main menu' }).getByRole('button', { name: 'Shop' }),
+  ).toBeVisible();
 });
 
 test('settings persist music toggle in localStorage', async ({ page }) => {

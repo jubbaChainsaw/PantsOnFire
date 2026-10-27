@@ -127,8 +127,8 @@ export default function NeonHomeScreen({
               }}
             />
             <IconBtn
-              src={icons.cards}
-              label="Store"
+              src={icons.shop}
+              label="Shop"
               onClick={() => {
                 tapFx();
                 go('store');
@@ -229,7 +229,7 @@ export default function NeonHomeScreen({
             onClick={() => go('store')}
           >
             <img src={icons.cards} alt="" className="h-10 w-10" />
-            Card Decks
+            Shop
           </button>
           <button
             type="button"

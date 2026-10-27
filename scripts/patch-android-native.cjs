@@ -55,6 +55,18 @@ if (!app.includes('ndk { abiFilters')) {
 }
 fs.writeFileSync(appGradle, app);
 
+setGradleProp(
+  gradleProps,
+  'org.gradle.jvmargs',
+  '-Xmx4096m -XX:MaxMetaspaceSize=2048m -Dfile.encoding=UTF-8',
+);
+setGradleProp(
+  gradleProps,
+  'kotlin.daemon.jvmargs',
+  '-Xmx2048m -XX:MaxMetaspaceSize=2048m',
+);
+setGradleProp(gradleProps, 'org.gradle.parallel', 'false');
+setGradleProp(gradleProps, 'org.gradle.workers.max', '2');
 setGradleProp(gradleProps, 'reactNativeArchitectures', abis);
 setGradleProp(gradleProps, 'android.enableMinifyInReleaseBuilds', 'true');
 setGradleProp(
