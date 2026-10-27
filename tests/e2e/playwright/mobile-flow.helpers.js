@@ -38,10 +38,17 @@ export async function assertNoVerticalScroll(page) {
   ).toBeLessThanOrEqual(metrics.windowInnerHeight + 2);
 }
 
-export async function assertVisibleImagesLoaded(page, { root } = {}) {
+export async function assertVisibleImagesLoaded(
+  page,
+  { root, minCount = 1 } = {},
+) {
   const locator = root || page.locator('body');
   const images = locator.locator('img:visible');
   const count = await images.count();
+  expect(
+    count,
+    `expected at least ${minCount} visible images under ${root ? 'root' : 'body'}`,
+  ).toBeGreaterThanOrEqual(minCount);
   for (let i = 0; i < count; i += 1) {
     const img = images.nth(i);
     const src = await img.getAttribute('src');
@@ -58,8 +65,19 @@ export async function assertRoundTypeCardsVisible(page) {
   await expect(cards.first()).toBeVisible({ timeout: 15_000 });
   const count = await cards.count();
   expect(count).toBeGreaterThanOrEqual(2);
+  const viewport = page.viewportSize();
+  const maxBottom = (viewport?.height ?? 844) - 8;
+  for (let i = 0; i < Math.min(count, 4); i += 1) {
+    const box = await cards.nth(i).boundingBox();
+    expect(box, `round-type card ${i} missing layout box`).not.toBeNull();
+    expect(
+      box.y + box.height,
+      `round-type card ${i} clipped below viewport (${box.y + box.height} > ${maxBottom})`,
+    ).toBeLessThanOrEqual(maxBottom);
+  }
   await assertVisibleImagesLoaded(page, {
-    root: page.locator('[data-testid^="round-type-"]').locator('..'),
+    root: page.locator('[data-testid^="round-type-"]'),
+    minCount: 2,
   });
 }
 

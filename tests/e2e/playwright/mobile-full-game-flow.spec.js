@@ -47,7 +47,10 @@ async function runMobileGameFlow(page, { shotsDirectory, viewportLabel }) {
 
   const assertChoiceOrIntroViewport = async () => {
     await assertNoVerticalScroll(page);
-    await assertVisibleImagesLoaded(page);
+    const visibleImages = await page.locator('img:visible').count();
+    if (visibleImages > 0) {
+      await assertVisibleImagesLoaded(page, { minCount: visibleImages });
+    }
   };
 
   await shot(`01-account-or-home-${viewportLabel}.png`);
