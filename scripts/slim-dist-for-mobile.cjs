@@ -71,9 +71,18 @@ if (fs.existsSync(themesDir)) {
   }
 }
 
+function isBundledDefaultHostMedia(file) {
+  const normalized = file.split(path.sep).join('/');
+  return normalized.includes('/assets/themes/default/hosts/');
+}
+
 walk(dist, (file) => {
   const base = path.basename(file).toLowerCase();
-  if (base.includes('persona-host-talk-') && base.endsWith('.png')) {
+  if (
+    base.includes('persona-host-talk-') &&
+    base.endsWith('.png') &&
+    !isBundledDefaultHostMedia(file)
+  ) {
     removedBytes += statSize(file);
     fs.unlinkSync(file);
     removedFiles += 1;
@@ -91,7 +100,10 @@ walk(dist, (file) => {
     removedFiles += 1;
     return;
   }
-  if (base.endsWith('.mp4') || base.endsWith('.webm')) {
+  if (
+    (base.endsWith('.mp4') || base.endsWith('.webm')) &&
+    !isBundledDefaultHostMedia(file)
+  ) {
     removedBytes += statSize(file);
     fs.unlinkSync(file);
     removedFiles += 1;

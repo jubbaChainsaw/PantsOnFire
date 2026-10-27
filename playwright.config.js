@@ -23,5 +23,16 @@ export default defineConfig({
       timeout: 300_000,
     },
   ],
-  projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
+  projects: [
+    {
+      name: 'chromium',
+      testIgnore: '**/mobile-full-game-flow.spec.js',
+      use: { ...devices['Desktop Chrome'] },
+    },
+    {
+      name: 'mobile-chrome',
+      testMatch: '**/mobile-full-game-flow.spec.js',
+      use: { ...devices['Pixel 5'] },
+    },
+  ],
 });

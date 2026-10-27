@@ -10,7 +10,6 @@ import {
 
 test.beforeEach(async ({ page }) => {
   await seedLocalAccount(page, 'host_most');
-  await page.goto('/');
 });
 
 test('pass-the-phone: full round through voting', async ({ page }) => {

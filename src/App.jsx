@@ -2567,17 +2567,18 @@ function HostIntroScreen({ round, stingerLine, onContinue, theme }) {
     <BrandedScreen
       wallpaperSrc={UI_WALLPAPER_IN_GAME_SRC}
       overlayClassName="bg-black/65"
+      contentClassName="!h-[100dvh] !max-h-[100dvh] !min-h-0 !py-2 !px-3 overflow-hidden"
     >
-      <div className="relative mx-auto flex h-[calc(100dvh-1.25rem)] w-full max-w-[28rem] flex-col items-center justify-between gap-3 overflow-hidden py-1">
+      <div className="relative mx-auto flex h-full min-h-0 w-full max-w-[28rem] flex-col items-center justify-between gap-2 overflow-hidden">
         <div
-          className="pointer-events-none absolute inset-x-[-30%] bottom-[8.25rem] h-32 opacity-80 blur-[0.3px]"
+          className="pointer-events-none absolute inset-x-[-30%] bottom-[7rem] h-28 opacity-80 blur-[0.3px]"
           style={{
             background:
               "radial-gradient(circle at 50% 100%, rgba(255,130,0,0.95), rgba(255,0,160,0.55) 18%, rgba(0,180,255,0.28) 33%, transparent 62%)",
           }}
         />
-        <div className="relative z-10 w-full max-w-[18rem] rounded-[1.65rem] bg-[#e60096] p-2.5 shadow-[0_20px_45px_rgba(0,0,0,0.7)] sm:max-w-[20rem]">
-          <div className="aspect-[2/3] overflow-hidden rounded-[1.15rem] bg-black">
+        <div className="relative z-10 w-full max-w-[16rem] shrink-0 rounded-[1.65rem] bg-[#e60096] p-2 shadow-[0_20px_45px_rgba(0,0,0,0.7)] sm:max-w-[17rem]">
+          <div className="aspect-[2/3] max-h-[42dvh] overflow-hidden rounded-[1.15rem] bg-black">
             <ThemeHostVisual
               themeName={theme}
               isTalking={isTalking}
@@ -2586,21 +2587,21 @@ function HostIntroScreen({ round, stingerLine, onContinue, theme }) {
             />
           </div>
         </div>
-        <div className="relative z-10 flex w-full flex-1 flex-col justify-end gap-3">
+        <div className="relative z-10 flex w-full min-h-0 flex-1 flex-col justify-end gap-2">
           <motion.div
             key={`${round.id || round.roundNumber}-${speechIndex}`}
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.28, ease: "easeOut" }}
-            className={`${HOST_DIALOGUE_PANEL_CLASS} flex min-h-[7.5rem] items-center justify-center px-5 py-4 text-center sm:min-h-[9rem]`}
+            className={`${HOST_DIALOGUE_PANEL_CLASS} flex min-h-[5.5rem] max-h-[28dvh] items-center justify-center px-4 py-3 text-center`}
           >
             <div
               ref={speechBubbleFitRef}
-              className="flex h-full max-h-[8.5rem] w-full items-center justify-center overflow-hidden sm:max-h-[9.5rem]"
+              className="flex h-full max-h-[26dvh] w-full items-center justify-center overflow-hidden"
             >
               <p
                 ref={speechBubbleTextRef}
-                className="w-full font-black uppercase tracking-[0.03em] text-white [text-shadow:0_3px_10px_rgba(0,0,0,0.35)]"
+                className="pof-heading w-full text-white [text-shadow:0_3px_10px_rgba(0,0,0,0.35)]"
                 style={{
                   fontSize: `${speechBubbleFontSize}px`,
                   lineHeight: 1.12,
@@ -7253,6 +7254,54 @@ function redeemThemePackIds(currentPackIds = [], rawCode = "") {
   };
 }
 
+function SettingsToggleRow({ title, description, checked, onCheckedChange }) {
+  return (
+    <div className="rounded-[1.75rem] border border-white/10 bg-white/5 p-5">
+      <div className="flex items-center gap-4">
+        <div className="min-w-0 flex-1 text-left">
+          <div className="pof-heading text-lg text-white">{title}</div>
+          {description ? (
+            <p className="pof-desc mt-1 text-sm text-white/65">{description}</p>
+          ) : null}
+        </div>
+        <div className="pof-settings-toggle-col">
+          <Switch checked={checked} onCheckedChange={onCheckedChange} />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function SettingsSliderRow({ title, description, value, onChange, suffix }) {
+  return (
+    <div className="rounded-[1.75rem] border border-white/10 bg-white/5 p-5">
+      <div className="flex items-start gap-4">
+        <div className="min-w-0 flex-1 text-left">
+          <div className="pof-heading text-lg text-white">{title}</div>
+          {description ? (
+            <p className="pof-desc mt-1 text-sm text-white/65">{description}</p>
+          ) : null}
+        </div>
+        {suffix ? (
+          <div className="pof-settings-toggle-col pof-desc text-sm text-white/70">
+            {suffix}
+          </div>
+        ) : (
+          <div className="pof-settings-toggle-col" aria-hidden="true" />
+        )}
+      </div>
+      <input
+        type="range"
+        min={0}
+        max={100}
+        value={value}
+        onChange={onChange}
+        className="pof-range mt-3 w-full"
+      />
+    </div>
+  );
+}
+
 function SettingsScreen({
   onBack,
   premiumEnabled,
@@ -7321,13 +7370,11 @@ function SettingsScreen({
           >
             Back
           </Button>
-          <div className="text-center">
-            <div className="text-xs uppercase tracking-[0.35em] text-cyan-200/80">
-              Settings
-            </div>
-            <div className="text-white/80 text-sm mt-1">
+          <div className="flex-1 text-center">
+            <div className="pof-heading text-sm text-cyan-200/90">Settings</div>
+            <p className="pof-desc mt-1 text-sm text-white/70">
               UI and app behaviour options live here.
-            </div>
+            </p>
           </div>
           <div className="w-[72px]" />
         </div>
@@ -7385,141 +7432,80 @@ function SettingsScreen({
           </GlassPanel>
         ) : (
           <GlassPanel className="rounded-[2.5rem] p-8 border-cyan-400/20 bg-black/25 space-y-5">
-            <div className="rounded-[1.75rem] border border-white/10 bg-white/5 p-5 flex items-center justify-between gap-4">
-              <div>
-                <div className="font-black text-lg">Premium Mode Toggle</div>
-                <div className="text-sm text-white/60 mt-1">
-                  Prototype switch for premium/admin features.
-                </div>
-              </div>
-              <Switch
-                checked={premiumEnabled}
-                onCheckedChange={setPremiumEnabled}
-              />
-            </div>
-            <div className="rounded-[1.75rem] border border-white/10 bg-white/5 p-5 flex items-center justify-between gap-4">
-              <div>
-                <div className="font-black text-lg">Background Music</div>
-                <div className="text-sm text-white/60 mt-1">
-                  Menu vocal and in-game instrumental tracks.
-                </div>
-              </div>
-              <Switch
-                checked={audioSettings.musicEnabled}
-                onCheckedChange={(next) =>
-                  setAudioSettings((cur) => ({ ...cur, musicEnabled: next }))
-                }
-              />
-            </div>
-            <div className="rounded-[1.75rem] border border-white/10 bg-white/5 p-5">
-              <div className="flex items-center justify-between gap-4">
-                <div>
-                  <div className="font-black text-lg">Music Volume</div>
-                  <div className="text-sm text-white/60 mt-1">
-                    {audioSettings.musicVol ?? 60}%
-                  </div>
-                </div>
-              </div>
-              <input
-                type="range"
-                min={0}
-                max={100}
-                value={audioSettings.musicVol ?? 60}
-                onChange={(event) =>
-                  setAudioSettings((cur) => ({
-                    ...cur,
-                    musicVol: Number(event.target.value),
-                  }))
-                }
-                className="mt-3 w-full accent-yellow-300"
-              />
-            </div>
-            <div className="rounded-[1.75rem] border border-white/10 bg-white/5 p-5 flex items-center justify-between gap-4">
-              <div>
-                <div className="font-black text-lg">Sound Effects</div>
-                <div className="text-sm text-white/60 mt-1">
-                  Toggle fire, card flip, liar, and ByteBlitz cue SFX.
-                </div>
-              </div>
-              <Switch
-                checked={audioSettings.sfxEnabled}
-                onCheckedChange={(next) =>
-                  setAudioSettings((cur) => ({ ...cur, sfxEnabled: next }))
-                }
-              />
-            </div>
-            <div className="rounded-[1.75rem] border border-white/10 bg-white/5 p-5">
-              <div className="flex items-center justify-between gap-4">
-                <div>
-                  <div className="font-black text-lg">SFX Volume</div>
-                  <div className="text-sm text-white/60 mt-1">
-                    {audioSettings.sfxVol ?? 80}%
-                  </div>
-                </div>
-              </div>
-              <input
-                type="range"
-                min={0}
-                max={100}
-                value={audioSettings.sfxVol ?? 80}
-                onChange={(event) =>
-                  setAudioSettings((cur) => ({
-                    ...cur,
-                    sfxVol: Number(event.target.value),
-                  }))
-                }
-                className="mt-3 w-full accent-yellow-300"
-              />
-            </div>
-            <div className="rounded-[1.75rem] border border-white/10 bg-white/5 p-5 flex items-center justify-between gap-4">
-              <div>
-                <div className="font-black text-lg">Haptics</div>
-                <div className="text-sm text-white/60 mt-1">
-                  Vibration on taps and timed selections.
-                </div>
-              </div>
-              <Switch
-                checked={audioSettings.hapticsEnabled !== false}
-                onCheckedChange={(next) =>
-                  setAudioSettings((cur) => ({ ...cur, hapticsEnabled: next }))
-                }
-              />
-            </div>
-            <div className="rounded-[1.75rem] border border-white/10 bg-white/5 p-5 flex items-center justify-between gap-4">
-              <div>
-                <div className="font-black text-lg">Voice Chat</div>
-                <div className="text-sm text-white/60 mt-1">
-                  Online party voice preference.
-                </div>
-              </div>
-              <Switch
-                checked={audioSettings.voiceChatEnabled !== false}
-                onCheckedChange={(next) =>
-                  setAudioSettings((cur) => ({ ...cur, voiceChatEnabled: next }))
-                }
-              />
-            </div>
-            <div className="rounded-[1.75rem] border border-white/10 bg-white/5 p-5 flex items-center justify-between gap-4">
-              <div>
-                <div className="font-black text-lg">Visual Effects</div>
-                <div className="text-sm text-white/60 mt-1">
-                  Future hook for motion, glows, and extra juice.
-                </div>
-              </div>
-              <Switch
-                checked={effectsEnabled}
-                onCheckedChange={setEffectsEnabled}
-              />
-            </div>
-            <div className="rounded-[1.75rem] border border-white/10 bg-white/5 p-5 flex items-center justify-between gap-4">
-              <div>
-                <div className="font-black text-lg">Large Text</div>
-                <div className="text-sm text-white/60 mt-1">
-                  Accessibility-focused sizing option placeholder.
-                </div>
-              </div>
-              <Switch checked={largeText} onCheckedChange={setLargeText} />
-            </div>
+            <SettingsToggleRow
+              title="Premium Mode Toggle"
+              description="Prototype switch for premium/admin features."
+              checked={premiumEnabled}
+              onCheckedChange={setPremiumEnabled}
+            />
+            <SettingsToggleRow
+              title="Background Music"
+              description="Menu vocal and in-game instrumental tracks."
+              checked={audioSettings.musicEnabled}
+              onCheckedChange={(next) =>
+                setAudioSettings((cur) => ({ ...cur, musicEnabled: next }))
+              }
+            />
+            <SettingsSliderRow
+              title="Music Volume"
+              description="Loudness for menu and in-game music."
+              suffix={`${audioSettings.musicVol ?? 60}%`}
+              value={audioSettings.musicVol ?? 60}
+              onChange={(event) =>
+                setAudioSettings((cur) => ({
+                  ...cur,
+                  musicVol: Number(event.target.value),
+                }))
+              }
+            />
+            <SettingsToggleRow
+              title="Sound Effects"
+              description="Fire, card flip, liar, and ByteBlitz cue SFX."
+              checked={audioSettings.sfxEnabled}
+              onCheckedChange={(next) =>
+                setAudioSettings((cur) => ({ ...cur, sfxEnabled: next }))
+              }
+            />
+            <SettingsSliderRow
+              title="SFX Volume"
+              description="Loudness for sound effects."
+              suffix={`${audioSettings.sfxVol ?? 80}%`}
+              value={audioSettings.sfxVol ?? 80}
+              onChange={(event) =>
+                setAudioSettings((cur) => ({
+                  ...cur,
+                  sfxVol: Number(event.target.value),
+                }))
+              }
+            />
+            <SettingsToggleRow
+              title="Haptics"
+              description="Vibration on taps and timed selections."
+              checked={audioSettings.hapticsEnabled !== false}
+              onCheckedChange={(next) =>
+                setAudioSettings((cur) => ({ ...cur, hapticsEnabled: next }))
+              }
+            />
+            <SettingsToggleRow
+              title="Voice Chat"
+              description="Online party voice preference."
+              checked={audioSettings.voiceChatEnabled !== false}
+              onCheckedChange={(next) =>
+                setAudioSettings((cur) => ({ ...cur, voiceChatEnabled: next }))
+              }
+            />
+            <SettingsToggleRow
+              title="Visual Effects"
+              description="Motion, glows, and extra juice."
+              checked={effectsEnabled}
+              onCheckedChange={setEffectsEnabled}
+            />
+            <SettingsToggleRow
+              title="Large Text"
+              description="Accessibility-focused sizing option placeholder."
+              checked={largeText}
+              onCheckedChange={setLargeText}
+            />
             <div className="rounded-[1.75rem] border border-cyan-400/25 bg-cyan-500/10 p-5">
               <div className="font-black text-lg text-cyan-100">
                 Picture Release Channels
@@ -7531,25 +7517,29 @@ function SettingsScreen({
                 {Object.keys(releaseChannelSummary).map((channel) => (
                   <div
                     key={channel}
-                    className="rounded-xl border border-white/10 bg-black/20 p-3 flex items-center justify-between gap-3"
+                    className="rounded-xl border border-white/10 bg-black/20 p-3"
                   >
-                    <div>
-                      <div className="font-semibold uppercase tracking-[0.18em] text-xs">
-                        {channel}
+                    <div className="flex items-center gap-3">
+                      <div className="min-w-0 flex-1 text-left">
+                        <div className="pof-heading text-xs text-white">
+                          {channel}
+                        </div>
+                        <p className="pof-desc text-xs text-white/55">
+                          {releaseChannelSummary[channel]} packs
+                        </p>
                       </div>
-                      <div className="text-xs text-white/55">
-                        {releaseChannelSummary[channel]} packs
+                      <div className="pof-settings-toggle-col">
+                        <Switch
+                          checked={enabledPictureReleaseChannels[channel] !== false}
+                          onCheckedChange={(next) =>
+                            setEnabledPictureReleaseChannels((cur) => ({
+                              ...cur,
+                              [channel]: next,
+                            }))
+                          }
+                        />
                       </div>
                     </div>
-                    <Switch
-                      checked={enabledPictureReleaseChannels[channel] !== false}
-                      onCheckedChange={(next) =>
-                        setEnabledPictureReleaseChannels((cur) => ({
-                          ...cur,
-                          [channel]: next,
-                        }))
-                      }
-                    />
                   </div>
                 ))}
               </div>
@@ -7570,22 +7560,26 @@ function SettingsScreen({
                       key={manifest.id}
                       className="rounded-xl border border-white/10 bg-black/20 p-3"
                     >
-                      <div className="flex items-center justify-between gap-3">
-                        <div>
-                          <div className="font-semibold">{manifest.label}</div>
-                          <div className="text-xs text-white/55">
-                            {manifest.id} • {manifest.releaseChannel}
+                      <div className="flex items-center gap-3">
+                        <div className="min-w-0 flex-1 text-left">
+                          <div className="pof-heading text-sm text-white">
+                            {manifest.label}
                           </div>
+                          <p className="pof-desc text-xs text-white/55">
+                            {manifest.id} • {manifest.releaseChannel}
+                          </p>
                         </div>
-                        <Switch
-                          checked={enabled}
-                          onCheckedChange={(next) =>
-                            setEnabledPicturePacks((cur) => ({
-                              ...cur,
-                              [manifest.id]: next,
-                            }))
-                          }
-                        />
+                        <div className="pof-settings-toggle-col">
+                          <Switch
+                            checked={enabled}
+                            onCheckedChange={(next) =>
+                              setEnabledPicturePacks((cur) => ({
+                                ...cur,
+                                [manifest.id]: next,
+                              }))
+                            }
+                          />
+                        </div>
                       </div>
                       <div className="mt-3 grid grid-cols-[1fr_auto] gap-3 items-center">
                         <div className="text-xs uppercase tracking-[0.2em] text-cyan-200/80">
