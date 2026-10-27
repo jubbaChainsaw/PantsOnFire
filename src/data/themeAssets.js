@@ -8,7 +8,7 @@ export const THEME_ASSETS = {
     talkingVideoWebm: '/assets/themes/default/hosts/persona-host-talking.webm',
     talkingVideoMp4: '/assets/themes/default/hosts/persona-host-talking.mp4',
     iconSheet: '/assets/themes/default/icons/icons-sheet.png',
-    uiBanner: '/assets/themes/default/ui/banner.png',
+    uiBanner: '/assets/themes/default/hosts/persona-host-intro-poster.png',
     promptCardFront: '/assets/themes/default/cards/prompt-front.png',
     promptCardBack: '/assets/themes/default/cards/prompt-back.png',
     adultPromptCardFront: '/assets/themes/default/cards/prompt-front-18.png',
@@ -20,7 +20,7 @@ export const THEME_ASSETS = {
     personaHostTalk2: '/assets/themes/pirates/hosts/persona-host-talk-2.png',
     personaHostTalk3: '/assets/themes/pirates/hosts/persona-host-talk-3.png',
     iconSheet: '/assets/themes/default/icons/icons-sheet.png',
-    uiBanner: '/assets/themes/default/ui/banner.png',
+    uiBanner: '/assets/themes/default/hosts/persona-host-intro-poster.png',
     promptCardFront: '/assets/themes/pirates/cards/prompt-front.png',
     promptCardBack: '/assets/themes/pirates/cards/prompt-back.png',
     adultPromptCardFront: '/assets/themes/pirates/cards/prompt-front-18.png',
@@ -32,7 +32,7 @@ export const THEME_ASSETS = {
     personaHostTalk2: '/assets/themes/murder-mystery/hosts/persona-host-talk-2.png',
     personaHostTalk3: '/assets/themes/murder-mystery/hosts/persona-host-talk-3.png',
     iconSheet: '/assets/themes/default/icons/icons-sheet.png',
-    uiBanner: '/assets/themes/default/ui/banner.png',
+    uiBanner: '/assets/themes/default/hosts/persona-host-intro-poster.png',
     promptCardFront: '/assets/themes/default/cards/prompt-front.png',
     promptCardBack: '/assets/themes/default/cards/prompt-back.png',
     adultPromptCardFront: '/assets/themes/default/cards/prompt-front-18.png',
@@ -44,7 +44,7 @@ export const THEME_ASSETS = {
     personaHostTalk2: '/assets/themes/gangsters/hosts/persona-host-talk-2.png',
     personaHostTalk3: '/assets/themes/gangsters/hosts/persona-host-talk-3.png',
     iconSheet: '/assets/themes/gangsters/icons/icons-sheet.png',
-    uiBanner: '/assets/themes/gangsters/ui/banner.png',
+    uiBanner: '/assets/themes/gangsters/hosts/persona-host-idle.png',
     promptCardFront: '/assets/themes/gangsters/cards/prompt-front.svg',
     promptCardBack: '/assets/themes/gangsters/cards/prompt-back.svg',
     adultPromptCardFront: '/assets/themes/gangsters/cards/prompt-front-18.svg',
@@ -56,7 +56,7 @@ export const THEME_ASSETS = {
     personaHostTalk2: '/assets/themes/ghosts-and-ghouls/hosts/persona-host-talk-2.png',
     personaHostTalk3: '/assets/themes/ghosts-and-ghouls/hosts/persona-host-talk-3.png',
     iconSheet: '/assets/themes/monsters/icons/icons-sheet.png',
-    uiBanner: '/assets/themes/monsters/ui/banner.png',
+    uiBanner: '/assets/themes/ghosts-and-ghouls/hosts/persona-host-idle.png',
     promptCardFront: '/assets/themes/monsters/cards/prompt-front.svg',
     promptCardBack: '/assets/themes/monsters/cards/prompt-back.svg',
     adultPromptCardFront: '/assets/themes/monsters/cards/prompt-front-18.svg',
@@ -226,6 +226,20 @@ export function getThemeAssets(themeName = 'Default') {
     ...selected,
     ...generated,
   };
+}
+
+/** Shop / store card art — prefers bundled banner, else host still shipped in the APK. */
+export function getStoreThemeThumbSrc(themeName = 'Default') {
+  const assets = getThemeAssets(themeName);
+  const banner = String(assets?.uiBanner || '').trim();
+  const idle = String(assets?.personaHostIdle || '').trim();
+  const fallbackBanner = String(THEME_ASSETS.Default?.uiBanner || '').trim();
+  const isPlaceholderBanner = /\/ui\/banner\.(png|jpe?g|webp)$/i.test(banner);
+  const pick =
+    banner && !isPlaceholderBanner
+      ? banner
+      : fallbackBanner || idle;
+  return resolveBundledAssetSrc(pick);
 }
 
 export function getThemeHostAssets(themeName = 'Default') {

@@ -7327,6 +7327,8 @@ function SettingsScreen({
             onDownload={contentPacks.downloadPack}
             onDelete={contentPacks.deletePack}
             onRetry={contentPacks.retryPack}
+            onOpenDownloadOffer={contentPacks.reopenPrompt}
+            missingPackCount={contentPacks.missingPacks.length}
             isNativeBridge={contentPacks.isNativeBridge}
           />
         ) : null}
@@ -7935,10 +7937,8 @@ export default function App() {
   );
   const contentPacks = useContentPacks({
     unlockedThemePackIds: effectiveUnlockedPacks,
+    shouldAutoPrompt: screen === "home",
   });
-  useEffect(() => {
-    if (screen === "home") contentPacks.maybeOpenPrompt();
-  }, [screen, contentPacks.maybeOpenPrompt]);
   useEffect(() => {
     try {
       const params = new URLSearchParams(window.location.search);

@@ -17,7 +17,7 @@ import {
   TIER_RANK,
 } from '../../account/tierModel.js';
 import { CORE_THEME_NAMES, DLC_THEME_PACKS } from '../../data/themeCatalog.js';
-import { getThemeAssets } from '../../data/themeAssets.js';
+import { getStoreThemeThumbSrc } from '../../data/themeAssets.js';
 import { NEON_ASSETS, neonThemeVars } from '../../data/uiNeonAssets.js';
 import { resolveBundledAssetSrc } from '../../lib/publicAssetUrl.js';
 import { readStoreSectionPrefs, writeStoreSectionPrefs } from '../../lib/storeSectionPrefs.js';
@@ -146,9 +146,30 @@ function DownloadBadge({ label, tone = 'neutral' }) {
         ? 'border-cyan-300/40 bg-cyan-500/15 text-cyan-50'
         : 'border-white/15 bg-white/10 text-white/80';
   return (
-    <span className={`rounded-full border px-2 py-0.5 text-[0.65rem] font-bold uppercase tracking-wide ${cls}`}>
+    <span
+      className={`pof-heading rounded-full border px-2 py-0.5 text-[0.65rem] tracking-wide ${cls}`}
+    >
       {label}
     </span>
+  );
+}
+
+function StoreActionChip({ label, onClick, variant = 'cyan' }) {
+  const tone =
+    variant === 'amber'
+      ? 'border-yellow-300/45 bg-yellow-400/15 text-yellow-100'
+      : 'border-cyan-300/45 bg-cyan-500/15 text-cyan-100';
+  return (
+    <button
+      type="button"
+      className={`pof-heading inline-flex min-h-0 w-auto shrink-0 rounded-full border px-2.5 py-0.5 text-[0.65rem] tracking-wide ${tone}`}
+      onClick={() => {
+        tapFx();
+        onClick?.();
+      }}
+    >
+      {label}
+    </button>
   );
 }
 
@@ -205,10 +226,7 @@ export default function NeonStoreScreen({
   const packArt = (pack) => {
     const firstTheme = pack?.themes?.[0];
     if (!firstTheme) return '';
-    const assets = getThemeAssets(firstTheme);
-    return resolveBundledAssetSrc(
-      assets?.uiBanner || assets?.personaHostIdle || '',
-    );
+    return getStoreThemeThumbSrc(firstTheme);
   };
 
   const downloadStateForIds = (ids) => {
@@ -336,7 +354,7 @@ export default function NeonStoreScreen({
               <div className="pof-heading mb-2 text-sm text-cyan-100">Core themes</div>
               <div className="flex flex-wrap gap-2">
                 {coreThemeNames.map((name) => {
-                  const art = resolveBundledAssetSrc(getThemeAssets(name)?.uiBanner || '');
+                  const art = getStoreThemeThumbSrc(name);
                   const packId = coreThemeContentPackId(name, contentPackManifest);
                   const dlState = packId ? downloadStateForIds([packId]) : 'none';
                   return (
@@ -358,13 +376,10 @@ export default function NeonStoreScreen({
                             <DownloadBadge label="Downloaded" tone="success" />
                           ) : null}
                           {packId && dlState === 'available' ? (
-                            <button
-                              type="button"
-                              className="text-[0.65rem] font-bold uppercase text-cyan-200 underline"
+                            <StoreActionChip
+                              label="Download"
                               onClick={() => onDownloadContentPack(packId)}
-                            >
-                              Download
-                            </button>
+                            />
                           ) : null}
                           {packId && dlState === 'downloading' ? (
                             <DownloadBadge label="Downloading…" tone="action" />
@@ -414,25 +429,22 @@ export default function NeonStoreScreen({
                           <DownloadBadge label={pack.priceLabel || '99p'} />
                         )}
                         {!isUnlocked && !disableDlcDemo ? (
-                          <button
-                            type="button"
-                            className="text-[0.65rem] font-bold uppercase text-yellow-200 underline"
+                          <StoreActionChip
+                            label="Buy"
+                            variant="amber"
                             onClick={() => onUnlockThemePack(pack.id)}
-                          >
-                            Buy
-                          </button>
+                          />
                         ) : null}
                         {isUnlocked && contentIds.length && dlState === 'installed' ? (
                           <DownloadBadge label="Downloaded" tone="success" />
                         ) : null}
                         {isUnlocked && contentIds.length && dlState === 'available' ? (
-                          <button
-                            type="button"
-                            className="text-[0.65rem] font-bold uppercase text-cyan-200 underline"
-                            onClick={() => contentIds.forEach((id) => onDownloadContentPack(id))}
-                          >
-                            Download
-                          </button>
+                          <StoreActionChip
+                            label="Download"
+                            onClick={() =>
+                              contentIds.forEach((id) => onDownloadContentPack(id))
+                            }
+                          />
                         ) : null}
                         {isUnlocked && contentIds.length && dlState === 'downloading' ? (
                           <DownloadBadge label="Downloading…" tone="action" />

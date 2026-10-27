@@ -1,14 +1,22 @@
 /** Neon UI pack (MagicPath) — transparent buttons, icons, panels under /assets/ui/neon/ */
-import { publicAssetUrl } from '../lib/publicAssetUrl.js';
+import {
+  publicAssetUrl,
+  resolveBundledAssetSrcCore,
+} from '../lib/publicAssetUrl.js';
 
 export const NEON_ASSET_BASE = publicAssetUrl('ui/neon');
 
-const neonFile = (name) => `${NEON_ASSET_BASE}/${name}`;
+/** Resolves mobile WebP paths when `VITE_UI_RASTER_EXT=webp`. */
+function bundledUiAsset(relativeUnderAssets) {
+  return resolveBundledAssetSrcCore(publicAssetUrl(relativeUnderAssets));
+}
+
+const neonFile = (name) => bundledUiAsset(`ui/neon/${name}`);
 
 export const NEON_ASSETS = Object.freeze({
-  logo: publicAssetUrl('ui/logos/main-logo.png'),
-  wallHome: publicAssetUrl('ui/wallpapers/home-page.png'),
-  wallGame: publicAssetUrl('ui/wallpapers/in-game.png'),
+  logo: bundledUiAsset('ui/logos/main-logo.png'),
+  wallHome: bundledUiAsset('ui/wallpapers/home-page.png'),
+  wallGame: bundledUiAsset('ui/wallpapers/in-game.png'),
   btnNeon: neonFile('btn-1.png'),
   btnFire: neonFile('btn-2.png'),
   btnPink: neonFile('btn-3.png'),

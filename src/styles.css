@@ -53,6 +53,17 @@
   font-display: swap;
 }
 
+/* Primary UI display face (derived middle weight; source: PantsOnFireNarrow-Regular). */
+@font-face {
+  font-family: 'PoF Display';
+  src:
+    url('/assets/fonts/pants-on-fire/PoFDisplay-Narrow-Regular.woff2') format('woff2'),
+    url('/assets/fonts/pants-on-fire/PoFDisplay-Narrow-Regular.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
 @font-face {
   font-family: 'Pants on Fire Narrow';
   src:

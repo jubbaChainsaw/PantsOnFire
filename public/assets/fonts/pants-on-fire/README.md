@@ -39,7 +39,7 @@ Same glyphs as the regular width, with reduced side bearings for tighter lines a
 | `PantsOnFireNarrow-Regular.ttf` | Desktop or `format('truetype')` fallbacks |
 | `PantsOnFireNarrow-Regular.otf` | Design tools or `format('opentype')` |
 
-CSS family name: **`Pants on Fire Narrow`**.
+CSS family name: **`Pants on Fire Narrow`** (legacy files; app UI uses **`PoF Display`** — `PoFDisplay-Narrow-Regular.woff2` / `.ttf`).
 
 ### Colour
 

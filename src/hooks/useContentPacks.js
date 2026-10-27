@@ -31,6 +31,17 @@ function getStored(key, fallback) {
   }
 }
 
+function isContentPackPromptDismissed() {
+  try {
+    const raw = localStorage.getItem(CONTENT_PACK_STORAGE_KEYS.promptDismissed);
+    if (raw == null) return false;
+    if (raw === 'true' || raw === 'false') return raw === 'true';
+    return Boolean(JSON.parse(raw));
+  } catch {
+    return false;
+  }
+}
+
 function setStored(key, value) {
   try {
     localStorage.setItem(key, JSON.stringify(value));
@@ -47,7 +58,11 @@ function buildSlugMap(packs) {
   return map;
 }
 
-export function useContentPacks({ unlockedThemePackIds = [] } = {}) {
+export function useContentPacks({
+  unlockedThemePackIds = [],
+  /** When true (e.g. home screen), open the first-run prompt once manifest + missing packs are known. */
+  shouldAutoPrompt = false,
+} = {}) {
   const [manifest, setManifest] = useState(null);
   const [manifestError, setManifestError] = useState('');
   const [installedPackIds, setInstalledPackIds] = useState([]);
@@ -148,15 +163,24 @@ export function useContentPacks({ unlockedThemePackIds = [] } = {}) {
   );
 
   const maybeOpenPrompt = useCallback(() => {
-    const dismissed = Boolean(getStored(CONTENT_PACK_STORAGE_KEYS.promptDismissed, false));
-    if (dismissed || missingPacks.length === 0) return;
+    if (isContentPackPromptDismissed() || missingPacks.length === 0) return;
     setPromptOpen(true);
   }, [missingPacks.length]);
+
+  useEffect(() => {
+    if (!shouldAutoPrompt || !manifest) return;
+    maybeOpenPrompt();
+  }, [shouldAutoPrompt, manifest, missingPacks.length, maybeOpenPrompt]);
 
   const dismissPrompt = useCallback(() => {
     setStored(CONTENT_PACK_STORAGE_KEYS.promptDismissed, true);
     setPromptOpen(false);
   }, []);
+
+  const reopenPrompt = useCallback(() => {
+    if (missingPacks.length === 0) return;
+    setPromptOpen(true);
+  }, [missingPacks.length]);
 
   const downloadPack = useCallback(
     (pack) => {
@@ -241,6 +265,7 @@ export function useContentPacks({ unlockedThemePackIds = [] } = {}) {
     promptOpen,
     setPromptOpen,
     maybeOpenPrompt,
+    reopenPrompt,
     dismissPrompt,
     downloadPack,
     downloadAllMissing,
