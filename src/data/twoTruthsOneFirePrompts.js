@@ -1,7 +1,7 @@
 import {
   CURATED_PHRASES_BY_CATEGORY,
   getCuratedPhraseCount,
-} from './twoTruthsOneFire/curatedPhraseBanks.js';
+} from './twoTruthsOneFire/curated/index.js';
 import { dedupeMains, phraseToMain } from './twoTruthsOneFire/buildCuratedMains.js';
 
 export const TWO_TRUTHS_ROUNDS_PER_CATEGORY = 100;
