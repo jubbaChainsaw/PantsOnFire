@@ -29,6 +29,13 @@ export default defineConfig({
       reuseExistingServer: !process.env.CI,
       timeout: 300_000,
     },
+    {
+      command:
+        'VITE_E2E_FORCE_ROUND_TYPE=chain VITE_E2E_FAST_TIMERS=1 npm run build:mobile && npm run preview -- --host 127.0.0.1 --port 4175',
+      port: 4175,
+      reuseExistingServer: !process.env.CI,
+      timeout: 300_000,
+    },
   ],
   projects: [
     {
@@ -47,6 +54,14 @@ export default defineConfig({
       use: {
         ...devices['Pixel 5'],
         baseURL: 'http://127.0.0.1:4174',
+      },
+    },
+    {
+      name: 'chain-mobile-screens',
+      testMatch: '**/chain-reaction-mobile-screens.spec.js',
+      use: {
+        viewport: { width: 360, height: 780 },
+        baseURL: 'http://127.0.0.1:4175',
       },
     },
   ],

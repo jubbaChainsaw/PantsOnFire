@@ -1,9 +1,19 @@
 import { expect } from '@playwright/test';
 
+async function dismissContentPackPrompt(page) {
+  const later = page.getByRole('button', { name: 'Later' });
+  if (await later.isVisible({ timeout: 8_000 }).catch(() => false)) {
+    await later.click();
+  }
+}
+
 export async function setupThreePlayerGame(page) {
-  await page.getByRole('button', { name: 'Play', exact: true }).click();
+  await dismissContentPackPrompt(page);
+  const play = page.getByRole('button', { name: 'Play', exact: true });
+  await expect(play).toBeEnabled({ timeout: 20_000 });
+  await play.click();
   await expect(page.getByTestId('start-match')).toBeVisible({ timeout: 15_000 });
-  const inputs = page.locator('input[type="text"]');
+  const inputs = page.locator('input:not([type="hidden"])');
   const count = await inputs.count();
   for (let i = 0; i < Math.min(count, 3); i += 1) {
     await inputs.nth(i).fill(`Player ${i + 1}`);

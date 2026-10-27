@@ -1407,6 +1407,7 @@ function LightningBolt({ className = "", boltClass = "text-yellow-300" }) {
   );
 }
 function TopFrame({ children, theme = "Default", allowScroll = false }) {
+  const wallSrc = resolveBundledAssetSrc(UI_WALLPAPER_IN_GAME_SRC);
   return (
     <div
       className={`relative min-h-screen min-h-[100dvh] overflow-x-hidden text-white ${allowScroll ? "overflow-y-auto pof-scroll" : "overflow-y-hidden"}`}
@@ -1414,7 +1415,12 @@ function TopFrame({ children, theme = "Default", allowScroll = false }) {
     >
       <div
         className="pof-wall fixed inset-0"
-        style={{ backgroundImage: `url(${NEON_ASSETS.wallGame})` }}
+        style={{
+          backgroundImage: wallSrc ? `url("${wallSrc}")` : undefined,
+          backgroundSize: "cover",
+          backgroundRepeat: "no-repeat",
+          backgroundPosition: "center top",
+        }}
       />
       <div className="fixed inset-0 bg-gradient-to-b from-black/40 via-black/25 to-black/55" />
       <div
@@ -1655,13 +1661,17 @@ function ThemedIcon({ src, alt = "", className = "" }) {
 }
 function ThemeArt({ src, alt, className = "", ...rest }) {
   const [isBroken, setIsBroken] = useState(false);
+  const resolvedSrc = useMemo(
+    () => resolveBundledAssetSrc(String(src || "").trim()),
+    [src],
+  );
   useEffect(() => {
     setIsBroken(false);
-  }, [src]);
-  if (!src || isBroken) return null;
+  }, [resolvedSrc]);
+  if (!resolvedSrc || isBroken) return null;
   return (
     <img
-      src={src}
+      src={resolvedSrc}
       alt={alt}
       className={className}
       onError={() => setIsBroken(true)}
@@ -1770,13 +1780,13 @@ function ThemeHostVisual({
           src={posterSrc}
           alt={alt}
           data-testid="host-idle-image"
-          className="absolute inset-0 h-full w-full object-cover"
+          className={`absolute inset-0 h-full w-full object-cover object-top ${shouldTryVideo && !videoBroken ? "opacity-0" : "opacity-100"}`}
         />
       ) : null}
       {shouldTryVideo && !videoBroken ? (
         <MultiSourceVideo
           src={talkingVideoSrc}
-          className="absolute inset-0 h-full w-full object-cover"
+          className="absolute inset-0 h-full w-full object-cover object-top"
           autoPlay={isTalking || preferVideo}
           loop={isTalking || preferVideo}
           muted
@@ -1786,21 +1796,25 @@ function ThemeHostVisual({
           ariaHidden
           onError={() => setVideoBroken(true)}
         />
-      ) : posterSrc ? null : (
+      ) : !posterSrc ? (
         <ThemeArt
           src={animatedHostSrc}
           alt={alt}
-          className="absolute inset-0 h-full w-full object-cover"
+          className="absolute inset-0 h-full w-full object-cover object-top"
         />
-      )}
+      ) : null}
     </div>
   );
 }
 function RoundTypeLogo({ src, alt, className = "" }) {
-  if (!src) return null;
+  const resolvedSrc = useMemo(
+    () => resolveBundledAssetSrc(String(src || "").trim()),
+    [src],
+  );
+  if (!resolvedSrc) return null;
   return (
     <img
-      src={src}
+      src={resolvedSrc}
       alt={alt}
       className={className}
       onError={(event) => {
@@ -2078,7 +2092,7 @@ const HOST_DIALOGUE_TIMINGS = {
 const POF_VIEWPORT_HEIGHT_CLASS =
   "h-[calc(var(--pof-vh,1vh)*100)] max-h-[calc(var(--pof-vh,1vh)*100)]";
 const HOST_DIALOGUE_PANEL_CLASS =
-  "rounded-[1.5rem] bg-[#e60096] text-white shadow-[0_18px_38px_rgba(0,0,0,0.55)]";
+  "pof-ui-copy rounded-[1.5rem] bg-[#e60096] text-white shadow-[0_18px_38px_rgba(0,0,0,0.55)] text-base sm:text-lg leading-relaxed";
 const HOST_DIALOGUE_BUTTON_CLASS =
   "h-16 flex-1 rounded-[1.25rem] bg-[#e60096] px-4 text-xl font-black uppercase tracking-[0.04em] text-white shadow-[0_12px_24px_rgba(0,0,0,0.5)] hover:bg-[#ff16ac]";
 
@@ -2755,12 +2769,12 @@ function RulesSplashScreen({ onContinue, theme, isOnlineMode = false }) {
             Quick Rules
           </h2>
           <div className="mt-6 grid gap-3 text-center">
-            <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+            <div className="pof-ui-copy rounded-2xl border border-white/15 bg-black/35 p-4 text-base leading-relaxed">
               {isOnlineMode
                 ? "Online mode: each player checks prompts on their own device. No phone passing."
                 : "Pass the phone one player at a time so only that player sees their card."}
             </div>
-            <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+            <div className="pof-ui-copy rounded-2xl border border-white/15 bg-black/35 p-4 text-base leading-relaxed">
               Give one related clue out loud during discussion, but never say
               your exact prompt.
             </div>
@@ -2770,14 +2784,14 @@ function RulesSplashScreen({ onContinue, theme, isOnlineMode = false }) {
                 auto-pauses during prompt/instruction phases.
               </div>
             )}
-            <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+            <div className="pof-ui-copy rounded-2xl border border-white/15 bg-black/35 p-4 text-base leading-relaxed">
               You cannot use any words from the{" "}
               <span className="font-semibold text-cyan-200">category</span>,{" "}
               your exact prompt, or any of the{" "}
               <span className="font-semibold text-cyan-200">5 banned words</span>{" "}
               shown on your reveal card.
             </div>
-            <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+            <div className="pof-ui-copy rounded-2xl border border-white/15 bg-black/35 p-4 text-base leading-relaxed">
               Vote for the liar. Correct votes score points. Uncaught liars
               score extra.
             </div>
@@ -3869,7 +3883,9 @@ function BrandedScreen({
   allowScroll = false,
   lockViewport = false,
 }) {
-  const resolvedWallpaperSrc = String(wallpaperSrc || NEON_ASSETS.wallGame).trim();
+  const resolvedWallpaperSrc = resolveBundledAssetSrc(
+    String(wallpaperSrc || UI_WALLPAPER_IN_GAME_SRC || NEON_ASSETS.wallGame).trim(),
+  );
   const viewportClass = lockViewport || !allowScroll ? POF_VIEWPORT_HEIGHT_CLASS : "min-h-screen min-h-[100dvh]";
   return (
     <div
@@ -4971,10 +4987,16 @@ function RevealScreen({
   const fireAudioRef = useRef(null);
   const promptTextRef = useRef(null);
   const promptFitContainerRef = useRef(null);
-  const cardBackSrc = getRoundCardBackSrc(theme);
-  const themedCardFrontSrc = getRoundCardFrontSrc(theme);
+  const cardBackSrc = useMemo(
+    () => resolveBundledAssetSrc(getRoundCardBackSrc(theme)),
+    [theme],
+  );
+  const themedCardFrontSrc = useMemo(
+    () => resolveBundledAssetSrc(getRoundCardFrontSrc(theme)),
+    [theme],
+  );
   const cardFrontSrc = isImposter
-    ? getImposterCardFrontSrc()
+    ? resolveBundledAssetSrc(getImposterCardFrontSrc())
     : themedCardFrontSrc;
   const roundTypeLogoSrc = getRoundTypeIconSrc(round.roundTypeId);
 
@@ -5075,7 +5097,7 @@ function RevealScreen({
               ? `Reveal for ${localPlayerName || player.name}`
               : `Pass the phone to ${player.name}`}
           </h2>
-          <div className="mt-2 rounded-[1.5rem] border border-fuchsia-200/40 bg-fuchsia-500/35 px-4 py-3 text-sm sm:text-base font-semibold text-white/95 shadow-[0_8px_20px_rgba(0,0,0,0.28)]">
+          <div className="pof-ui-copy mt-2 rounded-[1.5rem] border border-fuchsia-200/50 bg-fuchsia-950/75 px-4 py-3 text-sm sm:text-base font-semibold shadow-[0_8px_20px_rgba(0,0,0,0.28)]">
             {passLine}
           </div>
           {onlineMode && onlinePrivatePromptError && (
@@ -5238,10 +5260,10 @@ function RevealScreen({
                   </div>
                   {bannedWords.length > 0 && (
                     <div className="mt-4 rounded-xl border border-fuchsia-200/40 bg-fuchsia-500/35 px-3 py-2">
-                      <div className="text-xs uppercase tracking-[0.2em] text-red-300">
+                      <div className="pof-ui-copy text-xs font-bold uppercase tracking-[0.2em] text-red-200">
                         Banned Words
                       </div>
-                      <div className="mt-1 text-xs text-red-200">
+                      <div className="pof-ui-copy mt-1 text-sm font-medium text-red-100">
                         {bannedWords.join(" • ")}
                       </div>
                     </div>
@@ -5265,7 +5287,7 @@ function RevealScreen({
           {cardFace === "front" && (
             <button
               type="button"
-              className="pof-btn pof-btn-blue pof-btn-sm pof-focus mt-3"
+              className="pof-btn pof-btn-blue pof-btn-sm pof-btn-wrap pof-focus mt-3 max-w-full"
               data-testid="reveal-next"
               onClick={onNext}
             >
@@ -6300,7 +6322,7 @@ function DiscussionScreen({
           <div className="mt-8 flex justify-center">
             <button
               type="button"
-              className="pof-btn pof-btn-fire pof-focus min-w-[16rem]"
+              className="pof-btn pof-btn-fire pof-btn-wrap pof-focus w-full max-w-[20rem] px-3"
               data-testid="discussion-continue"
               onClick={onContinue}
               disabled={submitPending}
@@ -6406,13 +6428,13 @@ function VotingScreen({
               <h2 className="text-4xl font-black mt-3 text-yellow-300">
                 Vote now
               </h2>
-              <p className="text-white/70 mt-2">
+              <p className="pof-ui-copy mt-2 text-base">
                 {onlineMode ? (
                   "Vote from your own device. Pick one suspect and submit."
                 ) : activeLocalVoter ? (
                   <>
                     Pass the phone to{" "}
-                    <span className="font-semibold text-cyan-300">
+                    <span className="font-semibold text-cyan-200">
                       {activeLocalVoter.name}
                     </span>
                     .{" "}
@@ -6438,7 +6460,7 @@ function VotingScreen({
                 className="rounded-[1.75rem] p-4 border-white/10 bg-black/20"
               >
                 <div className="font-black text-lg">{voter.name}</div>
-                <div className="text-sm text-white/55 mt-1">
+                <div className="pof-ui-muted mt-1 text-sm font-medium">
                   Who do they vote for?
                 </div>
                 <div className="grid grid-cols-2 gap-2 mt-4">
@@ -6449,7 +6471,7 @@ function VotingScreen({
                         type="button"
                         key={target.id}
                         data-testid={`vote-for-${target.id}`}
-                        className={`pof-chip pof-focus h-11 ${votesByPlayerId[voter.id] === target.id ? "!border-yellow-300 !bg-yellow-300/90 !text-zinc-950" : ""}`}
+                        className={`pof-chip pof-vote-chip pof-focus ${votesByPlayerId[voter.id] === target.id ? "!border-yellow-300 !bg-yellow-300/90 !text-zinc-950" : ""}`}
                         onClick={() =>
                           setVotesByPlayerId((cur) => ({
                             ...cur,
@@ -6499,7 +6521,7 @@ function VotingScreen({
             ) : (
               <button
                 type="button"
-                className="pof-btn pof-btn-fire pof-focus"
+                className="pof-btn pof-btn-fire pof-btn-wrap pof-focus max-w-full px-4"
                 data-testid="submit-votes"
                 disabled={!canRevealResults || submitPending}
                 onClick={onSubmitVotes}
@@ -6625,15 +6647,15 @@ function LiarRevealScreen({
     );
   }
   return (
-    <TopFrame theme={theme}>
-      <div className="mx-auto flex h-[calc(100dvh-2rem)] w-full max-w-4xl flex-col justify-center">
-        <GlassPanel className="relative overflow-hidden rounded-[2.5rem] border-red-400/25 bg-black/35 p-6 sm:p-8 text-center">
+    <TopFrame theme={theme} allowScroll>
+      <div className="mx-auto flex min-h-[calc(100dvh-2rem)] w-full max-w-4xl flex-col justify-center py-2">
+        <GlassPanel className="relative overflow-visible rounded-[2.5rem] border-red-400/25 bg-black/35 p-6 sm:p-8 text-center">
           <div className="absolute inset-0 animate-pulse bg-[radial-gradient(circle,_rgba(255,0,80,0.16)_0%,_rgba(255,0,80,0.08)_35%,_transparent_70%)]" />
           <div className="relative z-10">
             <div className="text-xs uppercase tracking-[0.35em] text-white/50">
               Final accusation
             </div>
-            <div className="relative mx-auto mt-4 w-full max-w-3xl min-h-[230px] sm:min-h-[280px]">
+            <div className="relative mx-auto mt-4 w-full max-w-3xl min-h-[200px] sm:min-h-[240px]">
               <ThemeHostVisual
                 themeName={theme}
                 isTalking={isTalking}
@@ -6645,16 +6667,16 @@ function LiarRevealScreen({
                 initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3, ease: "easeOut" }}
-                className={`${hostSizeConfig.liarBubbleMargin} h-[11rem] sm:h-[12rem] p-1 text-white`}
+                className={`${hostSizeConfig.liarBubbleMargin} min-h-[11rem] sm:min-h-[12rem] p-1 text-white`}
               >
                 <div
                   ref={announcementBubbleFitRef}
-                  className="relative mx-auto flex h-full max-w-2xl flex-col items-center justify-center overflow-hidden rounded-[2rem] border-2 border-red-300/70 bg-[#2a0f2e] px-4 py-4 shadow-[0_12px_24px_rgba(0,0,0,0.42)]"
+                  className="relative mx-auto flex max-h-[14rem] min-h-[10rem] w-full max-w-2xl flex-col items-center justify-center overflow-y-auto overflow-x-hidden rounded-[2rem] border-2 border-red-300/70 bg-[#2a0f2e] px-4 py-4 shadow-[0_12px_24px_rgba(0,0,0,0.42)] pof-scroll"
                 >
                   <div className="absolute -left-3 top-[58%] h-6 w-6 -translate-y-1/2 rotate-45 border-b-2 border-l-2 border-red-300/70 bg-[#2a0f2e]" />
                   <p
                     ref={announcementBubbleTextRef}
-                    className="font-black text-red-200"
+                    className="pof-ui-copy font-bold text-red-100"
                     style={{
                       fontSize: `${announcementBubbleFontSize}px`,
                       lineHeight: 1.1,
@@ -6696,14 +6718,15 @@ function LiarRevealScreen({
               </motion.div>
             </div>
             <div className="mt-6 flex justify-center">
-              <Button
-                className="h-14 rounded-[1.5rem] border border-white/30 bg-white/10 px-6 text-white"
+              <button
+                type="button"
+                className="pof-btn pof-btn-pink pof-btn-sm pof-btn-wrap pof-focus max-w-full px-5"
                 onClick={advanceAnnouncementLine}
               >
                 {announcementIndex >= announcementLines.length - 1
                   ? "Continue"
                   : "Next line"}
-              </Button>
+              </button>
             </div>
           </div>
         </GlassPanel>
@@ -9886,8 +9909,8 @@ export default function App() {
     setPartyChatInput("");
   };
   const categoryChoiceGridClass = isDesktopLandscapeWeb
-    ? "mt-4 grid flex-1 grid-cols-3 gap-3 items-stretch content-start"
-    : "mt-3 grid flex-1 grid-cols-2 gap-3 sm:grid-cols-3 items-stretch content-start";
+    ? "mt-2 grid grid-cols-3 gap-3 items-stretch content-start pb-4"
+    : "mt-2 grid grid-cols-2 gap-3 sm:grid-cols-3 items-stretch content-start pb-4";
   const startupGraphicsReady = useGlobalGraphicsPreload();
   useCategoryAndModeIconPreload({
     screen,
@@ -10296,11 +10319,12 @@ export default function App() {
           wallpaperSrc={UI_WALLPAPER_IN_GAME_SRC}
           overlayClassName="bg-black/45"
           lockViewport
-          contentClassName="!py-3"
+          allowScroll
+          contentClassName="!py-3 flex min-h-0 flex-col"
         >
           <div className="mx-auto flex min-h-0 w-full max-w-4xl flex-1 flex-col">
             <div className="shrink-0 px-1 text-center">
-              <div className="text-xs uppercase tracking-[0.3em] text-white/70">
+              <div className="pof-ui-muted text-xs font-semibold uppercase tracking-[0.3em]">
                 Round owner: {players[currentRoundOwnerIndex]?.name}
               </div>
               <h2 className="mt-3 text-4xl font-black text-yellow-300 [text-shadow:0_4px_16px_rgba(0,0,0,0.65)]">
@@ -10311,18 +10335,20 @@ export default function App() {
               <RoundTypeLogo
                 src={getRoundTypeIconSrc(selectedRoundType || round.roundTypeId)}
                 alt={`${ROUND_TYPES[selectedRoundType]?.name || round.roundTypeName || "Round"} mode icon`}
-                className="mx-auto mt-4 h-24 w-24 sm:h-28 sm:w-28 object-contain drop-shadow-[0_8px_20px_rgba(0,0,0,0.7)]"
+                className="mx-auto mt-4 h-20 w-20 sm:h-24 sm:w-24 object-contain drop-shadow-[0_8px_20px_rgba(0,0,0,0.7)]"
               />
-              {selectedRoundType && usesNoCategorySelection(selectedRoundType) ? (
-                <div className="mt-8 rounded-[1.8rem] border border-cyan-300/35 bg-cyan-500/10 px-6 py-8 text-cyan-100">
-                  <div className="text-xs uppercase tracking-[0.25em] text-cyan-200/80">
-                    Global prompt deck
-                  </div>
-                  <p className="mt-3 text-sm text-white/80">
-                    This round type uses one shared prompt pool for all themes.
-                  </p>
+            </div>
+            {selectedRoundType && usesNoCategorySelection(selectedRoundType) ? (
+              <div className="mt-6 shrink-0 rounded-[1.8rem] border border-cyan-300/35 bg-cyan-500/10 px-6 py-8 text-cyan-100">
+                <div className="text-xs uppercase tracking-[0.25em] text-cyan-200/80">
+                  Global prompt deck
                 </div>
-              ) : (
+                <p className="pof-ui-copy mt-3 text-sm">
+                  This round type uses one shared prompt pool for all themes.
+                </p>
+              </div>
+            ) : (
+              <div className="mt-2 flex min-h-0 flex-1 flex-col overflow-y-auto pof-scroll">
                 <CategoryChoiceGrid
                   categoryOptions={categoryOptions}
                   categoryChoiceGridClass={categoryChoiceGridClass}
@@ -10330,8 +10356,8 @@ export default function App() {
                   canonicalThemeName={canonicalThemeName}
                   onChooseCategory={chooseCategory}
                 />
-              )}
-            </div>
+              </div>
+            )}
           </div>
         </BrandedScreen>
       )}

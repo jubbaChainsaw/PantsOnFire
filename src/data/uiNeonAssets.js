@@ -1,48 +1,55 @@
 /** Neon UI pack (MagicPath) — transparent buttons, icons, panels under /assets/ui/neon/ */
-export const NEON_ASSET_BASE = '/assets/ui/neon';
+import { publicAssetUrl } from '../lib/publicAssetUrl.js';
+
+export const NEON_ASSET_BASE = publicAssetUrl('ui/neon');
+
+const neonFile = (name) => `${NEON_ASSET_BASE}/${name}`;
 
 export const NEON_ASSETS = Object.freeze({
-  logo: '/assets/ui/logos/main-logo.png',
-  wallHome: '/assets/ui/wallpapers/home-page.png',
-  wallGame: '/assets/ui/wallpapers/in-game.png',
-  btnNeon: `${NEON_ASSET_BASE}/btn-1.png`,
-  btnFire: `${NEON_ASSET_BASE}/btn-2.png`,
-  btnPink: `${NEON_ASSET_BASE}/btn-3.png`,
-  btnSteel: `${NEON_ASSET_BASE}/btn-4.png`,
-  btnPurple: `${NEON_ASSET_BASE}/btn-purple.png`,
+  logo: publicAssetUrl('ui/logos/main-logo.png'),
+  wallHome: publicAssetUrl('ui/wallpapers/home-page.png'),
+  wallGame: publicAssetUrl('ui/wallpapers/in-game.png'),
+  btnNeon: neonFile('btn-1.png'),
+  btnFire: neonFile('btn-2.png'),
+  btnPink: neonFile('btn-3.png'),
+  btnSteel: neonFile('btn-4.png'),
+  btnPurple: neonFile('btn-purple.png'),
   icons: {
-    settings: `${NEON_ASSET_BASE}/icon-settings.png`,
-    trophy: `${NEON_ASSET_BASE}/icon-trophy.png`,
-    help: `${NEON_ASSET_BASE}/icon-help.png`,
-    home: `${NEON_ASSET_BASE}/icon-home.png`,
-    players: `${NEON_ASSET_BASE}/icon-players.png`,
-    cards: `${NEON_ASSET_BASE}/icon-cards.png`,
-    stats: `${NEON_ASSET_BASE}/icon-stats.png`,
-    sound: `${NEON_ASSET_BASE}/icon-sound.png`,
-    shop: `${NEON_ASSET_BASE}/icon-shop.png`,
+    settings: neonFile('icon-settings.png'),
+    trophy: neonFile('icon-trophy.png'),
+    help: neonFile('icon-help.png'),
+    home: neonFile('icon-home.png'),
+    players: neonFile('icon-players.png'),
+    cards: neonFile('icon-cards.png'),
+    stats: neonFile('icon-stats.png'),
+    sound: neonFile('icon-sound.png'),
+    shop: neonFile('icon-shop.png'),
   },
   decks: [
-    `${NEON_ASSET_BASE}/deck-flaming-briefs.jpg`,
-    `${NEON_ASSET_BASE}/deck-neon-vortex.jpg`,
-    `${NEON_ASSET_BASE}/deck-starburst.jpg`,
-    `${NEON_ASSET_BASE}/deck-mystery.jpg`,
+    neonFile('deck-flaming-briefs.jpg'),
+    neonFile('deck-neon-vortex.jpg'),
+    neonFile('deck-starburst.jpg'),
+    neonFile('deck-mystery.jpg'),
   ],
 });
 
 export function neonThemeVars() {
   const a = NEON_ASSETS;
+  const cssUrl = (src) => `url("${String(src || '').replace(/"/g, '\\"')}")`;
   return {
-    '--btn-neon': `url(${a.btnNeon})`,
-    '--btn-fire': `url(${a.btnFire})`,
-    '--btn-pink': `url(${a.btnPink})`,
-    '--btn-purple': `url(${a.btnPurple})`,
-    '--btn-steel': `url(${a.btnSteel})`,
-    '--bar-pink': `url(${NEON_ASSET_BASE}/bar-1.png)`,
+    '--btn-neon': cssUrl(a.btnNeon),
+    '--btn-fire': cssUrl(a.btnFire),
+    '--btn-pink': cssUrl(a.btnPink),
+    '--btn-purple': cssUrl(a.btnPurple),
+    '--btn-steel': cssUrl(a.btnSteel),
+    '--bar-pink': cssUrl(neonFile('bar-1.png')),
   };
 }
 
-export const MENU_VOCAL_BGM_SRC = '/assets/audio/music/menu-vocal.mp3';
-export const GAME_INSTRUMENTAL_BGM_SRC = '/assets/audio/music/game-instrumental.mp3';
+export const MENU_VOCAL_BGM_SRC = publicAssetUrl('audio/music/menu-vocal.mp3');
+export const GAME_INSTRUMENTAL_BGM_SRC = publicAssetUrl(
+  'audio/music/game-instrumental.mp3',
+);
 
 export const ROUND_TYPE_DRAW_COUNT = 2;
 export const CATEGORY_DRAW_COUNT = 6;
