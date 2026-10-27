@@ -20,6 +20,17 @@ const GLOBAL_BAD = [
   /\b(prism|NSA|inquiry witnesses|passenger rights|hidden fee)\b/i,
   /\bgimmicks\b/i,
   /\bknown faults\b/i,
+  /\b stories$/i,
+  /\b tales$/i,
+  /\b horror stories$/i,
+  /\bclubs in the UK$/i,
+  /\b(beginner kit items|competitions|famous magazines|YouTube channels)\b/i,
+  /\b(composition tips|filter choices|caption ideas|common mistakes)\b/i,
+  /\b(key works|logo colours|officer duties)\b/i,
+  /\bpeople share\b/i,
+  /\bhorror stories people\b/i,
+  /\bmacro photos\b/i,
+  /\bfilter era\b/i,
 ];
 
 export function isValidPhrase(phrase) {

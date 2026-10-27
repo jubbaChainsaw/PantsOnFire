@@ -5,8 +5,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { CURATED_PHRASES_BY_CATEGORY as FALLBACK } from '../src/data/twoTruthsOneFire/curated/index.js';
-import { cleanLegacyPhrases, isValidPhrase } from './twoTruthsCurated/aggressiveClean.mjs';
+import { isValidPhrase } from './twoTruthsCurated/aggressiveClean.mjs';
 import { EXPECTED_COUNTS } from './twoTruthsCurated/expectedCounts.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -50,27 +49,20 @@ function scorePhrase(categoryId, phrase) {
 }
 
 function mergePhrases(categoryId, target) {
-  const priority = (PRIORITY[categoryId] || []).filter(isValidPhrase);
-  const legacy = cleanLegacyPhrases(FALLBACK[categoryId] || []);
-  const ranked = [...legacy].sort(
-    (a, b) => scorePhrase(categoryId, b) - scorePhrase(categoryId, a),
-  );
-
   const seen = new Set();
   const out = [];
-  const push = (phrase) => {
-    const key = phrase.trim().toLowerCase();
-    if (!key || seen.has(key)) return;
-    if (!isValidPhrase(phrase)) return;
+  for (const phrase of PRIORITY[categoryId] || []) {
+    const trimmed = String(phrase || '').trim();
+    const key = trimmed.toLowerCase();
+    if (!trimmed || seen.has(key)) continue;
+    if (!isValidPhrase(trimmed)) continue;
     seen.add(key);
-    out.push(phrase.trim());
-  };
-
-  for (const p of priority) push(p);
-  for (const p of ranked) push(p);
-
+    out.push(trimmed);
+  }
   if (out.length < target) {
-    throw new Error(`${categoryId}: only ${out.length} phrases, need ${target}`);
+    throw new Error(
+      `${categoryId}: only ${out.length} editorial priority phrases, need ${target}`,
+    );
   }
   return out.slice(0, target);
 }

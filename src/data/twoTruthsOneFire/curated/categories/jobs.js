@@ -73,7 +73,7 @@ export const PHRASES = [
   'HR job titles',
   'payroll job roles',
   'legal compliance roles',
-  'health and safety officer duties',
+  'workplace health and safety rules',
   'facilities management roles',
   'office manager duties',
   'personal assistant duties',

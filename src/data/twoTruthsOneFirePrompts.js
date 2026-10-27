@@ -53,7 +53,7 @@ export const TWO_TRUTHS_AMERICANISM_RULES = [
 
 /** Curated phrase tails we reject (meta, gluing residue, or nonsense). */
 const DISALLOWED_PHRASE_TAIL_PATTERN =
-  /\b(not horror|not horror but|not you it's me|collaboration|collaborations)\b/i;
+  /\b(not horror|not horror but|not you it's me|collaboration|collaborations|known faults|passenger rights|prism references|jump scares|staging gimmicks|officer duties|logo colours|key works|macro photos)\b/i;
 
 function simplifyLabel(text, fallback = 'things') {
   const cleaned = String(text || '').split(/[(/:-]/)[0].trim();
@@ -114,6 +114,15 @@ export function validateTwoTruthsPromptMain(main) {
   }
   if (/\byou would (not |never |put |rate |strike |ban |defend |recommend )/i.test(tail)) {
     return 'second-person tail clause';
+  }
+  if (/\b stories$/i.test(tail) || /\b tales$/i.test(tail)) {
+    return 'narrative story tail';
+  }
+  if (/\bclubs in the UK$/i.test(tail)) {
+    return 'cross-product hobby spam';
+  }
+  if (/\b(composition tips|filter choices|caption ideas|common mistakes)\b/i.test(tail)) {
+    return 'photo meta spam';
   }
   return null;
 }
