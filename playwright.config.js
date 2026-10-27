@@ -57,6 +57,14 @@ export default defineConfig({
       },
     },
     {
+      name: 'bug-report-screen',
+      testMatch: '**/bug-report-screen.spec.js',
+      use: {
+        viewport: { width: 360, height: 780 },
+        baseURL: 'http://127.0.0.1:4173',
+      },
+    },
+    {
       name: 'chain-mobile-screens',
       testMatch: '**/chain-reaction-mobile-screens.spec.js',
       use: {

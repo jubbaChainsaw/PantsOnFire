@@ -14,20 +14,31 @@ export function publicAssetUrl(relativePath = '') {
 }
 
 /** Normalizes `/assets/...`, `./assets/...`, or `assets/...` for web and bundled WebView. */
+function applyMobileRasterExtension(url = '') {
+  const value = String(url || '');
+  const rasterExt =
+    typeof import.meta !== 'undefined' && import.meta.env
+      ? import.meta.env.VITE_UI_RASTER_EXT
+      : '';
+  if (rasterExt !== 'webp') return value;
+  return value.replace(/\.(png|jpe?g)(?=($|\?|#))/i, '.webp');
+}
+
 export function resolveBundledAssetSrcCore(src = '') {
   const normalized = String(src || '').trim();
   if (!normalized) return '';
   if (/^https?:\/\//i.test(normalized)) return normalized;
-  if (normalized.startsWith('./assets/')) return normalized;
+  if (normalized.startsWith('./assets/')) {
+    return applyMobileRasterExtension(normalized);
+  }
   if (normalized.startsWith('assets/')) {
-    return `${viteBaseUrl()}${normalized}`.replace(
-      /([^:]\/)\/+/g,
-      '$1',
+    return applyMobileRasterExtension(
+      `${viteBaseUrl()}${normalized}`.replace(/([^:]\/)\/+/g, '$1'),
     );
   }
   const match = normalized.match(/^\/?assets\/(.+)$/);
-  if (match) return publicAssetUrl(match[1]);
-  return normalized;
+  if (match) return applyMobileRasterExtension(publicAssetUrl(match[1]));
+  return applyMobileRasterExtension(normalized);
 }
 
 export { resolveBundledAssetSrc } from './contentPacks/resolveAsset.js';

@@ -1,4 +1,5 @@
 import { expect } from '@playwright/test';
+import { openLocalGameSetup } from './helpers.js';
 
 async function dismissContentPackPrompt(page) {
   const later = page.getByRole('button', { name: 'Later' });
@@ -9,9 +10,7 @@ async function dismissContentPackPrompt(page) {
 
 export async function setupThreePlayerGame(page) {
   await dismissContentPackPrompt(page);
-  const play = page.getByRole('button', { name: 'Play', exact: true });
-  await expect(play).toBeEnabled({ timeout: 20_000 });
-  await play.click();
+  await openLocalGameSetup(page);
   await expect(page.getByTestId('start-match')).toBeVisible({ timeout: 15_000 });
   const inputs = page.locator('input:not([type="hidden"])');
   const count = await inputs.count();

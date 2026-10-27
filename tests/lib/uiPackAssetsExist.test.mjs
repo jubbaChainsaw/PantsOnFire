@@ -22,6 +22,8 @@ const REQUIRED_RELATIVE_PATHS = [
   'ui/categories/food.png',
   'ui/neon/btn-2.png',
   'ui/neon/btn-3.png',
+  'themes/default/hosts/persona-host-idle.png',
+  'themes/default/hosts/persona-host-talking.mp4',
 ];
 
 test('critical UI pack image files exist under public/assets', () => {

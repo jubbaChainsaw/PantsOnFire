@@ -14,7 +14,7 @@ export function shuffle(arr) {
   return copy;
 }
 
-function categoriesAllowedForRoundType(categories, roundTypeId) {
+export function categoriesAllowedForRoundType(categories, roundTypeId) {
   if (!Array.isArray(categories)) return [];
   const selectedType = String(roundTypeId || '');
   if (selectedType === 'noise' || selectedType === 'nameblame') return categories;
@@ -76,6 +76,14 @@ export function drawTurnOptions(activeCategories, { excludeRoundTypeId = null } 
     Math.min(CATEGORY_DRAW_COUNT, pool.length),
   );
   return { roundTypeOptions, categoryOptions };
+}
+
+/** All enabled categories valid for a round type (sorted for stable UI). */
+export function getCategoriesForRoundType(activeCategories, roundTypeId) {
+  const pool = categoriesAllowedForRoundType(activeCategories, roundTypeId);
+  return [...pool].sort((a, b) =>
+    String(a?.name || '').localeCompare(String(b?.name || ''), 'en-GB'),
+  );
 }
 
 export function pickRandomFromShown(categoryOptions) {

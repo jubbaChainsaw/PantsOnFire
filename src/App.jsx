@@ -39,6 +39,8 @@ import {
   UsersRound,
   Bell,
   Upload,
+  Bug,
+  Pause,
 } from "lucide-react";
 import { Button } from "./components/ui/button";
 import { Input } from "./components/ui/input";
@@ -177,7 +179,11 @@ import {
 import { createVoicePartyTransport } from "./online/voicePartyTransport";
 import NeonHomeScreen from "./components/neon/NeonHomeScreen.jsx";
 import NeonStoreScreen from "./components/neon/NeonStoreScreen.jsx";
-import { drawTurnOptions, pickRandomFromShown } from "./lib/turnDraw.js";
+import {
+  drawTurnOptions,
+  getCategoriesForRoundType,
+  pickRandomFromShown,
+} from "./lib/turnDraw.js";
 import { usePofViewportHeight } from "./hooks/usePofViewportHeight.js";
 import { resolveBundledAssetSrc } from "./lib/publicAssetUrl.js";
 import { useTimedChoice } from "./hooks/useTimedChoice.js";
@@ -200,6 +206,9 @@ import {
   ContentPackPromptModal,
   ContentPackSettingsPanel,
 } from "./components/ContentPackDownloadUI.jsx";
+import { BugReportScreen } from "./components/BugReportScreen.jsx";
+import { anonymizeLobbyId } from "./lib/bugReportClient.js";
+import { installNativeDiagnosticsBridge } from "./lib/nativeDiagnosticsBridge.js";
 
 const E2E_FORCE_ROUND_TYPE = String(
   import.meta.env.VITE_E2E_FORCE_ROUND_TYPE || "",
@@ -360,6 +369,22 @@ const ONLINE_PARTY_CHAT_ACTIVE_SCREENS = new Set([
   "liar-reveal",
   "results",
   "final",
+]);
+const LOCAL_GAME_PAUSE_SCREENS = new Set([
+  "game-intro",
+  "rules",
+  "host-intro",
+  "category-choice",
+  "round-type-choice",
+  "reveal",
+  "discussion",
+  "grill",
+  "voting",
+  "twotruths-input",
+  "twotruths-voting",
+  "twotruths-reveal",
+  "liar-reveal",
+  "results",
 ]);
 
 const DESKTOP_LANDSCAPE_MIN_WIDTH = 1100;
@@ -1701,12 +1726,13 @@ function MultiSourceVideo({
   const [isBroken, setIsBroken] = useState(false);
   const videoRef = useRef(null);
   const normalizedSrc = String(src || "").trim();
-  const isWebmSrc = normalizedSrc.toLowerCase().endsWith(".webm");
-  const webmSrc = isWebmSrc ? normalizedSrc : toWebmSrc(normalizedSrc);
-  const mp4Src = isWebmSrc ? "" : normalizedSrc;
+  const resolvedSrc = resolveBundledAssetSrc(normalizedSrc);
+  const isWebmSrc = resolvedSrc.toLowerCase().endsWith(".webm");
+  const webmSrc = isWebmSrc ? resolvedSrc : toWebmSrc(resolvedSrc);
+  const mp4Src = isWebmSrc ? "" : resolvedSrc;
   useEffect(() => {
     setIsBroken(false);
-  }, [normalizedSrc, webmSrc, mp4Src, poster]);
+  }, [resolvedSrc, webmSrc, mp4Src, poster]);
   useEffect(() => {
     const video = videoRef.current;
     if (!video || !autoPlay || isBroken) return;
@@ -1714,8 +1740,8 @@ function MultiSourceVideo({
       setIsBroken(true);
       if (typeof onError === "function") onError();
     });
-  }, [autoPlay, isBroken, normalizedSrc, webmSrc, mp4Src]);
-  if (!normalizedSrc || isBroken) return null;
+  }, [autoPlay, isBroken, resolvedSrc, webmSrc, mp4Src]);
+  if (!resolvedSrc || isBroken) return null;
   return (
     <video
       ref={videoRef}
@@ -1762,12 +1788,18 @@ function ThemeHostVisual({
       hostAssets?.talkingVideoMp4 ||
       "",
   );
-  const posterSrc = animatedHostSrc || idlePosterSrc;
+  const fallbackHostPoster = resolveBundledAssetSrc(
+    "/assets/themes/default/hosts/persona-host-idle.png",
+  );
+  const posterSrc = animatedHostSrc || idlePosterSrc || fallbackHostPoster;
   const [videoBroken, setVideoBroken] = useState(false);
+  const [videoReady, setVideoReady] = useState(false);
   const shouldTryVideo = Boolean(talkingVideoSrc) && (isTalking || preferVideo);
+  const showVideoLayer = shouldTryVideo && !videoBroken && videoReady;
 
   useEffect(() => {
     setVideoBroken(false);
+    setVideoReady(false);
   }, [talkingVideoSrc, themeName]);
 
   return (
@@ -1780,13 +1812,13 @@ function ThemeHostVisual({
           src={posterSrc}
           alt={alt}
           data-testid="host-idle-image"
-          className={`absolute inset-0 h-full w-full object-cover object-top ${shouldTryVideo && !videoBroken ? "opacity-0" : "opacity-100"}`}
+          className={`absolute inset-0 z-0 h-full w-full object-cover object-top transition-opacity duration-200 ${showVideoLayer ? "opacity-0" : "opacity-100"}`}
         />
       ) : null}
       {shouldTryVideo && !videoBroken ? (
         <MultiSourceVideo
           src={talkingVideoSrc}
-          className="absolute inset-0 h-full w-full object-cover object-top"
+          className={`absolute inset-0 z-10 h-full w-full object-cover object-top transition-opacity duration-200 ${showVideoLayer ? "opacity-100" : "opacity-0"}`}
           autoPlay={isTalking || preferVideo}
           loop={isTalking || preferVideo}
           muted
@@ -1794,7 +1826,11 @@ function ThemeHostVisual({
           preload="auto"
           poster={posterSrc || undefined}
           ariaHidden
-          onError={() => setVideoBroken(true)}
+          onLoadedData={() => setVideoReady(true)}
+          onError={() => {
+            setVideoBroken(true);
+            setVideoReady(false);
+          }}
         />
       ) : !posterSrc ? (
         <ThemeArt
@@ -2092,7 +2128,7 @@ const HOST_DIALOGUE_TIMINGS = {
 const POF_VIEWPORT_HEIGHT_CLASS =
   "h-[calc(var(--pof-vh,1vh)*100)] max-h-[calc(var(--pof-vh,1vh)*100)]";
 const HOST_DIALOGUE_PANEL_CLASS =
-  "pof-ui-copy rounded-[1.5rem] bg-[#e60096] text-white shadow-[0_18px_38px_rgba(0,0,0,0.55)] text-base sm:text-lg leading-relaxed";
+  "pof-ui-copy rounded-[1.5rem] border border-fuchsia-200/35 bg-[#b8007a] text-white shadow-[0_18px_38px_rgba(0,0,0,0.55)] text-base sm:text-lg leading-relaxed";
 const HOST_DIALOGUE_BUTTON_CLASS =
   "h-16 flex-1 rounded-[1.25rem] bg-[#e60096] px-4 text-xl font-black uppercase tracking-[0.04em] text-white shadow-[0_12px_24px_rgba(0,0,0,0.5)] hover:bg-[#ff16ac]";
 
@@ -2724,9 +2760,8 @@ function HostIntroScreen({ round, stingerLine, onContinue, theme }) {
             >
               <p
                 ref={speechBubbleTextRef}
-                className="pof-heading w-full !text-white [text-shadow:0_2px_0_#000,0_4px_14px_rgba(0,0,0,0.85)]"
+                className="pof-ui-copy w-full font-semibold text-white [text-shadow:0_1px_0_#000,0_2px_8px_rgba(0,0,0,0.9)]"
                 style={{
-                  color: "#ffffff",
                   fontSize: `${speechBubbleFontSize}px`,
                   lineHeight: 1.12,
                   wordBreak: "normal",
@@ -4001,7 +4036,7 @@ function CategoryChoiceGrid({
     else onChooseCategory(picked.id);
   };
   return (
-    <>
+    <div className="flex min-h-0 flex-1 flex-col gap-3">
       {onlineMode && optionIds.length > 0 && (
         <div className="mt-4">
           <NeonTimerBar
@@ -4024,7 +4059,7 @@ function CategoryChoiceGrid({
           Choose for me
         </button>
       </div>
-      <div className={categoryChoiceGridClass}>
+      <div className={categoryChoiceGridClass} data-testid="category-choice-grid">
         {categoryOptions.map((category) => {
           const categoryIconSrc =
             category?.iconSrc ||
@@ -4035,30 +4070,29 @@ function CategoryChoiceGrid({
             timed.highlightedId === category.id &&
             (timed.isFlashing || timed.secondsLeft <= 3);
           return (
-            <div key={category.id} className="flex">
-              <button
-                type="button"
-                className={`w-full transition-transform duration-200 hover:scale-[1.03] ${highlighted ? "pof-choice-flash rounded-2xl" : ""}`}
-                onClick={() => {
-                  if (onlineMode) timed.pick(category.id);
-                  else onChooseCategory(category.id);
-                }}
-                aria-label={`Choose ${category.name}`}
-                data-testid={`category-${category.id}`}
-              >
-                <div className="mx-auto aspect-square w-full max-w-[11.5rem] sm:max-w-[13rem]">
-                  <ThemeArt
-                    src={categoryIconSrc}
-                    alt={`${category.name} category icon`}
-                    className="h-full w-full object-contain drop-shadow-[0_12px_22px_rgba(0,0,0,0.72)]"
-                  />
-                </div>
-              </button>
-            </div>
+            <button
+              key={category.id}
+              type="button"
+              className={`block w-full transition-transform duration-200 hover:scale-[1.02] ${highlighted ? "pof-choice-flash rounded-2xl" : ""}`}
+              onClick={() => {
+                if (onlineMode) timed.pick(category.id);
+                else onChooseCategory(category.id);
+              }}
+              aria-label={`Choose ${category.name}`}
+              data-testid={`category-${category.id}`}
+            >
+              <div className="aspect-square w-full">
+                <ThemeArt
+                  src={categoryIconSrc}
+                  alt={`${category.name} category icon`}
+                  className="h-full w-full object-contain drop-shadow-[0_8px_16px_rgba(0,0,0,0.65)]"
+                />
+              </div>
+            </button>
           );
         })}
       </div>
-    </>
+    </div>
   );
 }
 function OnlineJoinLobbyScreen({
@@ -7172,6 +7206,7 @@ function SettingsScreen({
   onToggleCategory = () => {},
   defaultTab = "general",
   contentPacks = null,
+  onReportBug = () => {},
 }) {
   const [effectsEnabled, setEffectsEnabled] = useState(true);
   const [largeText, setLargeText] = useState(false);
@@ -7384,6 +7419,22 @@ function SettingsScreen({
               checked={largeText}
               onCheckedChange={setLargeText}
             />
+            <div className="rounded-[1.75rem] border border-rose-400/25 bg-rose-500/10 p-5">
+              <div className="font-black text-lg text-rose-100">Support</div>
+              <p className="pof-ui-copy mt-2 text-sm text-white/80">
+                Something broken? Send a report with diagnostics and an optional
+                screenshot.
+              </p>
+              <Button
+                type="button"
+                className="mt-4 w-full rounded-2xl border border-rose-200/40 bg-rose-500/20 px-4 py-3 text-sm font-bold text-rose-50"
+                onClick={onReportBug}
+                data-testid="settings-report-bug"
+              >
+                <Bug className="mr-2 inline h-4 w-4" />
+                Report a bug
+              </Button>
+            </div>
             <div className="rounded-[1.75rem] border border-cyan-400/25 bg-cyan-500/10 p-5">
               <div className="font-black text-lg text-cyan-100">
                 Picture Release Channels
@@ -7764,6 +7815,9 @@ export default function App() {
         : [];
     });
   const [homeProfileMenuOpen, setHomeProfileMenuOpen] = useState(false);
+  const [bugReportReturnScreen, setBugReportReturnScreen] = useState("home");
+  const [nativeDiagnostics, setNativeDiagnostics] = useState({});
+  const [gamePauseOpen, setGamePauseOpen] = useState(false);
   const [activeSettingsTab, setActiveSettingsTab] = useState("general");
   const [joinLobbyCodeInput, setJoinLobbyCodeInput] = useState("");
   const [onlineVoiceEnabled, setOnlineVoiceEnabled] = useState(false);
@@ -8321,6 +8375,14 @@ export default function App() {
       selectedFriendInviteUsernames,
     ],
   );
+  useEffect(() => installNativeDiagnosticsBridge(setNativeDiagnostics), []);
+
+  const openBugReport = useCallback(() => {
+    setBugReportReturnScreen(screen);
+    setGamePauseOpen(false);
+    setScreen("bug-report");
+  }, [screen]);
+
   const handleSelectHomeProfileMenu = useCallback((target) => {
     setHomeProfileMenuOpen(false);
     if (target === "persona") {
@@ -9909,8 +9971,36 @@ export default function App() {
     setPartyChatInput("");
   };
   const categoryChoiceGridClass = isDesktopLandscapeWeb
-    ? "mt-2 grid grid-cols-3 gap-3 items-stretch content-start pb-4"
-    : "mt-2 grid grid-cols-2 gap-3 sm:grid-cols-3 items-stretch content-start pb-4";
+    ? "grid grid-cols-3 gap-3 auto-rows-min pb-6"
+    : "grid grid-cols-2 gap-x-3 gap-y-4 auto-rows-min pb-6";
+  const categoriesForChoiceScreen = useMemo(() => {
+    const roundTypeId =
+      selectedRoundType ||
+      round?.roundTypeId ||
+      roundTypeOptions[0]?.id ||
+      "prompt";
+    const fullList = getCategoriesForRoundType(activeCategories, roundTypeId);
+    return fullList.length ? fullList : categoryOptions;
+  }, [
+    activeCategories,
+    categoryOptions,
+    round?.roundTypeId,
+    roundTypeOptions,
+    selectedRoundType,
+  ]);
+  const bugReportAppContext = useMemo(
+    () => ({
+      screen,
+      roundPhase: screen,
+      roundType: round?.roundTypeId || selectedRoundType || "",
+      lobbyIdAnon: anonymizeLobbyId(lobbyCode),
+      appVersion: import.meta.env.VITE_APP_VERSION || "0.1.0",
+      buildVersion: nativeDiagnostics.buildVersion || "",
+      runtimeVersion: nativeDiagnostics.runtimeVersion || "",
+      otaUpdateId: nativeDiagnostics.otaUpdateId || "",
+    }),
+    [screen, round?.roundTypeId, selectedRoundType, lobbyCode, nativeDiagnostics],
+  );
   const startupGraphicsReady = useGlobalGraphicsPreload();
   useCategoryAndModeIconPreload({
     screen,
@@ -10350,7 +10440,7 @@ export default function App() {
             ) : (
               <div className="mt-2 flex min-h-0 flex-1 flex-col overflow-y-auto pof-scroll">
                 <CategoryChoiceGrid
-                  categoryOptions={categoryOptions}
+                  categoryOptions={categoriesForChoiceScreen}
                   categoryChoiceGridClass={categoryChoiceGridClass}
                   onlineMode={onlineMode}
                   canonicalThemeName={canonicalThemeName}
@@ -10575,6 +10665,55 @@ export default function App() {
           theme={canonicalThemeName}
         />
       )}
+      {(LOCAL_GAME_PAUSE_SCREENS.has(screen) ||
+        (onlineMode && ONLINE_IN_SESSION_LEAVE_SCREENS.has(screen))) &&
+        screen !== "bug-report" && (
+          <>
+            <button
+              type="button"
+              data-testid="game-pause-fab"
+              className="fixed left-3 top-3 z-[120] rounded-full border border-cyan-300/40 bg-black/55 px-3 py-2 text-xs font-black uppercase tracking-[0.12em] text-cyan-100"
+              onClick={() => setGamePauseOpen(true)}
+              aria-label="Pause game"
+            >
+              <Pause className="mr-1 inline h-3.5 w-3.5" />
+              Pause
+            </button>
+            {gamePauseOpen && (
+              <div
+                className="fixed inset-0 z-[125] flex items-center justify-center bg-black/70 px-6"
+                role="dialog"
+                aria-modal="true"
+                data-testid="game-pause-menu"
+              >
+                <div className="pof-glass w-full max-w-sm rounded-[1.75rem] p-6 text-center">
+                  <div className="pof-heading text-sm text-cyan-200">Paused</div>
+                  <p className="pof-ui-copy mt-2 text-sm text-white/85">
+                    Resume play or send a bug report with diagnostics attached.
+                  </p>
+                  <div className="mt-5 flex flex-col gap-3">
+                    <Button
+                      type="button"
+                      className="w-full rounded-2xl bg-yellow-300 text-zinc-950"
+                      onClick={() => setGamePauseOpen(false)}
+                    >
+                      Resume
+                    </Button>
+                    <Button
+                      type="button"
+                      className="w-full rounded-2xl border border-rose-200/35 bg-rose-500/15 text-rose-50"
+                      data-testid="pause-report-bug"
+                      onClick={openBugReport}
+                    >
+                      <Bug className="mr-2 inline h-4 w-4" />
+                      Report a bug
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            )}
+          </>
+        )}
       {onlineMode && ONLINE_IN_SESSION_LEAVE_SCREENS.has(screen) && (
         <button
           type="button"
@@ -10585,6 +10724,14 @@ export default function App() {
         >
           Leave Session
         </button>
+      )}
+      {screen === "bug-report" && (
+        <BugReportScreen
+          onBack={() => setScreen(bugReportReturnScreen || "home")}
+          theme={canonicalThemeName}
+          appContext={bugReportAppContext}
+          nativeBridge={nativeDiagnostics}
+        />
       )}
       <PartySpeakerOverlay
         onlineMode={onlineMode}
@@ -10669,6 +10816,7 @@ export default function App() {
       {screen === "settings" && (
         <SettingsScreen
           onBack={() => setScreen("home")}
+          onReportBug={openBugReport}
           premiumEnabled={premiumEnabled}
           setPremiumEnabled={setPremiumEnabled}
           audioSettings={audioSettings}

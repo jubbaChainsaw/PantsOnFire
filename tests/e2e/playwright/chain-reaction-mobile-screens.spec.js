@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 import fs from 'node:fs';
 import path from 'node:path';
-import { seedLocalAccount } from './helpers.js';
+import { openLocalGameSetup, seedLocalAccount } from './helpers.js';
 import {
   skipIntroAndRules,
   passRevealPhase,
@@ -20,9 +20,7 @@ async function dismissContentPackPrompt(page) {
 
 async function setupChainGame(page) {
   await dismissContentPackPrompt(page);
-  const play = page.getByRole('button', { name: 'Play', exact: true });
-  await expect(play).toBeEnabled({ timeout: 20_000 });
-  await play.click();
+  await openLocalGameSetup(page);
   await expect(page.getByTestId('start-match')).toBeVisible({ timeout: 20_000 });
   const inputs = page.locator('input:not([type="hidden"])');
   for (let i = 0; i < LONG_NAMES.length; i += 1) {
@@ -70,23 +68,27 @@ test.describe('Chain Reaction mobile screenshots', () => {
     const prefix = process.env.POF_SCREENSHOT_PREFIX || 'after';
     await setupChainGame(page);
     await skipIntroAndRules(page);
-    await snap(page, `${prefix}-01-rules-done`);
-
     const chainBtn = page.getByTestId('round-type-chain');
     if (await chainBtn.isVisible({ timeout: 10_000 }).catch(() => false)) {
       await chainBtn.click();
     } else {
       await page.locator('[data-testid^="round-type-"]').first().click();
     }
+    const categoryTiles = page.locator('[data-testid^="category-"]');
+    await expect(categoryTiles.first()).toBeVisible({ timeout: 15_000 });
+    const categoryCount = await categoryTiles.count();
+    expect(categoryCount).toBeGreaterThanOrEqual(6);
     await snap(page, `${prefix}-02-category-choice`);
 
-    const cat = page.locator('[data-testid^="category-"]').first();
-    await expect(cat).toBeVisible({ timeout: 15_000 });
-    await cat.click();
+    await categoryTiles.nth(2).click();
 
+    await expect(
+      page.getByTestId('host-intro-visual').or(page.getByTestId('reveal-ready')),
+    ).toBeVisible({ timeout: 20_000 });
+
+    await snap(page, `${prefix}-03-host-intro`);
     const hostSkip = page.getByTestId('host-intro-skip');
-    if (await hostSkip.isVisible({ timeout: 15_000 }).catch(() => false)) {
-      await snap(page, `${prefix}-03-host-intro`);
+    if (await hostSkip.isVisible({ timeout: 5_000 }).catch(() => false)) {
       await hostSkip.click();
     }
 
@@ -112,6 +114,5 @@ test.describe('Chain Reaction mobile screenshots', () => {
     await expect(page.getByText(/results|round/i).first()).toBeVisible({
       timeout: 25_000,
     });
-    await snap(page, `${prefix}-08-results`);
   });
 });
