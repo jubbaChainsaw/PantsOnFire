@@ -22,6 +22,7 @@ function patchContent(content) {
   out = out.replace(/url\('\/assets\//g, "url('assets/");
   out = out.replace(/url\("\/assets\//g, 'url("assets/');
   out = out.replace(/href="\/assets\//g, 'href="assets/');
+  out = out.replace(/`\/assets\//g, '`assets/');
   return out;
 }
 

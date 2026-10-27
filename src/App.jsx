@@ -168,6 +168,7 @@ import {
 import { createVoicePartyTransport } from "./online/voicePartyTransport";
 import NeonHomeScreen from "./components/neon/NeonHomeScreen.jsx";
 import { drawTurnOptions, pickRandomFromShown } from "./lib/turnDraw.js";
+import { usePofViewportHeight } from "./hooks/usePofViewportHeight.js";
 import { useTimedChoice } from "./hooks/useTimedChoice.js";
 import {
   loadFx,
@@ -1984,10 +1985,12 @@ function fitTextToBubble(
 }
 const HOST_DIALOGUE_TIMINGS = {
   gameIntroAdvanceMs: 6000,
-  roundIntroAdvanceMs: 6000,
+  roundIntroAdvanceMs: 2000,
   liarRevealAdvanceMs: 6000,
   liarRevealCompleteMs: 6000,
 };
+const POF_VIEWPORT_HEIGHT_CLASS =
+  "h-[calc(var(--pof-vh,1vh)*100)] max-h-[calc(var(--pof-vh,1vh)*100)]";
 const HOST_DIALOGUE_PANEL_CLASS =
   "rounded-[1.5rem] bg-[#e60096] text-white shadow-[0_18px_38px_rgba(0,0,0,0.55)]";
 const HOST_DIALOGUE_BUTTON_CLASS =
@@ -2567,9 +2570,10 @@ function HostIntroScreen({ round, stingerLine, onContinue, theme }) {
     <BrandedScreen
       wallpaperSrc={UI_WALLPAPER_IN_GAME_SRC}
       overlayClassName="bg-black/65"
-      contentClassName="!h-[100dvh] !max-h-[100dvh] !min-h-0 !py-2 !px-3 overflow-hidden"
+      lockViewport
+      contentClassName="!min-h-0 !py-2 !px-3"
     >
-      <div className="relative mx-auto flex h-full min-h-0 w-full max-w-[28rem] flex-col items-center justify-between gap-2 overflow-hidden">
+      <div className="relative mx-auto flex h-full min-h-0 w-full max-w-[28rem] flex-col items-center justify-center gap-2 overflow-hidden">
         <div
           className="pointer-events-none absolute inset-x-[-30%] bottom-[7rem] h-28 opacity-80 blur-[0.3px]"
           style={{
@@ -2577,8 +2581,8 @@ function HostIntroScreen({ round, stingerLine, onContinue, theme }) {
               "radial-gradient(circle at 50% 100%, rgba(255,130,0,0.95), rgba(255,0,160,0.55) 18%, rgba(0,180,255,0.28) 33%, transparent 62%)",
           }}
         />
-        <div className="relative z-10 w-full max-w-[16rem] shrink-0 rounded-[1.65rem] bg-[#e60096] p-2 shadow-[0_20px_45px_rgba(0,0,0,0.7)] sm:max-w-[17rem]">
-          <div className="aspect-[2/3] max-h-[42dvh] overflow-hidden rounded-[1.15rem] bg-black">
+        <div className="relative z-10 w-full max-w-[15rem] shrink-0 rounded-[1.65rem] bg-[#e60096] p-2 shadow-[0_20px_45px_rgba(0,0,0,0.7)] sm:max-w-[16rem]">
+          <div className="aspect-[2/3] max-h-[min(38vh,calc(var(--pof-vh,1vh)*38))] overflow-hidden rounded-[1.15rem] bg-black">
             <ThemeHostVisual
               themeName={theme}
               isTalking={isTalking}
@@ -2587,13 +2591,25 @@ function HostIntroScreen({ round, stingerLine, onContinue, theme }) {
             />
           </div>
         </div>
-        <div className="relative z-10 flex w-full min-h-0 flex-1 flex-col justify-end gap-2">
+        <div className="relative z-10 flex w-full min-h-0 max-h-[46%] shrink-0 flex-col justify-end gap-2">
           <motion.div
             key={`${round.id || round.roundNumber}-${speechIndex}`}
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.28, ease: "easeOut" }}
-            className={`${HOST_DIALOGUE_PANEL_CLASS} flex min-h-[5.5rem] max-h-[28dvh] items-center justify-center px-4 py-3 text-center`}
+            role={canContinue ? undefined : "button"}
+            tabIndex={canContinue ? undefined : 0}
+            className={`${HOST_DIALOGUE_PANEL_CLASS} flex min-h-[4.5rem] max-h-[min(22vh,calc(var(--pof-vh,1vh)*22))] cursor-pointer items-center justify-center px-4 py-3 text-center ${canContinue ? "" : "pof-focus"}`}
+            onClick={() => {
+              if (!canContinue) advanceSpeechLine();
+            }}
+            onKeyDown={(event) => {
+              if (canContinue) return;
+              if (event.key === "Enter" || event.key === " ") {
+                event.preventDefault();
+                advanceSpeechLine();
+              }
+            }}
           >
             <div
               ref={speechBubbleFitRef}
@@ -3757,20 +3773,27 @@ function BrandedScreen({
   frameClassName = "",
   contentClassName = "",
   allowScroll = false,
+  lockViewport = false,
 }) {
   const resolvedWallpaperSrc = String(wallpaperSrc || NEON_ASSETS.wallGame).trim();
+  const viewportClass = lockViewport || !allowScroll ? POF_VIEWPORT_HEIGHT_CLASS : "min-h-screen min-h-[100dvh]";
   return (
     <div
-      className={`relative min-h-screen min-h-[100dvh] overflow-hidden bg-[#05010f] text-white ${frameClassName}`}
+      className={`relative overflow-hidden bg-[#05010f] text-white ${viewportClass} ${frameClassName}`}
       style={neonThemeVars()}
     >
       <div
         className="pof-wall fixed inset-0"
-        style={{ backgroundImage: `url(${resolvedWallpaperSrc})` }}
+        style={{
+          backgroundImage: `url(${resolvedWallpaperSrc})`,
+          backgroundSize: "cover",
+          backgroundRepeat: "no-repeat",
+          backgroundPosition: "center",
+        }}
       />
       <div className={`fixed inset-0 ${overlayClassName}`} />
       <div
-        className={`relative z-10 mx-auto flex min-h-screen min-h-[100dvh] w-full max-w-[460px] flex-col px-5 py-6 ${allowScroll ? "overflow-y-auto pof-scroll" : ""} ${contentClassName}`}
+        className={`relative z-10 mx-auto flex w-full max-w-[460px] flex-col px-5 py-6 ${viewportClass} ${allowScroll ? "overflow-y-auto pof-scroll" : "overflow-hidden"} ${contentClassName}`}
         style={{
           paddingTop: "max(1.25rem, env(safe-area-inset-top))",
           paddingBottom: "max(1.25rem, env(safe-area-inset-bottom))",
@@ -7788,6 +7811,13 @@ export default function App() {
   const [screen, setScreen] = useState(() =>
     readAccountSession() ? "home" : "account-gate",
   );
+  usePofViewportHeight();
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    window.scrollTo(0, 0);
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+  }, [screen]);
   const [isDesktopLandscapeWeb, setIsDesktopLandscapeWeb] = useState(false);
   const [players, setPlayers] = useState(() => {
     const initialThemeName = toCanonicalThemeName(
@@ -9931,6 +9961,16 @@ export default function App() {
     categoryOptions,
     canonicalThemeName,
   });
+  useEffect(() => {
+    if (screen !== "round-type-choice" || roundTypeOptions.length > 0) return;
+    const drawn = withE2eRoundTypeDraw(drawTurnOptions(activeCategories));
+    if (drawn.roundTypeOptions.length) {
+      setRoundTypeOptions(drawn.roundTypeOptions);
+      if (!categoryOptions.length) {
+        setCategoryOptions(drawn.categoryOptions);
+      }
+    }
+  }, [screen, roundTypeOptions.length, activeCategories, categoryOptions.length]);
   const accountTierLabel = useMemo(() => {
     if (!accountSession) return "";
     const row = SUBSCRIPTION_TIERS.find(
@@ -10299,6 +10339,7 @@ export default function App() {
         <BrandedScreen
           wallpaperSrc={UI_WALLPAPER_IN_GAME_SRC}
           overlayClassName="bg-black/45"
+          lockViewport
         >
           <div className="mx-auto max-w-4xl space-y-6">
             <div className="px-1 pt-1 text-center">
@@ -10322,6 +10363,7 @@ export default function App() {
         <BrandedScreen
           wallpaperSrc={UI_WALLPAPER_IN_GAME_SRC}
           overlayClassName="bg-black/45"
+          lockViewport
         >
           <div className="mx-auto max-w-4xl space-y-6">
             <div className="px-1 pt-1 text-center">

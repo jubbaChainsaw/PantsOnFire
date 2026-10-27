@@ -5,7 +5,12 @@
 .pof-btn:focus-visible, .pof-focus:focus-visible { outline: 3px solid #67e8f9; outline-offset: 3px; }
 @keyframes pof-pop { from{opacity:0; transform: translateY(-6px) scale(.97)} to{opacity:1; transform:none} }
 .pof-pop { animation: pof-pop .16s ease-out; }
-.pof-wall { background-size: cover; background-position: center; background-repeat: no-repeat; }
+.pof-wall {
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+}
 .pof-btn{position:relative;display:flex;align-items:center;justify-content:center;gap:.6rem;height:4.4rem;width:100%;padding:0 2.8rem;color:#fff;
  font-family:'Pants on Fire Narrow',Inter,sans-serif;font-style:italic;font-size:1.9rem;font-weight:400;letter-spacing:.06em;text-transform:uppercase;
  background:var(--pof-btn,var(--btn-fire)) center/100% 100% no-repeat;text-shadow:0 0 10px var(--pof-glow,#ff7a00),0 2px 0 #000,0 3px 8px #000;

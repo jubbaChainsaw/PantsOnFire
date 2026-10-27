@@ -1,3 +1,4 @@
+import { publicAssetUrl } from '../lib/publicAssetUrl.js';
 import { toCanonicalThemeName } from './themeAliases.js';
 import { NAME_POOLS } from './names.js';
 import { ALL_THEME_NAMES } from './themeCatalog.js';
@@ -996,7 +997,7 @@ function buildProceduralThemePersonas(themeName = 'Default', count = PROCEDURAL_
       id,
       name,
       bio,
-      imageSrc: `/assets/themes/${themeSlug}/personas/${filenameStem}.png`,
+      imageSrc: publicAssetUrl(`themes/${themeSlug}/personas/${filenameStem}.png`),
     });
   }
 

@@ -71,12 +71,6 @@ function patchTextFiles() {
         content = content.split(encFrom).join(encTo);
         changed = true;
       }
-      const baseFrom = path.basename(from);
-      const baseTo = path.basename(to);
-      if (content.includes(baseFrom)) {
-        content = content.split(baseFrom).join(baseTo);
-        changed = true;
-      }
     }
     if (changed) fs.writeFileSync(file, content);
   }
