@@ -281,7 +281,7 @@ async function main() {
   // --- Host (default + themeAssets refs) ---
   const hostRefs = new Set(extractAssetStrings(themeAssets));
   for (const rel of hostRefs) {
-    if (!/hosts|characters|host-/i.test(rel)) continue;
+    if (!/hosts|host-/i.test(rel)) continue;
     const name = rel.replace('assets/themes/', '');
     const themeSlug = rel.split('/')[2];
     const hostDir = path.join(publicRoot, 'assets/themes', themeSlug, 'hosts');

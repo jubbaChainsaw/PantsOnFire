@@ -33,29 +33,21 @@ Checks **public/** (full game) and flags **offline APK** gaps per `scripts/slim-
 
 | Item | What's missing / issue | Expected path | Format & size | Notes |
 | --- | --- | --- | --- | --- |
-| aliens/characters/presenter.png | missing in public/ | `assets/themes/aliens/characters/presenter.png` | Match sibling assets in same folder |  |
 | aliens/hosts/persona-host-idle.png | present in repo; not in offline APK (non-default theme dir removed from APK) | `assets/themes/aliens/hosts/persona-host-idle.png` | 916×1004 PNG |  |
 | aliens/hosts/persona-host-talk-1.png | legacy still-frame path in themeAssets (theme uses persona-host-talking video instead) | `assets/themes/aliens/hosts/persona-host-talk-1.png` | 900×900 PNG or retire ref | Video present in hosts/ |
 | aliens/hosts/persona-host-talk-2.png | legacy still-frame path in themeAssets (theme uses persona-host-talking video instead) | `assets/themes/aliens/hosts/persona-host-talk-2.png` | 900×900 PNG or retire ref | Video present in hosts/ |
 | aliens/hosts/persona-host-talk-3.png | legacy still-frame path in themeAssets (theme uses persona-host-talking video instead) | `assets/themes/aliens/hosts/persona-host-talk-3.png` | 900×900 PNG or retire ref | Video present in hosts/ |
-| carnival/characters/presenter.svg | present in repo; not in offline APK (non-default theme dir removed from APK) | `assets/themes/carnival/characters/presenter.svg` | 900×1200 SVG |  |
 | carnival/hosts/persona-host-idle.png | missing in public/ | `assets/themes/carnival/hosts/persona-host-idle.png` | Match sibling assets in same folder |  |
 | carnival/hosts/persona-host-talk-1.png | missing in public/ | `assets/themes/carnival/hosts/persona-host-talk-1.png` | Match sibling assets in same folder |  |
 | carnival/hosts/persona-host-talk-2.png | missing in public/ | `assets/themes/carnival/hosts/persona-host-talk-2.png` | Match sibling assets in same folder |  |
 | carnival/hosts/persona-host-talk-3.png | missing in public/ | `assets/themes/carnival/hosts/persona-host-talk-3.png` | Match sibling assets in same folder |  |
-| cyberpunk/characters/presenter.svg | present in repo; not in offline APK (non-default theme dir removed from APK) | `assets/themes/cyberpunk/characters/presenter.svg` | 900×1200 SVG |  |
 | cyberpunk/hosts/persona-host-idle.png | missing in public/ | `assets/themes/cyberpunk/hosts/persona-host-idle.png` | Match sibling assets in same folder |  |
 | cyberpunk/hosts/persona-host-talk-1.png | missing in public/ | `assets/themes/cyberpunk/hosts/persona-host-talk-1.png` | Match sibling assets in same folder |  |
 | cyberpunk/hosts/persona-host-talk-2.png | missing in public/ | `assets/themes/cyberpunk/hosts/persona-host-talk-2.png` | Match sibling assets in same folder |  |
 | cyberpunk/hosts/persona-host-talk-3.png | missing in public/ | `assets/themes/cyberpunk/hosts/persona-host-talk-3.png` | Match sibling assets in same folder |  |
-| default/characters/host-idle.png | missing in public/ | `assets/themes/default/characters/host-idle.png` | Match sibling assets in same folder |  |
-| default/characters/host-talk-1.png | missing in public/ | `assets/themes/default/characters/host-talk-1.png` | Match sibling assets in same folder |  |
-| default/characters/host-talk-2.png | missing in public/ | `assets/themes/default/characters/host-talk-2.png` | Match sibling assets in same folder |  |
-| default/characters/host-talk-3.png | missing in public/ | `assets/themes/default/characters/host-talk-3.png` | Match sibling assets in same folder |  |
 | default/hosts/persona-host-talk-1.png | legacy still-frame path in themeAssets (theme uses persona-host-talking video instead) | `assets/themes/default/hosts/persona-host-talk-1.png` | 900×900 PNG or retire ref | Video present in hosts/ |
 | default/hosts/persona-host-talk-2.png | legacy still-frame path in themeAssets (theme uses persona-host-talking video instead) | `assets/themes/default/hosts/persona-host-talk-2.png` | 900×900 PNG or retire ref | Video present in hosts/ |
 | default/hosts/persona-host-talk-3.png | legacy still-frame path in themeAssets (theme uses persona-host-talking video instead) | `assets/themes/default/hosts/persona-host-talk-3.png` | 900×900 PNG or retire ref | Video present in hosts/ |
-| gangsters/characters/presenter.png | missing in public/ | `assets/themes/gangsters/characters/presenter.png` | Match sibling assets in same folder |  |
 | gangsters/hosts/persona-host-idle.png | present in repo; not in offline APK (non-default theme dir removed from APK) | `assets/themes/gangsters/hosts/persona-host-idle.png` | 858×1072 PNG |  |
 | gangsters/hosts/persona-host-talk-1.png | legacy still-frame path in themeAssets (theme uses persona-host-talking video instead) | `assets/themes/gangsters/hosts/persona-host-talk-1.png` | 900×900 PNG or retire ref | Video present in hosts/ |
 | gangsters/hosts/persona-host-talk-2.png | legacy still-frame path in themeAssets (theme uses persona-host-talking video instead) | `assets/themes/gangsters/hosts/persona-host-talk-2.png` | 900×900 PNG or retire ref | Video present in hosts/ |
@@ -64,32 +56,26 @@ Checks **public/** (full game) and flags **offline APK** gaps per `scripts/slim-
 | ghosts-and-ghouls/hosts/persona-host-talk-1.png | legacy still-frame path in themeAssets (theme uses persona-host-talking video instead) | `assets/themes/ghosts-and-ghouls/hosts/persona-host-talk-1.png` | 900×900 PNG or retire ref | Video present in hosts/ |
 | ghosts-and-ghouls/hosts/persona-host-talk-2.png | legacy still-frame path in themeAssets (theme uses persona-host-talking video instead) | `assets/themes/ghosts-and-ghouls/hosts/persona-host-talk-2.png` | 900×900 PNG or retire ref | Video present in hosts/ |
 | ghosts-and-ghouls/hosts/persona-host-talk-3.png | legacy still-frame path in themeAssets (theme uses persona-host-talking video instead) | `assets/themes/ghosts-and-ghouls/hosts/persona-host-talk-3.png` | 900×900 PNG or retire ref | Video present in hosts/ |
-| gladiators/characters/presenter.svg | present in repo; not in offline APK (non-default theme dir removed from APK) | `assets/themes/gladiators/characters/presenter.svg` | 900×1200 SVG |  |
 | gladiators/hosts/persona-host-idle.png | missing in public/ | `assets/themes/gladiators/hosts/persona-host-idle.png` | Match sibling assets in same folder |  |
 | gladiators/hosts/persona-host-talk-1.png | missing in public/ | `assets/themes/gladiators/hosts/persona-host-talk-1.png` | Match sibling assets in same folder |  |
 | gladiators/hosts/persona-host-talk-2.png | missing in public/ | `assets/themes/gladiators/hosts/persona-host-talk-2.png` | Match sibling assets in same folder |  |
 | gladiators/hosts/persona-host-talk-3.png | missing in public/ | `assets/themes/gladiators/hosts/persona-host-talk-3.png` | Match sibling assets in same folder |  |
-| grillem/characters/presenter.png | missing in public/ | `assets/themes/grillem/characters/presenter.png` | Match sibling assets in same folder |  |
 | grillem/hosts/persona-host-idle.png | missing in public/ | `assets/themes/grillem/hosts/persona-host-idle.png` | Match sibling assets in same folder |  |
 | grillem/hosts/persona-host-talk-1.png | missing in public/ | `assets/themes/grillem/hosts/persona-host-talk-1.png` | Match sibling assets in same folder |  |
 | grillem/hosts/persona-host-talk-2.png | missing in public/ | `assets/themes/grillem/hosts/persona-host-talk-2.png` | Match sibling assets in same folder |  |
 | grillem/hosts/persona-host-talk-3.png | missing in public/ | `assets/themes/grillem/hosts/persona-host-talk-3.png` | Match sibling assets in same folder |  |
-| medical/characters/presenter.png | missing in public/ | `assets/themes/medical/characters/presenter.png` | Match sibling assets in same folder |  |
 | medical/hosts/persona-host-idle.png | present in repo; not in offline APK (non-default theme dir removed from APK) | `assets/themes/medical/hosts/persona-host-idle.png` | 830×1108 PNG |  |
 | medical/hosts/persona-host-talk-1.png | legacy still-frame path in themeAssets (theme uses persona-host-talking video instead) | `assets/themes/medical/hosts/persona-host-talk-1.png` | 900×900 PNG or retire ref | Video present in hosts/ |
 | medical/hosts/persona-host-talk-2.png | legacy still-frame path in themeAssets (theme uses persona-host-talking video instead) | `assets/themes/medical/hosts/persona-host-talk-2.png` | 900×900 PNG or retire ref | Video present in hosts/ |
 | medical/hosts/persona-host-talk-3.png | legacy still-frame path in themeAssets (theme uses persona-host-talking video instead) | `assets/themes/medical/hosts/persona-host-talk-3.png` | 900×900 PNG or retire ref | Video present in hosts/ |
-| monsters/characters/presenter.png | missing in public/ | `assets/themes/monsters/characters/presenter.png` | Match sibling assets in same folder |  |
 | murder-mystery/hosts/persona-host-idle.png | present in repo; not in offline APK (non-default theme dir removed from APK) | `assets/themes/murder-mystery/hosts/persona-host-idle.png` | 782×1176 PNG |  |
 | murder-mystery/hosts/persona-host-talk-1.png | legacy still-frame path in themeAssets (theme uses persona-host-talking video instead) | `assets/themes/murder-mystery/hosts/persona-host-talk-1.png` | 900×900 PNG or retire ref | Video present in hosts/ |
 | murder-mystery/hosts/persona-host-talk-2.png | legacy still-frame path in themeAssets (theme uses persona-host-talking video instead) | `assets/themes/murder-mystery/hosts/persona-host-talk-2.png` | 900×900 PNG or retire ref | Video present in hosts/ |
 | murder-mystery/hosts/persona-host-talk-3.png | legacy still-frame path in themeAssets (theme uses persona-host-talking video instead) | `assets/themes/murder-mystery/hosts/persona-host-talk-3.png` | 900×900 PNG or retire ref | Video present in hosts/ |
-| mythology-gods-legends/characters/presenter.svg | present in repo; not in offline APK (non-default theme dir removed from APK) | `assets/themes/mythology-gods-legends/characters/presenter.svg` | Match sibling assets in same folder |  |
 | mythology-gods-legends/hosts/persona-host-idle.png | missing in public/ | `assets/themes/mythology-gods-legends/hosts/persona-host-idle.png` | Match sibling assets in same folder |  |
 | mythology-gods-legends/hosts/persona-host-talk-1.png | missing in public/ | `assets/themes/mythology-gods-legends/hosts/persona-host-talk-1.png` | Match sibling assets in same folder |  |
 | mythology-gods-legends/hosts/persona-host-talk-2.png | missing in public/ | `assets/themes/mythology-gods-legends/hosts/persona-host-talk-2.png` | Match sibling assets in same folder |  |
 | mythology-gods-legends/hosts/persona-host-talk-3.png | missing in public/ | `assets/themes/mythology-gods-legends/hosts/persona-host-talk-3.png` | Match sibling assets in same folder |  |
-| ninjas/characters/presenter.svg | present in repo; not in offline APK (non-default theme dir removed from APK) | `assets/themes/ninjas/characters/presenter.svg` | 900×1200 SVG |  |
 | ninjas/hosts/persona-host-idle.png | missing in public/ | `assets/themes/ninjas/hosts/persona-host-idle.png` | Match sibling assets in same folder |  |
 | ninjas/hosts/persona-host-talk-1.png | missing in public/ | `assets/themes/ninjas/hosts/persona-host-talk-1.png` | Match sibling assets in same folder |  |
 | ninjas/hosts/persona-host-talk-2.png | missing in public/ | `assets/themes/ninjas/hosts/persona-host-talk-2.png` | Match sibling assets in same folder |  |
@@ -98,37 +84,30 @@ Checks **public/** (full game) and flags **offline APK** gaps per `scripts/slim-
 | pirates/hosts/persona-host-talk-1.png | legacy still-frame path in themeAssets (theme uses persona-host-talking video instead) | `assets/themes/pirates/hosts/persona-host-talk-1.png` | 900×900 PNG or retire ref | Video present in hosts/ |
 | pirates/hosts/persona-host-talk-2.png | legacy still-frame path in themeAssets (theme uses persona-host-talking video instead) | `assets/themes/pirates/hosts/persona-host-talk-2.png` | 900×900 PNG or retire ref | Video present in hosts/ |
 | pirates/hosts/persona-host-talk-3.png | legacy still-frame path in themeAssets (theme uses persona-host-talking video instead) | `assets/themes/pirates/hosts/persona-host-talk-3.png` | 900×900 PNG or retire ref | Video present in hosts/ |
-| post-apocalypse/characters/presenter.svg | present in repo; not in offline APK (non-default theme dir removed from APK) | `assets/themes/post-apocalypse/characters/presenter.svg` | 900×1200 SVG |  |
 | post-apocalypse/hosts/persona-host-idle.png | missing in public/ | `assets/themes/post-apocalypse/hosts/persona-host-idle.png` | Match sibling assets in same folder |  |
 | post-apocalypse/hosts/persona-host-talk-1.png | missing in public/ | `assets/themes/post-apocalypse/hosts/persona-host-talk-1.png` | Match sibling assets in same folder |  |
 | post-apocalypse/hosts/persona-host-talk-2.png | missing in public/ | `assets/themes/post-apocalypse/hosts/persona-host-talk-2.png` | Match sibling assets in same folder |  |
 | post-apocalypse/hosts/persona-host-talk-3.png | missing in public/ | `assets/themes/post-apocalypse/hosts/persona-host-talk-3.png` | Match sibling assets in same folder |  |
-| rock-stars/characters/presenter.png | missing in public/ | `assets/themes/rock-stars/characters/presenter.png` | Match sibling assets in same folder |  |
 | rock-stars/hosts/persona-host-idle.png | present in repo; not in offline APK (non-default theme dir removed from APK) | `assets/themes/rock-stars/hosts/persona-host-idle.png` | 784×1176 PNG |  |
 | rock-stars/hosts/persona-host-talk-1.png | legacy still-frame path in themeAssets (theme uses persona-host-talking video instead) | `assets/themes/rock-stars/hosts/persona-host-talk-1.png` | 900×900 PNG or retire ref | Video present in hosts/ |
 | rock-stars/hosts/persona-host-talk-2.png | legacy still-frame path in themeAssets (theme uses persona-host-talking video instead) | `assets/themes/rock-stars/hosts/persona-host-talk-2.png` | 900×900 PNG or retire ref | Video present in hosts/ |
 | rock-stars/hosts/persona-host-talk-3.png | legacy still-frame path in themeAssets (theme uses persona-host-talking video instead) | `assets/themes/rock-stars/hosts/persona-host-talk-3.png` | 900×900 PNG or retire ref | Video present in hosts/ |
-| royalty/characters/presenter.png | missing in public/ | `assets/themes/royalty/characters/presenter.png` | Match sibling assets in same folder |  |
 | royalty/hosts/persona-host-idle.png | missing in public/ | `assets/themes/royalty/hosts/persona-host-idle.png` | Match sibling assets in same folder |  |
 | royalty/hosts/persona-host-talk-1.png | missing in public/ | `assets/themes/royalty/hosts/persona-host-talk-1.png` | Match sibling assets in same folder |  |
 | royalty/hosts/persona-host-talk-2.png | missing in public/ | `assets/themes/royalty/hosts/persona-host-talk-2.png` | Match sibling assets in same folder |  |
 | royalty/hosts/persona-host-talk-3.png | missing in public/ | `assets/themes/royalty/hosts/persona-host-talk-3.png` | Match sibling assets in same folder |  |
-| time-travelers/characters/presenter.svg | present in repo; not in offline APK (non-default theme dir removed from APK) | `assets/themes/time-travelers/characters/presenter.svg` | 900×1200 SVG |  |
 | time-travelers/hosts/persona-host-idle.png | missing in public/ | `assets/themes/time-travelers/hosts/persona-host-idle.png` | Match sibling assets in same folder |  |
 | time-travelers/hosts/persona-host-talk-1.png | missing in public/ | `assets/themes/time-travelers/hosts/persona-host-talk-1.png` | Match sibling assets in same folder |  |
 | time-travelers/hosts/persona-host-talk-2.png | missing in public/ | `assets/themes/time-travelers/hosts/persona-host-talk-2.png` | Match sibling assets in same folder |  |
 | time-travelers/hosts/persona-host-talk-3.png | missing in public/ | `assets/themes/time-travelers/hosts/persona-host-talk-3.png` | Match sibling assets in same folder |  |
-| vikings/characters/presenter.svg | present in repo; not in offline APK (non-default theme dir removed from APK) | `assets/themes/vikings/characters/presenter.svg` | 900×1200 SVG |  |
 | vikings/hosts/persona-host-idle.png | present in repo; not in offline APK (non-default theme dir removed from APK) | `assets/themes/vikings/hosts/persona-host-idle.png` | 858×1072 PNG |  |
 | vikings/hosts/persona-host-talk-1.png | legacy still-frame path in themeAssets (theme uses persona-host-talking video instead) | `assets/themes/vikings/hosts/persona-host-talk-1.png` | 900×900 PNG or retire ref | Video present in hosts/ |
 | vikings/hosts/persona-host-talk-2.png | legacy still-frame path in themeAssets (theme uses persona-host-talking video instead) | `assets/themes/vikings/hosts/persona-host-talk-2.png` | 900×900 PNG or retire ref | Video present in hosts/ |
 | vikings/hosts/persona-host-talk-3.png | legacy still-frame path in themeAssets (theme uses persona-host-talking video instead) | `assets/themes/vikings/hosts/persona-host-talk-3.png` | 900×900 PNG or retire ref | Video present in hosts/ |
-| wizards-witches/characters/presenter.svg | present in repo; not in offline APK (non-default theme dir removed from APK) | `assets/themes/wizards-witches/characters/presenter.svg` | Match sibling assets in same folder |  |
 | wizards-witches/hosts/persona-host-idle.png | missing in public/ | `assets/themes/wizards-witches/hosts/persona-host-idle.png` | Match sibling assets in same folder |  |
 | wizards-witches/hosts/persona-host-talk-1.png | missing in public/ | `assets/themes/wizards-witches/hosts/persona-host-talk-1.png` | Match sibling assets in same folder |  |
 | wizards-witches/hosts/persona-host-talk-2.png | missing in public/ | `assets/themes/wizards-witches/hosts/persona-host-talk-2.png` | Match sibling assets in same folder |  |
 | wizards-witches/hosts/persona-host-talk-3.png | missing in public/ | `assets/themes/wizards-witches/hosts/persona-host-talk-3.png` | Match sibling assets in same folder |  |
-| wrestlers/characters/presenter.png | missing in public/ | `assets/themes/wrestlers/characters/presenter.png` | Match sibling assets in same folder |  |
 | wrestlers/hosts/persona-host-idle.png | missing in public/ | `assets/themes/wrestlers/hosts/persona-host-idle.png` | Match sibling assets in same folder |  |
 | wrestlers/hosts/persona-host-talk-1.png | missing in public/ | `assets/themes/wrestlers/hosts/persona-host-talk-1.png` | Match sibling assets in same folder |  |
 | wrestlers/hosts/persona-host-talk-2.png | missing in public/ | `assets/themes/wrestlers/hosts/persona-host-talk-2.png` | Match sibling assets in same folder |  |
@@ -252,7 +231,6 @@ Checks **public/** (full game) and flags **offline APK** gaps per `scripts/slim-
 
 | Item | What's missing / issue | Expected path | Format & size | Notes |
 | --- | --- | --- | --- | --- |
-| assets/themes/default/characters/host-idle.png | referenced in src but missing in public/ | `assets/themes/default/characters/host-idle.png` | — |  |
 | assets/themes/vikings/personas/01-rolf-icefang.png | referenced in src but missing in public/ | `assets/themes/vikings/personas/01-rolf-icefang.png` | — |  |
 
 ## Reference dimensions (match these)
@@ -265,10 +243,10 @@ Checks **public/** (full game) and flags **offline APK** gaps per `scripts/slim-
 
 ## Summary counts
 
-- **Total rows:** 214
+- **Total rows:** 192
 - Round type / game mode: 7
 - Category icon: 1
-- Host: 100
+- Host: 79
 - Persona / avatar: 100
 - Prompt card (picture pack): 4
-- Code reference (misc): 2
+- Code reference (misc): 1

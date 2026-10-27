@@ -1680,7 +1680,7 @@ function MultiSourceVideo({
 function ThemeHostVisual({
   themeName = "Default",
   isTalking = false,
-  alt = "",
+  alt = "host",
   className = "",
   testId = "theme-host-visual",
   preferVideo = false,
@@ -2128,7 +2128,7 @@ function GameIntroScreen({
             <ThemeHostVisual
               themeName={theme}
               isTalking={isTalking}
-              alt={`${theme} host ${themedHostPersona.name}`}
+              alt="host"
               className="h-full w-full"
             />
           </div>
@@ -2612,7 +2612,7 @@ function HostIntroScreen({ round, stingerLine, onContinue, theme }) {
               isTalking={isTalking}
               preferVideo
               testId="host-intro-visual"
-              alt={`${theme} presenter`}
+              alt="host"
               className="h-full w-full"
             />
           </div>
@@ -6571,7 +6571,7 @@ function LiarRevealScreen({
               <ThemeHostVisual
                 themeName={theme}
                 isTalking={isTalking}
-                alt={`${theme} presenter`}
+                alt="host"
                 className={`pointer-events-none absolute bottom-0 left-0 ${hostSizeConfig.liarReveal}`}
               />
               <motion.div
