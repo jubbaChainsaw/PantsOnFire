@@ -178,8 +178,21 @@ const TOP_UP_BY_CATEGORY = {
   'pic-mix': PIC_MIX_TOP_UP,
 };
 
-function normalisePhrase(raw) {
+function dropAnimeSpam(phrase) {
+  const p = String(phrase || '').trim();
+  if (!p) return '';
+  if (/\banime .+ premiere cities$/i.test(p)) return '';
+  if (/\b(tropes|famous examples)$/i.test(p)) return '';
+  if (/\baward winners$/i.test(p) && /\banime\b/i.test(p)) return '';
+  if (/\bTV series$/i.test(p) && /\b(Animation|Studio|Pictures|Works|Entertainment|SARU)\b/i.test(p)) {
+    return '';
+  }
+  return p;
+}
+
+function normalisePhrase(raw, categoryId) {
   let p = String(raw || '').trim();
+  if (categoryId === 'anime') p = dropAnimeSpam(p);
   if (!p) return p;
   const key = p.toLowerCase();
   if (EXACT_REPLACEMENTS.has(key)) return EXACT_REPLACEMENTS.get(key);
@@ -188,11 +201,11 @@ function normalisePhrase(raw) {
   return p;
 }
 
-function mergeToTarget(phrases, target, extraPool = []) {
+function mergeToTarget(phrases, target, extraPool = [], categoryId = '') {
   const seen = new Set();
   const out = [];
   for (const raw of [...phrases, ...extraPool]) {
-    const p = normalisePhrase(raw);
+    const p = normalisePhrase(raw, categoryId);
     if (!p || !isValidPhrase(p)) continue;
     const key = p.toLowerCase();
     if (seen.has(key)) continue;
@@ -214,7 +227,7 @@ function main() {
   for (const [categoryId, target] of Object.entries(EXPECTED_COUNTS)) {
     if (categoryId === 'internet-slang') continue;
     const pool = TOP_UP_BY_CATEGORY[categoryId] || [];
-    const merged = mergeToTarget(priority[categoryId] || [], target, pool);
+    const merged = mergeToTarget(priority[categoryId] || [], target, pool, categoryId);
     if (merged.length < target) {
       throw new Error(`${categoryId}: only ${merged.length} valid phrases after patch, need ${target}`);
     }
