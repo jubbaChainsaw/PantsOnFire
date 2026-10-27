@@ -10,3 +10,4 @@ scripts/personaAvatarApiKeys.local.json
 exports/generated-host-stills/
 exports/Hosts (1).zip
 exports/hostoverlay.png
+content-packs/dist/

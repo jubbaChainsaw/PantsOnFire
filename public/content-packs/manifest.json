@@ -1,0 +1,50 @@
+{
+  "version": 1,
+  "baseUrl": "https://github.com/jubbaChainsaw/PantsOnFire/releases/download/content-packs-v1/",
+  "packs": [
+    {
+      "id": "theme-murder-mystery",
+      "name": "Murder Mystery Theme",
+      "kind": "theme",
+      "themeSlug": "murder-mystery",
+      "tier": "free",
+      "version": "1.0.0",
+      "sizeBytes": 71650845,
+      "sha256": "ef9dd742ae595af8d3ea3300f8948f22053cb19d9014e2a32f681f39e22eae7b",
+      "file": "theme-murder-mystery.zip"
+    },
+    {
+      "id": "theme-pirates",
+      "name": "Pirates Theme",
+      "kind": "theme",
+      "themeSlug": "pirates",
+      "tier": "free",
+      "version": "1.0.0",
+      "sizeBytes": 74377576,
+      "sha256": "daeb1c338ace84813fa82cb6d1c5e19f489fbb84aaef8c377b8fecb0cd2b53eb",
+      "file": "theme-pirates.zip"
+    },
+    {
+      "id": "theme-ghosts-and-ghouls",
+      "name": "Ghosts & Ghouls Theme",
+      "kind": "theme",
+      "themeSlug": "ghosts-and-ghouls",
+      "tier": "free",
+      "version": "1.0.0",
+      "sizeBytes": 70648106,
+      "sha256": "f430c288c3df4074b25880db08d4b8691245c4ae71cbfe4d7baab3615e9ef052",
+      "file": "theme-ghosts-and-ghouls.zip"
+    },
+    {
+      "id": "theme-gangsters",
+      "name": "Cops & Robbers Theme",
+      "kind": "theme",
+      "themeSlug": "gangsters",
+      "tier": "free",
+      "version": "1.0.0",
+      "sizeBytes": 49170248,
+      "sha256": "57eb7a4b0b779e1df783614b33f7cc2062fc408257fad29d02510142859a0544",
+      "file": "theme-gangsters.zip"
+    }
+  ]
+}

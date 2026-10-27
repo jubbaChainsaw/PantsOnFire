@@ -185,6 +185,11 @@ import {
   ONLINE_SELECTION_TIMER_SEC,
 } from "./data/uiNeonAssets.js";
 import NeonTimerBar from "./components/neon/NeonTimerBar.jsx";
+import { useContentPacks } from "./hooks/useContentPacks.js";
+import {
+  ContentPackPromptModal,
+  ContentPackSettingsPanel,
+} from "./components/ContentPackDownloadUI.jsx";
 
 const E2E_FORCE_ROUND_TYPE = String(
   import.meta.env.VITE_E2E_FORCE_ROUND_TYPE || "",
@@ -7362,14 +7367,25 @@ function SettingsScreen({
   enabledCategories = {},
   onToggleCategory = () => {},
   defaultTab = "general",
+  contentPacks = null,
 }) {
   const [effectsEnabled, setEffectsEnabled] = useState(true);
   const [largeText, setLargeText] = useState(false);
   const [activeTab, setActiveTab] = useState(
-    defaultTab === "categories" ? "categories" : "general",
+    defaultTab === "downloads"
+      ? "downloads"
+      : defaultTab === "categories"
+        ? "categories"
+        : "general",
   );
   useEffect(() => {
-    setActiveTab(defaultTab === "categories" ? "categories" : "general");
+    setActiveTab(
+      defaultTab === "downloads"
+        ? "downloads"
+        : defaultTab === "categories"
+          ? "categories"
+          : "general",
+    );
   }, [defaultTab]);
   const categoryRows = useMemo(
     () =>
@@ -7432,7 +7448,24 @@ function SettingsScreen({
           >
             Categories
           </Button>
+          <Button
+            className={`rounded-xl px-4 py-2 text-xs font-black uppercase tracking-[0.12em] ${activeTab === "downloads" ? "border border-yellow-300/35 bg-yellow-500/20 text-yellow-100" : "border border-white/10 bg-white/5 text-white/80"}`}
+            onClick={() => setActiveTab("downloads")}
+          >
+            Downloads
+          </Button>
         </div>
+        {activeTab === "downloads" && contentPacks ? (
+          <ContentPackSettingsPanel
+            packs={contentPacks.downloadablePacks}
+            installedPackIds={contentPacks.installedPackIds}
+            downloadByPackId={contentPacks.downloadByPackId}
+            onDownload={contentPacks.downloadPack}
+            onDelete={contentPacks.deletePack}
+            onRetry={contentPacks.retryPack}
+            isNativeBridge={contentPacks.isNativeBridge}
+          />
+        ) : null}
         {activeTab === "categories" ? (
           <GlassPanel className="rounded-[2.2rem] p-5 border-fuchsia-300/25 bg-black/25">
             <div className="text-xs uppercase tracking-[0.3em] text-fuchsia-200/90">
@@ -7471,7 +7504,7 @@ function SettingsScreen({
               })}
             </div>
           </GlassPanel>
-        ) : (
+        ) : activeTab === "general" ? (
           <GlassPanel className="rounded-[2.5rem] p-8 border-cyan-400/20 bg-black/25 space-y-5">
             <SettingsToggleRow
               title="Premium Mode Toggle"
@@ -7685,7 +7718,7 @@ function SettingsScreen({
               </div>
             </div>
           </GlassPanel>
-        )}
+        ) : null}
       </div>
     </TopFrame>
   );
@@ -7998,13 +8031,31 @@ export default function App() {
     onlineLobby: COPY_BANK.onlineLobby[0],
     hostStinger: COPY_BANK.hostStingerPrompt[0],
   });
-  const themeOptions = useMemo(
+  const effectiveUnlockedPacks = useMemo(
     () =>
-      getThemeOptions(
-        effectiveUnlockedThemePackIds(accountSession, unlockedThemePackIds),
-      ),
+      effectiveUnlockedThemePackIds(accountSession, unlockedThemePackIds),
     [accountSession, unlockedThemePackIds],
   );
+  const themeOptions = useMemo(
+    () => getThemeOptions(effectiveUnlockedPacks),
+    [effectiveUnlockedPacks],
+  );
+  const contentPacks = useContentPacks({
+    unlockedThemePackIds: effectiveUnlockedPacks,
+  });
+  useEffect(() => {
+    if (screen === "home") contentPacks.maybeOpenPrompt();
+  }, [screen, contentPacks.maybeOpenPrompt]);
+  useEffect(() => {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get("pofForceContentPackPrompt") === "1") {
+        contentPacks.setPromptOpen(true);
+      }
+    } catch {
+      /* ignore */
+    }
+  }, [contentPacks.setPromptOpen]);
   const entitlements = useMemo(
     () => computeEntitlements(accountSession),
     [accountSession],
@@ -10684,8 +10735,20 @@ export default function App() {
             setEnabledCategories((cur) => ({ ...cur, [id]: !cur[id] }))
           }
           defaultTab={activeSettingsTab}
+          contentPacks={contentPacks}
         />
       )}
+      <ContentPackPromptModal
+        open={contentPacks.promptOpen}
+        totalLabel={contentPacks.totalMissingLabel}
+        packCount={contentPacks.missingPacks.length}
+        progress={contentPacks.progress}
+        downloading={contentPacks.progress.anyActive || contentPacks.batchActive}
+        onDownload={() => {
+          contentPacks.downloadAllMissing();
+        }}
+        onLater={contentPacks.dismissPrompt}
+      />
       <PartyChatDrawer
         open={onlineMode && partyChatOpen}
         onClose={() => setPartyChatOpen(false)}
