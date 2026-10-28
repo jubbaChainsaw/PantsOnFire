@@ -24,6 +24,7 @@
 .pof-btn-purple{--pof-btn:var(--btn-purple);--pof-glow:#a855f7;--pof-fill:rgba(35,0,70,.88)}
 .pof-btn-steel{--pof-btn:var(--btn-steel);--pof-glow:#94a3b8;--pof-fill:rgba(15,15,20,.85)}
 .pof-btn-sm{height:3.4rem;font-size:clamp(.95rem,4.2vw,1.2rem) !important;padding:0 2.4rem}
+.pof-btn-long{white-space:normal !important;line-height:1.12 !important;font-size:clamp(.92rem,4.1vw,1.45rem) !important;height:auto !important;min-height:3.4rem;padding:.5rem 1.35rem !important;letter-spacing:.04em !important}
 .pof-btn-wrap{white-space:normal !important;text-transform:none !important;letter-spacing:normal !important;line-height:1.2 !important;height:auto !important;min-height:3.4rem;padding:.65rem 1.25rem !important;font-family:Inter,system-ui,sans-serif !important;font-style:normal !important;font-weight:700 !important;font-size:clamp(.82rem,3.6vw,1rem) !important;text-shadow:0 1px 0 #000,0 2px 6px rgba(0,0,0,.75) !important}
 .pof-vote-chip{font-family:Inter,system-ui,sans-serif !important;font-style:normal !important;text-transform:none !important;letter-spacing:normal !important;font-size:clamp(.72rem,3.2vw,.9rem) !important;line-height:1.15 !important;height:auto !important;min-height:2.75rem;padding:.45rem .55rem !important;white-space:normal !important;overflow-wrap:anywhere !important;word-break:break-word !important}
 .pof-ui-copy{font-family:Inter,system-ui,sans-serif !important;font-style:normal !important;text-transform:none !important;letter-spacing:normal !important;color:rgba(255,255,255,.94) !important}

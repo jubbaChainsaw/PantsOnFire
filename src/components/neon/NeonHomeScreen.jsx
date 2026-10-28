@@ -247,10 +247,10 @@ export default function NeonHomeScreen({
           {joinOnlyMode && (
             <button
               type="button"
-              className="pof-btn pof-btn-blue pof-focus"
+              className="pof-btn pof-btn-blue pof-btn-long pof-focus"
               onClick={() => go('online-join')}
             >
-              <KeyRound className="h-4 w-4" />
+              <KeyRound className="h-4 w-4 shrink-0" />
               Join Online Lobby
             </button>
           )}

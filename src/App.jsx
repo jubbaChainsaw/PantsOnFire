@@ -2946,6 +2946,119 @@ function AccountGateScreen({ onSignedIn }) {
     }
     // Supabase session is picked up by App; optional email-confirm flow may require no session yet
   };
+  const webJoinOnly = isWebJoinOnlyMode();
+  if (webJoinOnly) {
+    return (
+      <BrandedScreen allowScroll overlayClassName="bg-black/45">
+        <div className="flex flex-col gap-5">
+          <header className="text-center">
+            <p className="pof-heading text-xs tracking-[0.35em] text-cyan-200/80">
+              Account
+            </p>
+            <h1 className="pof-heading mt-2 text-2xl text-yellow-300">
+              Sign in to play
+            </h1>
+            <p className="pof-body mt-2 text-sm text-white/75">
+              New players start as{" "}
+              <span className="font-semibold text-cyan-100">Fibber</span> (free)
+              so you can join online lobbies. Upgrade in the store to host local
+              or online games.
+            </p>
+            {cloudConfigured && authLoading && (
+              <p className="pof-body mt-2 text-xs text-cyan-100/90">
+                Checking cloud session…
+              </p>
+            )}
+          </header>
+          {!cloudConfigured ? (
+            <div className="pof-body rounded-2xl border border-red-400/30 bg-red-500/15 px-4 py-3 text-sm text-red-100">
+              Cloud sign-in is not available on this site yet. Try again later or
+              use the mobile app.
+            </div>
+          ) : (
+            <div className="pof-glass rounded-3xl p-5 text-left">
+              <p className="pof-heading text-xs tracking-[0.28em] text-cyan-200/90">
+                Cloud account
+              </p>
+              <p className="pof-body mt-2 text-sm text-white/70">
+                Use the same email and password on the website and in the mobile
+                app. Purchases from the web shop sync through the Pants on Fire
+                lobby server.
+              </p>
+              <div className="mt-4 flex gap-2">
+                <button
+                  type="button"
+                  className={`pof-chip flex-1 text-sm ${cloudMode === "login" ? "border-fuchsia-300 bg-fuchsia-500/25" : ""}`}
+                  onClick={() => {
+                    setCloudMode("login");
+                    setCloudError("");
+                  }}
+                >
+                  Log in
+                </button>
+                <button
+                  type="button"
+                  className={`pof-chip flex-1 text-sm ${cloudMode === "register" ? "border-fuchsia-300 bg-fuchsia-500/25" : ""}`}
+                  onClick={() => {
+                    setCloudMode("register");
+                    setCloudError("");
+                  }}
+                >
+                  Register
+                </button>
+              </div>
+              <form className="mt-4 space-y-3" onSubmit={submitCloud}>
+                <div>
+                  <Label className="pof-heading text-xs text-cyan-200/80">
+                    Email
+                  </Label>
+                  <input
+                    type="email"
+                    value={cloudEmail}
+                    onChange={(event) => setCloudEmail(event.target.value)}
+                    autoComplete="email"
+                    className="pof-field mt-2 text-left font-sans text-base tracking-normal"
+                  />
+                </div>
+                <div>
+                  <Label className="pof-heading text-xs text-cyan-200/80">
+                    Password
+                  </Label>
+                  <input
+                    type="password"
+                    value={cloudPassword}
+                    onChange={(event) => setCloudPassword(event.target.value)}
+                    autoComplete={
+                      cloudMode === "register"
+                        ? "new-password"
+                        : "current-password"
+                    }
+                    className="pof-field mt-2 text-left font-sans text-base tracking-normal"
+                  />
+                </div>
+                {cloudError && (
+                  <div className="pof-body rounded-xl border border-red-400/30 bg-red-500/15 px-3 py-2 text-sm text-red-100">
+                    {cloudError}
+                  </div>
+                )}
+                <button
+                  type="submit"
+                  disabled={cloudBusy}
+                  className="pof-btn pof-btn-blue pof-btn-sm pof-focus w-full disabled:opacity-60"
+                >
+                  {cloudBusy
+                    ? "Please wait…"
+                    : cloudMode === "register"
+                      ? "Create cloud account"
+                      : "Cloud log in"}
+                </button>
+              </form>
+            </div>
+          )}
+        </div>
+      </BrandedScreen>
+    );
+  }
   return (
     <TopFrame theme="Default" allowScroll>
       <div className="mx-auto flex min-h-[100dvh] max-w-md flex-col gap-6 px-4 py-10">
@@ -4149,6 +4262,110 @@ function OnlineJoinLobbyScreen({
 }) {
   const canContinueCode = joinCode.trim().length >= 4;
   const canJoin = playerName.trim().length > 0;
+  const webJoinOnly = isWebJoinOnlyMode();
+  if (webJoinOnly) {
+    return (
+      <BrandedScreen
+        wallpaperSrc={UI_WALLPAPER_IN_GAME_SRC}
+        overlayClassName="bg-black/45"
+      >
+        <div className="pof-glass rounded-3xl p-5 text-left">
+          <p className="pof-heading text-xs tracking-[0.35em] text-indigo-200/80">
+            Join Online Lobby
+          </p>
+          <h2 className="pof-heading mt-3 text-2xl text-yellow-300 sm:text-3xl">
+            {step === "code" ? "Enter lobby code" : "Choose your player name"}
+          </h2>
+          <p className="pof-body mt-2 text-sm text-white/75">
+            Join from your own device. Prompts stay private to your screen.
+          </p>
+          <div className="mt-6 grid gap-4">
+            {step === "code" ? (
+              <div>
+                <Label className="pof-heading text-xs text-white/80">
+                  Lobby code
+                </Label>
+                <input
+                  value={joinCode}
+                  onChange={(event) =>
+                    setJoinCode(event.target.value.toUpperCase())
+                  }
+                  className="pof-field mt-2 uppercase tracking-[0.25em]"
+                />
+              </div>
+            ) : (
+              <>
+                <div className="pof-body rounded-2xl border border-cyan-300/25 bg-cyan-500/10 p-3 text-sm text-cyan-100">
+                  Host:{" "}
+                  <span className="pof-heading text-sm text-white">
+                    {hostName || "Host"}
+                  </span>{" "}
+                  • Theme:{" "}
+                  <span className="pof-heading text-sm text-white">
+                    {nameTheme}
+                  </span>{" "}
+                  • Players: {playerCount}/{maxPlayers}
+                </div>
+                <div>
+                  <Label className="pof-heading text-xs text-white/80">
+                    Your player name
+                  </Label>
+                  <div className="mt-2 flex gap-2">
+                    <input
+                      value={playerName}
+                      onChange={(event) => setPlayerName(event.target.value)}
+                      className="pof-field min-w-0 flex-1 text-left font-sans text-base tracking-normal"
+                    />
+                    <button
+                      type="button"
+                      className="pof-sq cyan pof-focus shrink-0"
+                      onClick={onRandomizeName}
+                      aria-label="Randomize name"
+                    >
+                      <Dice6 className="h-4 w-4" />
+                    </button>
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
+          <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+            <button
+              type="button"
+              className="pof-btn pof-btn-steel pof-btn-sm pof-focus sm:flex-1"
+              onClick={onBack}
+            >
+              Back
+            </button>
+            {step === "code" ? (
+              <button
+                type="button"
+                className="pof-btn pof-btn-fire pof-btn-sm pof-focus sm:flex-1"
+                disabled={!canContinueCode}
+                onClick={onContinueCode}
+              >
+                Continue
+              </button>
+            ) : (
+              <button
+                type="button"
+                className="pof-btn pof-btn-fire pof-btn-sm pof-focus sm:flex-1"
+                disabled={!canJoin}
+                onClick={onJoin}
+              >
+                Join Game
+              </button>
+            )}
+          </div>
+          {joinError && (
+            <div className="pof-body mt-4 rounded-2xl border border-red-400/30 bg-red-500/10 p-3 text-sm text-red-100">
+              {joinError}
+            </div>
+          )}
+        </div>
+      </BrandedScreen>
+    );
+  }
   return (
     <BrandedScreen
       wallpaperSrc={UI_WALLPAPER_IN_GAME_SRC}
