@@ -44,6 +44,7 @@ export default function NeonStoreThemesPanel({
   onUnlockThemePack = () => {},
   onWebPurchaseDlc = async () => {},
   webShopMode = false,
+  dlcPackPriceLabel = '£2.99',
   downloadByPackId = {},
 }) {
   const unlocked = useMemo(() => new Set(unlockedThemePackIds || []), [unlockedThemePackIds]);
@@ -166,7 +167,7 @@ export default function NeonStoreThemesPanel({
               {!item.isOwned && !disableDlcDemo ? (
                 <div className="mt-2">
                   <StoreActionChip
-                    label={`Buy ${item.pack.priceLabel || '99p'}`}
+                    label={`Buy ${webShopMode ? dlcPackPriceLabel : item.pack.priceLabel || dlcPackPriceLabel}`}
                     variant="amber"
                     onClick={() => {
                       if (webShopMode) void onWebPurchaseDlc(item.id);

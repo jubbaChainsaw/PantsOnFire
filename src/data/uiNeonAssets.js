@@ -11,7 +11,11 @@ function bundledUiAsset(relativeUnderAssets) {
   return resolveBundledAssetSrcCore(publicAssetUrl(relativeUnderAssets));
 }
 
-const neonFile = (name) => bundledUiAsset(`ui/neon/${name}`);
+/** Neon pack ships as WebP under `public/assets/ui/neon/`. */
+const neonFile = (name) => {
+  const stem = String(name || '').replace(/\.[^.]+$/, '');
+  return publicAssetUrl(`ui/neon/${stem}.webp`);
+};
 
 export const NEON_ASSETS = Object.freeze({
   logo: bundledUiAsset('ui/logos/main-logo.png'),
@@ -50,7 +54,7 @@ export function neonThemeVars() {
     '--btn-pink': cssUrl(a.btnPink),
     '--btn-purple': cssUrl(a.btnPurple),
     '--btn-steel': cssUrl(a.btnSteel),
-    '--bar-pink': cssUrl(neonFile('bar-1.png')),
+    '--bar-pink': cssUrl(neonFile('bar-1')),
   };
 }
 

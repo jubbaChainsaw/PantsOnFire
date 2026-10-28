@@ -27,7 +27,7 @@ export const SUBSCRIPTION_TIERS = [
   {
     tierId: TIER_LOCAL_LIAR,
     name: 'Local Liar',
-    priceLabel: '99p',
+    priceLabel: '£2.99',
     upgradeHint: 'Includes everything in Fibber.',
     bullets: [
       'Create local pass-the-phone games.',
@@ -37,8 +37,8 @@ export const SUBSCRIPTION_TIERS = [
   {
     tierId: TIER_SUSPECT,
     name: 'Suspect',
-    priceLabel: '£1.99',
-    upgradeHint: '£1.00 upgrade if you already own Local Liar.',
+    priceLabel: '£4.99',
+    upgradeHint: 'Upgrade pricing in the store reflects what you already own.',
     bullets: [
       'Create online lobbies.',
       'Five core themes included.',
@@ -48,7 +48,7 @@ export const SUBSCRIPTION_TIERS = [
   {
     tierId: TIER_HOST_MOST,
     name: 'Host with the Most',
-    priceLabel: '£6.99',
+    priceLabel: '£9.99',
     upgradeHint: 'Previous tier price is deducted when you upgrade in the real store.',
     bullets: [
       'Every DLC theme bundle (themes, personas, tailored host dialogue).',
@@ -62,12 +62,12 @@ export const SUBSCRIPTION_TIERS = [
 export const ADDON_TWIST_TRUTH = {
   id: 'twist-truth',
   name: 'Twist the Truth',
-  priceLabel: '99p',
+  priceLabel: '£1.99',
   description: 'Unlocks the advanced category editor on its own (without Host with the Most).',
 };
 
 export const DLC_STORE_BLURB =
-  'DLC packs add three themed experiences each (host, card decks, personas, tailored dialogue) for 99p per pack. Host with the Most includes every pack.';
+  'DLC packs add three themed experiences each (host, card decks, personas, tailored dialogue) for £2.99 per pack. Host with the Most includes every pack.';
 
 /** RevenueCat entitlement / product identifiers (see server/entitlementsRoutes.js mapRevenueCatEntitlements). */
 export const REVENUE_CAT_ENTITLEMENTS = {

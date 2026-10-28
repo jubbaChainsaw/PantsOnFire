@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   ArrowLeft,
   ChevronDown,
@@ -20,6 +20,7 @@ import {
 import { CORE_THEME_NAMES, DLC_THEME_PACKS } from '../../data/themeCatalog.js';
 import { NEON_ASSETS, neonThemeVars } from '../../data/uiNeonAssets.js';
 import { readStoreSectionPrefs, writeStoreSectionPrefs } from '../../lib/storeSectionPrefs.js';
+import { fetchBillingCatalog } from '../../billing/fetchBillingCatalog.js';
 import { requestNativeEntitlementsRefresh } from '../../billing/nativePurchasesBridge.js';
 import { tapFx } from '../../lib/pofFx.js';
 import NeonStoreThemesPanel from './NeonStoreThemesPanel.jsx';
@@ -170,6 +171,26 @@ export default function NeonStoreScreen({
   const [storeNotice, setStoreNotice] = useState(null);
   const [redeemCodeInput, setRedeemCodeInput] = useState('');
   const [redeemFeedback, setRedeemFeedback] = useState(null);
+  const [billingCatalog, setBillingCatalog] = useState(null);
+
+  useEffect(() => {
+    if (!webShopMode) return;
+    void fetchBillingCatalog().then((catalog) => {
+      if (catalog) setBillingCatalog(catalog);
+    });
+  }, [webShopMode]);
+
+  const tiersForDisplay = useMemo(() => {
+    if (!billingCatalog?.tiers) return SUBSCRIPTION_TIERS;
+    return SUBSCRIPTION_TIERS.map((tier) => ({
+      ...tier,
+      priceLabel: billingCatalog.tiers[tier.tierId] || tier.priceLabel,
+    }));
+  }, [billingCatalog]);
+
+  const twistPriceLabel =
+    billingCatalog?.addonTwistTruth || ADDON_TWIST_TRUTH.priceLabel;
+  const dlcPackPriceLabel = billingCatalog?.dlcPack || '£2.99';
 
   const currentTierRank = accountSession ? TIER_RANK[accountSession.tierId] ?? 0 : 0;
   const currentTierName =
@@ -193,8 +214,8 @@ export default function NeonStoreScreen({
 
   const addonSummary = useMemo(() => {
     if (hasTwistAddon || allDlcIncluded) return 'Twist the Truth unlocked';
-    return 'Twist the Truth · 99p';
-  }, [hasTwistAddon, allDlcIncluded]);
+    return `Twist the Truth · ${twistPriceLabel}`;
+  }, [hasTwistAddon, allDlcIncluded, twistPriceLabel]);
 
   const handleRedeemSubmit = (event) => {
     event.preventDefault();
@@ -303,7 +324,7 @@ export default function NeonStoreScreen({
               </p>
             )}
             <div className="space-y-3">
-              {SUBSCRIPTION_TIERS.map((tier) => (
+              {tiersForDisplay.map((tier) => (
                 <TierCard
                   key={tier.tierId}
                   tier={tier}
@@ -334,6 +355,7 @@ export default function NeonStoreScreen({
               allDlcIncluded={allDlcIncluded}
               disableDlcDemo={disableDlcDemo && !webShopMode}
               webShopMode={webShopMode}
+              dlcPackPriceLabel={dlcPackPriceLabel}
               onWebPurchaseDlc={onWebPurchaseDlc}
               contentPackManifest={contentPackManifest}
               installedContentPackIds={installedContentPackIds}
@@ -377,7 +399,7 @@ export default function NeonStoreScreen({
               <p className="pof-desc mt-2 text-sm text-white/75">{ADDON_TWIST_TRUTH.description}</p>
               <div className="mt-3 flex items-center justify-between gap-3">
                 <span className="pof-desc text-lg font-semibold text-yellow-300">
-                  {ADDON_TWIST_TRUTH.priceLabel}
+                  {twistPriceLabel}
                 </span>
                 <button
                   type="button"
@@ -411,26 +433,26 @@ export default function NeonStoreScreen({
           >
             <button
               type="button"
-              className="pof-btn pof-btn-steel pof-focus flex w-full items-center justify-center gap-2"
+              className="pof-btn pof-btn-steel pof-focus flex w-full min-h-11 items-center justify-center gap-2 px-3 py-2.5 text-sm font-bold normal-case tracking-normal"
               onClick={() => {
                 tapFx();
                 requestNativeEntitlementsRefresh();
                 setStoreNotice('Restore requested — syncing with the App Store / Play Store…');
               }}
             >
-              <RefreshCw className="h-4 w-4" />
-              Restore purchases
+              <RefreshCw className="h-4 w-4 shrink-0" />
+              <span className="text-center leading-snug">Restore purchases</span>
             </button>
             <button
               type="button"
-              className="pof-btn pof-btn-blue pof-focus flex w-full items-center justify-center gap-2"
+              className="pof-btn pof-btn-blue pof-focus flex w-full min-h-11 items-center justify-center gap-2 px-3 py-2.5 text-sm font-bold normal-case tracking-normal"
               onClick={() => {
                 tapFx();
                 onOpenAccount?.();
               }}
             >
-              <UserCircle2 className="h-4 w-4" />
-              Account & sign-in
+              <UserCircle2 className="h-4 w-4 shrink-0" />
+              <span className="text-center leading-snug">Account & sign-in</span>
             </button>
           </div>
         </div>

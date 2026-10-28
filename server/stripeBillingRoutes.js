@@ -2,6 +2,7 @@ import Stripe from 'stripe';
 import { mergeEntitlementsRow, defaultEntitlements } from './entitlementsRoutes.js';
 import { resolveStripePriceId, stripePurchaseToEntitlementPatch } from './stripeCatalog.js';
 import { resolveAuthUserFromBearer } from './resolveAuthUser.js';
+import { buildBillingCatalog } from './billingCatalog.js';
 
 function getStripe() {
   const key = String(process.env.STRIPE_SECRET_KEY || '').trim();
@@ -28,6 +29,15 @@ function checkoutUrls() {
 export function mountStripeBillingRoutes(app, { store } = {}) {
   const entitlementStore = store || new Map();
   const simulate = String(process.env.POF_BILLING_SIMULATE || '').trim() === '1';
+
+  app.get('/api/billing/catalog', async (_req, res) => {
+    try {
+      const catalog = await buildBillingCatalog();
+      res.json(catalog);
+    } catch (err) {
+      res.status(500).json({ error: 'catalog-failed', detail: String(err?.message || err) });
+    }
+  });
 
   app.post('/api/billing/stripe/checkout-session', async (req, res) => {
     const stripe = getStripe();

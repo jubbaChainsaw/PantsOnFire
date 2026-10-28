@@ -2490,8 +2490,10 @@ function useGlobalGraphicsPreload() {
       .filter(Boolean);
     const allSources = [...coreUiSources, ...themeSources];
     preloadImageSources(allSources);
-    const maxOverlayMs = 3000;
-    const minOverlayMs = 700;
+    const fastBoot =
+      String(import.meta.env?.VITE_E2E_FAST_TIMERS || '').trim() === '1';
+    const maxOverlayMs = fastBoot ? 150 : 3000;
+    const minOverlayMs = fastBoot ? 0 : 700;
     Promise.race([
       preloadImageSourcesWithPromise(allSources),
       new Promise((resolve) => setTimeout(resolve, maxOverlayMs)),
@@ -2519,6 +2521,7 @@ function StartupPreloadOverlay({ show = false }) {
       {show && (
         <motion.div
           key="startup-preload-overlay"
+          data-testid="startup-loading-overlay"
           initial={{ opacity: 1 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -10132,7 +10135,11 @@ export default function App() {
   ]);
 
   return (
-    <div className="pof-root min-h-[100dvh]" style={neonThemeVars()}>
+    <div
+      className="pof-root min-h-[100dvh]"
+      style={neonThemeVars()}
+      data-testid={startupGraphicsReady ? 'app-shell-ready' : undefined}
+    >
       {screen === "account-gate" && (
         <AccountGateScreen
           onSignedIn={(session) => {

@@ -15,6 +15,34 @@ const VIEWS = {
   mobile: { width: 390, height: 844 },
 };
 
+async function waitForAppShell(page) {
+  await page.locator('[data-testid="app-shell-ready"]').waitFor({
+    state: 'attached',
+    timeout: 90_000,
+  });
+  await page.locator('[data-testid="startup-loading-overlay"]').waitFor({
+    state: 'detached',
+    timeout: 90_000,
+  });
+  await page.waitForTimeout(400);
+}
+
+async function assertNoBrokenNeonIcons(page) {
+  const broken = await page.evaluate(() => {
+    const imgs = [...document.querySelectorAll('img')];
+    return imgs
+      .filter((img) => {
+        const src = img.currentSrc || img.src || '';
+        if (!src.includes('/assets/ui/neon/')) return false;
+        return img.naturalWidth === 0;
+      })
+      .map((img) => img.src);
+  });
+  if (broken.length) {
+    throw new Error(`Broken neon images: ${broken.join(', ')}`);
+  }
+}
+
 async function clearClientState(page) {
   await page.addInitScript(() => {
     localStorage.clear();
@@ -54,44 +82,48 @@ async function main() {
     const context = await browser.newContext({ viewport, baseURL: PREVIEW_URL });
     const page = await context.newPage();
 
-    // Landing (signed in, website player notice)
     await seedLocalFibber(page);
     await page.goto('/');
-    await page.getByTestId('web-player-notice-home').waitFor({ state: 'visible', timeout: 60_000 });
+    await waitForAppShell(page);
+    await page.getByTestId('web-player-notice-home').waitFor({ state: 'visible', timeout: 30_000 });
+    await assertNoBrokenNeonIcons(page);
     await shot(page, 'landing', viewportKey);
 
-    // Blocked create / host messaging (same screen, ensure notice in view)
     await page.getByText(/Creating games, hosting lobbies/i).scrollIntoViewIfNeeded();
     await shot(page, 'blocked-create', viewportKey);
 
-    // Join by code deep link
     await page.goto('/?join=LIAR7');
+    await waitForAppShell(page);
     await page.getByRole('button', { name: 'Continue' }).waitFor({ state: 'visible', timeout: 30_000 });
+    await assertNoBrokenNeonIcons(page);
     await shot(page, 'join-code', viewportKey);
 
-    // Store + device notice (shop variant)
     await seedLocalFibber(page);
     await page.goto('/?pofScreen=store');
-    await page.getByTestId('web-player-notice-shop').waitFor({ state: 'visible', timeout: 60_000 });
+    await waitForAppShell(page);
+    await page.getByTestId('web-player-notice-shop').waitFor({ state: 'visible', timeout: 30_000 });
+    const accessSection = page.getByTestId('store-section-access');
+    if ((await accessSection.getAttribute('data-expanded')) !== 'true') {
+      await accessSection.locator('button').first().click();
+    }
+    await page.getByText('£9.99').first().waitFor({ state: 'visible', timeout: 20_000 });
+    await assertNoBrokenNeonIcons(page);
     await shot(page, 'store', viewportKey);
 
     await context.close();
   }
 
-  // Sign in / register (account gate, cloud panel when lobby auth is up)
   for (const [viewportKey, viewport] of Object.entries(VIEWS)) {
     const context = await browser.newContext({ viewport, baseURL: PREVIEW_URL });
     const page = await context.newPage();
     await clearClientState(page);
     await page.goto('/');
+    await waitForAppShell(page);
     await page.getByRole('heading', { name: /Sign in to play/i }).waitFor({
       state: 'visible',
-      timeout: 60_000,
+      timeout: 30_000,
     });
-    const cloudHeading = page.getByText('Cloud account', { exact: false });
-    if (await cloudHeading.isVisible({ timeout: 15_000 }).catch(() => false)) {
-      await cloudHeading.scrollIntoViewIfNeeded();
-    }
+    await assertNoBrokenNeonIcons(page);
     await shot(page, 'sign-in', viewportKey);
     await context.close();
   }
