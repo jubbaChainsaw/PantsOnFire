@@ -1,0 +1,88 @@
+# Deploy production web UI (Vite dist/) to IONOS via SFTP.
+# Runs on push to main or manual workflow_dispatch.
+
+name: Deploy web to IONOS (SFTP)
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+concurrency:
+  group: deploy-ionos-web
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build web (www.pantsonfire.app)
+        env:
+          VITE_LOBBY_SERVER_URL: https://api.pantsonfire.app
+          VITE_WEB_JOIN_ONLY: 'true'
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+        run: npm run build
+
+      - name: Verify dist and SPA .htaccess
+        run: |
+          test -f dist/index.html
+          test -f dist/.htaccess
+          echo "dist size:" && du -sh dist
+
+      - name: Require IONOS SFTP secrets
+        env:
+          IONOS_SFTP_HOST: ${{ secrets.IONOS_SFTP_HOST }}
+          IONOS_SFTP_USER: ${{ secrets.IONOS_SFTP_USER }}
+          IONOS_SFTP_REMOTE_DIR: ${{ secrets.IONOS_SFTP_REMOTE_DIR }}
+          IONOS_SFTP_PASSWORD: ${{ secrets.IONOS_SFTP_PASSWORD }}
+          IONOS_SFTP_KEY: ${{ secrets.IONOS_SFTP_KEY }}
+        run: |
+          missing=0
+          for name in IONOS_SFTP_HOST IONOS_SFTP_USER IONOS_SFTP_REMOTE_DIR; do
+            if [ -z "${!name}" ]; then
+              echo "::error::Missing GitHub secret: $name"
+              missing=1
+            fi
+          done
+          if [ -z "$IONOS_SFTP_PASSWORD" ] && [ -z "$IONOS_SFTP_KEY" ]; then
+            echo "::error::Set IONOS_SFTP_PASSWORD or IONOS_SFTP_KEY"
+            missing=1
+          fi
+          exit "$missing"
+
+      - name: Resolve SFTP port
+        id: sftp
+        run: |
+          PORT="${{ secrets.IONOS_SFTP_PORT }}"
+          if [ -z "$PORT" ]; then PORT=22; fi
+          echo "port=$PORT" >> "$GITHUB_OUTPUT"
+
+      - name: Upload dist to IONOS (SFTP)
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.6
+        with:
+          protocol: sftp
+          server: ${{ secrets.IONOS_SFTP_HOST }}
+          port: ${{ steps.sftp.outputs.port }}
+          username: ${{ secrets.IONOS_SFTP_USER }}
+          password: ${{ secrets.IONOS_SFTP_PASSWORD }}
+          ssh-private-key: ${{ secrets.IONOS_SFTP_KEY }}
+          local-dir: ./dist/
+          server-dir: ${{ secrets.IONOS_SFTP_REMOTE_DIR }}
+          dangerous-clean-slate: false
+          exclude: |
+            **/.git*
+            **/.git*/**
+            **/node_modules/**
