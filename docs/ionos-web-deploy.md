@@ -34,12 +34,9 @@ Configure under **Settings → Secrets and variables → Actions** (repository s
 | `IONOS_SFTP_KEY` | One of password **or** key | Private key (PEM), for key-based auth |
 | `IONOS_SFTP_PORT` | No | Defaults to **22** if unset |
 
-### Vite build (required for sign-in on production web)
+Build already sets `VITE_WEB_JOIN_ONLY=true` and `VITE_LOBBY_SERVER_URL=https://api.pantsonfire.app`. **No Supabase secrets** are required on IONOS.
 
-| Secret | Required | Notes |
-|--------|----------|--------|
-| `VITE_SUPABASE_URL` | Yes | Same Supabase project as mobile |
-| `VITE_SUPABASE_ANON_KEY` | Yes | Supabase anon/public key |
+**Accounts, entitlements, and Stripe (web shop)** run on the **lobby server** at `https://api.pantsonfire.app` (Railway) — see `docs/WEB_ENTITLEMENTS.md` and `docs/POF_CLOUD_AUTH.md`.
 
 These are baked in at **build time** (not runtime on IONOS).
 

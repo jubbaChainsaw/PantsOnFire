@@ -1,0 +1,66 @@
+/* Neon UI component classes (MagicPath); fonts loaded in styles.css */
+.pof-root { font-family: 'PoF Display', Inter, system-ui, sans-serif; text-align: center; }
+:where(.pof-root) :where(button,input,select) { font: inherit; }
+.pof-body { font-family: Inter, system-ui, sans-serif; letter-spacing: normal; }
+.pof-btn:focus-visible, .pof-focus:focus-visible { outline: 3px solid #67e8f9; outline-offset: 3px; }
+@keyframes pof-pop { from{opacity:0; transform: translateY(-6px) scale(.97)} to{opacity:1; transform:none} }
+.pof-pop { animation: pof-pop .16s ease-out; }
+.pof-wall {
+  background-size: cover;
+  background-position: center top;
+  background-repeat: no-repeat;
+}
+.pof-btn{position:relative;display:flex;align-items:center;justify-content:center;gap:.6rem;height:4.4rem;width:100%;padding:0 2.8rem;color:#fff;
+ font-family:'PoF Display',Inter,sans-serif;font-style:italic;font-size:1.9rem;font-weight:400;letter-spacing:.06em;text-transform:uppercase;
+ background:var(--pof-btn,var(--btn-fire)) center/100% 100% no-repeat;text-shadow:0 0 10px var(--pof-glow,#ff7a00),0 2px 0 #000,0 3px 8px #000;
+ transition:transform .12s, filter .15s, opacity .15s;filter:drop-shadow(0 6px 14px rgba(0,0,0,.6));white-space:nowrap;overflow:hidden;min-width:0;isolation:isolate}
+.pof-btn::before{content:"";position:absolute;inset:16% 7%;z-index:-1;clip-path:polygon(4% 0,96% 0,100% 50%,96% 100%,4% 100%,0 50%);background:var(--pof-fill,rgba(40,6,0,.82))}
+.pof-btn:hover:not(:disabled){transform:scale(1.03);filter:drop-shadow(0 0 14px var(--pof-glow,#ff7a00)) brightness(1.12)}
+.pof-btn:active:not(:disabled){transform:scale(.97)}
+.pof-btn:disabled{opacity:.45;cursor:not-allowed;filter:grayscale(.6)}
+.pof-btn-fire{--pof-btn:var(--btn-fire);--pof-glow:#ff7a00;--pof-fill:rgba(60,10,0,.85)}
+.pof-btn-blue{--pof-btn:var(--btn-neon);--pof-glow:#22d3ee;--pof-fill:rgba(0,20,60,.85);background-image:var(--btn-neon)}
+.pof-btn-pink{--pof-btn:var(--btn-pink);--pof-glow:#ff2bd6;--pof-fill:rgba(60,0,45,.85)}
+.pof-btn-purple{--pof-btn:var(--btn-purple);--pof-glow:#a855f7;--pof-fill:rgba(35,0,70,.88)}
+.pof-btn-steel{--pof-btn:var(--btn-steel);--pof-glow:#94a3b8;--pof-fill:rgba(15,15,20,.85)}
+.pof-btn-sm{height:3.4rem;font-size:clamp(.95rem,4.2vw,1.2rem) !important;padding:0 2.4rem}
+.pof-btn-wrap{white-space:normal !important;text-transform:none !important;letter-spacing:normal !important;line-height:1.2 !important;height:auto !important;min-height:3.4rem;padding:.65rem 1.25rem !important;font-family:Inter,system-ui,sans-serif !important;font-style:normal !important;font-weight:700 !important;font-size:clamp(.82rem,3.6vw,1rem) !important;text-shadow:0 1px 0 #000,0 2px 6px rgba(0,0,0,.75) !important}
+.pof-vote-chip{font-family:Inter,system-ui,sans-serif !important;font-style:normal !important;text-transform:none !important;letter-spacing:normal !important;font-size:clamp(.72rem,3.2vw,.9rem) !important;line-height:1.15 !important;height:auto !important;min-height:2.75rem;padding:.45rem .55rem !important;white-space:normal !important;overflow-wrap:anywhere !important;word-break:break-word !important}
+.pof-ui-copy{font-family:Inter,system-ui,sans-serif !important;font-style:normal !important;text-transform:none !important;letter-spacing:normal !important;color:rgba(255,255,255,.94) !important}
+.pof-host-intro-caption-panel{background-color:#b8007a !important;background-image:none !important;isolation:isolate;opacity:1 !important;box-shadow:0 18px 38px rgba(0,0,0,.55)}
+.pof-host-intro-caption-text{font-family:Inter,system-ui,sans-serif !important;font-style:normal !important;font-weight:600 !important;text-transform:none !important;letter-spacing:normal !important;color:#fff !important;opacity:1 !important;text-shadow:0 1px 0 #000,0 2px 8px rgba(0,0,0,.9) !important}
+.pof-root [data-testid='host-intro-caption']{background-color:#b8007a !important;background-image:none !important}
+.pof-root [data-testid='host-intro-caption'] p{color:#fff !important;font-family:Inter,system-ui,sans-serif !important}
+.pof-ui-muted{font-family:Inter,system-ui,sans-serif !important;color:rgba(255,255,255,.82) !important}
+.pof-btn-xl{font-size:2.6rem !important;height:5rem}
+.pof-glass{position:relative;background:linear-gradient(160deg,rgba(18,4,40,.82),rgba(6,2,20,.86));border:2px solid transparent;
+ background-clip:padding-box;box-shadow:0 0 0 2px rgba(255,43,214,.75),0 0 18px rgba(255,43,214,.45),inset 0 0 22px rgba(34,211,238,.18),0 20px 40px rgba(0,0,0,.6)}
+.pof-title{font-family:'PoF Display',sans-serif;font-style:italic;text-transform:uppercase;color:#fff;letter-spacing:.05em;
+ text-shadow:0 0 8px #ff2bd6,0 0 20px rgba(255,43,214,.7),2px 2px 0 #000}
+.pof-iconbtn{display:block;height:3.6rem;width:3.6rem;border-radius:9999px;transition:transform .12s,filter .15s}
+.pof-iconbtn:hover{transform:scale(1.08);filter:drop-shadow(0 0 12px #ff2bd6) brightness(1.15)}
+.pof-iconbtn img{height:100%;width:100%}
+@keyframes pof-float{0%,100%{transform:translateY(0) rotate(var(--r))}50%{transform:translateY(-8px) rotate(var(--r))}}
+.pof-deck{animation:pof-float 5s ease-in-out infinite;border-radius:.7rem;box-shadow:0 0 18px rgba(255,43,214,.55),0 12px 24px rgba(0,0,0,.7)}
+.pof-label{font-family:'PoF Display',sans-serif;font-style:italic;text-transform:uppercase;letter-spacing:.08em;font-size:1.15rem;color:#fde047;text-shadow:0 0 8px rgba(255,43,214,.85),0 2px 0 #000}
+.pof-panel{position:relative;border-radius:1.4rem;background:linear-gradient(160deg,rgba(30,6,60,.78),rgba(8,2,24,.86));border:2px solid rgba(255,43,214,.7);box-shadow:0 0 14px rgba(255,43,214,.45),inset 0 0 14px rgba(34,211,238,.15)}
+.pof-switch{position:relative;height:2.1rem;width:3.9rem;flex-shrink:0;border-radius:9999px;border:2px solid rgba(255,255,255,.35);background:rgba(60,0,30,.85);box-shadow:0 0 10px rgba(255,43,214,.5);transition:all .2s}
+.pof-switch[aria-checked=true]{border-color:#67e8f9;background:rgba(0,80,90,.85);box-shadow:0 0 14px rgba(34,211,238,.85)}
+.pof-switch>span{position:absolute;top:.15rem;left:.2rem;height:1.5rem;width:1.5rem;border-radius:9999px;background:#ff2bd6;box-shadow:0 0 10px #ff2bd6;transition:all .2s}
+.pof-switch[aria-checked=true]>span{left:2rem;background:#67e8f9;box-shadow:0 0 12px #67e8f9}
+.pof-scroll{scrollbar-color:rgba(255,43,214,.5) transparent}
+.pof-choice-flash{box-shadow:0 0 28px rgba(253,224,71,.95),0 0 12px rgba(34,211,238,.85);transform:scale(1.04)}
+.pof-field{width:100%;border-radius:1rem;background:rgba(6,2,22,.85);border:2px solid rgba(34,211,238,.75);box-shadow:0 0 10px rgba(34,211,238,.45),inset 0 0 8px rgba(34,211,238,.15);color:#fff;padding:.7rem .9rem;font-family:'PoF Display',sans-serif;font-size:1.2rem;letter-spacing:.06em;text-align:center;outline:none}
+.pof-field:focus{border-color:#ff2bd6;box-shadow:0 0 16px rgba(255,43,214,.75)}
+.pof-select{appearance:none;-webkit-appearance:none;cursor:pointer;padding-right:2.6rem;text-align:left}
+.pof-chip{font-family:'PoF Display',sans-serif;letter-spacing:.06em;font-size:1.15rem;border-radius:.9rem;padding:.55rem .8rem;color:#fff;background:rgba(6,2,22,.8);border:2px solid rgba(34,211,238,.55);box-shadow:0 0 8px rgba(34,211,238,.3)}
+.pof-sq{display:flex;align-items:center;justify-content:center;height:2.4rem;width:2.4rem;border-radius:.8rem;background:rgba(6,2,22,.85);border:2px solid rgba(255,43,214,.7);box-shadow:0 0 10px rgba(255,43,214,.45);color:#fff}
+.pof-sq.cyan{border-color:rgba(34,211,238,.75);box-shadow:0 0 10px rgba(34,211,238,.45)}
+.pof-root h1,.pof-root h2,.pof-root h3,.pof-root .font-black{font-family:'PoF Display',Inter,sans-serif;font-style:italic;letter-spacing:.05em}
+.pof-heading{font-family:'PoF Display',Inter,sans-serif;font-style:italic;text-transform:uppercase;letter-spacing:.05em}
+/* PoF Display omits a clean “?” — use UI font for punctuation in headings */
+.pof-display-punct{font-family:Inter,system-ui,sans-serif;font-style:normal;font-weight:800;text-transform:none;letter-spacing:0}
+.content-pack-prompt-copy,.content-pack-prompt-copy .content-pack-prompt-body{text-align:center}
+.pof-desc,.pof-root .pof-desc{font-family:Inter,system-ui,sans-serif;text-transform:none;letter-spacing:normal;text-align:left}
+.pof-settings-toggle-col{width:3.9rem;flex-shrink:0;display:flex;justify-content:flex-end;align-items:center}
+.pof-range{width:100%;height:.35rem;accent-color:#fde047;cursor:pointer}

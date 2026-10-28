@@ -32,8 +32,6 @@ jobs:
         env:
           VITE_LOBBY_SERVER_URL: https://api.pantsonfire.app
           VITE_WEB_JOIN_ONLY: 'true'
-          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
-          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
         run: npm run build
 
       - name: Verify dist and SPA .htaccess

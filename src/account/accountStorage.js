@@ -64,7 +64,12 @@ export function readAccountSession() {
     tierId: String(raw.tierId || TIER_FIBBER).trim() || TIER_FIBBER,
     addonTwistTruth: Boolean(raw.addonTwistTruth),
     unlockedThemePackIds: normalizeUnlockedThemePackIds(raw.unlockedThemePackIds || []),
-    authProvider: raw.authProvider === 'supabase' ? 'supabase' : 'local',
+    authProvider:
+      raw.authProvider === 'supabase'
+        ? 'supabase'
+        : raw.authProvider === 'pof'
+          ? 'pof'
+          : 'local',
   };
 }
 
@@ -231,7 +236,7 @@ export function purchaseDlcPackDemo(userId, packId) {
 
 export function syncSessionPackIds(unlockedThemePackIds) {
   const sess = readAccountSession();
-  if (!sess || sess.authProvider === 'supabase') return;
+  if (!sess || sess.authProvider === 'supabase' || sess.authProvider === 'pof') return;
   const next = {
     ...sess,
     unlockedThemePackIds: normalizeUnlockedThemePackIds(unlockedThemePackIds),

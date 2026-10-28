@@ -5,6 +5,16 @@ import { Server } from 'socket.io';
 import { AccessToken } from 'livekit-server-sdk';
 import { createLobbyStore, toClientSnapshot } from './storage/index.js';
 import { mountEntitlementsRoutes } from './entitlementsRoutes.js';
+import { mountStripeBillingRoutes, mountStripeWebhook } from './stripeBillingRoutes.js';
+import { mountPoFAuthRoutes } from './pofAuthRoutes.js';
+import {
+  createPoFAccountStore,
+  ensurePoFAccountSchema,
+} from './pofAccountStore.js';
+import {
+  createPostgresEntitlementsStore,
+  ensurePoFEntitlementsSchema,
+} from './pofEntitlementsStore.js';
 
 const PORT = Number(process.env.LOBBY_SERVER_PORT || process.env.PORT || 8787);
 const CLIENT_ORIGINS_RAW = String(
@@ -140,31 +150,49 @@ const resumeLimiter = createRateLimiter({ windowMs: 60_000, max: 30 });
 const lookupLimiter = createRateLimiter({ windowMs: 60_000, max: 60 });
 const voiceTokenLimiter = createRateLimiter({ windowMs: 60_000, max: 12 });
 
+// Entitlements: Postgres when DATABASE_URL is set; else Redis; else in-memory (local dev).
+const entitlementsRedisPrefix = String(process.env.ENTITLEMENTS_REDIS_KEY_PREFIX || 'pof:entitlements').trim() || 'pof:entitlements';
+const databaseUrl = String(process.env.DATABASE_URL || '').trim();
+let pgPool = null;
+if (databaseUrl) {
+  const { default: pg } = await import('pg');
+  pgPool = new pg.Pool({ connectionString: databaseUrl, max: 10 });
+  await ensurePoFAccountSchema(pgPool);
+  await ensurePoFEntitlementsSchema(pgPool);
+}
+
+const accountStore = createPoFAccountStore(pgPool);
+
+let entitlementsStore;
+if (pgPool) {
+  entitlementsStore = createPostgresEntitlementsStore(pgPool);
+} else if (redisClient) {
+  entitlementsStore = {
+    get: async (userId) => {
+      const raw = await redisClient.get(`${entitlementsRedisPrefix}:${userId}`);
+      if (!raw) return undefined;
+      try {
+        return JSON.parse(raw);
+      } catch {
+        return undefined;
+      }
+    },
+    set: async (userId, row) => {
+      await redisClient.set(`${entitlementsRedisPrefix}:${userId}`, JSON.stringify(row));
+    },
+  };
+} else {
+  entitlementsStore = new Map();
+}
+
 const app = express();
 app.set('trust proxy', 1);
 app.use(cors({ origin: corsOriginHandler }));
-app.use(express.json({ limit: '1mb' }));
-
-// Entitlements survive restarts when Redis is configured; the Map fallback is
-// for local development only.
-const entitlementsRedisPrefix = String(process.env.ENTITLEMENTS_REDIS_KEY_PREFIX || 'pof:entitlements').trim() || 'pof:entitlements';
-const entitlementsStore = redisClient
-  ? {
-      get: async (userId) => {
-        const raw = await redisClient.get(`${entitlementsRedisPrefix}:${userId}`);
-        if (!raw) return undefined;
-        try {
-          return JSON.parse(raw);
-        } catch {
-          return undefined;
-        }
-      },
-      set: async (userId, row) => {
-        await redisClient.set(`${entitlementsRedisPrefix}:${userId}`, JSON.stringify(row));
-      },
-    }
-  : new Map();
+mountStripeWebhook(app, { store: entitlementsStore });
+app.use(express.json({ limit: '3mb' }));
+mountPoFAuthRoutes(app, { accountStore });
 mountEntitlementsRoutes(app, { store: entitlementsStore });
+mountStripeBillingRoutes(app, { store: entitlementsStore });
 
 const httpServer = createServer(app);
 const io = new Server(httpServer, {

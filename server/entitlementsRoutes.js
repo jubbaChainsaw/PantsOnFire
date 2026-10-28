@@ -1,5 +1,5 @@
 import { timingSafeEqual } from 'node:crypto';
-import { createClient } from '@supabase/supabase-js';
+import { resolveAuthUserFromBearer } from './resolveAuthUser.js';
 
 const TIER_FIBBER = 'fibber';
 const TIER_LOCAL_LIAR = 'local_liar';
@@ -154,39 +154,21 @@ function timingSafeStringEqual(a, b) {
 export function mountEntitlementsRoutes(app, { store } = {}) {
   // The store may be a Map (dev) or an async get/set adapter (e.g. Redis).
   const entitlementStore = store || new Map();
-  const supabaseUrl = String(
-    process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || '',
-  ).trim();
-  const serviceKey = String(process.env.SUPABASE_SERVICE_ROLE_KEY || '').trim();
   const webhookSecret = String(process.env.REVENUECAT_WEBHOOK_SECRET || '').trim();
-  let adminClient = null;
-  function getAdminClient() {
-    if (!adminClient) {
-      adminClient = createClient(supabaseUrl, serviceKey, {
-        auth: { autoRefreshToken: false, persistSession: false },
-      });
-    }
-    return adminClient;
-  }
 
   app.get('/api/me/entitlements', async (req, res) => {
-    const token = String(req.headers.authorization || '')
-      .replace(/^Bearer\s+/i, '')
-      .trim();
-    if (!token) {
-      res.status(401).json({ error: 'missing-token' });
+    const resolved = await resolveAuthUserFromBearer(req);
+    if (resolved.error) {
+      const status =
+        resolved.error === 'missing-token'
+          ? 401
+          : resolved.error === 'server-auth-not-configured'
+            ? 503
+            : 401;
+      res.status(status).json({ error: resolved.error });
       return;
     }
-    if (!supabaseUrl || !serviceKey) {
-      res.status(503).json({ error: 'server-auth-not-configured' });
-      return;
-    }
-    const { data, error } = await getAdminClient().auth.getUser(token);
-    if (error || !data?.user?.id) {
-      res.status(401).json({ error: 'invalid-token' });
-      return;
-    }
-    const userId = data.user.id;
+    const userId = resolved.userId;
     const stored = await Promise.resolve(entitlementStore.get(userId));
     const row = stored
       ? mergeEntitlementsRow(defaultEntitlements(), stored)
