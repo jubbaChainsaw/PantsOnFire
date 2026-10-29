@@ -20,10 +20,6 @@ const DEFAULT_LOBBY_SETTINGS = {
   themeCardStyle: 'classic',
   allowFriendsJoinLobby: false,
   inviteUsernames: [],
-  grillSettings: {
-    micEnabled: true,
-    ttsEnabled: true,
-  },
 };
 
 const SERVER_BANNED_WORD_BANK = {
@@ -174,9 +170,6 @@ function sanitizeLobbySettings(raw = {}) {
   const winCondition = String(raw.winCondition || DEFAULT_LOBBY_SETTINGS.winCondition).trim();
   const pointsToWin = Number(raw.pointsToWin);
   const roundsPerPlayer = Number(raw.roundsPerPlayer);
-  const grillSettings = raw.grillSettings && typeof raw.grillSettings === 'object'
-    ? raw.grillSettings
-    : {};
   const inviteUsernames = Array.isArray(raw.inviteUsernames)
     ? raw.inviteUsernames
       .map((value) => String(value || '').trim())
@@ -200,10 +193,6 @@ function sanitizeLobbySettings(raw = {}) {
         : 'classic',
     allowFriendsJoinLobby: Boolean(raw.allowFriendsJoinLobby),
     inviteUsernames,
-    grillSettings: {
-      micEnabled: grillSettings.micEnabled !== false,
-      ttsEnabled: grillSettings.ttsEnabled !== false,
-    },
   };
 }
 
@@ -256,24 +245,12 @@ function scoreRoundServer(players, round, votesByPlayerId = {}) {
   const topVotes = Math.max(0, ...Object.values(tally));
   const caughtLiars = liarIds.filter((id) => (tally[id] || 0) > 0 && (tally[id] || 0) === topVotes);
   const imposterCaught = caughtLiars.length === liarIds.length;
-  const isGrillRound = round.roundTypeId === 'grill';
-  const grillData = isGrillRound && round?.grillData && typeof round.grillData === 'object'
-    ? round.grillData
-    : {};
-  const resolvedGuesserId = String(grillData.guessWinnerId || '').trim();
-  const disqualifiedPlayerIds = new Set(
-    Array.isArray(grillData.disqualifiedPlayerIds)
-      ? grillData.disqualifiedPlayerIds.map((value) => String(value || '').trim()).filter(Boolean)
-      : []
-  );
   const roundGains = {};
   const roundBreakdown = {};
   const nextPlayers = players.map((player) => {
     let gain = 0;
     let voteHit = 0;
     let liarSurvived = 0;
-    let grillTeamBonus = 0;
-    let grillLiarSwing = 0;
     if (liarIds.includes(votesByPlayerId[player.id])) {
       gain += 1;
       voteHit = 1;
@@ -282,30 +259,8 @@ function scoreRoundServer(players, round, votesByPlayerId = {}) {
       gain += 2;
       liarSurvived = 2;
     }
-    if (isGrillRound) {
-      if (imposterCaught) {
-        gain += 2;
-        grillTeamBonus = 2;
-      } else if (liarIds.includes(player.id)) {
-        gain += 2;
-        grillLiarSwing = 2;
-      } else {
-        gain -= 1;
-        grillLiarSwing = -1;
-      }
-      if (resolvedGuesserId && player.id === resolvedGuesserId) {
-        if (liarIds.includes(player.id)) {
-          gain -= 1;
-        } else {
-          gain += 2;
-        }
-      }
-      if (disqualifiedPlayerIds.has(player.id)) {
-        gain -= 1;
-      }
-    }
     roundGains[player.id] = gain;
-    roundBreakdown[player.id] = { voteHit, liarSurvived, grillTeamBonus, grillLiarSwing };
+    roundBreakdown[player.id] = { voteHit, liarSurvived };
     return { ...player, score: Math.max(0, Number(player.score || 0) + gain) };
   });
   return { nextPlayers, tally, imposterCaught, roundGains, roundBreakdown };
@@ -316,7 +271,6 @@ function normalizeRoundPhase(rawPhase, roundTypeId = 'prompt') {
   if (phase === 'host-intro') return 'host-intro';
   if (phase === 'reveal') return 'reveal';
   if (phase === 'discussion') return 'discussion';
-  if (phase === 'grill') return roundTypeId === 'grill' ? 'grill' : 'discussion';
   if (phase === 'voting') return 'voting';
   if (phase === 'liar-reveal') return 'liar-reveal';
   if (phase === 'results') return 'results';
@@ -326,8 +280,8 @@ function normalizeRoundPhase(rawPhase, roundTypeId = 'prompt') {
 
 function getNextRoundPhase(currentPhase, roundTypeId = 'prompt') {
   if (currentPhase === 'host-intro') return 'reveal';
-  if (currentPhase === 'reveal') return roundTypeId === 'grill' ? 'grill' : 'discussion';
-  if (currentPhase === 'discussion' || currentPhase === 'grill') return 'voting';
+  if (currentPhase === 'reveal') return 'discussion';
+  if (currentPhase === 'discussion') return 'voting';
   if (currentPhase === 'liar-reveal') return 'results';
   return null;
 }
@@ -430,13 +384,6 @@ function buildAuthoritativeRound(players = [], roundNumber = 1, recentPromptKeys
     imposterIds: liarIds,
     chooserId: pickRandom(players)?.id || players[0].id,
     leaderId: pickRandom(players)?.id || players[0].id,
-    grillData: {
-      questionsPerPlayer: 0,
-      micEnabled: false,
-      ttsEnabled: false,
-      transcript: [],
-      askedCounts: {},
-    },
     phase: 'host-intro',
     phaseUpdatedAt: nowIso(),
     votesByPlayerId: {},
@@ -462,7 +409,6 @@ function toPublicRound(round) {
     imposterIds,
     imposterPrompt,
     commonPrompt,
-    grillData,
     pairsRevealImages,
     ...publicRound
   } = round;
@@ -476,7 +422,6 @@ function toPublicRound(round) {
       imposterIds: Array.isArray(imposterIds) ? [...imposterIds] : [],
       imposterPrompt: imposterPrompt ?? null,
       commonPrompt: commonPrompt ?? null,
-      grillData: grillData ?? null,
       pairsRevealImages: pairsRevealImages ?? null,
     };
   }

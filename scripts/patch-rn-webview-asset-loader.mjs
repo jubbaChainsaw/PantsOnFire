@@ -97,6 +97,28 @@ if (existsSync(gradleTemplate) && existsSync(path.dirname(gradleDest))) {
   console.log('Applied native-android/app.build.gradle');
 }
 
+const releaseGradleProps = path.resolve('native-android/gradle.release.properties');
+const gradlePropsDest = path.resolve('android/gradle.properties');
+if (existsSync(releaseGradleProps) && existsSync(gradlePropsDest)) {
+  const existing = readFileSync(gradlePropsDest, 'utf8');
+  const patch = readFileSync(releaseGradleProps, 'utf8');
+  const lines = patch
+    .split('\n')
+    .map((line) => line.trim())
+    .filter((line) => line && !line.startsWith('#'));
+  let next = existing;
+  for (const line of lines) {
+    const key = line.split('=')[0];
+    if (new RegExp(`^${key.replace(/[.*+?^${}()|[\\]\\\\]/g, '\\\\$&')}=`, 'm').test(next)) {
+      next = next.replace(new RegExp(`^${key.replace(/[.*+?^${}()|[\\]\\\\]/g, '\\\\$&')}=.*$`, 'm'), line);
+    } else {
+      next += `\n${line}\n`;
+    }
+  }
+  writeFileSync(gradlePropsDest, next);
+  console.log('Applied native-android/gradle.release.properties');
+}
+
 const mainApp = path.resolve(
   'android/app/src/main/java/app/pantsonfire/findtheliar/MainApplication.kt',
 );

@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Post-process Vite dist-android: keep Default theme only, drop Grill 'Em assets,
+ * Post-process Vite dist-android: keep Default theme only, drop unused round assets,
  * prefer WebP rasters, downscale large images for mobile display sizes.
  */
 import {
@@ -119,8 +119,30 @@ async function main() {
     }
   }
 
+  let mediaBytesRemoved = 0;
+  for (const file of walkFiles(distDir)) {
+    if (!/\.(mp4|webm|mov)$/i.test(file)) continue;
+    try {
+      mediaBytesRemoved += statSync(file).size;
+      rmSync(file, { force: true });
+    } catch {
+      /* ignore */
+    }
+  }
+
   const grillRound = path.join(distDir, 'assets/images/round-types/grill-logo.svg');
   if (existsSync(grillRound)) rmSync(grillRound, { force: true });
+
+  let grillAudioBytesRemoved = 0;
+  for (const file of walkFiles(distDir)) {
+    if (!/stinger_grill/i.test(path.basename(file))) continue;
+    try {
+      grillAudioBytesRemoved += statSync(file).size;
+      rmSync(file, { force: true });
+    } catch {
+      /* ignore */
+    }
+  }
 
   let rasterBefore = 0;
   let rasterAfter = 0;
@@ -152,6 +174,8 @@ async function main() {
     rasterBefore,
     rasterAfter,
     pngDuplicatesRemoved: pngDropped,
+    mediaBytesRemoved,
+    grillAudioBytesRemoved,
     sha256: await sha256File(path.join(distDir, 'index.html')).catch(() => null),
   };
   writeFileSync(path.join(distDir, 'mobile-trim-report.json'), `${JSON.stringify(report, null, 2)}\n`);

@@ -39,7 +39,7 @@ function seedProfile() {
         votesCorrect: 28,
         votesIncorrect: 6,
         themesPlayed: { Default: 4, Pirates: 3, Cowboys: 2, Gangsters: 1 },
-        roundTypesPlayed: { prompt: 8, pairs: 3, grill: 2, twotruths: 1 },
+        roundTypesPlayed: { prompt: 8, pairs: 3, twotruths: 1 },
       },
       recentGames: [
         {

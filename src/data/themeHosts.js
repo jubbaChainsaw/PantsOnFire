@@ -16,7 +16,6 @@ const ROUND_TYPE_FLAVOR_BY_ID = {
   noise: 'sound-off bluffs',
   offtopic: 'off-topic defenses',
   chain: 'chain reaction links',
-  grill: "Grill 'Em interrogations",
 };
 
 function fillTemplate(template, replacements) {
@@ -639,50 +638,3 @@ export function getIanPosterHostDisplayPersona(themeName = 'Default') {
   };
 }
 
-const THEME_GRILL_GUEST_HOST_NAMES = {
-  Default: 'Blaze Byte',
-  Pirates: 'Captain Charbroil',
-  'Murder Mystery': 'Butler Burnham',
-  'Cops and Robbers': 'Chief Scorch',
-  Spies: 'Agent Cinder',
-  Cowboys: 'Tex Tinder',
-  Gangsters: 'Vinny Volcano',
-  'Ghosts and Ghouls': 'Phantom Flame',
-  Monsters: 'Inferno Fang',
-  'Rock Stars': 'Ember Amp',
-  'Flying Squad': 'Afterburn Ace',
-  'Drag Queens': 'Dame Flambe',
-  Superheroes: 'Captain Kindling',
-  Aliens: 'Solar Flarex',
-  Medical: 'Dr. Sizzle',
-  Royalty: 'Duke Flambard',
-  Wrestlers: 'The Pyroplex',
-  Cyberpunk: 'Neon Ember',
-  Vikings: 'Torchbeard',
-  Ninjas: 'Ashinobi',
-  'Mythology (Gods & Legends)': 'Hephaesizzle',
-  'Post-Apocalypse': 'Rustfire Rex',
-  Carnival: 'Ringmaster Raze',
-  'Wizards & Witches': 'Pyromancer Puck',
-  'Time Travelers': 'Chrono Coal',
-  Gladiators: 'Ignis Max',
-  Medieval: 'Sir Emberlot',
-  'Law and Order': 'Judge Char',
-  'Sci-Fi': 'Nova Cinder',
-  Anime: 'Pyro-tan',
-  Cartoons: 'Zap Zoodle',
-  'Under the Sea': 'Captain Coralflare',
-  Military: 'Colonel Blaze',
-  Animals: 'Furricane',
-  Sports: 'Scorch Johnson',
-};
-
-export function pickThemeGuestHostName(themeName = 'Default', roundTypeId = 'prompt') {
-  if (roundTypeId !== 'grill') return '';
-  const canonical = toCanonicalThemeName(themeName);
-  return (
-    THEME_GRILL_GUEST_HOST_NAMES[themeName]
-    || THEME_GRILL_GUEST_HOST_NAMES[canonical]
-    || THEME_GRILL_GUEST_HOST_NAMES.Default
-  );
-}

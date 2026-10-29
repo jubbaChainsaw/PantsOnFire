@@ -93,14 +93,6 @@ export const THEME_ASSETS = {
     iconSheet: '/assets/themes/wrestlers/icons/icons-sheet.png',
     uiBanner: '/assets/themes/wrestlers/ui/banner.png',
   },
-  GrillEm: {
-    personaHostIdle: '/assets/themes/grillem/hosts/persona-host-idle.png',
-    personaHostTalk1: '/assets/themes/grillem/hosts/persona-host-talk-1.png',
-    personaHostTalk2: '/assets/themes/grillem/hosts/persona-host-talk-2.png',
-    personaHostTalk3: '/assets/themes/grillem/hosts/persona-host-talk-3.png',
-    iconSheet: '/assets/themes/grillem/icons/icons-sheet.png',
-    uiBanner: '/assets/themes/grillem/ui/banner.png',
-  },
   Cyberpunk: {
     personaHostIdle: '/assets/themes/cyberpunk/hosts/persona-host-idle.png',
     personaHostTalk1: '/assets/themes/cyberpunk/hosts/persona-host-talk-1.png',
@@ -194,7 +186,6 @@ const THEME_CARD_SLUGS = {
   Gangsters: 'gangsters',
   'Ghosts and Ghouls': 'ghosts-and-ghouls',
   Gladiators: 'gladiators',
-  GrillEm: 'grillem',
   'Law and Order': 'law-and-order',
   Medical: 'medical',
   Medieval: 'medieval',

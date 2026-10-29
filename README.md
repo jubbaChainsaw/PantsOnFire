@@ -51,12 +51,6 @@ Think social deduction meets gameshow energy, with neon arcade style and rapid-f
 - Visual clue round in pass-the-phone flow
 - Great for fast, high-confusion rounds
 
-### Grill 'Em (AI Round)
-- Players interrogate AI host **Blaze Byte**
-- Liars are shown hidden AI context and try to steer suspicion
-- Mic input + spoken AI responses are supported where available
-- Questions per player auto-scale to target ~20 total questions per round
-
 ---
 
 ## Modes & Rules

@@ -70,4 +70,4 @@ export const ONLINE_TWO_TRUTHS_INPUT_TIMER_SEC = 60;
 export const SELECTION_FLASH_LAST_SEC = 3;
 
 /** Round types removed from player-facing selection (legacy data may still reference these ids). */
-export const EXCLUDED_PLAYER_ROUND_TYPE_IDS = new Set(['grill', 'prompt']);
+export const EXCLUDED_PLAYER_ROUND_TYPE_IDS = new Set(['prompt']);

@@ -109,13 +109,6 @@ export const COPY_BANK = {
     'Do not read your card verbatim. Make it sound natural and specific.',
     'Find the player whose clue feels almost right, but never fully fits.',
   ],
-  hostStingerGrill: [
-    'Mic up and ask sharp questions. I only answer what you earn.',
-    'I speak in clues, not confessions. Listen between the lines.',
-    'Liars saw the target first, so watch who steers too hard.',
-    'Fast questions, faster reads. Keep your ears open.',
-    'Interrogate me like detectives, not tourists.',
-  ],
   gangsterHostStingerPrompt: [
     'Keep your story tight and your eyes colder than ice.',
     'Talk clean, no waffling. We spot nerves fast round here.',
@@ -136,13 +129,6 @@ export const COPY_BANK = {
     'A small clue can sink a big mouth.',
     'Say enough to survive, not enough to confess.',
     'Trust your eyes, never trust the room.',
-  ],
-  gangsterHostStingerGrill: [
-    'Mic hot. Ask sharp. I do not sing for free.',
-    'I answer in hints, not handouts. Keep up.',
-    'Liars got the inside line. Watch who pushes too hard.',
-    'Fast questions, faster reads. No tourists at this table.',
-    'Interrogate me proper, detective.',
   ],
   monsterHostStingerPrompt: [
     'Do not scream yet. First, give a clue and pretend to be normal.',
@@ -165,13 +151,6 @@ export const COPY_BANK = {
     'Describe just enough to survive the night.',
     'Trust your eyes, distrust every heartbeat in this room.',
   ],
-  monsterHostStingerGrill: [
-    'Ask through the mic. I answer from the void.',
-    'My answers are clues, not comfort.',
-    'Liars know the target, so watch who hunts too hard.',
-    'Interrogate fast. The moon is not waiting.',
-    'Sharp questions only, mortals.',
-  ],
   rockHostStingerPrompt: [
     'Keep your clue tight and your stage face tighter.',
     'No rambling solos. One clean riff and pass it on.',
@@ -193,13 +172,6 @@ export const COPY_BANK = {
     'Give a punchy clue and leave the mystery alive.',
     'Trust the visual, distrust the front row.',
   ],
-  rockHostStingerGrill: [
-    'Mic check. Ask hard. I answer in cryptic choruses.',
-    'I drop hints, not full lyrics.',
-    'Liars heard the track early, so watch the conductors.',
-    'Fast questions, arena-level instincts.',
-    'Interrogate like the encore depends on it.',
-  ],
   alienHostStingerPrompt: [
     'Remain calm, earthlings. Provide one clue and do not combust.',
     'Your disguise as a normal person is under review.',
@@ -220,13 +192,6 @@ export const COPY_BANK = {
     'Small details expose big impostors.',
     'Share enough data to survive, not enough to self-report.',
     'Trust your optics, question every lifeform.',
-  ],
-  alienHostStingerGrill: [
-    'Open mic channel. Ask and I will respond in classified hints.',
-    'My output is suggestive, not definitive.',
-    'Liars possess prior knowledge; monitor steering behavior.',
-    'Rapid-fire questions recommended.',
-    'Interrogate efficiently, carbon units.',
   ],
   gangsterRevealLiar: [
     'You filthy rat. You better not squeal.',
@@ -281,7 +246,6 @@ export const THEME_STINGER_KEY_OVERRIDES = {
     hostStingerMeme: 'gangsterHostStingerPicture',
     hostStingerNoise: 'gangsterHostStingerPrompt',
     hostStingerOfftopic: 'gangsterHostStingerOpinion',
-    hostStingerGrill: 'gangsterHostStingerGrill',
   },
   'Ghosts and Ghouls': {
     hostStingerPrompt: 'monsterHostStingerPrompt',
@@ -290,7 +254,6 @@ export const THEME_STINGER_KEY_OVERRIDES = {
     hostStingerMeme: 'monsterHostStingerPicture',
     hostStingerNoise: 'monsterHostStingerPrompt',
     hostStingerOfftopic: 'monsterHostStingerOpinion',
-    hostStingerGrill: 'monsterHostStingerGrill',
   },
   'Rock Stars': {
     hostStingerPrompt: 'rockHostStingerPrompt',
@@ -299,7 +262,6 @@ export const THEME_STINGER_KEY_OVERRIDES = {
     hostStingerMeme: 'rockHostStingerPicture',
     hostStingerNoise: 'rockHostStingerPrompt',
     hostStingerOfftopic: 'rockHostStingerOpinion',
-    hostStingerGrill: 'rockHostStingerGrill',
   },
   Aliens: {
     hostStingerPrompt: 'alienHostStingerPrompt',
@@ -308,6 +270,5 @@ export const THEME_STINGER_KEY_OVERRIDES = {
     hostStingerMeme: 'alienHostStingerPicture',
     hostStingerNoise: 'alienHostStingerPrompt',
     hostStingerOfftopic: 'alienHostStingerOpinion',
-    hostStingerGrill: 'alienHostStingerGrill',
   },
 };
