@@ -1,7 +1,11 @@
 import { useMemo, useState } from 'react';
 import { ChevronLeft } from 'lucide-react';
-import { ACHIEVEMENT_DEFINITIONS, REFERRAL_MYSTERY_ACHIEVEMENT } from '../../data/playerProfile/achievements.js';
-import { ULTIMATE_LIAR_THEME_NAME } from '../../data/dlc/themePacks/ultimate-liar/themePack.js';
+import { ACHIEVEMENT_DEFINITIONS } from '../../data/playerProfile/achievements.js';
+import {
+  REFERRAL_SECRET_THEME_UNLOCKS,
+  referralConvertedProgress,
+  referralSecretThemeUnlocked,
+} from '../../data/referralSecretThemes.js';
 import {
   achievementProgressFor,
 } from '../../data/playerProfile/profileProgress.js';
@@ -15,6 +19,7 @@ import {
 } from '../../data/playerProfile/profileModel.js';
 import { resolveBundledAssetSrc } from '../../lib/publicAssetUrl.js';
 import { defaultClassicBackSrc } from '../../data/playerProfile/deckCatalog.js';
+import { getThemeCardAssets } from '../../data/themeAssets.js';
 
 const TABS = [
   { id: 'stats', label: 'Stats' },
@@ -50,11 +55,7 @@ export default function NeonPlayerProfileScreen({
   );
   const unlockableBacks = listDefaultUnlockableBacks();
   const unlockedBackSlugs = new Set(profile?.unlockedDefaultBackSlugs || []);
-  const ultimateLiarUnlocked = (profile?.achievementUnlockedThemeNames || []).includes(
-    ULTIMATE_LIAR_THEME_NAME,
-  );
-  const referralInvited = referralSummary?.stats?.invited ?? 0;
-  const referralConverted = referralSummary?.stats?.converted ?? 0;
+  const referralStats = referralSummary?.stats || {};
   const inviteUrl = referralSummary?.inviteUrl || '';
 
   async function copyInviteLink() {
@@ -262,81 +263,95 @@ export default function NeonPlayerProfileScreen({
 
         {tab === 'achievements' && (
           <div className="mt-5 space-y-3" data-testid="profile-achievements-panel">
-            {cloudSignedIn ? (
-              <div
-                className="rounded-2xl border border-violet-300/35 bg-violet-500/10 p-3"
-                data-testid="referral-invite-panel"
-              >
-                <div className="pof-heading text-sm text-violet-100">Your invite link</div>
-                <p className="mt-1 text-xs text-white/65">
-                  Share with friends. When they sign up and make their first paid upgrade, you
-                  unlock the secret Ultimate Liar theme.
-                </p>
-                {inviteUrl ? (
-                  <div className="mt-2 break-all rounded-xl border border-white/10 bg-black/30 px-3 py-2 text-[0.65rem] text-cyan-100">
-                    {inviteUrl}
-                  </div>
-                ) : (
-                  <p className="mt-2 text-xs text-white/50">Loading your code…</p>
-                )}
-                <div className="mt-2 flex flex-wrap gap-2">
-                  <button
-                    type="button"
-                    className="pof-btn pof-focus rounded-full border border-white/20 px-3 py-1 text-xs text-white"
-                    data-testid="referral-copy-link"
-                    onClick={() => copyInviteLink()}
-                  >
-                    Copy link
-                  </button>
-                  <button
-                    type="button"
-                    className="pof-btn pof-focus rounded-full border border-fuchsia-300/40 bg-fuchsia-500/15 px-3 py-1 text-xs text-fuchsia-100"
-                    data-testid="referral-share-link"
-                    onClick={() => shareInviteLink()}
-                  >
-                    Share
-                  </button>
-                </div>
-              </div>
-            ) : null}
-            <div
-              data-testid="achievement-row-referral-mystery"
-              className={`rounded-2xl border p-3 ${
-                ultimateLiarUnlocked
-                  ? 'border-emerald-300/40 bg-emerald-500/10'
-                  : 'border-violet-300/30 bg-black/35'
-              }`}
-            >
-              <div className="flex items-start justify-between gap-2">
-                <div>
-                  <div className="pof-heading text-sm text-yellow-200">
-                    {REFERRAL_MYSTERY_ACHIEVEMENT.name}
-                  </div>
-                  <p className="mt-1 text-xs text-white/70">
-                    {REFERRAL_MYSTERY_ACHIEVEMENT.description}
-                  </p>
-                </div>
-                {ultimateLiarUnlocked ? (
-                  <span className="pof-heading text-[0.6rem] text-emerald-200">Unlocked</span>
-                ) : (
-                  <span className="pof-heading text-[0.6rem] text-violet-200">Secret</span>
-                )}
-              </div>
-              <div className="mt-2 h-2 overflow-hidden rounded-full bg-white/10">
+            {REFERRAL_SECRET_THEME_UNLOCKS.map((entry) => {
+              const themeUnlocked = referralSecretThemeUnlocked(profile, entry.themeName);
+              const progress = referralConvertedProgress(
+                referralStats,
+                entry.conversionsRequired,
+              );
+              const showShare = cloudSignedIn && !themeUnlocked;
+              const thumbSrc = themeUnlocked
+                ? getThemeCardAssets(entry.themeName).promptCardBackClassic
+                : entry.pack.mysteryIcon;
+              return (
                 <div
-                  className="h-full bg-gradient-to-r from-violet-400 to-fuchsia-300"
-                  style={{
-                    width: `${ultimateLiarUnlocked ? 100 : Math.min(100, referralConverted > 0 ? 85 : referralInvited > 0 ? 35 : 4)}%`,
-                  }}
-                />
-              </div>
-              <div className="mt-1 text-[0.62rem] text-white/50">
-                Invited {referralInvited} · Converted {referralConverted}
-                {ultimateLiarUnlocked
-                  ? ` · Reward: ${REFERRAL_MYSTERY_ACHIEVEMENT.themeReward} theme`
-                  : ' · Reward: Ultimate Liar theme'}
-              </div>
-            </div>
+                  key={entry.id}
+                  data-testid={`achievement-row-${entry.id}`}
+                  className={`rounded-2xl border p-3 ${
+                    themeUnlocked
+                      ? 'border-emerald-300/40 bg-emerald-500/10'
+                      : 'border-violet-300/30 bg-black/35'
+                  }`}
+                >
+                  <div className="flex items-start gap-3">
+                    <img
+                      src={resolveBundledAssetSrc(thumbSrc)}
+                      alt=""
+                      className={`h-14 w-10 shrink-0 rounded-lg object-cover ${
+                        themeUnlocked ? '' : 'opacity-90'
+                      }`}
+                    />
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-start justify-between gap-2">
+                        <div>
+                          <div className="pof-heading text-sm text-yellow-200">
+                            {themeUnlocked ? entry.themeName : entry.achievementTitle}
+                          </div>
+                          {!themeUnlocked ? (
+                            <p className="mt-1 text-xs text-white/65">
+                              Friends must sign up with your invite link, then make their first
+                              paid upgrade or purchase.
+                            </p>
+                          ) : null}
+                        </div>
+                        {themeUnlocked ? (
+                          <span className="pof-heading shrink-0 text-[0.6rem] text-emerald-200">
+                            Unlocked
+                          </span>
+                        ) : (
+                          <span className="pof-heading shrink-0 text-[0.6rem] text-violet-200">
+                            ?
+                          </span>
+                        )}
+                      </div>
+                      {!themeUnlocked ? (
+                        <>
+                          <div className="mt-2 h-2 overflow-hidden rounded-full bg-white/10">
+                            <div
+                              className="h-full bg-gradient-to-r from-violet-400 to-fuchsia-300"
+                              style={{ width: `${Math.round(progress.ratio * 100)}%` }}
+                            />
+                          </div>
+                          <div className="mt-1 text-[0.62rem] text-white/50">
+                            {progress.current}/{progress.target} friends upgraded
+                          </div>
+                        </>
+                      ) : null}
+                      {showShare ? (
+                        <div className="mt-2 flex flex-wrap gap-2">
+                          <button
+                            type="button"
+                            className="pof-btn pof-focus rounded-full border border-fuchsia-300/45 bg-fuchsia-500/15 px-3 py-1 text-xs text-fuchsia-100"
+                            data-testid={`referral-share-${entry.pack.id}`}
+                            onClick={() => shareInviteLink()}
+                          >
+                            Share my invite link
+                          </button>
+                          <button
+                            type="button"
+                            className="pof-btn pof-focus rounded-full border border-white/20 px-3 py-1 text-xs text-white"
+                            data-testid={`referral-copy-${entry.pack.id}`}
+                            onClick={() => copyInviteLink()}
+                          >
+                            Copy link
+                          </button>
+                        </div>
+                      ) : null}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
             {ACHIEVEMENT_DEFINITIONS.map((achievement) => {
               const progress = achievementProgressFor(profile, achievement);
               return (

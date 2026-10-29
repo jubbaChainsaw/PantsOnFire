@@ -17,7 +17,8 @@ export const FEVER_DREAM_2_THEME_PACK = {
   priceLabel: null,
   description: 'Snail senators, teapot aristocrats and a brain in a jar. The dream got weirder.',
   mysteryName: 'Secret Theme ???',
-  mysteryDescription: 'Get 3 friends to join through your link to unlock a secret theme and card deck.',
+  mysteryDescription:
+    'Get 3 friends to sign up through your link and make their first paid upgrade to unlock a secret theme.',
   mysteryIcon: '/assets/themes/fever-dream-2/icons/mystery.svg',
   themes: ['Fever Dream Vol. 2'],
 };

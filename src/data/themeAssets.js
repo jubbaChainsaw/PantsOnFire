@@ -207,7 +207,6 @@ const THEME_CARD_SLUGS = {
   // Secret referral-unlock themes
   'Fever Dream Vol. 1': 'fever-dream-1',
   'Fever Dream Vol. 2': 'fever-dream-2',
-  'Ultimate Liar': 'ultimate-liar',
 };
 
 function cardAssetsForSlug(slug) {

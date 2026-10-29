@@ -1,5 +1,8 @@
-import { ALL_THEME_NAMES, REFERRAL_CONVERSION_THEME_PACKS } from '../themeCatalog.js';
-import { ULTIMATE_LIAR_THEME_NAME } from '../dlc/themePacks/ultimate-liar/themePack.js';
+import { ALL_THEME_NAMES } from '../themeCatalog.js';
+import {
+  REFERRAL_SECRET_THEME_UNLOCKS,
+  referralSecretThemeUnlocked,
+} from '../referralSecretThemes.js';
 import { toCanonicalThemeName } from '../themeAliases.js';
 import { getThemeCardAssets, resolveDefaultPromptBackSrc } from '../themeAssets.js';
 import unlockableManifest from '../../../public/assets/themes/default/cards/unlockable/index.json';
@@ -17,6 +20,34 @@ export function listDefaultUnlockableBacks() {
 
 export function defaultClassicBackSrc() {
   return resolveDefaultPromptBackSrc('classic');
+}
+
+function appendThemeClassicAltEntries(entries, themeName, profile, unlockedAltThemeKeys) {
+  const canonical = toCanonicalThemeName(themeName) || themeName;
+  const assets = getThemeCardAssets(canonical);
+  entries.push({
+    id: `${canonical}-classic`,
+    kind: 'themeClassic',
+    themeName: canonical,
+    style: THEME_CARD_STYLE_CLASSIC,
+    label: `${canonical} · Classic`,
+    src: assets.promptCardBackClassic,
+    unlockHint: 'Classic style — default for every theme',
+    isUnlocked: true,
+  });
+  const altUnlocked = isAltCardStyleUnlocked(canonical, unlockedAltThemeKeys);
+  entries.push({
+    id: `${canonical}-alt`,
+    kind: 'themeAlt',
+    themeName: canonical,
+    style: THEME_CARD_STYLE_ALT,
+    label: `${canonical} · Alt`,
+    src: assets.promptCardBackAlt,
+    unlockHint: altUnlocked
+      ? 'Unlocked — host a full game with this theme'
+      : 'Host a full game with this theme to unlock Alt',
+    isUnlocked: altUnlocked,
+  });
 }
 
 export function buildDeckCatalogEntries(profile, unlockedAltThemeKeys = []) {
@@ -44,48 +75,27 @@ export function buildDeckCatalogEntries(profile, unlockedAltThemeKeys = []) {
     });
   }
   for (const themeName of ALL_THEME_NAMES) {
-    const canonical = toCanonicalThemeName(themeName) || themeName;
-    const assets = getThemeCardAssets(canonical);
-    entries.push({
-      id: `${canonical}-classic`,
-      kind: 'themeClassic',
-      themeName: canonical,
-      style: THEME_CARD_STYLE_CLASSIC,
-      label: `${canonical} · Classic`,
-      src: assets.promptCardBackClassic,
-      unlockHint: 'Classic style — default for every theme',
-      isUnlocked: true,
-    });
-    const altUnlocked = isAltCardStyleUnlocked(canonical, unlockedAltThemeKeys);
-    entries.push({
-      id: `${canonical}-alt`,
-      kind: 'themeAlt',
-      themeName: canonical,
-      style: THEME_CARD_STYLE_ALT,
-      label: `${canonical} · Alt`,
-      src: assets.promptCardBackAlt,
-      unlockHint: altUnlocked
-        ? 'Unlocked — host a full game with this theme'
-        : 'Host a full game with this theme to unlock Alt',
-      isUnlocked: altUnlocked,
-    });
+    appendThemeClassicAltEntries(entries, themeName, profile, unlockedAltThemeKeys);
   }
-  const ultimateUnlocked = (profile?.achievementUnlockedThemeNames || []).includes(
-    ULTIMATE_LIAR_THEME_NAME,
-  );
-  const ultimatePack = REFERRAL_CONVERSION_THEME_PACKS[0];
-  entries.push({
-    id: 'ultimate-liar-secret',
-    kind: 'referralSecret',
-    themeName: ULTIMATE_LIAR_THEME_NAME,
-    style: 'secret',
-    label: ultimateUnlocked ? 'Ultimate Liar · Secret' : 'Ultimate Liar ???',
-    src: ultimateUnlocked
-      ? getThemeCardAssets(ULTIMATE_LIAR_THEME_NAME).promptCardBackClassic
-      : ultimatePack?.mysteryIcon || '/assets/themes/ultimate-liar/icons/mystery-lock.svg',
-    unlockHint: ultimatePack?.mysteryDescription || 'Invite a friend who upgrades',
-    isUnlocked: ultimateUnlocked,
-  });
+  for (const config of REFERRAL_SECRET_THEME_UNLOCKS) {
+    const themeName = config.themeName;
+    const pack = config.pack;
+    const unlocked = referralSecretThemeUnlocked(profile, themeName);
+    if (!unlocked) {
+      entries.push({
+        id: `${pack.id}-mystery-deck`,
+        kind: 'referralSecretMystery',
+        themeName: null,
+        style: 'secret',
+        label: config.mysteryDeckLabel,
+        src: pack.mysteryIcon,
+        unlockHint: config.achievementTitle,
+        isUnlocked: false,
+      });
+      continue;
+    }
+    appendThemeClassicAltEntries(entries, themeName, profile, unlockedAltThemeKeys);
+  }
   return entries;
 }
 

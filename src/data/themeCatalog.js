@@ -12,7 +12,6 @@ import { DRAWN_TO_LIE_THEME_PACK } from './dlc/themePacks/drawn-to-lie/themePack
 import { FEVER_DREAM_1_THEME_PACK } from './dlc/themePacks/fever-dream-1/themePack.js';
 import { FEVER_DREAM_2_THEME_PACK } from './dlc/themePacks/fever-dream-2/themePack.js';
 import { GLITTER_AND_SUSPECTS_THEME_PACK } from './dlc/themePacks/glitter-and-suspects/themePack.js';
-import { ULTIMATE_LIAR_THEME_PACK } from './dlc/themePacks/ultimate-liar/themePack.js';
 
 export const CORE_THEME_NAMES = [
   'Default',
@@ -44,9 +43,6 @@ export const SECRET_THEME_PACKS = [
   FEVER_DREAM_1_THEME_PACK,
   FEVER_DREAM_2_THEME_PACK,
 ];
-
-/** Unlocked when a referred friend makes their first paid purchase. */
-export const REFERRAL_CONVERSION_THEME_PACKS = [ULTIMATE_LIAR_THEME_PACK];
 
 export const SECRET_THEME_NAMES = SECRET_THEME_PACKS.flatMap((pack) => pack.themes || []);
 
@@ -93,15 +89,15 @@ export function getThemeOptions(
       });
     });
   });
-  REFERRAL_CONVERSION_THEME_PACKS.forEach((pack) => {
+  SECRET_THEME_PACKS.forEach((pack) => {
     (pack.themes || []).forEach((themeName) => {
       if (!THEME_META[themeName]) return;
       const canonical = toCanonicalThemeName(themeName) || themeName;
-      const unlocked = achievementThemes.has(canonical);
+      if (!achievementThemes.has(canonical)) return;
       options.push({
         name: themeName,
         isDlc: true,
-        isUnlocked: unlocked,
+        isUnlocked: true,
         packId: pack.id,
         secret: true,
       });

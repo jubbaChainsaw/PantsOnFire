@@ -135,13 +135,22 @@ export const ACHIEVEMENT_DEFINITIONS = [
   },
 ];
 
-export const REFERRAL_MYSTERY_ACHIEVEMENT = {
-  id: 'referral-ultimate-liar',
-  name: 'Invite a friend who upgrades',
-  description:
-    'Share your invite link. When a friend signs up and makes their first paid upgrade, you unlock the secret Ultimate Liar theme.',
-  themeReward: 'Ultimate Liar',
-};
+export const REFERRAL_MYSTERY_ACHIEVEMENTS = [
+  {
+    id: 'referral-fever-dream-1',
+    packId: 'fever-dream-1',
+    themeName: 'Fever Dream Vol. 1',
+    conversionsRequired: 1,
+    achievementTitle: 'Secret theme: invite a friend who joins and upgrades',
+  },
+  {
+    id: 'referral-fever-dream-2',
+    packId: 'fever-dream-2',
+    themeName: 'Fever Dream Vol. 2',
+    conversionsRequired: 3,
+    achievementTitle: 'Secret theme: invite 3 friends who join and upgrade',
+  },
+];
 
 export const ACHIEVEMENT_PACK_FREE_PATH = {
   packId: 'wanted-better-alibis',

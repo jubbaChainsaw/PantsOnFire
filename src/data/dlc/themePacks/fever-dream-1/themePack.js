@@ -17,7 +17,8 @@ export const FEVER_DREAM_1_THEME_PACK = {
   priceLabel: null,
   description: 'Lying robot butlers, crabs in suits and a mushroom bishop. Nobody knows who dreamt them up.',
   mysteryName: 'Secret Theme ???',
-  mysteryDescription: 'Get 1 friend to join through your link to unlock a secret theme and card deck.',
+  mysteryDescription:
+    'Get 1 friend to sign up through your link and make their first paid upgrade to unlock a secret theme.',
   mysteryIcon: '/assets/themes/fever-dream-1/icons/mystery.svg',
   themes: ['Fever Dream Vol. 1'],
 };

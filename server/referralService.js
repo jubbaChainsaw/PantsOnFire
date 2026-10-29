@@ -1,4 +1,4 @@
-import { ULTIMATE_LIAR_THEME_NAME } from './referralConstants.js';
+import { referralThemeNamesForConvertedCount } from './referralConstants.js';
 import { randomReferralCode } from './pofReferralStore.js';
 import { normalizePlayerProfile } from '../src/data/playerProfile/profileModel.js';
 
@@ -90,16 +90,26 @@ export async function attributeReferralSignup(referralStore, {
   return { ok: true, inviterUserId };
 }
 
-export async function rewardInviterUltimateLiar(playerProfileStore, inviterUserId) {
+export async function syncInviterReferralSecretThemes(
+  playerProfileStore,
+  referralStore,
+  inviterUserId,
+) {
   if (!playerProfileStore || !inviterUserId) return null;
+  const stats = await referralStore.countInvitesForInviter(inviterUserId);
+  const earned = referralThemeNamesForConvertedCount(stats.converted);
   const prev = normalizePlayerProfile(
     await Promise.resolve(playerProfileStore.get(inviterUserId)),
   );
   const themes = new Set(prev.achievementUnlockedThemeNames || []);
-  if (themes.has(ULTIMATE_LIAR_THEME_NAME)) {
-    return prev;
+  let changed = false;
+  for (const name of earned) {
+    if (!themes.has(name)) {
+      themes.add(name);
+      changed = true;
+    }
   }
-  themes.add(ULTIMATE_LIAR_THEME_NAME);
+  if (!changed) return prev;
   const next = normalizePlayerProfile({
     ...prev,
     achievementUnlockedThemeNames: [...themes],
@@ -124,7 +134,11 @@ export async function processInviteeFirstPaidPurchase(
     markResult?.rows?.[0]?.inviter_user_id || signup.inviter_user_id;
   if (!inviterUserId) return { ok: false, error: 'missing-inviter' };
 
-  await rewardInviterUltimateLiar(playerProfileStore, inviterUserId);
+  await syncInviterReferralSecretThemes(
+    playerProfileStore,
+    referralStore,
+    inviterUserId,
+  );
   return { ok: true, inviterUserId, inviteeUserId: invitee };
 }
 

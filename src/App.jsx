@@ -135,7 +135,6 @@ import {
   readPendingReferralCode,
   storePendingReferralCode,
 } from "./lib/referralAttribution.js";
-import { ULTIMATE_LIAR_THEME_NAME } from "./data/dlc/themePacks/ultimate-liar/themePack.js";
 import NeonPlayerProfileScreen from "./components/neon/NeonPlayerProfileScreen.jsx";
 import {
   ADDON_TWIST_TRUTH,
@@ -8669,8 +8668,8 @@ export default function App() {
       let merged = mergeRemotePlayerProfile(remote);
       if (merged.referralUnlockToastPending) {
         setAchievementUnlockToast({
-          title: "Ultimate Liar unlocked!",
-          body: `A friend upgraded. ${ULTIMATE_LIAR_THEME_NAME} is now in your collection.`,
+          title: "Secret theme unlocked!",
+          body: "A friend joined and upgraded. Check your deck collection.",
         });
         merged = {
           ...merged,
