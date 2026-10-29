@@ -9,10 +9,6 @@ export const THEME_ASSETS = {
     talkingVideoMp4: '/assets/themes/default/hosts/persona-host-talking.mp4',
     iconSheet: '/assets/themes/default/icons/icons-sheet.png',
     uiBanner: '/assets/themes/default/hosts/persona-host-intro-poster.png',
-    promptCardFront: '/assets/themes/default/cards/prompt-front.png',
-    promptCardBack: '/assets/themes/default/cards/prompt-back.png',
-    adultPromptCardFront: '/assets/themes/default/cards/prompt-front-18.png',
-    adultPromptCardBack: '/assets/themes/default/cards/prompt-back-18.png',
   },
   Pirates: {
     personaHostIdle: '/assets/themes/pirates/hosts/persona-host-idle.png',
@@ -21,10 +17,6 @@ export const THEME_ASSETS = {
     personaHostTalk3: '/assets/themes/pirates/hosts/persona-host-talk-3.png',
     iconSheet: '/assets/themes/default/icons/icons-sheet.png',
     uiBanner: '/assets/themes/default/hosts/persona-host-intro-poster.png',
-    promptCardFront: '/assets/themes/pirates/cards/prompt-front.png',
-    promptCardBack: '/assets/themes/pirates/cards/prompt-back.png',
-    adultPromptCardFront: '/assets/themes/pirates/cards/prompt-front-18.png',
-    adultPromptCardBack: '/assets/themes/pirates/cards/prompt-back-18.png',
   },
   'Murder Mystery': {
     personaHostIdle: '/assets/themes/murder-mystery/hosts/persona-host-idle.png',
@@ -33,10 +25,6 @@ export const THEME_ASSETS = {
     personaHostTalk3: '/assets/themes/murder-mystery/hosts/persona-host-talk-3.png',
     iconSheet: '/assets/themes/default/icons/icons-sheet.png',
     uiBanner: '/assets/themes/default/hosts/persona-host-intro-poster.png',
-    promptCardFront: '/assets/themes/default/cards/prompt-front.png',
-    promptCardBack: '/assets/themes/default/cards/prompt-back.png',
-    adultPromptCardFront: '/assets/themes/default/cards/prompt-front-18.png',
-    adultPromptCardBack: '/assets/themes/default/cards/prompt-back-18.png',
   },
   'Cops and Robbers': {
     personaHostIdle: '/assets/themes/gangsters/hosts/persona-host-idle.png',
@@ -45,10 +33,6 @@ export const THEME_ASSETS = {
     personaHostTalk3: '/assets/themes/gangsters/hosts/persona-host-talk-3.png',
     iconSheet: '/assets/themes/gangsters/icons/icons-sheet.png',
     uiBanner: '/assets/themes/gangsters/hosts/persona-host-idle.png',
-    promptCardFront: '/assets/themes/gangsters/cards/prompt-front.svg',
-    promptCardBack: '/assets/themes/gangsters/cards/prompt-back.svg',
-    adultPromptCardFront: '/assets/themes/gangsters/cards/prompt-front-18.svg',
-    adultPromptCardBack: '/assets/themes/gangsters/cards/prompt-back-18.svg',
   },
   'Ghosts and Ghouls': {
     personaHostIdle: '/assets/themes/ghosts-and-ghouls/hosts/persona-host-idle.png',
@@ -57,10 +41,6 @@ export const THEME_ASSETS = {
     personaHostTalk3: '/assets/themes/ghosts-and-ghouls/hosts/persona-host-talk-3.png',
     iconSheet: '/assets/themes/monsters/icons/icons-sheet.png',
     uiBanner: '/assets/themes/ghosts-and-ghouls/hosts/persona-host-idle.png',
-    promptCardFront: '/assets/themes/monsters/cards/prompt-front.svg',
-    promptCardBack: '/assets/themes/monsters/cards/prompt-back.svg',
-    adultPromptCardFront: '/assets/themes/monsters/cards/prompt-front-18.svg',
-    adultPromptCardBack: '/assets/themes/monsters/cards/prompt-back-18.svg',
   },
   'Rock Stars': {
     personaHostIdle: '/assets/themes/rock-stars/hosts/persona-host-idle.png',
@@ -69,10 +49,6 @@ export const THEME_ASSETS = {
     personaHostTalk3: '/assets/themes/rock-stars/hosts/persona-host-talk-3.png',
     iconSheet: '/assets/themes/rock-stars/icons/icons-sheet.png',
     uiBanner: '/assets/themes/rock-stars/ui/banner.png',
-    promptCardFront: '/assets/themes/rock-stars/cards/prompt-front.svg',
-    promptCardBack: '/assets/themes/rock-stars/cards/prompt-back.svg',
-    adultPromptCardFront: '/assets/themes/rock-stars/cards/prompt-front-18.svg',
-    adultPromptCardBack: '/assets/themes/rock-stars/cards/prompt-back-18.svg',
   },
   Aliens: {
     personaHostIdle: '/assets/themes/aliens/hosts/persona-host-idle.png',
@@ -81,10 +57,6 @@ export const THEME_ASSETS = {
     personaHostTalk3: '/assets/themes/aliens/hosts/persona-host-talk-3.png',
     iconSheet: '/assets/themes/aliens/icons/icons-sheet.png',
     uiBanner: '/assets/themes/aliens/ui/banner.png',
-    promptCardFront: '/assets/themes/aliens/cards/prompt-front.svg',
-    promptCardBack: '/assets/themes/aliens/cards/prompt-back.svg',
-    adultPromptCardFront: '/assets/themes/aliens/cards/prompt-front-18.svg',
-    adultPromptCardBack: '/assets/themes/aliens/cards/prompt-back-18.svg',
   },
   Royalty: {
     personaHostIdle: '/assets/themes/royalty/hosts/persona-host-idle.png',
@@ -93,10 +65,6 @@ export const THEME_ASSETS = {
     personaHostTalk3: '/assets/themes/royalty/hosts/persona-host-talk-3.png',
     iconSheet: '/assets/themes/royalty/icons/icons-sheet.png',
     uiBanner: '/assets/themes/royalty/ui/banner.png',
-    promptCardFront: '/assets/themes/royalty/cards/prompt-front.svg',
-    promptCardBack: '/assets/themes/royalty/cards/prompt-back.svg',
-    adultPromptCardFront: '/assets/themes/royalty/cards/prompt-front-18.svg',
-    adultPromptCardBack: '/assets/themes/royalty/cards/prompt-back-18.svg',
   },
   Medical: {
     personaHostIdle: '/assets/themes/medical/hosts/persona-host-idle.png',
@@ -105,10 +73,6 @@ export const THEME_ASSETS = {
     personaHostTalk3: '/assets/themes/medical/hosts/persona-host-talk-3.png',
     iconSheet: '/assets/themes/medical/icons/icons-sheet.png',
     uiBanner: '/assets/themes/medical/ui/banner.png',
-    promptCardFront: '/assets/themes/medical/cards/prompt-front.svg',
-    promptCardBack: '/assets/themes/medical/cards/prompt-back.svg',
-    adultPromptCardFront: '/assets/themes/medical/cards/prompt-front-18.svg',
-    adultPromptCardBack: '/assets/themes/medical/cards/prompt-back-18.svg',
   },
   Wrestlers: {
     personaHostIdle: '/assets/themes/wrestlers/hosts/persona-host-idle.png',
@@ -117,10 +81,6 @@ export const THEME_ASSETS = {
     personaHostTalk3: '/assets/themes/wrestlers/hosts/persona-host-talk-3.png',
     iconSheet: '/assets/themes/wrestlers/icons/icons-sheet.png',
     uiBanner: '/assets/themes/wrestlers/ui/banner.png',
-    promptCardFront: '/assets/themes/wrestlers/cards/prompt-front.svg',
-    promptCardBack: '/assets/themes/wrestlers/cards/prompt-back.svg',
-    adultPromptCardFront: '/assets/themes/wrestlers/cards/prompt-front-18.svg',
-    adultPromptCardBack: '/assets/themes/wrestlers/cards/prompt-back-18.svg',
   },
   GrillEm: {
     personaHostIdle: '/assets/themes/grillem/hosts/persona-host-idle.png',
@@ -129,10 +89,6 @@ export const THEME_ASSETS = {
     personaHostTalk3: '/assets/themes/grillem/hosts/persona-host-talk-3.png',
     iconSheet: '/assets/themes/grillem/icons/icons-sheet.png',
     uiBanner: '/assets/themes/grillem/ui/banner.png',
-    promptCardFront: '/assets/themes/default/cards/prompt-front.svg',
-    promptCardBack: '/assets/themes/default/cards/prompt-back.svg',
-    adultPromptCardFront: '/assets/themes/default/cards/prompt-front-18.svg',
-    adultPromptCardBack: '/assets/themes/default/cards/prompt-back-18.svg',
   },
   Cyberpunk: {
     personaHostIdle: '/assets/themes/cyberpunk/hosts/persona-host-idle.png',
@@ -208,6 +164,63 @@ export const THEME_ASSETS = {
   },
 };
 
+/** Prompt card art per theme (raw theme name first, so aliased themes keep their own cards). */
+const THEME_CARD_SLUGS = {
+  Default: 'default',
+  Pirates: 'pirates',
+  Wrestlers: 'wrestlers',
+  Victorian: 'murder-mystery',
+  Aliens: 'aliens',
+  Animals: 'animals',
+  Anime: 'anime',
+  Carnival: 'carnival',
+  Cartoons: 'cartoons',
+  'Cops and Robbers': 'cops-and-robbers',
+  Cowboys: 'cowboys',
+  Cyberpunk: 'cyberpunk',
+  'Drag Queens': 'drag-queens',
+  'Flying Squad': 'flying-squad',
+  Gangsters: 'gangsters',
+  'Ghosts and Ghouls': 'ghosts-and-ghouls',
+  Gladiators: 'gladiators',
+  GrillEm: 'grillem',
+  'Law and Order': 'law-and-order',
+  Medical: 'medical',
+  Medieval: 'medieval',
+  Military: 'military',
+  Monsters: 'monsters',
+  'Murder Mystery': 'murder-mystery',
+  'Mythology (Gods & Legends)': 'mythology-gods-legends',
+  Ninjas: 'ninjas',
+  'Post-Apocalypse': 'post-apocalypse',
+  'Rock Stars': 'rock-stars',
+  Royalty: 'royalty',
+  'Sci-Fi': 'sci-fi',
+  Spies: 'spies',
+  Sports: 'sports',
+  Superheroes: 'superheroes',
+  'Time Travelers': 'time-travelers',
+  'Under the Sea': 'under-the-sea',
+  Vikings: 'vikings',
+  'Wizards & Witches': 'wizards-witches',
+};
+
+function cardAssetsForSlug(slug) {
+  const dir = `/assets/themes/${slug}/cards`;
+  return {
+    promptCardFront: `${dir}/prompt-front.png`,
+    promptCardBack: `${dir}/prompt-back.png`,
+    adultPromptCardFront: `${dir}/prompt-front-18.png`,
+    adultPromptCardBack: `${dir}/prompt-back-18.png`,
+  };
+}
+
+export function getThemeCardAssets(themeName = 'Default') {
+  const canonicalThemeName = toCanonicalThemeName(themeName);
+  const slug = THEME_CARD_SLUGS[themeName] || THEME_CARD_SLUGS[canonicalThemeName] || THEME_CARD_SLUGS.Default;
+  return cardAssetsForSlug(slug);
+}
+
 function getGeneratedThemeHostMedia(themeName = 'Default') {
   const canonicalThemeName = toCanonicalThemeName(themeName);
   return (
@@ -225,6 +238,7 @@ export function getThemeAssets(themeName = 'Default') {
     ...THEME_ASSETS.Default,
     ...selected,
     ...generated,
+    ...getThemeCardAssets(themeName),
   };
 }
 
