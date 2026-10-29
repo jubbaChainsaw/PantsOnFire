@@ -14,60 +14,18 @@ import {
 import { createHash } from 'node:crypto';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
+import {
+  CONTENT_PACK_ACCESS,
+  PROTECTED_DLC_PACKS,
+  PUBLIC_CORE_PACKS,
+} from '../server/contentPackCatalog.js';
 
 const publicRoot = path.resolve('public');
 const assetsThemes = path.join(publicRoot, 'assets/themes');
 const outRoot = path.resolve(process.argv[2] || 'dist/content-packs');
-const baseUrl =
-  process.env.CONTENT_PACK_BASE_URL || 'https://www.pantsonfire.app/content-packs/';
-
-const CORE_PACKS = [
-  { id: 'core-murder-mystery', name: 'Murder Mystery', themeSlug: 'murder-mystery', tier: 'free' },
-  { id: 'core-pirates', name: 'Pirates', themeSlug: 'pirates', tier: 'free' },
-  {
-    id: 'core-cops-and-robbers',
-    name: 'Cops and Robbers',
-    themeSlug: 'gangsters',
-    tier: 'free',
-  },
-  {
-    id: 'core-ghosts-and-ghouls',
-    name: 'Ghosts and Ghouls',
-    themeSlug: 'ghosts-and-ghouls',
-    tier: 'free',
-  },
-];
-
-const DLC_PACKS = [
-  {
-    id: 'dlc-ye-olde-baloney',
-    entitlementPackId: 'ye-olde-baloney',
-    name: 'Ye Olde Baloney',
-    themeSlugs: ['vikings', 'gladiators', 'medieval'],
-    tier: 'paid',
-  },
-  {
-    id: 'dlc-myth-taken-identity',
-    entitlementPackId: 'myth-taken-identity',
-    name: 'Myth-Taken Identity',
-    themeSlugs: ['royalty', 'mythology-gods-and-legends', 'time-travelers'],
-    tier: 'paid',
-  },
-  {
-    id: 'dlc-licence-to-fib',
-    entitlementPackId: 'licence-to-fib',
-    name: 'Licence to Fib',
-    themeSlugs: ['ninjas', 'spies', 'cyberpunk'],
-    tier: 'paid',
-  },
-  {
-    id: 'dlc-fever-dream-1',
-    entitlementPackId: 'fever-dream-1',
-    name: 'Fever Dream I',
-    themeSlugs: ['fever-dream-1'],
-    tier: 'paid',
-  },
-];
+const publicBaseUrl =
+  process.env.CONTENT_PACK_PUBLIC_BASE_URL ||
+  'https://www.pantsonfire.app/content-packs/public/';
 
 function sha256File(filePath) {
   return new Promise((resolve, reject) => {
@@ -115,46 +73,71 @@ async function buildPack(def) {
   const stageDir = path.join(outRoot, '.staging', def.id);
   const slugs = def.themeSlugs || [def.themeSlug];
   stagePackTree(slugs, stageDir);
-  const zipName = `${def.id}-v1.zip`;
-  const zipPath = path.join(outRoot, zipName);
+  const zipName = def.zipFile || `${def.id}-v1.zip`;
+  const accessDir = def.access === CONTENT_PACK_ACCESS.PROTECTED ? 'protected' : 'public';
+  const zipPath = path.join(outRoot, accessDir, zipName);
   zipFolder(stageDir, zipPath);
   const sizeBytes = statSync(zipPath).size;
   const sha256 = await sha256File(zipPath);
-  return {
+  const meta = {
     id: def.id,
     name: def.name,
     kind: 'theme',
     themeSlug: def.themeSlug || slugs[0],
     entitlementPackId: def.entitlementPackId,
-    tier: def.tier,
+    tier: def.tier || (def.access === CONTENT_PACK_ACCESS.PROTECTED ? 'paid' : 'free'),
+    access: def.access,
     version: '1.0.0',
     sizeBytes,
     sha256,
     file: zipName,
   };
+  writeFileSync(
+    path.join(outRoot, accessDir, `${def.id}-meta.json`),
+    `${JSON.stringify(meta, null, 2)}\n`,
+  );
+  return meta;
 }
 
 async function main() {
-  mkdirSync(outRoot, { recursive: true });
-  const packs = [];
-  for (const def of CORE_PACKS) {
-    packs.push(await buildPack(def));
+  mkdirSync(path.join(outRoot, 'public'), { recursive: true });
+  mkdirSync(path.join(outRoot, 'protected'), { recursive: true });
+  mkdirSync(path.join(publicRoot, 'content-packs/public'), { recursive: true });
+
+  const publicPacks = [];
+  const protectedPacks = [];
+  for (const def of PUBLIC_CORE_PACKS) {
+    publicPacks.push(await buildPack(def));
   }
-  for (const def of DLC_PACKS) {
-    packs.push(await buildPack(def));
+  for (const def of PROTECTED_DLC_PACKS) {
+    protectedPacks.push(await buildPack(def));
   }
-  const manifest = {
+
+  const publicManifest = {
     version: 1,
-    baseUrl,
+    baseUrl: publicBaseUrl.replace(/\/?$/, '/'),
     generatedAt: new Date().toISOString(),
-    packs,
+    packs: publicPacks.map((pack) => ({
+      ...pack,
+      access: CONTENT_PACK_ACCESS.PUBLIC,
+    })),
   };
-  writeFileSync(path.join(outRoot, 'manifest.json'), `${JSON.stringify(manifest, null, 2)}\n`);
+
   writeFileSync(
-    path.join(publicRoot, 'content-packs/manifest.json'),
-    `${JSON.stringify(manifest, null, 2)}\n`,
+    path.join(outRoot, 'public/manifest.json'),
+    `${JSON.stringify(publicManifest, null, 2)}\n`,
   );
-  console.log(`Wrote ${packs.length} packs to ${outRoot}`);
+  writeFileSync(
+    path.join(publicRoot, 'content-packs/public/manifest.json'),
+    `${JSON.stringify(publicManifest, null, 2)}\n`,
+  );
+  writeFileSync(
+    path.join(outRoot, 'manifest-full.internal.json'),
+    `${JSON.stringify({ public: publicPacks, protected: protectedPacks }, null, 2)}\n`,
+  );
+  console.log(
+    `Wrote ${publicPacks.length} public + ${protectedPacks.length} protected packs under ${outRoot}`,
+  );
 }
 
 main().catch((err) => {

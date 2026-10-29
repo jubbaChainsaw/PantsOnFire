@@ -21,4 +21,5 @@ const viteManifestUrl =
   typeof import.meta !== 'undefined' ? import.meta.env?.VITE_CONTENT_PACK_MANIFEST_URL : '';
 
 export const DEFAULT_MANIFEST_URL =
-  (viteManifestUrl && String(viteManifestUrl).trim()) || './content-packs/manifest.json';
+  (viteManifestUrl && String(viteManifestUrl).trim()) ||
+  './content-packs/public/manifest.json';

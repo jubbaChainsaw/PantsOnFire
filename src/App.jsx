@@ -8472,6 +8472,7 @@ export default function App() {
   );
   const contentPacks = useContentPacks({
     unlockedThemePackIds: effectiveUnlockedPacks,
+    accessToken: supabaseSession?.access_token || '',
     shouldAutoPrompt: screen === "home",
   });
   useEffect(() => {

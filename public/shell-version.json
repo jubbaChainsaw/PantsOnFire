@@ -1,5 +1,11 @@
 {
   "minNativeShell": "0.1.0",
+  "requiredWebVersion": "0.1.0",
   "webVersion": "0.1.0",
-  "notes": "Native shell must be >= minNativeShell to load live web from www.pantsonfire.app; otherwise bundled offline web is used."
+  "rollbackWebVersion": null,
+  "webKillSwitch": false,
+  "webDeployBlocked": false,
+  "forceBundledWeb": false,
+  "liveWebAllowed": true,
+  "notes": "Static fallback. Authoritative config is GET /api/shell-config on the lobby server after deploy."
 }

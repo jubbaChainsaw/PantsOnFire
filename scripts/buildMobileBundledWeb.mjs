@@ -8,7 +8,7 @@ import path from 'node:path';
 const outDir = path.resolve(process.argv[2] || 'dist-android');
 const manifestUrl =
   process.env.VITE_CONTENT_PACK_MANIFEST_URL ||
-  'https://www.pantsonfire.app/content-packs/manifest.json';
+  'https://www.pantsonfire.app/content-packs/public/manifest.json';
 
 const env = {
   ...process.env,

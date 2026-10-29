@@ -28,6 +28,7 @@ import { mountPlayerProfileRoutes } from './playerProfileRoutes.js';
 import { mountReferralRoutes } from './referralRoutes.js';
 import { createReferralHooks } from './referralService.js';
 import { mountAltCardUnlockRoutes } from './altCardUnlockRoutes.js';
+import { mountContentPackRoutes } from './contentPackRoutes.js';
 import { resolveAuthUserFromBearer } from './resolveAuthUser.js';
 
 const PORT = Number(process.env.LOBBY_SERVER_PORT || process.env.PORT || 8787);
@@ -245,6 +246,11 @@ mountEntitlementsRoutes(app, { store: entitlementsStore, referralHooks });
 mountPlayerProfileRoutes(app, { store: playerProfileStore });
 mountReferralRoutes(app, { referralStore, playerProfileStore });
 mountAltCardUnlockRoutes(app, { store: playerProfileStore, lobbyStore: store });
+mountContentPackRoutes(app, {
+  entitlementStore: entitlementsStore,
+  profileStore: playerProfileStore,
+  referralStore,
+});
 mountStripeBillingRoutes(app, { store: entitlementsStore, referralHooks });
 
 const httpServer = createServer(app);

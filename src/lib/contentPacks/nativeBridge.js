@@ -19,12 +19,13 @@ export function requestInstalledContentPacks() {
   return postNative({ type: CONTENT_PACK_MESSAGE.LIST });
 }
 
-export function requestContentPackDownload(pack, manifest) {
+export function requestContentPackDownload(pack, manifest, { downloadUrl } = {}) {
   return postNative({
     type: CONTENT_PACK_MESSAGE.DOWNLOAD,
     pack,
     manifestVersion: manifest?.version,
     baseUrl: manifest?.baseUrl,
+    downloadUrl: downloadUrl ? String(downloadUrl) : undefined,
   });
 }
 

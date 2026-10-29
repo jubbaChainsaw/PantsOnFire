@@ -75,29 +75,49 @@ function compareSemver(a = '', b = '') {
   return 0;
 }
 
+const LOBBY_API_ORIGIN =
+  String(process.env.EXPO_PUBLIC_LOBBY_SERVER_URL || '').trim().replace(/\/$/, '') ||
+  'https://api.pantsonfire.app';
+
+async function fetchShellGateConfig() {
+  const urls = [
+    `${LOBBY_API_ORIGIN}/api/shell-config`,
+    `${PRODUCTION_GAME_URL.replace(/\/$/, '')}/shell-version.json`,
+  ];
+  for (const url of urls) {
+    try {
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), 4500);
+      const res = await fetch(url, { cache: 'no-store', signal: controller.signal });
+      clearTimeout(timer);
+      if (res.ok) return await res.json();
+    } catch {
+      /* try next source */
+    }
+  }
+  return null;
+}
+
+function shouldUseLiveWeb(cfg) {
+  if (!cfg || typeof cfg !== 'object') return false;
+  if (cfg.webKillSwitch || cfg.webDeployBlocked || cfg.forceBundledWeb || cfg.liveWebAllowed === false) {
+    return false;
+  }
+  const minShell = String(cfg.minNativeShell || cfg.minShell || '').trim();
+  if (minShell && compareSemver(SHELL_VERSION, minShell) < 0) return false;
+  const requiredWeb = String(cfg.requiredWebVersion || cfg.minNativeShell || '').trim();
+  const webVersion = String(cfg.webVersion || cfg.rollbackWebVersion || '').trim();
+  if (requiredWeb && webVersion && compareSemver(webVersion, requiredWeb) < 0) return false;
+  return true;
+}
+
 async function resolveAndroidGameUrl() {
   if (configuredGameUrl) return configuredGameUrl;
   if (!useBundledAndroidWeb) return DEFAULT_WEB_URL;
   if (__DEV__) return DEFAULT_WEB_URL;
 
-  try {
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 4500);
-    const res = await fetch(`${PRODUCTION_GAME_URL.replace(/\/$/, '')}/shell-version.json`, {
-      cache: 'no-store',
-      signal: controller.signal,
-    });
-    clearTimeout(timer);
-    if (res.ok) {
-      const json = await res.json();
-      const minShell = String(json?.minNativeShell || json?.minShell || '').trim();
-      if (!minShell || compareSemver(SHELL_VERSION, minShell) >= 0) {
-        return PRODUCTION_GAME_URL;
-      }
-    }
-  } catch {
-    /* offline or incompatible — fall back to bundled web */
-  }
+  const cfg = await fetchShellGateConfig();
+  if (shouldUseLiveWeb(cfg)) return PRODUCTION_GAME_URL;
   return BUNDLED_ANDROID_GAME_URI;
 }
 
@@ -213,7 +233,13 @@ async function handleContentPackMessage(webViewRef, msg) {
     const packId = String(pack.id || '').trim();
     const baseUrl = String(msg.baseUrl || pack.baseUrl || '').trim();
     const file = String(pack.file || '').trim();
-    if (!packId || !baseUrl || !file) {
+    const directUrl = String(msg.downloadUrl || '').trim();
+    const url =
+      directUrl ||
+      (baseUrl && file
+        ? `${baseUrl.replace(/\/?$/, '/')}${file.replace(/^\//, '')}`
+        : '');
+    if (!packId || !url) {
       injectNativeContentPackEvent(webViewRef, {
         type: CONTENT_PACK_MESSAGE.ERROR,
         packId,
@@ -230,7 +256,7 @@ async function handleContentPackMessage(webViewRef, msg) {
       },
     });
 
-    const url = `${baseUrl.replace(/\/?$/, '/')}${file.replace(/^\//, '')}`;
+    const urlToFetch = url;
     try {
       injectNativeContentPackEvent(webViewRef, {
         type: CONTENT_PACK_MESSAGE.PROGRESS,
@@ -239,7 +265,11 @@ async function handleContentPackMessage(webViewRef, msg) {
         bytesTotal: Number(pack.sizeBytes) || 0,
       });
 
-      const download = FileSystem.createDownloadResumable(url, `${FileSystem.cacheDirectory}${packId}.zip`, {}, (progress) => {
+      const download = FileSystem.createDownloadResumable(
+        urlToFetch,
+        `${FileSystem.cacheDirectory}${packId}.zip`,
+        {},
+        (progress) => {
         if (cancelled) return;
         injectNativeContentPackEvent(webViewRef, {
           type: CONTENT_PACK_MESSAGE.PROGRESS,

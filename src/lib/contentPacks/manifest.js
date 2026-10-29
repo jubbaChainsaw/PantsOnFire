@@ -8,6 +8,7 @@ const HEX_SHA256 = /^[a-f0-9]{64}$/i;
  * @property {string} [themeSlug]
  * @property {string} [entitlementPackId]
  * @property {'free'|'paid'} tier
+ * @property {'public'|'protected'} [access]
  * @property {string} version
  * @property {number} sizeBytes
  * @property {string} sha256
@@ -42,17 +43,20 @@ function parsePackEntry(entry, index) {
   const name = String(entry.name || id).trim();
   const kind = String(entry.kind || 'theme');
   const tier = entry.tier === 'paid' ? 'paid' : 'free';
+  const access = entry.access === 'protected' ? 'protected' : 'public';
   const version = String(entry.version || '1.0.0');
   const sizeBytes = Number(entry.sizeBytes);
   if (!Number.isFinite(sizeBytes) || sizeBytes < 0) {
     throw new Error(`manifest-pack-${id}-invalid-size`);
   }
   const sha256 = String(entry.sha256 || '').trim().toLowerCase();
-  if (!HEX_SHA256.test(sha256)) {
-    throw new Error(`manifest-pack-${id}-invalid-sha256`);
-  }
   const file = String(entry.file || '').trim();
-  if (!file) throw new Error(`manifest-pack-${id}-missing-file`);
+  if (access === 'public') {
+    if (!HEX_SHA256.test(sha256)) {
+      throw new Error(`manifest-pack-${id}-invalid-sha256`);
+    }
+    if (!file) throw new Error(`manifest-pack-${id}-missing-file`);
+  }
   return {
     id,
     name,
@@ -62,10 +66,11 @@ function parsePackEntry(entry, index) {
       ? String(entry.entitlementPackId)
       : undefined,
     tier,
+    access,
     version,
     sizeBytes,
-    sha256,
-    file,
+    sha256: sha256 || '',
+    file: file || undefined,
   };
 }
 
@@ -76,10 +81,14 @@ function parsePackEntry(entry, index) {
 export function filterDownloadablePacks(packs, options = {}) {
   const unlocked = new Set(options.unlockedPackIds || []);
   return packs.filter((pack) => {
-    if (pack.tier !== 'paid') return true;
-    const entitlement = pack.entitlementPackId || pack.id;
+    if (pack.tier !== 'paid' && pack.access !== 'protected') return true;
+    const entitlement = pack.entitlementPackId || pack.id.replace(/^dlc-/, '');
     return unlocked.has(entitlement);
   });
+}
+
+export function isProtectedContentPack(pack) {
+  return pack?.access === 'protected' || pack?.tier === 'paid';
 }
 
 export function sumPackBytes(packs) {
@@ -87,6 +96,7 @@ export function sumPackBytes(packs) {
 }
 
 export function packDownloadUrl(manifest, pack) {
+  if (isProtectedContentPack(pack) || !pack?.file) return '';
   const file = String(pack.file || '').replace(/^\//, '');
   return `${manifest.baseUrl}${file}`;
 }
