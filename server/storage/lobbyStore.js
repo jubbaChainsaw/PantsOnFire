@@ -16,7 +16,7 @@ const DEFAULT_LOBBY_SETTINGS = {
   winCondition: 'rounds',
   pointsToWin: 15,
   roundsPerPlayer: 1,
-  adultMode: false,
+  themeCardStyle: 'classic',
   allowFriendsJoinLobby: false,
   inviteUsernames: [],
   grillSettings: {
@@ -192,7 +192,11 @@ function sanitizeLobbySettings(raw = {}) {
     roundsPerPlayer: Number.isFinite(roundsPerPlayer)
       ? Math.max(1, Math.min(6, Math.floor(roundsPerPlayer)))
       : DEFAULT_LOBBY_SETTINGS.roundsPerPlayer,
-    adultMode: Boolean(raw.adultMode),
+    themeCardStyle:
+      String(raw.themeCardStyle || DEFAULT_LOBBY_SETTINGS.themeCardStyle).trim()
+      === 'alt'
+        ? 'alt'
+        : 'classic',
     allowFriendsJoinLobby: Boolean(raw.allowFriendsJoinLobby),
     inviteUsernames,
     grillSettings: {

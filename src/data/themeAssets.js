@@ -208,10 +208,10 @@ const THEME_CARD_SLUGS = {
 function cardAssetsForSlug(slug) {
   const dir = `/assets/themes/${slug}/cards`;
   return {
-    promptCardFront: `${dir}/prompt-front.png`,
-    promptCardBack: `${dir}/prompt-back.png`,
-    adultPromptCardFront: `${dir}/prompt-front-18.png`,
-    adultPromptCardBack: `${dir}/prompt-back-18.png`,
+    promptCardFrontClassic: `${dir}/prompt-front-classic.png`,
+    promptCardBackClassic: `${dir}/prompt-back-classic.png`,
+    promptCardFrontAlt: `${dir}/prompt-front-alt.png`,
+    promptCardBackAlt: `${dir}/prompt-back-alt.png`,
   };
 }
 
@@ -223,23 +223,29 @@ export function getThemeCardAssets(themeName = 'Default') {
   return cardAssetsForSlug(slug);
 }
 
-function resolveThemePromptCardPaths(themeName = 'Default', { adultMode = false } = {}) {
+function resolveThemePromptCardPaths(themeName = 'Default', { cardStyle = 'classic' } = {}) {
   const cards = getThemeCardAssets(themeName);
-  if (adultMode) {
-    return {
-      front:
-        cards.adultPromptCardFront
-        || cards.promptCardFront
-        || DEFAULT_THEME_CARD_ASSETS.promptCardFront,
-      back:
-        cards.adultPromptCardBack
-        || cards.promptCardBack
-        || DEFAULT_THEME_CARD_ASSETS.promptCardBack,
-    };
-  }
+  const useAlt = cardStyle === 'alt';
+  const fallback = DEFAULT_THEME_CARD_ASSETS;
   return {
-    front: cards.promptCardFront || DEFAULT_THEME_CARD_ASSETS.promptCardFront,
-    back: cards.promptCardBack || DEFAULT_THEME_CARD_ASSETS.promptCardBack,
+    front: useAlt
+      ? cards.promptCardFrontAlt
+        || fallback.promptCardFrontAlt
+        || cards.promptCardFrontClassic
+        || fallback.promptCardFrontClassic
+      : cards.promptCardFrontClassic
+        || fallback.promptCardFrontClassic
+        || cards.promptCardFrontAlt
+        || fallback.promptCardFrontAlt,
+    back: useAlt
+      ? cards.promptCardBackAlt
+        || fallback.promptCardBackAlt
+        || cards.promptCardBackClassic
+        || fallback.promptCardBackClassic
+      : cards.promptCardBackClassic
+        || fallback.promptCardBackClassic
+        || cards.promptCardBackAlt
+        || fallback.promptCardBackAlt,
   };
 }
 

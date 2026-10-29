@@ -101,6 +101,20 @@ import {
   normalizeUnlockedThemePackIds,
 } from "./data/themeCatalog";
 import {
+  THEME_ALT_CARD_UNLOCKS_STORAGE_KEY,
+  THEME_CARD_STYLE_ALT,
+  THEME_CARD_STYLE_BY_THEME_STORAGE_KEY,
+  THEME_CARD_STYLE_CLASSIC,
+  THEME_CARD_STYLE_LABELS,
+  getSelectedThemeCardStyle,
+  isAltCardStyleUnlocked,
+  normalizeThemeCardStyle,
+  normalizeThemeCardStyleByTheme,
+  normalizeUnlockedAltCardThemeKeys,
+  resolveActiveThemeCardStyle,
+  unlockAltCardStyleForTheme,
+} from "./data/themeCardStyles";
+import {
   ADDON_TWIST_TRUTH,
   computeEntitlements,
   DLC_STORE_BLURB,
@@ -119,6 +133,7 @@ import {
   readAccountSession,
   registerAccount,
   syncSessionPackIds,
+  syncSessionAltCardUnlocks,
 } from "./account/accountStorage";
 import { isCloudAuthProvider } from "./account/cloudAuth.js";
 import { buildSessionFromRemote, fetchRemoteEntitlements } from "./account/remoteEntitlements";
@@ -1068,7 +1083,6 @@ function buildLocalRound(
   recentPromptKeys = [],
   selectedRoundTypeId = null,
   grillSettings = { micEnabled: true, ttsEnabled: true },
-  adultMode = false,
   picturePackConfig = {
     enabledPacks: {},
     weights: {},
@@ -1153,9 +1167,9 @@ function buildLocalRound(
     picturePackConfig.releaseChannelsByPackId,
   );
 
-  const ageFilteredOptions = adultMode
-    ? promptOptions
-    : promptOptions.filter((item) => !item.prompt?.adultOnly);
+  const ageFilteredOptions = promptOptions.filter(
+    (item) => !item.prompt?.adultOnly,
+  );
   if (!ageFilteredOptions.length) return null;
   const filteredOptions = ageFilteredOptions.filter(
     (item) => !recentPromptKeys.includes(item.key),
@@ -2440,11 +2454,11 @@ function DoubleTakePairsRevealPanel({ round, className = "" }) {
   );
 }
 
-function getRoundCardBackSrc(themeName = "Default", { adultMode = false } = {}) {
-  return getUiCardBackSrc(themeName, { adultMode });
+function getRoundCardBackSrc(themeName = "Default", { cardStyle = "classic" } = {}) {
+  return getUiCardBackSrc(themeName, { cardStyle });
 }
-function getRoundCardFrontSrc(themeName = "Default", { adultMode = false } = {}) {
-  return getUiCardFrontSrc(themeName, { adultMode });
+function getRoundCardFrontSrc(themeName = "Default", { cardStyle = "classic" } = {}) {
+  return getUiCardFrontSrc(themeName, { cardStyle });
 }
 function getImposterCardFrontSrc() {
   return UI_CARD_LIAR_FRONT_SRC;
@@ -3926,6 +3940,9 @@ function OnlineLobbySetupScreen({
   setAllowFriendsJoinLobby = () => {},
   selectedFriendInviteUsernames = [],
   onToggleInviteFriend = () => {},
+  themeCardStyleByTheme = {},
+  unlockedAltCardThemeKeys = [],
+  onSelectThemeCardStyle = () => {},
   onBack,
   onContinue,
   setupError = "",
@@ -3994,6 +4011,15 @@ function OnlineLobbySetupScreen({
                   </option>
                 ))}
               </select>
+              <ThemeCardStylePicker
+                themeName={nameTheme}
+                selectedStyle={getSelectedThemeCardStyle(
+                  nameTheme,
+                  themeCardStyleByTheme,
+                )}
+                unlockedAltKeys={unlockedAltCardThemeKeys}
+                onSelectStyle={(style) => onSelectThemeCardStyle(nameTheme, style)}
+              />
             </div>
             <div>
               <Label className="text-white/80">Max players in lobby</Label>
@@ -4773,7 +4799,9 @@ function SetupScreen(props) {
     onToggleCategory,
     grillSettings,
     setGrillSettings,
-    adultMode,
+    themeCardStyleByTheme,
+    unlockedAltCardThemeKeys,
+    onSelectThemeCardStyle,
     categoryCount,
     onOpenAdmin,
     canOpenAdminDialog = true,
@@ -4952,6 +4980,16 @@ function SetupScreen(props) {
                   </option>
                 ))}
               </select>
+              <ThemeCardStylePicker
+                themeName={nameTheme}
+                selectedStyle={getSelectedThemeCardStyle(
+                  nameTheme,
+                  themeCardStyleByTheme,
+                )}
+                unlockedAltKeys={unlockedAltCardThemeKeys}
+                onSelectStyle={(style) => onSelectThemeCardStyle(nameTheme, style)}
+                labelClassName={setupThemeLabelClass}
+              />
               {hasThemePersonas && (
                 <Button
                   type="button"
@@ -5324,7 +5362,7 @@ function RevealScreen({
   onlinePrivatePromptError = "",
   privatePromptLoading = false,
   playSfx = () => {},
-  adultMode = false,
+  cardStyle = THEME_CARD_STYLE_CLASSIC,
 }) {
   const player = players[currentRevealIndex];
   const personaCalloutLine = getPersonaCalloutLineTextForPlayer(player, theme);
@@ -5373,12 +5411,12 @@ function RevealScreen({
   const promptTextRef = useRef(null);
   const promptFitContainerRef = useRef(null);
   const cardBackSrc = useMemo(
-    () => resolveBundledAssetSrc(getRoundCardBackSrc(theme, { adultMode })),
-    [theme, adultMode],
+    () => resolveBundledAssetSrc(getRoundCardBackSrc(theme, { cardStyle })),
+    [theme, cardStyle],
   );
   const themedCardFrontSrc = useMemo(
-    () => resolveBundledAssetSrc(getRoundCardFrontSrc(theme, { adultMode })),
-    [theme, adultMode],
+    () => resolveBundledAssetSrc(getRoundCardFrontSrc(theme, { cardStyle })),
+    [theme, cardStyle],
   );
   const cardFrontSrc = showImposterRevealUi
     ? resolveBundledAssetSrc(getImposterCardFrontSrc())
@@ -5503,7 +5541,9 @@ function RevealScreen({
                 />
                 {cardFace === "front" && (
                   <p
-                    className="mt-3 text-center text-sm font-semibold text-white/95 [text-shadow:0_2px_8px_rgba(0,0,0,0.85)]"
+                    className={`mt-3 text-center pof-heading text-xs tracking-[0.28em] ${
+                      isImposter ? "text-orange-200" : "text-emerald-200"
+                    }`}
                     data-testid="double-take-reveal-label"
                   >
                     {isImposter ? "You're the liar" : "Your picture"}
@@ -7384,11 +7424,21 @@ function ResultsScreen({
     </TopFrame>
   );
 }
-function FinalScreen({ players, onRestart, line, theme }) {
+function FinalScreen({ players, onRestart, line, theme, unlockToast = false }) {
   const ranked = [...players].sort((a, b) => b.score - a.score);
   const winner = ranked[0];
   return (
     <TopFrame theme={theme}>
+      {unlockToast ? (
+        <div
+          className="fixed bottom-6 left-1/2 z-[130] w-[min(22rem,calc(100%-2rem))] -translate-x-1/2 rounded-2xl border border-emerald-300/45 bg-emerald-500/20 px-4 py-3 text-center shadow-[0_12px_32px_rgba(0,0,0,0.45)]"
+          data-testid="card-style-unlock-toast"
+        >
+          <div className="pof-heading text-sm text-emerald-100">
+            New card style unlocked!
+          </div>
+        </div>
+      ) : null}
       <div className="mx-auto max-w-4xl space-y-6">
         <GlassPanel className="rounded-[2.5rem] border-yellow-300/20 bg-black/25 p-8 text-center">
           <div className="text-xs uppercase tracking-[0.3em] text-white/50">
@@ -7445,13 +7495,77 @@ function normalizeThemeSelection(themeName, themeOptions = []) {
   return fallback?.name || "Default";
 }
 
+function ThemeCardStylePicker({
+  themeName,
+  selectedStyle,
+  onSelectStyle,
+  unlockedAltKeys = [],
+  labelClassName = "text-white/80",
+}) {
+  const altUnlocked = isAltCardStyleUnlocked(themeName, unlockedAltKeys);
+  const activeStyle = normalizeThemeCardStyle(selectedStyle);
+  const pickStyle = (style) => {
+    if (
+      style === THEME_CARD_STYLE_ALT &&
+      !isAltCardStyleUnlocked(themeName, unlockedAltKeys)
+    ) {
+      return;
+    }
+    onSelectStyle(normalizeThemeCardStyle(style));
+  };
+  return (
+    <div
+      className="mt-3 rounded-2xl border border-white/10 bg-white/5 p-3"
+      data-testid="theme-card-style-picker"
+    >
+      <Label className={`text-xs uppercase tracking-[0.2em] ${labelClassName}`}>
+        Card style
+      </Label>
+      <p className="mt-1 text-xs text-white/60">
+        Classic is the default look. Alt unlocks after you finish a full game
+        with this theme.
+      </p>
+      <div className="mt-3 grid grid-cols-2 gap-2">
+        {[THEME_CARD_STYLE_CLASSIC, THEME_CARD_STYLE_ALT].map((style) => {
+          const isAlt = style === THEME_CARD_STYLE_ALT;
+          const locked = isAlt && !altUnlocked;
+          const selected = activeStyle === style;
+          return (
+            <button
+              key={style}
+              type="button"
+              data-testid={`theme-card-style-${style}${locked ? "-locked" : ""}`}
+              disabled={locked}
+              className={`rounded-2xl border px-3 py-3 text-left transition ${
+                selected
+                  ? "border-yellow-300/70 bg-yellow-400/20 text-yellow-100"
+                  : "border-white/15 bg-black/20 text-white/85"
+              } ${locked ? "cursor-not-allowed opacity-55" : "hover:border-cyan-300/40"}`}
+              onClick={() => pickStyle(style)}
+            >
+              <div className="pof-heading text-sm">
+                {THEME_CARD_STYLE_LABELS[style]}
+              </div>
+              {locked ? (
+                <div className="mt-1 text-[0.65rem] text-white/50">
+                  Finish a game to unlock
+                </div>
+              ) : null}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 function cloneOnlineLobbySettingsTemplate({
   themeName = "Default",
   winCondition = "rounds",
   pointsToWin = 15,
   roundsPerPlayer = 1,
   grillSettings = { micEnabled: true, ttsEnabled: true },
-  adultMode = false,
+  themeCardStyle = THEME_CARD_STYLE_CLASSIC,
   maxPlayers = MAX_PLAYERS,
 } = {}) {
   const normalizedThemeName = toCanonicalThemeName(themeName || "Default");
@@ -7465,7 +7579,7 @@ function cloneOnlineLobbySettingsTemplate({
     roundsPerPlayer: Number.isFinite(Number(roundsPerPlayer))
       ? Number(roundsPerPlayer)
       : 1,
-    adultMode: Boolean(adultMode),
+    themeCardStyle: normalizeThemeCardStyle(themeCardStyle),
     grillSettings: {
       micEnabled: grillSettings?.micEnabled !== false,
       ttsEnabled: grillSettings?.ttsEnabled !== false,
@@ -8136,9 +8250,23 @@ export default function App() {
     getStored("imposter-persona-only-v1", false),
   );
   const [premiumEnabled, setPremiumEnabled] = useState(false);
-  const [adultMode] = useState(
-    () => String(import.meta.env?.VITE_E2E_FORCE_ADULT_MODE || "").trim() === "1",
+  const [unlockedAltCardThemeKeys, setUnlockedAltCardThemeKeys] = useState(() =>
+    normalizeUnlockedAltCardThemeKeys(
+      getStored(
+        THEME_ALT_CARD_UNLOCKS_STORAGE_KEY,
+        readAccountSession()?.unlockedAltCardThemeKeys || [],
+      ),
+    ),
   );
+  const [themeCardStyleByTheme, setThemeCardStyleByTheme] = useState(() =>
+    normalizeThemeCardStyleByTheme(
+      getStored(THEME_CARD_STYLE_BY_THEME_STORAGE_KEY, {}),
+    ),
+  );
+  const [onlineMatchThemeCardStyle, setOnlineMatchThemeCardStyle] = useState(
+    THEME_CARD_STYLE_CLASSIC,
+  );
+  const [cardStyleUnlockToast, setCardStyleUnlockToast] = useState(false);
   const [customCategories, setCustomCategories] = useState(
     getStored("imposter-custom-categories-v2", []),
   );
@@ -8410,6 +8538,29 @@ export default function App() {
     [nameTheme, themeOptions],
   );
   const canonicalThemeName = normalizedThemeName;
+  const activeThemeCardStyle = useMemo(() => {
+    if (onlineMode) {
+      return normalizeThemeCardStyle(onlineMatchThemeCardStyle);
+    }
+    return resolveActiveThemeCardStyle(
+      canonicalThemeName,
+      themeCardStyleByTheme,
+      unlockedAltCardThemeKeys,
+    );
+  }, [
+    onlineMode,
+    onlineMatchThemeCardStyle,
+    canonicalThemeName,
+    themeCardStyleByTheme,
+    unlockedAltCardThemeKeys,
+  ]);
+  const handleSelectThemeCardStyle = useCallback((themeName, style) => {
+    const key = toCanonicalThemeName(themeName) || "Default";
+    setThemeCardStyleByTheme((current) => ({
+      ...normalizeThemeCardStyleByTheme(current),
+      [key]: normalizeThemeCardStyle(style),
+    }));
+  }, []);
   const themeCopyBank = useMemo(() => {
     if (!isIanPosterVoiceTheme(canonicalThemeName)) return COPY_BANK;
     return { ...COPY_BANK, ...buildIanPosterThemeCopyBank(canonicalThemeName) };
@@ -8517,6 +8668,47 @@ export default function App() {
     syncSessionPackIds(unlockedThemePackIds);
     setAccountSession(readAccountSession());
   }, [unlockedThemePackIds, accountSession?.authProvider]);
+  useEffect(() => {
+    setStored(THEME_ALT_CARD_UNLOCKS_STORAGE_KEY, unlockedAltCardThemeKeys);
+    if (isCloudAuthProvider(accountSession?.authProvider)) return;
+    const local = readAccountSession();
+    if (!local) return;
+    syncSessionAltCardUnlocks(unlockedAltCardThemeKeys);
+    setAccountSession(readAccountSession());
+  }, [unlockedAltCardThemeKeys, accountSession?.authProvider]);
+  useEffect(
+    () => setStored(THEME_CARD_STYLE_BY_THEME_STORAGE_KEY, themeCardStyleByTheme),
+    [themeCardStyleByTheme],
+  );
+  useEffect(() => {
+    if (screen !== "final") return;
+    setUnlockedAltCardThemeKeys((current) => {
+      const result = unlockAltCardStyleForTheme(current, canonicalThemeName);
+      if (result.newlyUnlocked) {
+        setCardStyleUnlockToast(true);
+      }
+      return result.unlockedKeys;
+    });
+  }, [screen, canonicalThemeName]);
+  useEffect(() => {
+    if (typeof window === "undefined") return undefined;
+    const onE2eCompleteGame = (event) => {
+      const themeName =
+        event?.detail?.themeName || canonicalThemeName || "Default";
+      setUnlockedAltCardThemeKeys((current) => {
+        const result = unlockAltCardStyleForTheme(current, themeName);
+        if (result.newlyUnlocked) {
+          setCardStyleUnlockToast(true);
+        }
+        return result.unlockedKeys;
+      });
+      refreshCopy(["winner"]);
+      setScreen("final");
+    };
+    window.addEventListener("pof-e2e-complete-game", onE2eCompleteGame);
+    return () =>
+      window.removeEventListener("pof-e2e-complete-game", onE2eCompleteGame);
+  }, [canonicalThemeName, refreshCopy]);
   useEffect(
     () => setStored("imposter-theme-v3", normalizedThemeName),
     [normalizedThemeName],
@@ -9712,7 +9904,6 @@ export default function App() {
         : recentPromptKeys.slice(-4),
       selectedTypeForRound,
       grillSettings,
-      adultMode,
       {
         enabledPacks: enabledPicturePacks,
         weights: picturePackWeights,
@@ -9885,7 +10076,11 @@ export default function App() {
           winCondition,
           pointsToWin,
           roundsPerPlayer,
-          adultMode: false,
+          themeCardStyle: resolveActiveThemeCardStyle(
+            canonicalThemeName,
+            themeCardStyleByTheme,
+            unlockedAltCardThemeKeys,
+          ),
           hostPromptEditorUnlocked: Boolean(entitlements.categoryEditorAdmin),
           grillSettings,
           allowFriendsJoinLobby: Boolean(allowFriendsJoinLobby),
@@ -9957,6 +10152,11 @@ export default function App() {
         micEnabled: lobbySettings.grillSettings?.micEnabled !== false,
         ttsEnabled: lobbySettings.grillSettings?.ttsEnabled !== false,
       });
+      setOnlineMatchThemeCardStyle(
+        normalizeThemeCardStyle(
+          lobbySettings.themeCardStyle || THEME_CARD_STYLE_CLASSIC,
+        ),
+      );
     }
     setPartyChatMessages([]);
     setPartyTalkingPlayers({});
@@ -10165,6 +10365,11 @@ export default function App() {
         micEnabled: nextSettings.grillSettings?.micEnabled !== false,
         ttsEnabled: nextSettings.grillSettings?.ttsEnabled !== false,
       });
+      setOnlineMatchThemeCardStyle(
+        normalizeThemeCardStyle(
+          nextSettings.themeCardStyle || THEME_CARD_STYLE_CLASSIC,
+        ),
+      );
     }
     setJoinHostEditorWarningOpen(false);
     const session = {
@@ -10367,6 +10572,7 @@ export default function App() {
     setPointsToWin(15);
     setRoundsPerPlayer(1);
     setGrillSettings({ micEnabled: true, ttsEnabled: true });
+    setCardStyleUnlockToast(false);
     setRound(null);
     setRoundNumber(1);
     setCurrentRoundOwnerIndex(0);
@@ -10584,6 +10790,9 @@ export default function App() {
           themeOptions={themeOptions}
           personaOnlyMode={personaOnlyMode}
           setPersonaOnlyMode={setPersonaOnlyMode}
+          themeCardStyleByTheme={themeCardStyleByTheme}
+          unlockedAltCardThemeKeys={unlockedAltCardThemeKeys}
+          onSelectThemeCardStyle={handleSelectThemeCardStyle}
           desktopLandscape={isDesktopLandscapeWeb}
         />
       )}
@@ -10611,6 +10820,9 @@ export default function App() {
           setAllowFriendsJoinLobby={setAllowFriendsJoinLobby}
           selectedFriendInviteUsernames={selectedFriendInviteUsernames}
           onToggleInviteFriend={toggleInviteFriendSelection}
+          themeCardStyleByTheme={themeCardStyleByTheme}
+          unlockedAltCardThemeKeys={unlockedAltCardThemeKeys}
+          onSelectThemeCardStyle={handleSelectThemeCardStyle}
           onBack={() => {
             if (onlineMode || lobbyCode) {
               void leaveOnlineLobby({ nextScreen: "home" });
@@ -11002,7 +11214,7 @@ export default function App() {
             onlinePrivatePrompt={onlinePrivatePrompt}
             onlinePrivatePromptError={onlinePrivatePromptError}
             playSfx={playSfx}
-            adultMode={adultMode}
+            cardStyle={activeThemeCardStyle}
           />
         </BrandedScreen>
       )}
@@ -11124,6 +11336,7 @@ export default function App() {
           onRestart={restartToHome}
           line={copyState.winner}
           theme={canonicalThemeName}
+          unlockToast={cardStyleUnlockToast}
         />
       )}
       {(LOCAL_GAME_PAUSE_SCREENS.has(screen) ||

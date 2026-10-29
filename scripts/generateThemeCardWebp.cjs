@@ -17,7 +17,7 @@ async function listCardPngs() {
     try {
       const cardFiles = await fs.readdir(cardsDir);
       for (const name of cardFiles) {
-        if (!/^prompt-(front|back)(-18)?\.png$/i.test(name)) continue;
+        if (!/^prompt-(front|back)-(classic|alt)\.png$/i.test(name)) continue;
         files.push(path.join(cardsDir, name));
       }
     } catch {
