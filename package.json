@@ -61,7 +61,7 @@
     "pg": "^8.13.1",
     "react": "^19.2.5",
     "react-dom": "^19.2.5",
-    "react-native": "^0.85.2",
+    "react-native": "0.83.6",
     "react-native-purchases": "^8.6.2",
     "react-native-webview": "^13.16.1",
     "redis": "^5.12.1",
