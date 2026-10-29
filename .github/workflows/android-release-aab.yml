@@ -90,6 +90,9 @@ jobs:
             cp dist-android/mobile-trim-report.json artifacts/mobile-trim-report.json
           fi
 
+      - name: Verify embedded JS bundle in release AAB
+        run: node scripts/verifyAndroidEmbeddedBundle.mjs artifacts/pants-on-fire-release.aab
+
       - name: Upload release AAB
         uses: actions/upload-artifact@v4
         with:
