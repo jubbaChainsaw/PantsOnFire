@@ -54,10 +54,19 @@ export const ACHIEVEMENT_DEFINITIONS = [
   {
     id: 'host-with-the-most',
     name: 'Host With The Most',
-    description: 'Host 10 full games. Your living room is basically a franchise.',
-    metric: 'gamesHosted',
-    target: 10,
+    description:
+      'Host and finish 5 full games. Your sofa is now a licensed venue.',
+    metric: 'gamesHostedCompleted',
+    target: 5,
     reward: { type: 'defaultBack', slug: 'gold-trophy' },
+  },
+  {
+    id: 'host-franchise',
+    name: 'Franchise Owner',
+    description: 'Host and finish 10 full games. You basically own game night.',
+    metric: 'gamesHostedCompleted',
+    target: 10,
+    reward: null,
   },
   {
     id: 'ten-deep',
@@ -118,12 +127,21 @@ export const ACHIEVEMENT_DEFINITIONS = [
   {
     id: 'title-belt',
     name: 'Title Belt Energy',
-    description: 'Host 10 games to unlock Wrestlers (free path for Wanted: Better Alibis).',
-    metric: 'gamesHosted',
+    description:
+      'Host and finish 10 games to unlock Wrestlers (free path for Wanted: Better Alibis).',
+    metric: 'gamesHostedCompleted',
     target: 10,
     reward: { type: 'themeName', themeName: 'Wrestlers' },
   },
 ];
+
+export const REFERRAL_MYSTERY_ACHIEVEMENT = {
+  id: 'referral-ultimate-liar',
+  name: 'Invite a friend who upgrades',
+  description:
+    'Share your invite link. When a friend signs up and makes their first paid upgrade, you unlock the secret Ultimate Liar theme.',
+  themeReward: 'Ultimate Liar',
+};
 
 export const ACHIEVEMENT_PACK_FREE_PATH = {
   packId: 'wanted-better-alibis',

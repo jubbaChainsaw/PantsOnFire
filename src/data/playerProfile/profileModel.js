@@ -8,6 +8,7 @@ export function createEmptyPlayerProfile() {
     stats: {
       gamesPlayed: 0,
       gamesHosted: 0,
+      gamesHostedCompleted: 0,
       gamesWon: 0,
       timesLiar: 0,
       timesLiarNotCaught: 0,
@@ -36,6 +37,7 @@ export function normalizePlayerProfile(raw) {
     stats: {
       gamesPlayed: Math.max(0, Number(stats.gamesPlayed) || 0),
       gamesHosted: Math.max(0, Number(stats.gamesHosted) || 0),
+      gamesHostedCompleted: Math.max(0, Number(stats.gamesHostedCompleted) || 0),
       gamesWon: Math.max(0, Number(stats.gamesWon) || 0),
       timesLiar: Math.max(0, Number(stats.timesLiar) || 0),
       timesLiarNotCaught: Math.max(0, Number(stats.timesLiarNotCaught) || 0),
@@ -70,6 +72,7 @@ export function normalizePlayerProfile(raw) {
       : [],
     selectedDefaultBackSlug:
       String(raw.selectedDefaultBackSlug || 'classic').trim() || 'classic',
+    referralUnlockToastPending: Boolean(raw.referralUnlockToastPending),
   };
 }
 
@@ -106,6 +109,10 @@ export function mergePlayerProfiles(local, remote) {
     stats: {
       gamesPlayed: Math.max(a.stats.gamesPlayed, b.stats.gamesPlayed),
       gamesHosted: Math.max(a.stats.gamesHosted, b.stats.gamesHosted),
+      gamesHostedCompleted: Math.max(
+        a.stats.gamesHostedCompleted,
+        b.stats.gamesHostedCompleted,
+      ),
       gamesWon: Math.max(a.stats.gamesWon, b.stats.gamesWon),
       timesLiar: Math.max(a.stats.timesLiar, b.stats.timesLiar),
       timesLiarNotCaught: Math.max(a.stats.timesLiarNotCaught, b.stats.timesLiarNotCaught),
@@ -140,6 +147,8 @@ export function mergePlayerProfiles(local, remote) {
       ]),
     ],
     selectedDefaultBackSlug: a.selectedDefaultBackSlug || b.selectedDefaultBackSlug,
+    referralUnlockToastPending:
+      a.referralUnlockToastPending || b.referralUnlockToastPending,
   });
 }
 

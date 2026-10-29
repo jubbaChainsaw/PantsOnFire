@@ -1,5 +1,6 @@
 import { timingSafeEqual } from 'node:crypto';
 import { resolveAuthUserFromBearer } from './resolveAuthUser.js';
+import { isFirstPaidEntitlementTransition } from './referralEntitlements.js';
 
 const TIER_FIBBER = 'fibber';
 const TIER_LOCAL_LIAR = 'local_liar';
@@ -151,7 +152,7 @@ function timingSafeStringEqual(a, b) {
   return timingSafeEqual(bufA, bufB);
 }
 
-export function mountEntitlementsRoutes(app, { store } = {}) {
+export function mountEntitlementsRoutes(app, { store, referralHooks } = {}) {
   // The store may be a Map (dev) or an async get/set adapter (e.g. Redis).
   const entitlementStore = store || new Map();
   const webhookSecret = String(process.env.REVENUECAT_WEBHOOK_SECRET || '').trim();
@@ -206,10 +207,18 @@ export function mountEntitlementsRoutes(app, { store } = {}) {
     // Replace, don't merge upward: the webhook carries the full active
     // entitlement set, so expirations and refunds must lower access too.
     const mapped = mapRevenueCatEntitlements(collectActiveEntitlementIds(subscriber));
-    await Promise.resolve(entitlementStore.set(appUserId, {
+    const prev = await Promise.resolve(entitlementStore.get(appUserId));
+    const nextRow = {
       ...mapped,
       updatedAt: new Date().toISOString(),
-    }));
+    };
+    await Promise.resolve(entitlementStore.set(appUserId, nextRow));
+    if (
+      referralHooks?.onInviteeFirstPaidPurchase &&
+      isFirstPaidEntitlementTransition(prev, nextRow)
+    ) {
+      await referralHooks.onInviteeFirstPaidPurchase(appUserId, 'revenuecat');
+    }
     res.json({ ok: true, userId: appUserId });
   });
 

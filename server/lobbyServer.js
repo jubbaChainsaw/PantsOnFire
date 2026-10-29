@@ -19,7 +19,14 @@ import {
   createPostgresPlayerProfileStore,
   ensurePoFPlayerProfileSchema,
 } from './pofPlayerProfileStore.js';
+import {
+  createMemoryReferralStore,
+  createPostgresReferralStore,
+  ensurePoFReferralSchema,
+} from './pofReferralStore.js';
 import { mountPlayerProfileRoutes } from './playerProfileRoutes.js';
+import { mountReferralRoutes } from './referralRoutes.js';
+import { createReferralHooks } from './referralService.js';
 
 const PORT = Number(process.env.LOBBY_SERVER_PORT || process.env.PORT || 8787);
 const CLIENT_ORIGINS_RAW = String(
@@ -165,6 +172,7 @@ if (databaseUrl) {
   await ensurePoFAccountSchema(pgPool);
   await ensurePoFEntitlementsSchema(pgPool);
   await ensurePoFPlayerProfileSchema(pgPool);
+  await ensurePoFReferralSchema(pgPool);
 }
 
 const accountStore = createPoFAccountStore(pgPool);
@@ -216,15 +224,25 @@ if (pgPool) {
   playerProfileStore = new Map();
 }
 
+let referralStore;
+if (pgPool) {
+  referralStore = createPostgresReferralStore(pgPool);
+} else {
+  referralStore = createMemoryReferralStore();
+}
+
+const referralHooks = createReferralHooks({ referralStore, playerProfileStore });
+
 const app = express();
 app.set('trust proxy', 1);
 app.use(cors({ origin: corsOriginHandler }));
-mountStripeWebhook(app, { store: entitlementsStore });
+mountStripeWebhook(app, { store: entitlementsStore, referralHooks });
 app.use(express.json({ limit: '3mb' }));
 mountPoFAuthRoutes(app, { accountStore });
-mountEntitlementsRoutes(app, { store: entitlementsStore });
+mountEntitlementsRoutes(app, { store: entitlementsStore, referralHooks });
 mountPlayerProfileRoutes(app, { store: playerProfileStore });
-mountStripeBillingRoutes(app, { store: entitlementsStore });
+mountReferralRoutes(app, { referralStore });
+mountStripeBillingRoutes(app, { store: entitlementsStore, referralHooks });
 
 const httpServer = createServer(app);
 const io = new Server(httpServer, {

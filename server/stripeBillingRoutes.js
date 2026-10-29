@@ -3,6 +3,7 @@ import { mergeEntitlementsRow, defaultEntitlements } from './entitlementsRoutes.
 import { resolveStripePriceId, stripePurchaseToEntitlementPatch } from './stripeCatalog.js';
 import { resolveAuthUserFromBearer } from './resolveAuthUser.js';
 import { buildBillingCatalog } from './billingCatalog.js';
+import { isFirstPaidEntitlementTransition } from './referralEntitlements.js';
 
 function getStripe() {
   const key = String(process.env.STRIPE_SECRET_KEY || '').trim();
@@ -26,7 +27,7 @@ function checkoutUrls() {
   return { success, cancel };
 }
 
-export function mountStripeBillingRoutes(app, { store } = {}) {
+export function mountStripeBillingRoutes(app, { store, referralHooks } = {}) {
   const entitlementStore = store || new Map();
   const simulate = String(process.env.POF_BILLING_SIMULATE || '').trim() === '1';
 
@@ -97,6 +98,12 @@ export function mountStripeBillingRoutes(app, { store } = {}) {
         patch,
       );
       await Promise.resolve(entitlementStore.set(userId, next));
+      if (
+        referralHooks?.onInviteeFirstPaidPurchase &&
+        isFirstPaidEntitlementTransition(prev, next)
+      ) {
+        await referralHooks.onInviteeFirstPaidPurchase(userId, 'stripe-simulate');
+      }
       res.json({
         ok: true,
         entitlements: {
@@ -126,7 +133,7 @@ export function mountStripeBillingRoutes(app, { store } = {}) {
   }
 }
 
-export function mountStripeWebhook(app, { store } = {}) {
+export function mountStripeWebhook(app, { store, referralHooks } = {}) {
   const entitlementStore = store || new Map();
   const stripe = getStripe();
   const webhookSecret = String(process.env.STRIPE_WEBHOOK_SECRET || '').trim();
@@ -162,6 +169,12 @@ export function mountStripeWebhook(app, { store } = {}) {
               patch,
             );
             await Promise.resolve(entitlementStore.set(userId, next));
+            if (
+              referralHooks?.onInviteeFirstPaidPurchase &&
+              isFirstPaidEntitlementTransition(prev, next)
+            ) {
+              await referralHooks.onInviteeFirstPaidPurchase(userId, 'stripe');
+            }
           }
         }
       }

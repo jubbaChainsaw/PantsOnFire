@@ -128,6 +128,14 @@ import {
   fetchRemotePlayerProfile,
   pushRemotePlayerProfile,
 } from "./lib/playerProfileApi.js";
+import { fetchMyReferral, attributeReferralCode } from "./lib/referralApi.js";
+import {
+  clearPendingReferralCode,
+  parseReferralCodeFromLocation,
+  readPendingReferralCode,
+  storePendingReferralCode,
+} from "./lib/referralAttribution.js";
+import { ULTIMATE_LIAR_THEME_NAME } from "./data/dlc/themePacks/ultimate-liar/themePack.js";
 import NeonPlayerProfileScreen from "./components/neon/NeonPlayerProfileScreen.jsx";
 import {
   ADDON_TWIST_TRUTH,
@@ -8297,6 +8305,7 @@ export default function App() {
   const [cardStyleUnlockToast, setCardStyleUnlockToast] = useState(false);
   const [playerProfile, setPlayerProfile] = useState(() => readLocalPlayerProfile());
   const [achievementUnlockToast, setAchievementUnlockToast] = useState(null);
+  const [referralSummary, setReferralSummary] = useState(null);
   const profileSyncTimerRef = useRef(null);
   const profileGameRecordedRef = useRef("");
   const profileRoundRecordedRef = useRef("");
@@ -8507,6 +8516,10 @@ export default function App() {
             setUnlockedThemePackIds(row.unlockedThemePackIds || []);
           }
           await refreshCloudEntitlements();
+          const profileRemote = await fetchRemotePlayerProfile(token);
+          if (profileRemote) {
+            applyRemotePlayerProfile(profileRemote, { accessToken: token });
+          }
           return "Purchase applied (test mode). Your unlocks will appear in the mobile app when you sign in with the same account.";
         }
         await startWebStripeCheckout(kind, productId, token);
@@ -8519,6 +8532,7 @@ export default function App() {
       accountSession,
       supabaseSession?.access_token,
       refreshCloudEntitlements,
+      applyRemotePlayerProfile,
     ],
   );
   useEffect(() => {
@@ -8649,6 +8663,28 @@ export default function App() {
       body: first?.description || "",
     });
   }, []);
+  const applyRemotePlayerProfile = useCallback(
+    (remote, { accessToken } = {}) => {
+      if (!remote) return;
+      let merged = mergeRemotePlayerProfile(remote);
+      if (merged.referralUnlockToastPending) {
+        setAchievementUnlockToast({
+          title: "Ultimate Liar unlocked!",
+          body: `A friend upgraded. ${ULTIMATE_LIAR_THEME_NAME} is now in your collection.`,
+        });
+        merged = {
+          ...merged,
+          referralUnlockToastPending: false,
+        };
+      }
+      setPlayerProfile(merged);
+      writeLocalPlayerProfile(merged);
+      if (accessToken) {
+        pushRemotePlayerProfile(accessToken, merged).catch(() => {});
+      }
+    },
+    [],
+  );
   const themeMeta = THEME_META[normalizedThemeName] || THEME_META.Default;
   const availablePicturePackManifests = useMemo(
     () => PICTURE_DLC_MANIFESTS || [],
@@ -8863,16 +8899,45 @@ export default function App() {
     };
   }, [playerProfile, accountSession?.authProvider, supabaseSession?.access_token]);
   useEffect(() => {
+    if (typeof window === "undefined") return;
+    const code = parseReferralCodeFromLocation(window.location);
+    if (code) storePendingReferralCode(code);
+  }, []);
+  useEffect(() => {
+    const token = supabaseSession?.access_token;
+    if (!token || !isCloudAuthProvider(accountSession?.authProvider)) return;
+    const pending = readPendingReferralCode();
+    if (!pending) return;
+    attributeReferralCode(token, pending)
+      .then((result) => {
+        if (result?.ok || result?.alreadyAttributed) {
+          clearPendingReferralCode();
+        }
+      })
+      .catch(() => {});
+  }, [supabaseSession?.access_token, accountSession?.authProvider]);
+  useEffect(() => {
+    const token = supabaseSession?.access_token;
+    if (!token || !isCloudAuthProvider(accountSession?.authProvider)) return;
+    fetchMyReferral(token)
+      .then((payload) => setReferralSummary(payload))
+      .catch(() => setReferralSummary(null));
+  }, [supabaseSession?.access_token, accountSession?.authProvider, screen]);
+  useEffect(() => {
     const token = supabaseSession?.access_token;
     if (!token || !isCloudAuthProvider(accountSession?.authProvider)) return;
     fetchRemotePlayerProfile(token)
       .then((remote) => {
         if (remote) {
-          setPlayerProfile(mergeRemotePlayerProfile(remote));
+          applyRemotePlayerProfile(remote, { accessToken: token });
         }
       })
       .catch(() => {});
-  }, [supabaseSession?.access_token, accountSession?.authProvider]);
+  }, [
+    supabaseSession?.access_token,
+    accountSession?.authProvider,
+    applyRemotePlayerProfile,
+  ]);
   useEffect(
     () => setStored("imposter-theme-v3", normalizedThemeName),
     [normalizedThemeName],
@@ -10966,6 +11031,8 @@ export default function App() {
           profile={playerProfile}
           unlockedAltCardThemeKeys={unlockedAltCardThemeKeys}
           onSelectDefaultBack={handleSelectDefaultBackSlug}
+          referralSummary={referralSummary}
+          cloudSignedIn={isCloudAuthProvider(accountSession?.authProvider)}
           onBack={() => setScreen("home")}
         />
       )}

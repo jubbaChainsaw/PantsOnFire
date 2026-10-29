@@ -14,6 +14,8 @@ function metricValue(profile, metric) {
       return stats.gamesPlayed || 0;
     case 'gamesHosted':
       return stats.gamesHosted || 0;
+    case 'gamesHostedCompleted':
+      return stats.gamesHostedCompleted || 0;
     case 'timesLiar':
       return stats.timesLiar || 0;
     case 'timesLiarNotCaught':
@@ -167,6 +169,9 @@ export function recordCompletedGame(profile, payload = {}) {
   } = payload;
   let next = normalizePlayerProfile(profile);
   next.stats.gamesPlayed += 1;
+  if (role === 'host') {
+    next.stats.gamesHostedCompleted += 1;
+  }
   if (won) next.stats.gamesWon += 1;
   const canonicalTheme = toCanonicalThemeName(themeName);
   next.stats.themesPlayed[canonicalTheme] =

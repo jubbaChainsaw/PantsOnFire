@@ -1,4 +1,5 @@
-import { ALL_THEME_NAMES } from '../themeCatalog.js';
+import { ALL_THEME_NAMES, REFERRAL_CONVERSION_THEME_PACKS } from '../themeCatalog.js';
+import { ULTIMATE_LIAR_THEME_NAME } from '../dlc/themePacks/ultimate-liar/themePack.js';
 import { toCanonicalThemeName } from '../themeAliases.js';
 import { getThemeCardAssets, resolveDefaultPromptBackSrc } from '../themeAssets.js';
 import unlockableManifest from '../../../public/assets/themes/default/cards/unlockable/index.json';
@@ -69,6 +70,22 @@ export function buildDeckCatalogEntries(profile, unlockedAltThemeKeys = []) {
       isUnlocked: altUnlocked,
     });
   }
+  const ultimateUnlocked = (profile?.achievementUnlockedThemeNames || []).includes(
+    ULTIMATE_LIAR_THEME_NAME,
+  );
+  const ultimatePack = REFERRAL_CONVERSION_THEME_PACKS[0];
+  entries.push({
+    id: 'ultimate-liar-secret',
+    kind: 'referralSecret',
+    themeName: ULTIMATE_LIAR_THEME_NAME,
+    style: 'secret',
+    label: ultimateUnlocked ? 'Ultimate Liar · Secret' : 'Ultimate Liar ???',
+    src: ultimateUnlocked
+      ? getThemeCardAssets(ULTIMATE_LIAR_THEME_NAME).promptCardBackClassic
+      : ultimatePack?.mysteryIcon || '/assets/themes/ultimate-liar/icons/mystery-lock.svg',
+    unlockHint: ultimatePack?.mysteryDescription || 'Invite a friend who upgrades',
+    isUnlocked: ultimateUnlocked,
+  });
   return entries;
 }
 
