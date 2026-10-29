@@ -5502,35 +5502,9 @@ function RevealScreen({
                   countdownValue={countdownValue}
                 />
                 {cardFace === "front" && (
-                  <div className="mt-3 space-y-2 text-center text-white [text-shadow:0_2px_8px_rgba(0,0,0,0.85)]">
-                    <div className="inline-flex items-center justify-center gap-2 rounded-xl border border-fuchsia-200/40 bg-fuchsia-500/35 px-3 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-cyan-100">
-                      <img
-                        src={UI_ICON_MAGNIFIER_FIRE_SRC}
-                        alt=""
-                        aria-hidden="true"
-                        className="h-4 w-4 object-contain"
-                      />
-                      <span>YOUR CARD</span>
-                    </div>
-                    {(round.mediaPreviewLabel || prompt) && (
-                      <div className="pof-ui-copy text-sm text-white/85">
-                        {round.mediaPreviewLabel || prompt}
-                      </div>
-                    )}
-                    <div className="rounded-xl border border-fuchsia-200/40 bg-fuchsia-500/35 px-3 py-2 text-sm font-semibold text-white/95">
-                      {normalLine}
-                    </div>
-                    {bannedWords.length > 0 && (
-                      <div className="rounded-xl border border-fuchsia-200/40 bg-fuchsia-500/35 px-3 py-2">
-                        <div className="pof-ui-copy text-xs font-bold uppercase tracking-[0.2em] text-red-200">
-                          Banned Words
-                        </div>
-                        <div className="pof-ui-copy mt-1 text-sm font-medium text-red-100">
-                          {bannedWords.join(" • ")}
-                        </div>
-                      </div>
-                    )}
-                  </div>
+                  <p className="mt-3 text-center text-sm font-semibold text-white/95 [text-shadow:0_2px_8px_rgba(0,0,0,0.85)]">
+                    {isImposter ? "You're the liar" : "Your picture"}
+                  </p>
                 )}
               </>
             ) : (

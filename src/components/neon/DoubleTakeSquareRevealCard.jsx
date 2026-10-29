@@ -6,9 +6,15 @@ import {
   UI_CARD_DOUBLE_TAKE_LIAR_FRONT_SRC,
 } from '../../data/uiAssets.js';
 
+/** Transparent window in 1024×1024 frame art (px). */
+const PICTURE_WINDOW = {
+  truth: { insetPercent: (100 * (1024 - 856)) / 2 / 1024, sizePercent: (100 * 856) / 1024 },
+  liar: { insetPercent: (100 * (1024 - 788)) / 2 / 1024, sizePercent: (100 * 788) / 1024 },
+};
+
 /**
- * Square flip card for Double Take (pairs). Outer box matches portrait prompt cards (2:3);
- * the square art is centered at full width inside that footprint.
+ * Square flip card for Double Take (pairs). Same max width as portrait prompt cards;
+ * the card footprint is 1:1, not 2:3.
  */
 export default function DoubleTakeSquareRevealCard({
   cardFace = 'back',
@@ -22,18 +28,26 @@ export default function DoubleTakeSquareRevealCard({
     isLiar ? UI_CARD_DOUBLE_TAKE_LIAR_FRONT_SRC : UI_CARD_DOUBLE_TAKE_FRONT_SRC,
   );
   const pictureSrc = resolveBundledAssetSrc(mediaSrc);
+  const windowSpec = isLiar ? PICTURE_WINDOW.liar : PICTURE_WINDOW.truth;
+  const windowStyle = {
+    left: `${windowSpec.insetPercent}%`,
+    top: `${windowSpec.insetPercent}%`,
+    width: `${windowSpec.sizePercent}%`,
+    height: `${windowSpec.sizePercent}%`,
+  };
 
   return (
     <div
-      className="relative w-full aspect-[2/3] overflow-visible [perspective:1200px]"
+      className="relative mx-auto w-full max-w-[24.25rem] aspect-square overflow-visible sm:max-w-[26rem] [perspective:1200px]"
       data-testid="double-take-square-card"
+      data-card-face={cardFace}
     >
       <motion.div
         animate={{ rotateY: cardFace === 'front' ? 180 : 0 }}
         transition={{ duration: 0.75, ease: 'easeInOut' }}
-        className="absolute inset-0 flex items-center justify-center [transform-style:preserve-3d]"
+        className="absolute inset-0 [transform-style:preserve-3d]"
       >
-        <div className="relative aspect-square w-full max-h-full [transform-style:preserve-3d]">
+        <div className="absolute inset-0 [transform-style:preserve-3d]">
           <div className="absolute inset-0 [backface-visibility:hidden]">
             {backSrc ? (
               <img
@@ -54,6 +68,21 @@ export default function DoubleTakeSquareRevealCard({
           </div>
 
           <div className="absolute inset-0 [backface-visibility:hidden] [transform:rotateY(180deg)]">
+            {pictureSrc ? (
+              <img
+                src={pictureSrc}
+                alt=""
+                className="absolute z-0 object-cover object-center"
+                style={windowStyle}
+              />
+            ) : (
+              <div
+                className="absolute z-0 flex items-center justify-center bg-black/40 text-sm text-white/70"
+                style={windowStyle}
+              >
+                Loading picture…
+              </div>
+            )}
             {frameSrc ? (
               <img
                 src={frameSrc}
@@ -62,17 +91,6 @@ export default function DoubleTakeSquareRevealCard({
                 className="pointer-events-none absolute inset-0 z-10 h-full w-full object-contain object-center"
               />
             ) : null}
-            {pictureSrc ? (
-              <img
-                src={pictureSrc}
-                alt="Your picture clue"
-                className="absolute left-[9%] top-[9%] z-0 h-[82%] w-[82%] object-cover object-center"
-              />
-            ) : (
-              <div className="absolute left-[9%] top-[9%] z-0 flex h-[82%] w-[82%] items-center justify-center rounded-lg bg-black/40 text-sm text-white/70">
-                Loading picture…
-              </div>
-            )}
           </div>
         </div>
       </motion.div>
