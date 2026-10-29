@@ -1,5 +1,6 @@
 import { io } from 'socket.io-client';
 import { getLobbyApiBase, getLobbyServerOrigin } from '../lib/lobbyApiEnv.js';
+import { getNativeHostingHeaders } from '../lib/nativeHostingCredentials.js';
 
 const LOBBY_SERVER_URL = getLobbyServerOrigin();
 const LOBBY_API_BASE = getLobbyApiBase();
@@ -17,7 +18,10 @@ function normalizeCode(lobbyCode) {
 }
 
 async function requestJson(path, { method = 'GET', body, accessToken = '' } = {}) {
-  const headers = { 'Content-Type': 'application/json' };
+  const headers = {
+    'Content-Type': 'application/json',
+    ...getNativeHostingHeaders(),
+  };
   if (accessToken) {
     headers.Authorization = `Bearer ${accessToken}`;
   }

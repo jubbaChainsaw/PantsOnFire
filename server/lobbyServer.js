@@ -29,6 +29,8 @@ import { mountReferralRoutes } from './referralRoutes.js';
 import { createReferralHooks } from './referralService.js';
 import { mountAltCardUnlockRoutes } from './altCardUnlockRoutes.js';
 import { mountContentPackRoutes } from './contentPackRoutes.js';
+import { mountAppInstallRoutes } from './appInstallRoutes.js';
+import { assertMayHostLobby } from './hostingGate.js';
 import { resolveAuthUserFromBearer } from './resolveAuthUser.js';
 
 const PORT = Number(process.env.LOBBY_SERVER_PORT || process.env.PORT || 8787);
@@ -164,6 +166,7 @@ const joinLobbyLimiter = createRateLimiter({ windowMs: 60_000, max: 20 });
 const resumeLimiter = createRateLimiter({ windowMs: 60_000, max: 30 });
 const lookupLimiter = createRateLimiter({ windowMs: 60_000, max: 60 });
 const voiceTokenLimiter = createRateLimiter({ windowMs: 60_000, max: 12 });
+const appInstallTokenLimiter = createRateLimiter({ windowMs: 60_000, max: 30 });
 
 // Entitlements: Postgres when DATABASE_URL is set; else Redis; else in-memory (local dev).
 const entitlementsRedisPrefix = String(process.env.ENTITLEMENTS_REDIS_KEY_PREFIX || 'pof:entitlements').trim() || 'pof:entitlements';
@@ -251,6 +254,7 @@ mountContentPackRoutes(app, {
   profileStore: playerProfileStore,
   referralStore,
 });
+mountAppInstallRoutes(app, { rateLimiter: appInstallTokenLimiter });
 mountStripeBillingRoutes(app, { store: entitlementsStore, referralHooks });
 
 const httpServer = createServer(app);
@@ -449,6 +453,7 @@ app.post('/api/lobbies/:code/voice/token', voiceTokenLimiter, async (req, res) =
 });
 
 app.post('/api/lobbies', createLobbyLimiter, async (req, res) => {
+  if (!assertMayHostLobby(req, res)) return;
   const hostName = String(req.body?.hostName || '').trim() || 'Host';
   const hostPlayer = req.body?.hostPlayer || {};
   const maxPlayers = Number(req.body?.maxPlayers);
@@ -605,6 +610,7 @@ app.post('/api/lobbies/:code/leave', async (req, res) => {
 });
 
 app.post('/api/lobbies/:code/start', async (req, res) => {
+  if (!assertMayHostLobby(req, res)) return;
   const code = normalizeCode(req.params.code);
   const hostClientId = String(req.body?.hostClientId || '');
   const sessionToken = String(req.body?.sessionToken || '');
@@ -791,6 +797,7 @@ app.get('/api/lobbies/:code/round/private', async (req, res) => {
 });
 
 app.post('/api/lobbies/:code/rounds/next', async (req, res) => {
+  if (!assertMayHostLobby(req, res)) return;
   const code = normalizeCode(req.params.code);
   const hostClientId = String(req.body?.hostClientId || '');
   const sessionToken = String(req.body?.sessionToken || '');

@@ -873,6 +873,12 @@ function mapLobbyErrorToMessage(
   if (code === "token-rotation-required")
     return "Match state already advanced on server. Tap Resume Match to sync.";
   if (code === "host-only") return "Only the host can start this lobby.";
+  if (code === "hosting-web-only" || code === "app-hosting-required") {
+    return "Hosting is only available in the mobile app. Download the app to host a lobby.";
+  }
+  if (code === "invalid-app-install-token") {
+    return "App verification expired. Force-close and reopen the app, then try again.";
+  }
   if (code === "lobby-not-started") return "Lobby has not started yet.";
   if (code === "round-not-found") return "Round data is not ready yet.";
   if (code === "round-player-missing")

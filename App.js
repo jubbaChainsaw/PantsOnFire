@@ -79,6 +79,40 @@ const LOBBY_API_ORIGIN =
   String(process.env.EXPO_PUBLIC_LOBBY_SERVER_URL || '').trim().replace(/\/$/, '') ||
   'https://api.pantsonfire.app';
 
+const NATIVE_CLIENT_SURFACE = 'native-shell';
+
+async function fetchAppInstallToken() {
+  try {
+    const res = await fetch(`${LOBBY_API_ORIGIN}/api/app/install-token`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-PoF-Client-Surface': NATIVE_CLIENT_SURFACE,
+        'X-PoF-App-Platform': Platform.OS,
+        'X-PoF-Shell-Version': SHELL_VERSION,
+      },
+      body: '{}',
+    });
+    if (!res.ok) return null;
+    return await res.json();
+  } catch {
+    return null;
+  }
+}
+
+function injectNativeHostCredentials(webViewRef, creds) {
+  const detail = {
+    surface: NATIVE_CLIENT_SURFACE,
+    platform: Platform.OS,
+    installToken: String(creds?.installToken || '').trim(),
+    expiresAt: Number(creds?.expiresAt) || 0,
+  };
+  const payload = JSON.stringify(detail);
+  webViewRef.current?.injectJavaScript(
+    `(function(){try{window.__POF_NATIVE_HOST__=${payload};window.dispatchEvent(new CustomEvent('pof-native-host-ready',{detail:window.__POF_NATIVE_HOST__}));}catch(e){}})();true;`,
+  );
+}
+
 async function fetchShellGateConfig() {
   const urls = [
     `${LOBBY_API_ORIGIN}/api/shell-config`,
@@ -337,6 +371,7 @@ const ANDROID_KEY = process.env.EXPO_PUBLIC_REVENUECAT_ANDROID_KEY || '';
 
 export default function App() {
   const webViewRef = useRef(null);
+  const appInstallRef = useRef(null);
   const [gameUrl, setGameUrl] = useState(
     () => configuredGameUrl || (useBundledAndroidWeb ? BUNDLED_ANDROID_GAME_URI : DEFAULT_WEB_URL),
   );
@@ -353,6 +388,21 @@ export default function App() {
       console.warn('[Purchases] configure failed', error);
     }
     return undefined;
+  }, []);
+
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      const creds = await fetchAppInstallToken();
+      if (!mounted) return;
+      appInstallRef.current = creds;
+      if (creds?.installToken) {
+        injectNativeHostCredentials(webViewRef, creds);
+      }
+    })();
+    return () => {
+      mounted = false;
+    };
   }, []);
 
   useEffect(() => {
@@ -381,6 +431,15 @@ export default function App() {
       }
       if (String(msg.type || '').startsWith('POF_CONTENT_PACK_')) {
         void handleContentPackMessage(webViewRef, msg);
+      }
+      if (msg.type === 'POF_REQUEST_APP_INSTALL_TOKEN') {
+        void (async () => {
+          const creds = (await fetchAppInstallToken()) || appInstallRef.current;
+          if (creds?.installToken) {
+            appInstallRef.current = creds;
+            injectNativeHostCredentials(webViewRef, creds);
+          }
+        })();
       }
     } catch {
       /* ignore malformed messages */
@@ -433,6 +492,11 @@ export default function App() {
           domStorageEnabled
           mediaPlaybackRequiresUserAction={false}
           onMessage={onWebMessage}
+          onLoadEnd={() => {
+            if (appInstallRef.current?.installToken) {
+              injectNativeHostCredentials(webViewRef, appInstallRef.current);
+            }
+          }}
           {...webViewProps}
         />
       )}

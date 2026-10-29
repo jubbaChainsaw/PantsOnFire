@@ -1,6 +1,8 @@
 /**
  * Production website (www.pantsonfire.app) is join + shop only.
  * Native apps host games and use downloaded theme content.
+ * UI hides host flows when join-only; lobby server rejects create/host without
+ * a native app install token (see hostingGate.js).
  */
 
 const PRODUCTION_WEB_HOSTS = new Set(['pantsonfire.app', 'www.pantsonfire.app']);

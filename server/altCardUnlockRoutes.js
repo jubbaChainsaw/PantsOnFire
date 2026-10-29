@@ -1,5 +1,6 @@
 import { resolveAuthUserFromBearer } from './resolveAuthUser.js';
 import { grantAltCardUnlockForTheme, getAltCardUnlockKeys } from './altCardUnlockService.js';
+import { assertMayHostLobby } from './hostingGate.js';
 
 export function mountAltCardUnlockRoutes(app, { store, lobbyStore } = {}) {
   const profileStore = store || new Map();
@@ -24,6 +25,7 @@ export function mountAltCardUnlockRoutes(app, { store, lobbyStore } = {}) {
   });
 
   app.post('/api/lobbies/:code/complete-hosted-online-game', async (req, res) => {
+    if (!assertMayHostLobby(req, res)) return;
     const resolved = await resolveAuthUserFromBearer(req);
     if (resolved.error) {
       const status =
