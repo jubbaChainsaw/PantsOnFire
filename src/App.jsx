@@ -5502,7 +5502,10 @@ function RevealScreen({
                   countdownValue={countdownValue}
                 />
                 {cardFace === "front" && (
-                  <p className="mt-3 text-center text-sm font-semibold text-white/95 [text-shadow:0_2px_8px_rgba(0,0,0,0.85)]">
+                  <p
+                    className="mt-3 text-center text-sm font-semibold text-white/95 [text-shadow:0_2px_8px_rgba(0,0,0,0.85)]"
+                    data-testid="double-take-reveal-label"
+                  >
                     {isImposter ? "You're the liar" : "Your picture"}
                   </p>
                 )}

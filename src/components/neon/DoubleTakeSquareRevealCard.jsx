@@ -41,6 +41,7 @@ export default function DoubleTakeSquareRevealCard({
       className="relative mx-auto w-full max-w-[24.25rem] aspect-square overflow-visible sm:max-w-[26rem] [perspective:1200px]"
       data-testid="double-take-square-card"
       data-card-face={cardFace}
+      data-is-liar={isLiar ? 'true' : 'false'}
     >
       <motion.div
         animate={{ rotateY: cardFace === 'front' ? 180 : 0 }}

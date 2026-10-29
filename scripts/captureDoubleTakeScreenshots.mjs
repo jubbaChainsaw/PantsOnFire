@@ -1,9 +1,14 @@
 /**
  * Capture Double Take (pairs) round verification screenshots.
- * Usage:
+ *
+ * Usage (desktop + mobile webp build):
+ *   npm run dlc:sync-picture-manifests
+ *   npm run media:double-take-card-webp
  *   VITE_E2E_FORCE_ROUND_TYPE=pairs VITE_E2E_FAST_TIMERS=1 npm run build
- *   npx vite preview --host 127.0.0.1 --port 4177
- *   PREVIEW_URL=http://127.0.0.1:4177 node scripts/captureDoubleTakeScreenshots.mjs
+ *   npx vite preview --host 127.0.0.1 --port 4177 &
+ *   VITE_UI_RASTER_EXT=webp VITE_E2E_FORCE_ROUND_TYPE=pairs VITE_E2E_FAST_TIMERS=1 npm run build
+ *   npx vite preview --host 127.0.0.1 --port 4178 --outDir dist &
+ *   PREVIEW_URL=http://127.0.0.1:4177 MOBILE_PREVIEW_URL=http://127.0.0.1:4178 node scripts/captureDoubleTakeScreenshots.mjs
  */
 import { chromium } from '@playwright/test';
 import { mkdir } from 'node:fs/promises';
@@ -11,10 +16,11 @@ import path from 'node:path';
 
 const OUT_DIR = path.resolve('public/assets/ui/neon/web-verify');
 const PREVIEW_URL = process.env.PREVIEW_URL || 'http://127.0.0.1:4177';
+const MOBILE_PREVIEW_URL = process.env.MOBILE_PREVIEW_URL || PREVIEW_URL;
 
 const VIEWPORTS = {
-  desktop: { width: 1280, height: 800, suffix: 'desktop-1280x800' },
-  mobile: { width: 390, height: 844, suffix: 'mobile-390x844' },
+  desktop: { width: 1280, height: 800, suffix: 'desktop-1280x800', baseURL: PREVIEW_URL },
+  mobile: { width: 390, height: 844, suffix: 'mobile-390x844', baseURL: MOBILE_PREVIEW_URL },
 };
 
 async function waitForAppShell(page) {
@@ -74,22 +80,69 @@ async function waitForCardFront(page) {
   await page.waitForTimeout(900);
 }
 
-async function reachFirstPlayerReveal(page) {
+async function assertDoubleTakeCardImages(page) {
+  await page.waitForFunction(
+    () => {
+      const card = document.querySelector('[data-testid="double-take-square-card"]');
+      if (!card) return false;
+      const imgs = [...card.querySelectorAll('img')];
+      return imgs.length >= 2 && imgs.every((img) => img.naturalWidth > 0 && img.naturalHeight > 0);
+    },
+    null,
+    { timeout: 20_000 },
+  );
+}
+
+async function navigateToFirstRevealReady(page) {
   await page.getByRole('button', { name: 'Play', exact: true }).click({ timeout: 30_000 });
   await page.getByTestId('start-match').click({ timeout: 30_000 });
   await page.getByTestId('intro-skip').click({ timeout: 30_000 });
   await page.getByTestId('rules-continue').click({ timeout: 30_000 });
-
   await page.getByTestId('round-type-pairs').waitFor({ state: 'visible', timeout: 30_000 });
   await page.getByTestId('round-type-pairs').click();
-
   await page.getByTestId('host-intro-skip').click({ timeout: 30_000 }).catch(async () => {
     await page.getByTestId('rules-continue').click({ timeout: 15_000 }).catch(() => {});
   });
-
   await page.getByTestId('reveal-ready').waitFor({ state: 'visible', timeout: 45_000 });
-  await page.getByTestId('reveal-ready').click();
+}
+
+async function flipCurrentPlayerCard(page) {
+  await page.getByTestId('reveal-ready').click({ timeout: 15_000 });
   await waitForCardFront(page);
+  await assertDoubleTakeCardImages(page);
+}
+
+async function captureTruthAndLiarReveals(page, viewportKey) {
+  await navigateToFirstRevealReady(page);
+  let gotTruth = false;
+  let gotLiar = false;
+
+  for (let attempt = 0; attempt < 6 && (!gotTruth || !gotLiar); attempt += 1) {
+    if (await page.getByTestId('reveal-ready').isVisible().catch(() => false)) {
+      await flipCurrentPlayerCard(page);
+    }
+
+    const card = page.getByTestId('double-take-square-card');
+    const isLiar = (await card.getAttribute('data-is-liar')) === 'true';
+
+    if (isLiar && !gotLiar) {
+      await shot(page, 'liar-player-reveal', viewportKey);
+      gotLiar = true;
+    } else if (!isLiar && !gotTruth) {
+      await shot(page, 'truth-player-reveal', viewportKey);
+      gotTruth = true;
+    }
+
+    if (gotTruth && gotLiar) break;
+
+    await page.getByTestId('reveal-next').click({ timeout: 15_000 });
+    await page.waitForTimeout(450);
+    await page.getByTestId('reveal-ready').waitFor({ state: 'visible', timeout: 20_000 });
+  }
+
+  if (!gotTruth || !gotLiar) {
+    throw new Error(`Missing player reveal shots (truth=${gotTruth}, liar=${gotLiar})`);
+  }
 }
 
 async function passPhoneReveals(page) {
@@ -145,17 +198,21 @@ async function advanceLiarRevealToPairsPanel(page) {
   });
 }
 
-async function capturePlayerReveals(page, viewportKey) {
-  await reachFirstPlayerReveal(page);
-  await shot(page, 'truth-player-reveal', viewportKey);
-
-  await page.getByTestId('reveal-next').click({ timeout: 15_000 });
-  await page.waitForTimeout(500);
-  await page.getByTestId('reveal-ready').click({ timeout: 15_000 });
-  await waitForCardFront(page);
-  await shot(page, 'liar-player-reveal', viewportKey);
+async function captureEndRoundShots(page, viewportKey) {
+  await navigateToFirstRevealReady(page);
+  await passPhoneReveals(page);
+  await page.getByTestId('discussion-continue').click({ timeout: 20_000 });
+  await completeLocalVoting(page);
+  await advanceLiarRevealToPairsPanel(page);
+  await shot(page, 'end-round-pair-reveal-liar-screen', viewportKey);
+  await page.getByRole('button', { name: /Continue/i }).click({ timeout: 10_000 }).catch(() => {});
+  await page.waitForTimeout(1500);
+  await page.getByTestId('double-take-pairs-reveal').waitFor({
+    state: 'visible',
+    timeout: 20_000,
+  });
+  await shot(page, 'end-round-pair-reveal-results', viewportKey);
 }
-
 
 async function main() {
   await mkdir(OUT_DIR, { recursive: true });
@@ -164,7 +221,7 @@ async function main() {
   for (const [viewportKey, viewport] of Object.entries(VIEWPORTS)) {
     const context = await browser.newContext({
       viewport,
-      baseURL: PREVIEW_URL,
+      baseURL: viewport.baseURL,
     });
     const page = await context.newPage();
     await page.addInitScript(applyHostSeed);
@@ -182,24 +239,12 @@ async function main() {
 
     await page.goto('/');
     await waitForAppShell(page);
-    await capturePlayerReveals(page, viewportKey);
+    await captureTruthAndLiarReveals(page, viewportKey);
 
     if (viewportKey === 'desktop') {
       await page.goto('/');
       await waitForAppShell(page);
-      await reachFirstPlayerReveal(page);
-      await passPhoneReveals(page);
-      await page.getByTestId('discussion-continue').click({ timeout: 20_000 });
-      await completeLocalVoting(page);
-      await advanceLiarRevealToPairsPanel(page);
-      await shot(page, 'end-round-pair-reveal-liar-screen', viewportKey);
-      await page.getByRole('button', { name: /Continue/i }).click({ timeout: 10_000 }).catch(() => {});
-      await page.waitForTimeout(1500);
-      await page.getByTestId('double-take-pairs-reveal').waitFor({
-        state: 'visible',
-        timeout: 20_000,
-      });
-      await shot(page, 'end-round-pair-reveal-results', viewportKey);
+      await captureEndRoundShots(page, viewportKey);
     }
 
     await context.close();
