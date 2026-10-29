@@ -10,6 +10,12 @@ on:
         description: Git ref to build (branch, tag, or SHA)
         required: false
         default: cursor/ionos-web-deploy-6e4c
+  # Branch-only escape hatch when API workflow_dispatch is unavailable (touches this file only).
+  push:
+    branches:
+      - cursor/ionos-web-deploy-6e4c
+    paths:
+      - .github/trigger-android-debug-apk
 
 permissions:
   contents: read
