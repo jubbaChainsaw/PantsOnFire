@@ -1,6 +1,10 @@
 import { DEFAULT_CATEGORIES } from './categories.js';
 import { getIanPosterThemeSlug } from './ianPosterThemeVoice.js';
 import { publicAssetUrl } from '../lib/publicAssetUrl.js';
+import {
+  getThemePromptCardBackSrc,
+  getThemePromptCardFrontSrc,
+} from './themeAssets.js';
 
 /**
  * Active UI asset pack folder under public/assets/.
@@ -25,13 +29,16 @@ export const UI_CARD_DEFAULT_FRONT_SRC = `${UI_CARD_BASE}/default-front.png`;
 export const UI_CARD_DEFAULT_BACK_SRC = `${UI_CARD_BASE}/default-back.png`;
 export const UI_CARD_LIAR_FRONT_SRC = `${UI_CARD_BASE}/liar-front.png`;
 
+export const UI_CATEGORY_ICON_BASE = `${UI_ASSET_BASE}/categories`;
+export const UI_GAME_MODE_ICON_BASE = `${UI_ASSET_BASE}/game-modes`;
+
 /** Double Take (pairs) square card art — see commit "Add Double Take mode icon and square card art". */
 export const UI_CARD_DOUBLE_TAKE_BACK_SRC = `${UI_CARD_BASE}/double-take-back.png`;
 export const UI_CARD_DOUBLE_TAKE_FRONT_SRC = `${UI_CARD_BASE}/double-take-front.png`;
 export const UI_CARD_DOUBLE_TAKE_LIAR_FRONT_SRC = `${UI_CARD_BASE}/double-take-liar-front.png`;
 export const UI_GAME_MODE_DOUBLE_TAKE_SRC = `${UI_GAME_MODE_ICON_BASE}/double-take.png`;
 
-/** Themes with themed front/back card art in ui/cards/ */
+/** Legacy ui/cards themed slugs (preload only; round cards use themeAssets). */
 export const UI_THEMED_CARD_SLUGS = new Set([
   'default',
   'murder-mystery',
@@ -39,9 +46,6 @@ export const UI_THEMED_CARD_SLUGS = new Set([
   'cops-and-robbers',
   'ghosts-and-ghouls',
 ]);
-
-export const UI_CATEGORY_ICON_BASE = `${UI_ASSET_BASE}/categories`;
-export const UI_GAME_MODE_ICON_BASE = `${UI_ASSET_BASE}/game-modes`;
 
 export const UI_GAME_MODE_ICON_BY_ID = Object.freeze({
   prompt: `${UI_GAME_MODE_ICON_BASE}/prompt.png`,
@@ -91,20 +95,12 @@ export function getUiThemeSlug(themeName = 'Default') {
   return getIanPosterThemeSlug(themeName);
 }
 
-export function getUiCardFrontSrc(themeName = 'Default') {
-  const slug = getUiThemeSlug(themeName);
-  if (UI_THEMED_CARD_SLUGS.has(slug)) {
-    return `${UI_CARD_BASE}/${slug}-front.png`;
-  }
-  return UI_CARD_DEFAULT_FRONT_SRC;
+export function getUiCardFrontSrc(themeName = 'Default', options = {}) {
+  return getThemePromptCardFrontSrc(themeName, options);
 }
 
-export function getUiCardBackSrc(themeName = 'Default') {
-  const slug = getUiThemeSlug(themeName);
-  if (UI_THEMED_CARD_SLUGS.has(slug)) {
-    return `${UI_CARD_BASE}/${slug}-back.png`;
-  }
-  return UI_CARD_DEFAULT_BACK_SRC;
+export function getUiCardBackSrc(themeName = 'Default', options = {}) {
+  return getThemePromptCardBackSrc(themeName, options);
 }
 
 export function getUiCategoryIconSrc(categoryId = '') {

@@ -2440,11 +2440,11 @@ function DoubleTakePairsRevealPanel({ round, className = "" }) {
   );
 }
 
-function getRoundCardBackSrc(themeName = "Default") {
-  return getUiCardBackSrc(themeName);
+function getRoundCardBackSrc(themeName = "Default", { adultMode = false } = {}) {
+  return getUiCardBackSrc(themeName, { adultMode });
 }
-function getRoundCardFrontSrc(themeName = "Default") {
-  return getUiCardFrontSrc(themeName);
+function getRoundCardFrontSrc(themeName = "Default", { adultMode = false } = {}) {
+  return getUiCardFrontSrc(themeName, { adultMode });
 }
 function getImposterCardFrontSrc() {
   return UI_CARD_LIAR_FRONT_SRC;
@@ -2782,7 +2782,6 @@ function resolveCategoryChoiceCardArt(category, themeName = "Default") {
 function HostIntroScreen({ round, stingerLine, onContinue, theme }) {
   const hostSizeConfig = useMemo(() => getHostSizeConfig(theme), [theme]);
   const themedHostPersona = useMemo(() => getIanPosterHostDisplayPersona(theme), [theme]);
-  const exampleCardSrc = getRoundCardFrontSrc(theme);
   const examplePrompts = getHostExamplePrompts(round.roundTypeId);
   const normalExamplePrompt = examplePrompts.normal;
   const liarExamplePrompt = examplePrompts.liar;
@@ -5325,6 +5324,7 @@ function RevealScreen({
   onlinePrivatePromptError = "",
   privatePromptLoading = false,
   playSfx = () => {},
+  adultMode = false,
 }) {
   const player = players[currentRevealIndex];
   const personaCalloutLine = getPersonaCalloutLineTextForPlayer(player, theme);
@@ -5373,12 +5373,12 @@ function RevealScreen({
   const promptTextRef = useRef(null);
   const promptFitContainerRef = useRef(null);
   const cardBackSrc = useMemo(
-    () => resolveBundledAssetSrc(getRoundCardBackSrc(theme)),
-    [theme],
+    () => resolveBundledAssetSrc(getRoundCardBackSrc(theme, { adultMode })),
+    [theme, adultMode],
   );
   const themedCardFrontSrc = useMemo(
-    () => resolveBundledAssetSrc(getRoundCardFrontSrc(theme)),
-    [theme],
+    () => resolveBundledAssetSrc(getRoundCardFrontSrc(theme, { adultMode })),
+    [theme, adultMode],
   );
   const cardFrontSrc = showImposterRevealUi
     ? resolveBundledAssetSrc(getImposterCardFrontSrc())
@@ -5534,7 +5534,7 @@ function RevealScreen({
                 )}
               </>
             ) : (
-              <div className="[perspective:1200px]">
+              <div className="[perspective:1200px]" data-testid="themed-prompt-card">
             <motion.div
               animate={{ rotateY: cardFace === "front" ? 180 : 0 }}
               transition={{ duration: 0.75, ease: "easeInOut" }}
@@ -5545,17 +5545,9 @@ function RevealScreen({
                   <img
                     src={cardBackSrc}
                     alt="Prompt card back"
-                    className="absolute inset-0 h-full w-full object-contain object-center bg-black/30"
+                    className="absolute inset-0 h-full w-full object-contain object-center drop-shadow-[0_16px_34px_rgba(0,0,0,0.55)]"
                   />
                 )}
-                <div className="absolute inset-0 bg-black/20" />
-                <div className="relative z-10 flex h-full flex-col items-center justify-start px-4 pt-6 pb-6 text-center text-white [text-shadow:0_2px_8px_rgba(0,0,0,0.85)]">
-                  <RoundTypeLogo
-                    src={roundTypeLogoSrc}
-                    alt={`${round.roundTypeName} logo`}
-                    className="mx-auto h-16 w-auto sm:h-20"
-                  />
-                </div>
                 {isCountingDown &&
                   typeof countdownValue === "number" &&
                   countdownValue > 0 && (
@@ -5573,45 +5565,43 @@ function RevealScreen({
                 {cardFrontSrc && (
                   <img
                     src={cardFrontSrc}
-                    alt="Prompt card front"
-                    className={`absolute inset-0 h-full w-full object-contain object-center bg-black/30 ${showImposterRevealUi ? "scale-[1.25]" : ""}`}
+                    alt=""
+                    aria-hidden
+                    className={`pointer-events-none absolute inset-0 z-0 h-full w-full object-contain object-center ${showImposterRevealUi ? "scale-[1.25]" : ""}`}
                   />
                 )}
-                <div
-                  className={`absolute inset-0 ${showImposterRevealUi ? "bg-gradient-to-b from-orange-400/34 via-red-600/26 to-red-950/42" : "bg-black/15"}`}
-                />
                 {showImposterRevealUi && (
                   <>
-                    <div className="pointer-events-none absolute -inset-2 rounded-[2rem] border-2 border-orange-300/45 shadow-[inset_0_0_30px_rgba(255,97,24,0.45)]" />
-                    <div className="pointer-events-none absolute inset-0 rounded-[1.7rem] bg-[radial-gradient(circle_at_50%_90%,rgba(255,150,0,0.38)_0%,rgba(255,70,0,0.24)_35%,rgba(0,0,0,0)_68%)]" />
+                    <div className="pointer-events-none absolute -inset-2 z-[5] rounded-[2rem] border-2 border-orange-300/45 shadow-[inset_0_0_30px_rgba(255,97,24,0.45)]" />
+                    <div className="pointer-events-none absolute inset-0 z-[5] rounded-[1.7rem] bg-[radial-gradient(circle_at_50%_90%,rgba(255,150,0,0.38)_0%,rgba(255,70,0,0.24)_35%,rgba(0,0,0,0)_68%)]" />
                     <img
                       src={CARD_FIRE_FLAME_SOURCES[0] || FLAME_SRC}
                       alt=""
                       aria-hidden="true"
-                      className="pointer-events-none absolute -top-4 -left-2 h-14 w-14 opacity-95 animate-pulse drop-shadow-[0_0_12px_rgba(255,98,0,0.95)]"
+                      className="pointer-events-none absolute -top-4 -left-2 z-[6] h-14 w-14 opacity-95 animate-pulse drop-shadow-[0_0_12px_rgba(255,98,0,0.95)]"
                     />
                     <img
                       src={CARD_FIRE_FLAME_SOURCES[1] || FLAME_SRC}
                       alt=""
                       aria-hidden="true"
-                      className="pointer-events-none absolute -top-4 -right-2 h-14 w-14 opacity-95 animate-pulse drop-shadow-[0_0_12px_rgba(255,98,0,0.95)]"
+                      className="pointer-events-none absolute -top-4 -right-2 z-[6] h-14 w-14 opacity-95 animate-pulse drop-shadow-[0_0_12px_rgba(255,98,0,0.95)]"
                     />
                     <img
                       src={CARD_FIRE_FLAME_SOURCES[2] || FLAME_SRC}
                       alt=""
                       aria-hidden="true"
-                      className="pointer-events-none absolute -bottom-3 -right-2 h-14 w-14 opacity-90 animate-pulse drop-shadow-[0_0_12px_rgba(255,98,0,0.95)]"
+                      className="pointer-events-none absolute -bottom-3 -right-2 z-[6] h-14 w-14 opacity-90 animate-pulse drop-shadow-[0_0_12px_rgba(255,98,0,0.95)]"
                     />
                     <img
                       src={CARD_FIRE_FLAME_SOURCES[3] || FLAME_SRC}
                       alt=""
                       aria-hidden="true"
-                      className="pointer-events-none absolute -bottom-3 -left-2 h-14 w-14 opacity-90 animate-pulse drop-shadow-[0_0_12px_rgba(255,98,0,0.95)]"
+                      className="pointer-events-none absolute -bottom-3 -left-2 z-[6] h-14 w-14 opacity-90 animate-pulse drop-shadow-[0_0_12px_rgba(255,98,0,0.95)]"
                     />
                     {imposterEmberParticles.map((particle) => (
                       <span
                         key={particle.id}
-                        className="pointer-events-none absolute rounded-full bg-orange-300/90 shadow-[0_0_8px_rgba(255,143,46,0.95)]"
+                        className="pointer-events-none absolute z-[6] rounded-full bg-orange-300/90 shadow-[0_0_8px_rgba(255,143,46,0.95)]"
                         style={{
                           left: particle.left,
                           bottom: "-10%",
@@ -5623,11 +5613,13 @@ function RevealScreen({
                     ))}
                   </>
                 )}
-                <div className="relative z-10 flex h-full flex-col p-5 text-center text-white [text-shadow:0_2px_8px_rgba(0,0,0,0.85)]">
+                <div
+                  className={`absolute left-[10%] top-[14%] z-10 flex h-[72%] w-[80%] flex-col overflow-hidden text-center text-white [text-shadow:0_2px_8px_rgba(0,0,0,0.85)] ${showImposterRevealUi ? "bg-gradient-to-b from-orange-400/20 via-red-600/12 to-red-950/22" : ""}`}
+                >
                   <RoundTypeLogo
                     src={roundTypeLogoSrc}
                     alt={`${round.roundTypeName} logo`}
-                    className="mt-1 h-20 w-auto mx-auto sm:h-24"
+                    className="mx-auto h-14 w-auto shrink-0 sm:h-16"
                   />
                   <div
                     className={`mt-3 inline-flex items-center justify-center gap-2 rounded-xl border border-fuchsia-200/40 bg-fuchsia-500/35 px-3 py-2 text-xs font-semibold uppercase tracking-[0.2em] ${showImposterRevealUi ? "text-orange-100" : "text-cyan-100"}`}
@@ -5664,7 +5656,7 @@ function RevealScreen({
                   )}
                   <div
                     ref={promptFitContainerRef}
-                    className="mt-2 max-h-[14.25rem] overflow-hidden px-1"
+                    className="mt-2 min-h-0 flex-1 overflow-hidden px-1"
                   >
                     <div
                       ref={promptTextRef}
@@ -8167,7 +8159,9 @@ export default function App() {
     getStored("imposter-persona-only-v1", false),
   );
   const [premiumEnabled, setPremiumEnabled] = useState(false);
-  const [adultMode] = useState(false);
+  const [adultMode] = useState(
+    () => String(import.meta.env?.VITE_E2E_FORCE_ADULT_MODE || "").trim() === "1",
+  );
   const [customCategories, setCustomCategories] = useState(
     getStored("imposter-custom-categories-v2", []),
   );
@@ -11031,6 +11025,7 @@ export default function App() {
             onlinePrivatePrompt={onlinePrivatePrompt}
             onlinePrivatePromptError={onlinePrivatePromptError}
             playSfx={playSfx}
+            adultMode={adultMode}
           />
         </BrandedScreen>
       )}

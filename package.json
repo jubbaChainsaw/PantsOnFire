@@ -36,6 +36,7 @@
     "host:install-theme-host-packs": "node scripts/installThemeHostPacks.cjs",
     "host:install-mapped-videos": "node scripts/installMappedHostVideos.cjs",
     "host:sync-generated-media": "node scripts/syncGeneratedHostMediaFromDisk.cjs",
+    "media:theme-card-webp": "node scripts/generateThemeCardWebp.cjs",
     "export:default-host-ssml": "node scripts/exportDefaultHostSsmlCsv.cjs",
     "persona:generate-look-overrides": "node scripts/generateLaunchThemeLookOverrides.mjs",
     "persona:export-avatar-prompts": "node scripts/exportPersonaAvatarPrompts.cjs",

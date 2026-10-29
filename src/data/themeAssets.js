@@ -215,10 +215,41 @@ function cardAssetsForSlug(slug) {
   };
 }
 
+const DEFAULT_THEME_CARD_ASSETS = cardAssetsForSlug('default');
+
 export function getThemeCardAssets(themeName = 'Default') {
   const canonicalThemeName = toCanonicalThemeName(themeName);
   const slug = THEME_CARD_SLUGS[themeName] || THEME_CARD_SLUGS[canonicalThemeName] || THEME_CARD_SLUGS.Default;
   return cardAssetsForSlug(slug);
+}
+
+function resolveThemePromptCardPaths(themeName = 'Default', { adultMode = false } = {}) {
+  const cards = getThemeCardAssets(themeName);
+  if (adultMode) {
+    return {
+      front:
+        cards.adultPromptCardFront
+        || cards.promptCardFront
+        || DEFAULT_THEME_CARD_ASSETS.promptCardFront,
+      back:
+        cards.adultPromptCardBack
+        || cards.promptCardBack
+        || DEFAULT_THEME_CARD_ASSETS.promptCardBack,
+    };
+  }
+  return {
+    front: cards.promptCardFront || DEFAULT_THEME_CARD_ASSETS.promptCardFront,
+    back: cards.promptCardBack || DEFAULT_THEME_CARD_ASSETS.promptCardBack,
+  };
+}
+
+/** Themed prompt card faces for round reveal (PNG paths; mobile may rewrite to .webp). */
+export function getThemePromptCardFrontSrc(themeName = 'Default', options = {}) {
+  return resolveThemePromptCardPaths(themeName, options).front;
+}
+
+export function getThemePromptCardBackSrc(themeName = 'Default', options = {}) {
+  return resolveThemePromptCardPaths(themeName, options).back;
 }
 
 function getGeneratedThemeHostMedia(themeName = 'Default') {
