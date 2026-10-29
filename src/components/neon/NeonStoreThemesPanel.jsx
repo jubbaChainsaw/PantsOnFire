@@ -154,8 +154,55 @@ export default function NeonStoreThemesPanel({
     setFeatIndex(Math.max(0, Math.min(featuredPacks.length - 1, idx)));
   }, [featuredPacks.length]);
 
+  const availableToDownload = useMemo(
+    () =>
+      themeRows.filter((theme) => {
+        if (webShopMode || theme.isMystery) return false;
+        const contentIds = theme.pack
+          ? contentPackIdsForDlcPack(theme.pack, contentPackManifest)
+          : theme.contentPackId
+            ? [theme.contentPackId]
+            : [];
+        if (!contentIds.length) return false;
+        const owned =
+          theme.isOwned || (theme.isFree && theme.name !== 'Default');
+        return owned && downloadStateForIds(contentIds) === 'available';
+      }),
+    [themeRows, contentPackManifest, installed, downloadByPackId, webShopMode],
+  );
+
   return (
     <div data-testid="store-themes-panel">
+      {availableToDownload.length > 0 && !webShopMode ? (
+        <div
+          className="mb-4 rounded-2xl border border-cyan-300/30 bg-cyan-500/10 p-3"
+          data-testid="store-available-downloads"
+        >
+          <div className="pof-heading text-sm text-cyan-100">Available to download</div>
+          <p className="mt-1 text-xs text-white/70">
+            Owned packs that are not on this device yet. Downloads need a network connection.
+          </p>
+          <ul className="mt-2 space-y-2">
+            {availableToDownload.map((theme) => {
+              const contentIds = theme.pack
+                ? contentPackIdsForDlcPack(theme.pack, contentPackManifest)
+                : [theme.contentPackId];
+              return (
+                <li
+                  key={theme.isMystery ? theme.packId : theme.name}
+                  className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-white/10 bg-black/30 px-3 py-2"
+                >
+                  <span className="text-sm text-white">{theme.name}</span>
+                  <StoreActionChip
+                    label="Download"
+                    onClick={() => contentIds.forEach((id) => onDownloadContentPack(id))}
+                  />
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+      ) : null}
       <p className="pof-desc mb-3 text-center text-xs text-white/70">
         Five core themes ship free. DLC bundles add three themed experiences each, or unlock
         everything with Host with the Most.
@@ -289,8 +336,12 @@ export default function NeonStoreThemesPanel({
                 <div className="mt-1.5 flex flex-wrap items-center gap-1">
                   {theme.isMystery ? (
                     <DownloadBadge label="Invite unlock" tone="action" />
+                  ) : theme.isFree && theme.name !== 'Default' && dlState === 'available' ? (
+                    <DownloadBadge label="Owned, not downloaded" tone="action" />
                   ) : theme.isFree ? (
                     <DownloadBadge label="Free" tone="success" />
+                  ) : theme.isOwned && dlState === 'available' ? (
+                    <DownloadBadge label="Owned, not downloaded" tone="action" />
                   ) : theme.isOwned ? (
                     <DownloadBadge label="Owned" tone="success" />
                   ) : (

@@ -1,3 +1,3 @@
-# Bump this file to run Android debug APK workflow on cursor/ionos-web-deploy-6e4c.
-run-at=2026-10-29T15:00:00Z
-reason=bundled-web-on-physical-debug-apk
+# Touch this file on cursor/ionos-web-deploy-6e4c to trigger android-debug-apk.yml
+
+slim-play-ready-2026-10-29

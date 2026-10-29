@@ -53,21 +53,31 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Build bundled web (relative asset paths)
-        run: npx vite build --base ./ --outDir dist-android
+      - name: Build slim bundled web
+        run: node scripts/buildMobileBundledWeb.mjs dist-android
 
       - name: Expo prebuild (Android)
         run: npx expo prebuild --platform android --no-install
 
+      - name: Patch WebView DLC asset loader
+        run: node scripts/patch-rn-webview-asset-loader.cjs
+
       - name: Stage web bundle into Android assets
         run: node scripts/stageAndroidBundledWeb.mjs dist-android
+
+      - name: Report bundled web size
+        run: |
+          du -sh dist-android
+          cat dist-android/mobile-trim-report.json || true
 
       - name: Assemble debug APK
         working-directory: android
         env:
           EXPO_PUBLIC_GAME_URL: file:///android_asset/pof-web/index.html
           EXPO_PUBLIC_USE_BUNDLED_WEB: '1'
-        run: ./gradlew assembleDebug --no-daemon
+          EXPO_PUBLIC_SHELL_VERSION: '0.1.0'
+          EXPO_PUBLIC_PRODUCTION_GAME_URL: https://www.pantsonfire.app/
+        run: ./gradlew assembleDebug --no-daemon -PandroidVersionCode=${{ github.run_number }}
 
       - name: Collect APK for artifact
         run: |

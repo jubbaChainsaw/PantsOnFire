@@ -152,7 +152,7 @@ export function ContentPackSettingsPanel({
                   <div className="font-semibold text-white">{pack.name}</div>
                   <div className="text-xs text-white/55">
                     {formatPackSize(pack.sizeBytes)} · {pack.tier === 'paid' ? 'DLC' : 'Free'}
-                    {isInstalled ? ' · Installed' : ''}
+                    {isInstalled ? ' · Downloaded' : ' · Owned, not downloaded'}
                   </div>
                 </div>
                 <div className="flex flex-wrap gap-2">

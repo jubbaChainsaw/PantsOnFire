@@ -43,7 +43,7 @@ export function parseJoinCodeFromLocation(locationLike = window.location) {
 export const MOBILE_STORE_LINKS = {
   android:
     String(import.meta.env?.VITE_PLAY_STORE_URL || '').trim() ||
-    'https://play.google.com/store/apps/details?id=app.pantsonfire.liar',
+    'https://play.google.com/store/apps/details?id=app.pantsonfire.findtheliar',
   ios:
     String(import.meta.env?.VITE_APP_STORE_URL || '').trim() ||
     'https://apps.apple.com/app/pants-on-fire/id0000000000',

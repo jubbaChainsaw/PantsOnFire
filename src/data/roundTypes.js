@@ -75,14 +75,6 @@ export const ROUND_TYPES = {
     passThePhoneReady: true,
     onlineOnly: false,
   },
-  grill: {
-    id: 'grill',
-    name: "Grill 'Em",
-    tagline: 'Ask by mic, hear spoken AI answers. Liars know the hidden prompt.',
-    logoSrc: '/assets/images/round-types/grill-logo.svg',
-    passThePhoneReady: true,
-    onlineOnly: false,
-  },
   sound: {
     id: 'sound',
     name: 'Dodgy Audio',

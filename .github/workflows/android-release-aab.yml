@@ -1,0 +1,102 @@
+# Release AAB for Google Play (signed when keystore secrets exist; otherwise debug-signed for size checks).
+
+name: Android release AAB
+
+on:
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: Git ref to build (branch, tag, or SHA)
+        required: false
+        default: cursor/ionos-web-deploy-6e4c
+  push:
+    branches:
+      - cursor/ionos-web-deploy-6e4c
+    paths:
+      - .github/trigger-android-release-aab
+
+permissions:
+  contents: read
+
+jobs:
+  bundle-release:
+    runs-on: ubuntu-latest
+    env:
+      EXPO_PUBLIC_GAME_URL: file:///android_asset/pof-web/index.html
+      EXPO_PUBLIC_USE_BUNDLED_WEB: '1'
+      EXPO_PUBLIC_SHELL_VERSION: '0.1.0'
+      EXPO_PUBLIC_PRODUCTION_GAME_URL: https://www.pantsonfire.app/
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.ref || github.ref }}
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Accept Android SDK licenses
+        run: |
+          SDKM="$(find "${ANDROID_HOME}/cmdline-tools" -name sdkmanager -type f 2>/dev/null | head -1)"
+          if [ -z "$SDKM" ]; then
+            echo "sdkmanager not found under ${ANDROID_HOME}"
+            exit 1
+          fi
+          yes | "$SDKM" --licenses >/dev/null || true
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build slim bundled web
+        run: node scripts/buildMobileBundledWeb.mjs dist-android
+
+      - name: Expo prebuild (Android)
+        run: npx expo prebuild --platform android --no-install
+
+      - name: Patch WebView DLC asset loader
+        run: node scripts/patch-rn-webview-asset-loader.cjs
+
+      - name: Stage web bundle into Android assets
+        run: node scripts/stageAndroidBundledWeb.mjs dist-android
+
+      - name: Bundle release AAB
+        working-directory: android
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          ./gradlew bundleRelease --no-daemon \
+            -PandroidVersionCode=${{ github.run_number }} \
+            -PandroidVersionName=0.1.${{ github.run_number }}
+
+      - name: Collect AAB + size report
+        run: |
+          mkdir -p artifacts
+          cp android/app/build/outputs/bundle/release/app-release.aab artifacts/pants-on-fire-release.aab
+          ls -lh artifacts/pants-on-fire-release.aab
+          du -b artifacts/pants-on-fire-release.aab | tee artifacts/aab-size.txt
+          if [ -f dist-android/mobile-trim-report.json ]; then
+            cp dist-android/mobile-trim-report.json artifacts/mobile-trim-report.json
+          fi
+
+      - name: Upload release AAB
+        uses: actions/upload-artifact@v4
+        with:
+          name: pants-on-fire-release-aab
+          path: |
+            artifacts/pants-on-fire-release.aab
+            artifacts/aab-size.txt
+            artifacts/mobile-trim-report.json
+          if-no-files-found: error
+          compression-level: 6
