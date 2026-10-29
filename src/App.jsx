@@ -151,6 +151,7 @@ import {
 import NeonTwoTruthsInputScreen from "./components/neon/NeonTwoTruthsInputScreen.jsx";
 import NeonTwoTruthsVotingScreen from "./components/neon/NeonTwoTruthsVotingScreen.jsx";
 import NeonTwoTruthsRevealScreen from "./components/neon/NeonTwoTruthsRevealScreen.jsx";
+import DoubleTakeSquareRevealCard from "./components/neon/DoubleTakeSquareRevealCard.jsx";
 import { PICTURE_DLC_MANIFESTS } from "./data/pictureDlcManifests";
 import { getHostVoiceSrcCandidatesForLine } from "./data/hostVoiceLineMap";
 import {
@@ -5421,7 +5422,7 @@ function RevealScreen({
   }, [cardFace, showImposterRevealUi]);
 
   useLayoutEffect(() => {
-    if (cardFace !== "front") {
+    if (isPairsRound || cardFace !== "front") {
       setPromptFontSize((current) => (current === 50 ? current : 50));
       return;
     }
@@ -5445,7 +5446,7 @@ function RevealScreen({
     }
 
     setPromptFontSize((current) => (current === nextSize ? current : nextSize));
-  }, [prompt, mediaSrc, cardFace, showImposterRevealUi]);
+  }, [prompt, mediaSrc, cardFace, showImposterRevealUi, isPairsRound]);
 
   const imposterEmberParticles = useMemo(
     () =>
@@ -5490,7 +5491,50 @@ function RevealScreen({
             </div>
           )}
 
-          <div className="mt-3 mx-auto w-full max-w-[24.25rem] sm:max-w-[26rem] [perspective:1200px]">
+          <div className="mt-3 mx-auto w-full max-w-[24.25rem] sm:max-w-[26rem]">
+            {isPairsRound ? (
+              <>
+                <DoubleTakeSquareRevealCard
+                  cardFace={cardFace}
+                  mediaSrc={mediaSrc}
+                  isLiar={isImposter}
+                  isCountingDown={isCountingDown}
+                  countdownValue={countdownValue}
+                />
+                {cardFace === "front" && (
+                  <div className="mt-3 space-y-2 text-center text-white [text-shadow:0_2px_8px_rgba(0,0,0,0.85)]">
+                    <div className="inline-flex items-center justify-center gap-2 rounded-xl border border-fuchsia-200/40 bg-fuchsia-500/35 px-3 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-cyan-100">
+                      <img
+                        src={UI_ICON_MAGNIFIER_FIRE_SRC}
+                        alt=""
+                        aria-hidden="true"
+                        className="h-4 w-4 object-contain"
+                      />
+                      <span>YOUR CARD</span>
+                    </div>
+                    {(round.mediaPreviewLabel || prompt) && (
+                      <div className="pof-ui-copy text-sm text-white/85">
+                        {round.mediaPreviewLabel || prompt}
+                      </div>
+                    )}
+                    <div className="rounded-xl border border-fuchsia-200/40 bg-fuchsia-500/35 px-3 py-2 text-sm font-semibold text-white/95">
+                      {normalLine}
+                    </div>
+                    {bannedWords.length > 0 && (
+                      <div className="rounded-xl border border-fuchsia-200/40 bg-fuchsia-500/35 px-3 py-2">
+                        <div className="pof-ui-copy text-xs font-bold uppercase tracking-[0.2em] text-red-200">
+                          Banned Words
+                        </div>
+                        <div className="pof-ui-copy mt-1 text-sm font-medium text-red-100">
+                          {bannedWords.join(" • ")}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </>
+            ) : (
+              <div className="[perspective:1200px]">
             <motion.div
               animate={{ rotateY: cardFace === "front" ? 180 : 0 }}
               transition={{ duration: 0.75, ease: "easeInOut" }}
@@ -5665,6 +5709,8 @@ function RevealScreen({
                 </div>
               </div>
             </motion.div>
+              </div>
+            )}
           </div>
 
           {cardFace === "back" && !readyToReveal && !isCountingDown && (

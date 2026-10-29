@@ -25,6 +25,12 @@ export const UI_CARD_DEFAULT_FRONT_SRC = `${UI_CARD_BASE}/default-front.png`;
 export const UI_CARD_DEFAULT_BACK_SRC = `${UI_CARD_BASE}/default-back.png`;
 export const UI_CARD_LIAR_FRONT_SRC = `${UI_CARD_BASE}/liar-front.png`;
 
+/** Double Take (pairs) square card art — see commit "Add Double Take mode icon and square card art". */
+export const UI_CARD_DOUBLE_TAKE_BACK_SRC = `${UI_CARD_BASE}/double-take-back.png`;
+export const UI_CARD_DOUBLE_TAKE_FRONT_SRC = `${UI_CARD_BASE}/double-take-front.png`;
+export const UI_CARD_DOUBLE_TAKE_LIAR_FRONT_SRC = `${UI_CARD_BASE}/double-take-liar-front.png`;
+export const UI_GAME_MODE_DOUBLE_TAKE_SRC = `${UI_GAME_MODE_ICON_BASE}/double-take.png`;
+
 /** Themes with themed front/back card art in ui/cards/ */
 export const UI_THEMED_CARD_SLUGS = new Set([
   'default',
@@ -41,7 +47,7 @@ export const UI_GAME_MODE_ICON_BY_ID = Object.freeze({
   prompt: `${UI_GAME_MODE_ICON_BASE}/prompt.png`,
   opinion: `${UI_GAME_MODE_ICON_BASE}/opinion.png`,
   picture: `${UI_GAME_MODE_ICON_BASE}/picture.png`,
-  pairs: `${UI_GAME_MODE_ICON_BASE}/pairs.png`,
+  pairs: `${UI_GAME_MODE_DOUBLE_TAKE_SRC}`,
   nameblame: publicAssetUrl('images/round-types/name-and-shame.png'),
   noise: `${UI_GAME_MODE_ICON_BASE}/noise.png`,
   chain: `${UI_GAME_MODE_ICON_BASE}/chain.png`,
@@ -123,6 +129,9 @@ export function listUiPreloadSources() {
     UI_CARD_DEFAULT_FRONT_SRC,
     UI_CARD_DEFAULT_BACK_SRC,
     UI_CARD_LIAR_FRONT_SRC,
+    UI_CARD_DOUBLE_TAKE_BACK_SRC,
+    UI_CARD_DOUBLE_TAKE_FRONT_SRC,
+    UI_CARD_DOUBLE_TAKE_LIAR_FRONT_SRC,
     ...UI_THEMED_CARD_SLUGS.values()
       .filter((slug) => slug !== 'default')
       .flatMap((slug) => [

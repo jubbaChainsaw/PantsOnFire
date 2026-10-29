@@ -32,7 +32,7 @@ export const ROUND_TYPES = {
     id: 'pairs',
     name: DOUBLE_TAKE_DISPLAY_NAME,
     tagline: DOUBLE_TAKE_ROUND_TAGLINE,
-    logoSrc: '/assets/images/round-types/pairs-logo.svg',
+    logoSrc: '/assets/ui/game-modes/double-take.png',
     passThePhoneReady: true,
     onlineOnly: false,
   },
