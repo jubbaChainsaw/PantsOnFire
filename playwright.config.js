@@ -20,14 +20,14 @@ export default defineConfig({
       command:
         'VITE_E2E_FAST_TIMERS=1 npx vite build --outDir dist-e2e-full && npx vite preview --outDir dist-e2e-full --host 127.0.0.1 --port 4173',
       port: 4173,
-      reuseExistingServer: !process.env.CI,
+      reuseExistingServer: true,
       timeout: 300_000,
     },
     {
       command:
         'VITE_WEB_JOIN_ONLY=true VITE_BILLING_SIMULATE=true VITE_E2E_FAST_TIMERS=1 npx vite build --outDir dist-e2e-web && npx vite preview --outDir dist-e2e-web --host 127.0.0.1 --port 4176',
       port: 4176,
-      reuseExistingServer: false,
+      reuseExistingServer: true,
       timeout: 300_000,
     },
   ],

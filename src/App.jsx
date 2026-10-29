@@ -128,6 +128,12 @@ import {
   pushRemotePlayerProfile,
 } from "./lib/playerProfileApi.js";
 import { fetchMyReferral, attributeReferralCode } from "./lib/referralApi.js";
+import {
+  parseReferralCodeFromLocation,
+  storePendingReferralCode,
+  readPendingReferralCode,
+  clearPendingReferralCode,
+} from "./lib/referralAttribution.js";
 import { completeHostedOnlineGameOnServer } from "./lib/altCardUnlockApi.js";
 import NeonPlayerProfileScreen from "./components/neon/NeonPlayerProfileScreen.jsx";
 import {
@@ -8492,6 +8498,31 @@ export default function App() {
     setAccountSession(built);
     setUnlockedThemePackIds(built.unlockedThemePackIds);
   }, [supabaseSession?.access_token, supabaseSession?.user, cloudProvider]);
+  const applyRemotePlayerProfile = useCallback(
+    (remote, { accessToken } = {}) => {
+      if (!remote) return;
+      let merged = mergeRemotePlayerProfile(remote);
+      if (merged.referralUnlockToastPending) {
+        setAchievementUnlockToast({
+          title: "Secret theme unlocked!",
+          body: "A friend joined and upgraded. Check your deck collection.",
+        });
+        merged = {
+          ...merged,
+          referralUnlockToastPending: false,
+        };
+      }
+      setPlayerProfile(merged);
+      writeLocalPlayerProfile(merged);
+      setUnlockedAltCardThemeKeys(
+        normalizeUnlockedAltCardThemeKeys(merged.unlockedAltCardThemeKeys || []),
+      );
+      if (accessToken) {
+        pushRemotePlayerProfile(accessToken, merged).catch(() => {});
+      }
+    },
+    [],
+  );
   const runWebPurchase = useCallback(
     async (kind, productId) => {
       if (!accountSession || !isCloudAuthProvider(accountSession.authProvider)) {
@@ -8665,31 +8696,6 @@ export default function App() {
       body: first?.description || "",
     });
   }, []);
-  const applyRemotePlayerProfile = useCallback(
-    (remote, { accessToken } = {}) => {
-      if (!remote) return;
-      let merged = mergeRemotePlayerProfile(remote);
-      if (merged.referralUnlockToastPending) {
-        setAchievementUnlockToast({
-          title: "Secret theme unlocked!",
-          body: "A friend joined and upgraded. Check your deck collection.",
-        });
-        merged = {
-          ...merged,
-          referralUnlockToastPending: false,
-        };
-      }
-      setPlayerProfile(merged);
-      writeLocalPlayerProfile(merged);
-      setUnlockedAltCardThemeKeys(
-        normalizeUnlockedAltCardThemeKeys(merged.unlockedAltCardThemeKeys || []),
-      );
-      if (accessToken) {
-        pushRemotePlayerProfile(accessToken, merged).catch(() => {});
-      }
-    },
-    [],
-  );
   const themeMeta = THEME_META[normalizedThemeName] || THEME_META.Default;
   const availablePicturePackManifests = useMemo(
     () => PICTURE_DLC_MANIFESTS || [],
@@ -8972,9 +8978,27 @@ export default function App() {
     const token = supabaseSession?.access_token;
     if (!token || !isCloudAuthProvider(accountSession?.authProvider)) return;
     fetchMyReferral(token)
-      .then((payload) => setReferralSummary(payload))
+      .then((payload) => {
+        setReferralSummary(payload);
+        const secretNames = payload?.unlockedSecretThemeNames;
+        if (!Array.isArray(secretNames) || !secretNames.length) return;
+        commitPlayerProfileUpdate((current) => ({
+          ...current,
+          achievementUnlockedThemeNames: [
+            ...new Set([
+              ...(current.achievementUnlockedThemeNames || []),
+              ...secretNames,
+            ]),
+          ],
+        }));
+      })
       .catch(() => setReferralSummary(null));
-  }, [supabaseSession?.access_token, accountSession?.authProvider, screen]);
+  }, [
+    supabaseSession?.access_token,
+    accountSession?.authProvider,
+    screen,
+    commitPlayerProfileUpdate,
+  ]);
   useEffect(() => {
     const token = supabaseSession?.access_token;
     if (!token || !isCloudAuthProvider(accountSession?.authProvider)) return;
@@ -11770,6 +11794,9 @@ export default function App() {
           onOpenAccount={() => setScreen("account-gate")}
           dlcThemePacks={DLC_THEME_PACKS}
           unlockedThemePackIds={unlockedThemePackIds}
+          achievementUnlockedThemeNames={
+            playerProfile?.achievementUnlockedThemeNames || []
+          }
           accountSession={accountSession}
           allDlcIncluded={entitlements.allDlcIncluded}
           hasTwistAddon={Boolean(accountSession?.addonTwistTruth)}

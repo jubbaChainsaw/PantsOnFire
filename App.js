@@ -9,7 +9,12 @@ const DEFAULT_WEB_URL = Platform.select({
   default: 'http://localhost:5173',
 });
 
-const GAME_URL = process.env.EXPO_PUBLIC_GAME_URL || DEFAULT_WEB_URL;
+const BUNDLED_ANDROID_GAME_URI = 'file:///android_asset/pof-web/index.html';
+
+const GAME_URL =
+  process.env.EXPO_PUBLIC_GAME_URL ||
+  (Platform.OS === 'android' && !__DEV__ ? BUNDLED_ANDROID_GAME_URI : null) ||
+  DEFAULT_WEB_URL;
 
 const IOS_KEY = process.env.EXPO_PUBLIC_REVENUECAT_IOS_KEY || '';
 const ANDROID_KEY = process.env.EXPO_PUBLIC_REVENUECAT_ANDROID_KEY || '';
@@ -54,7 +59,10 @@ export default function App() {
       <WebView
         source={{ uri: GAME_URL }}
         style={styles.webview}
-        originWhitelist={['https://*', 'http://localhost*', 'http://10.0.2.2*']}
+        originWhitelist={['https://*', 'http://*', 'file://*']}
+        allowFileAccess
+        allowFileAccessFromFileURLs
+        allowUniversalAccessFromFileURLs
         setSupportMultipleWindows={false}
         startInLoadingState
         javaScriptEnabled

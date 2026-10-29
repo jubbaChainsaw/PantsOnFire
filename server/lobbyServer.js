@@ -243,7 +243,7 @@ app.use(express.json({ limit: '3mb' }));
 mountPoFAuthRoutes(app, { accountStore });
 mountEntitlementsRoutes(app, { store: entitlementsStore, referralHooks });
 mountPlayerProfileRoutes(app, { store: playerProfileStore });
-mountReferralRoutes(app, { referralStore });
+mountReferralRoutes(app, { referralStore, playerProfileStore });
 mountAltCardUnlockRoutes(app, { store: playerProfileStore, lobbyStore: store });
 mountStripeBillingRoutes(app, { store: entitlementsStore, referralHooks });
 

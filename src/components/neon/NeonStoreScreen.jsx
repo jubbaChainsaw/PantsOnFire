@@ -150,6 +150,7 @@ export default function NeonStoreScreen({
   dlcThemePacks = DLC_THEME_PACKS,
   coreThemeNames = CORE_THEME_NAMES,
   unlockedThemePackIds = [],
+  achievementUnlockedThemeNames = [],
   accountSession = null,
   allDlcIncluded = false,
   hasTwistAddon = false,
@@ -352,6 +353,7 @@ export default function NeonStoreScreen({
               coreThemeNames={coreThemeNames}
               dlcThemePacks={dlcThemePacks}
               unlockedThemePackIds={unlockedThemePackIds}
+              achievementUnlockedThemeNames={achievementUnlockedThemeNames}
               allDlcIncluded={allDlcIncluded}
               disableDlcDemo={disableDlcDemo && !webShopMode}
               webShopMode={webShopMode}

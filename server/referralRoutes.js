@@ -1,15 +1,17 @@
 import { resolveAuthUserFromBearer } from './resolveAuthUser.js';
-import { buildReferralInviteUrl } from './referralConstants.js';
-import {
-  attributeReferralSignup,
-  getReferralSummary,
-} from './referralService.js';
+import { syncInviterReferralSecretThemes, getReferralSummary, attributeReferralSignup } from './referralService.js';
+import { buildReferralInviteUrl, referralThemeNamesForConvertedCount, FEVER_DREAM_1_THEME_NAME, FEVER_DREAM_2_THEME_NAME } from './referralConstants.js';
+
+const SECRET_REFERRAL_THEME_NAMES = new Set([
+  FEVER_DREAM_1_THEME_NAME,
+  FEVER_DREAM_2_THEME_NAME,
+]);
 
 function normalizeDeviceId(raw) {
   return String(raw || '').trim().slice(0, 128);
 }
 
-export function mountReferralRoutes(app, { referralStore } = {}) {
+export function mountReferralRoutes(app, { referralStore, playerProfileStore } = {}) {
   if (!referralStore) {
     throw new Error('referralStore-required');
   }
@@ -51,10 +53,26 @@ export function mountReferralRoutes(app, { referralStore } = {}) {
         resolved.userId,
         deviceId,
       );
+      let unlockedSecretThemeNames = referralThemeNamesForConvertedCount(
+        summary.stats?.converted,
+      );
+      if (playerProfileStore) {
+        const synced = await syncInviterReferralSecretThemes(
+          playerProfileStore,
+          referralStore,
+          resolved.userId,
+        );
+        if (synced?.achievementUnlockedThemeNames?.length) {
+          unlockedSecretThemeNames = synced.achievementUnlockedThemeNames.filter(
+            (name) => SECRET_REFERRAL_THEME_NAMES.has(name),
+          );
+        }
+      }
       res.json({
         code: summary.code,
         inviteUrl: buildReferralInviteUrl(summary.code),
         stats: summary.stats,
+        unlockedSecretThemeNames,
       });
     } catch (err) {
       res.status(500).json({ error: 'referral-summary-failed', detail: String(err?.message || err) });

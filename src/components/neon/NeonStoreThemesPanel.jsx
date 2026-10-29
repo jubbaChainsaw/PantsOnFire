@@ -3,6 +3,10 @@ import { Star, Check } from 'lucide-react';
 import { getStoreThemeThumbSrc } from '../../data/themeAssets.js';
 import { getThemeOptions, THEME_DLC_PACK_BY_THEME } from '../../data/themeCatalog.js';
 import {
+  REFERRAL_SECRET_THEME_UNLOCKS,
+  referralSecretThemeUnlocked,
+} from '../../data/referralSecretThemes.js';
+import {
   contentPackIdsForDlcPack,
   coreThemeContentPackId,
 } from '../../lib/contentPacks/storeThemeDownloads.js';
@@ -36,6 +40,7 @@ export default function NeonStoreThemesPanel({
   coreThemeNames = [],
   dlcThemePacks = [],
   unlockedThemePackIds = [],
+  achievementUnlockedThemeNames = [],
   allDlcIncluded = false,
   disableDlcDemo = false,
   contentPackManifest = null,
@@ -54,8 +59,9 @@ export default function NeonStoreThemesPanel({
   const carouselRef = useRef(null);
 
   const themeRows = useMemo(() => {
-    const options = getThemeOptions([...unlocked]);
-    return options.map((opt) => {
+    const profileStub = { achievementUnlockedThemeNames };
+    const options = getThemeOptions([...unlocked], achievementUnlockedThemeNames);
+    const rows = options.map((opt) => {
       const packId = opt.packId || THEME_DLC_PACK_BY_THEME[opt.name] || null;
       const pack = packId ? dlcThemePacks.find((p) => p.id === packId) : null;
       const isFree = !opt.isDlc;
@@ -65,13 +71,36 @@ export default function NeonStoreThemesPanel({
         isFree,
         isOwned,
         isDlc: opt.isDlc,
+        isMystery: false,
         packId,
         pack,
         thumb: getStoreThemeThumbSrc(opt.name),
         contentPackId: coreThemeContentPackId(opt.name, contentPackManifest),
       };
     });
-  }, [unlocked, allDlcIncluded, dlcThemePacks, contentPackManifest, coreThemeNames]);
+    for (const entry of REFERRAL_SECRET_THEME_UNLOCKS) {
+      if (referralSecretThemeUnlocked(profileStub, entry.themeName)) continue;
+      rows.push({
+        name: entry.pack.mysteryName,
+        isFree: false,
+        isOwned: false,
+        isDlc: true,
+        isMystery: true,
+        packId: entry.pack.id,
+        pack: entry.pack,
+        thumb: entry.pack.mysteryIcon,
+        contentPackId: null,
+        mysteryHint: entry.pack.mysteryDescription,
+      });
+    }
+    return rows;
+  }, [
+    unlocked,
+    allDlcIncluded,
+    dlcThemePacks,
+    contentPackManifest,
+    achievementUnlockedThemeNames,
+  ]);
 
   const counts = useMemo(
     () => ({
@@ -226,17 +255,22 @@ export default function NeonStoreThemesPanel({
 
       <div className="grid grid-cols-2 gap-2" data-testid="store-theme-grid">
         {filteredThemes.map((theme) => {
-          const contentIds = theme.pack
-            ? contentPackIdsForDlcPack(theme.pack, contentPackManifest)
-            : theme.contentPackId
-              ? [theme.contentPackId]
-              : [];
+          const contentIds = theme.isMystery
+            ? []
+            : theme.pack
+              ? contentPackIdsForDlcPack(theme.pack, contentPackManifest)
+              : theme.contentPackId
+                ? [theme.contentPackId]
+                : [];
           const dlState = downloadStateForIds(contentIds);
+          const testIdSlug = theme.isMystery
+            ? `mystery-${theme.packId}`
+            : theme.name.replace(/\s+/g, '-');
           return (
             <div
-              key={theme.name}
+              key={theme.isMystery ? theme.packId : theme.name}
               className="overflow-hidden rounded-xl border border-white/15 bg-black/35"
-              data-testid={`store-theme-card-${theme.name.replace(/\s+/g, '-')}`}
+              data-testid={`store-theme-card-${testIdSlug}`}
             >
               <StoreThemeImage
                 src={theme.thumb}
@@ -247,15 +281,22 @@ export default function NeonStoreThemesPanel({
                 <div className="pof-heading text-[0.72rem] leading-tight text-white">
                   {theme.name}
                 </div>
+                {theme.isMystery ? (
+                  <p className="mt-1 text-[0.58rem] leading-snug text-violet-100/80">
+                    {theme.mysteryHint}
+                  </p>
+                ) : null}
                 <div className="mt-1.5 flex flex-wrap items-center gap-1">
-                  {theme.isFree ? (
+                  {theme.isMystery ? (
+                    <DownloadBadge label="Invite unlock" tone="action" />
+                  ) : theme.isFree ? (
                     <DownloadBadge label="Free" tone="success" />
                   ) : theme.isOwned ? (
                     <DownloadBadge label="Owned" tone="success" />
                   ) : (
                     <DownloadBadge label={theme.pack?.priceLabel || 'Premium'} />
                   )}
-                  {!theme.isOwned && theme.packId && !disableDlcDemo ? (
+                  {!theme.isOwned && theme.packId && !disableDlcDemo && !theme.isMystery ? (
                     <StoreActionChip
                       label="Buy"
                       variant="amber"

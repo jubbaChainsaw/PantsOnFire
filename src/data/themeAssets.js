@@ -43,6 +43,16 @@ export const THEME_ASSETS = {
     iconSheet: '/assets/themes/monsters/icons/icons-sheet.png',
     uiBanner: '/assets/themes/ghosts-and-ghouls/hosts/persona-host-idle.png',
   },
+  'Fever Dream Vol. 1': {
+    personaHostIdle: '/assets/themes/default/hosts/persona-host-intro-poster.png',
+    iconSheet: '/assets/themes/default/icons/icons-sheet.png',
+    uiBanner: '/assets/themes/fever-dream-1/ui/banner.svg',
+  },
+  'Fever Dream Vol. 2': {
+    personaHostIdle: '/assets/themes/default/hosts/persona-host-intro-poster.png',
+    iconSheet: '/assets/themes/default/icons/icons-sheet.png',
+    uiBanner: '/assets/themes/fever-dream-2/ui/banner.svg',
+  },
   'Rock Stars': {
     personaHostIdle: '/assets/themes/rock-stars/hosts/persona-host-idle.png',
     personaHostTalk1: '/assets/themes/rock-stars/hosts/persona-host-talk-1.png',

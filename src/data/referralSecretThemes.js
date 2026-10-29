@@ -1,6 +1,8 @@
 import { FEVER_DREAM_1_THEME_PACK } from './dlc/themePacks/fever-dream-1/themePack.js';
 import { FEVER_DREAM_2_THEME_PACK } from './dlc/themePacks/fever-dream-2/themePack.js';
 
+import { toCanonicalThemeName } from './themeAliases.js';
+
 /** UI + unlock config — never expose theme names in locked mystery copy. */
 export const REFERRAL_SECRET_THEME_UNLOCKS = [
   {
@@ -22,7 +24,10 @@ export const REFERRAL_SECRET_THEME_UNLOCKS = [
 ];
 
 export function referralSecretThemeUnlocked(profile, themeName) {
-  return (profile?.achievementUnlockedThemeNames || []).includes(themeName);
+  const key = toCanonicalThemeName(themeName) || themeName;
+  return (profile?.achievementUnlockedThemeNames || []).some(
+    (entry) => (toCanonicalThemeName(entry) || entry) === key,
+  );
 }
 
 export function referralConvertedProgress(referralStats, conversionsRequired) {
