@@ -1,5 +1,3 @@
 # Bump this file to run Android debug APK workflow on cursor/ionos-web-deploy-6e4c.
-# Intended ref to build: cursor/ionos-web-deploy-6e4c (checkout uses the pushed commit).
-run-at=2026-10-29T14:12:00Z
-commit=7001c96
-retry=accept-licenses-only
+run-at=2026-10-29T15:00:00Z
+reason=bundled-web-on-physical-debug-apk

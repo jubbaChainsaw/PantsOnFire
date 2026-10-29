@@ -11,9 +11,16 @@ const DEFAULT_WEB_URL = Platform.select({
 
 const BUNDLED_ANDROID_GAME_URI = 'file:///android_asset/pof-web/index.html';
 
+/** CI / test APKs set EXPO_PUBLIC_USE_BUNDLED_WEB=1 so debug builds load assets, not 10.0.2.2:5173. */
+const useBundledAndroidWeb =
+  Platform.OS === 'android' &&
+  (Boolean(process.env.EXPO_PUBLIC_GAME_URL) ||
+    process.env.EXPO_PUBLIC_USE_BUNDLED_WEB === '1' ||
+    !__DEV__);
+
 const GAME_URL =
   process.env.EXPO_PUBLIC_GAME_URL ||
-  (Platform.OS === 'android' && !__DEV__ ? BUNDLED_ANDROID_GAME_URI : null) ||
+  (useBundledAndroidWeb ? BUNDLED_ANDROID_GAME_URI : null) ||
   DEFAULT_WEB_URL;
 
 const IOS_KEY = process.env.EXPO_PUBLIC_REVENUECAT_IOS_KEY || '';

@@ -64,11 +64,21 @@ jobs:
 
       - name: Assemble debug APK
         working-directory: android
+        env:
+          EXPO_PUBLIC_GAME_URL: file:///android_asset/pof-web/index.html
+          EXPO_PUBLIC_USE_BUNDLED_WEB: '1'
         run: ./gradlew assembleDebug --no-daemon
+
+      - name: Collect APK for artifact
+        run: |
+          mkdir -p artifacts
+          cp android/app/build/outputs/apk/debug/app-debug.apk artifacts/pants-on-fire-debug.apk
+          ls -lh artifacts/pants-on-fire-debug.apk
 
       - name: Upload debug APK
         uses: actions/upload-artifact@v4
         with:
           name: pants-on-fire-debug-apk
-          path: android/app/build/outputs/apk/debug/app-debug.apk
+          path: artifacts/pants-on-fire-debug.apk
           if-no-files-found: error
+          compression-level: 6
