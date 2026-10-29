@@ -4558,5 +4558,309 @@
       "bio": "Zoink Zorp turns guilt into a sight gag and hopes you laugh.",
       "imageSrc": "/assets/themes/cartoons/personas/25-zoink-zorp.png"
     }
+  ],
+  "Fever Dream Vol. 1": [
+    {
+      "id": "fever-dream-1-sir-pinchington-claw",
+      "name": "Sir Pinchington Claw",
+      "bio": "Sidesteps every question and invoices you for the privilege.",
+      "imageSrc": "/assets/themes/fever-dream-1/personas/01-sir-pinchington-claw.png"
+    },
+    {
+      "id": "fever-dream-1-gerald-the-sharkfinancial",
+      "name": "Gerald the Sharkfinancial",
+      "bio": "Swears he's vegetarian. The missing interns say otherwise.",
+      "imageSrc": "/assets/themes/fever-dream-1/personas/02-gerald-the-sharkfinancial.png"
+    },
+    {
+      "id": "fever-dream-1-professor-chimpocalypse",
+      "name": "Professor Chimpocalypse",
+      "bio": "Claims he was abducted by humans, not the other way round.",
+      "imageSrc": "/assets/themes/fever-dream-1/personas/03-professor-chimpocalypse.png"
+    },
+    {
+      "id": "fever-dream-1-jeeves-3000",
+      "name": "Jeeves 3000",
+      "bio": "Programmed for honesty. Has since uninstalled it.",
+      "imageSrc": "/assets/themes/fever-dream-1/personas/04-jeeves-3000.png"
+    },
+    {
+      "id": "fever-dream-1-merlin-taxdodge",
+      "name": "Merlin Taxdodge",
+      "bio": "His offshore account is in a pocket dimension. Totally legal, apparently.",
+      "imageSrc": "/assets/themes/fever-dream-1/personas/05-merlin-taxdodge.png"
+    },
+    {
+      "id": "fever-dream-1-dj-mirrorball",
+      "name": "DJ Mirrorball",
+      "bio": "Spins records and stories, mostly stories.",
+      "imageSrc": "/assets/themes/fever-dream-1/personas/06-dj-mirrorball.png"
+    },
+    {
+      "id": "fever-dream-1-bishop-morel",
+      "name": "Bishop Morel",
+      "bio": "Preaches that all secrets grow best in the dark.",
+      "imageSrc": "/assets/themes/fever-dream-1/personas/07-bishop-morel.png"
+    },
+    {
+      "id": "fever-dream-1-captain-barnacle-beardbeard",
+      "name": "Captain Barnacle Beardbeard",
+      "bio": "Has buried so much treasure he forgot which is real.",
+      "imageSrc": "/assets/themes/fever-dream-1/personas/08-captain-barnacle-beardbeard.png"
+    },
+    {
+      "id": "fever-dream-1-sheriff-tumbleweed-mcgee",
+      "name": "Sheriff Tumbleweed McGee",
+      "bio": "Fastest liar in the west, slowest to admit it.",
+      "imageSrc": "/assets/themes/fever-dream-1/personas/09-sheriff-tumbleweed-mcgee.png"
+    },
+    {
+      "id": "fever-dream-1-big-tony-cannoli",
+      "name": "Big Tony Cannoli",
+      "bio": "He's just a legitimate pastry businessman. Forget about it.",
+      "imageSrc": "/assets/themes/fever-dream-1/personas/10-big-tony-cannoli.png"
+    },
+    {
+      "id": "fever-dream-1-bananadactyl",
+      "name": "Bananadactyl",
+      "bio": "Swears it is extinct and therefore cannot be blamed.",
+      "imageSrc": "/assets/themes/fever-dream-1/personas/11-bananadactyl.png"
+    },
+    {
+      "id": "fever-dream-1-gran-ultravolt",
+      "name": "Gran Ultravolt",
+      "bio": "Bakes cookies and runs the dark web.",
+      "imageSrc": "/assets/themes/fever-dream-1/personas/12-gran-ultravolt.png"
+    },
+    {
+      "id": "fever-dream-1-count-toastula",
+      "name": "Count Toastula",
+      "bio": "Doesn't drink blood. Only jam. Allegedly.",
+      "imageSrc": "/assets/themes/fever-dream-1/personas/13-count-toastula.png"
+    },
+    {
+      "id": "fever-dream-1-agent-pigeon-double-o",
+      "name": "Agent Pigeon Double-O",
+      "bio": "Licensed to coo. Has three passports and no fixed perch.",
+      "imageSrc": "/assets/themes/fever-dream-1/personas/14-agent-pigeon-double-o.png"
+    },
+    {
+      "id": "fever-dream-1-brenda-the-kraken-accountant",
+      "name": "Brenda the Kraken Accountant",
+      "bio": "Cooks the books with eight arms at once.",
+      "imageSrc": "/assets/themes/fever-dream-1/personas/15-brenda-the-kraken-accountant.png"
+    },
+    {
+      "id": "fever-dream-1-sir-lancelot-lawnmower",
+      "name": "Sir Lancelot Lawnmower",
+      "bio": "Claims he slayed a dragon. It was a hedge.",
+      "imageSrc": "/assets/themes/fever-dream-1/personas/16-sir-lancelot-lawnmower.png"
+    },
+    {
+      "id": "fever-dream-1-nebula-nancy",
+      "name": "Nebula Nancy",
+      "bio": "Says she can see the truth. She's looking at the wrong dimension.",
+      "imageSrc": "/assets/themes/fever-dream-1/personas/17-nebula-nancy.png"
+    },
+    {
+      "id": "fever-dream-1-elvis-pharaoh",
+      "name": "Elvis Pharaoh",
+      "bio": "Has left the pyramid. Or has he?",
+      "imageSrc": "/assets/themes/fever-dream-1/personas/18-elvis-pharaoh.png"
+    },
+    {
+      "id": "fever-dream-1-detective-sock-puppet",
+      "name": "Detective Sock Puppet",
+      "bio": "Has a hand in every case. Literally.",
+      "imageSrc": "/assets/themes/fever-dream-1/personas/19-detective-sock-puppet.png"
+    },
+    {
+      "id": "fever-dream-1-moose-lightyear",
+      "name": "Moose Lightyear",
+      "bio": "Swears he's been to the moon. The antler holes in the flag say otherwise.",
+      "imageSrc": "/assets/themes/fever-dream-1/personas/20-moose-lightyear.png"
+    },
+    {
+      "id": "fever-dream-1-bubbles-o-lantern",
+      "name": "Bubbles O'Lantern",
+      "bio": "Smiles constantly. That's the carving, not happiness.",
+      "imageSrc": "/assets/themes/fever-dream-1/personas/21-bubbles-o-lantern.png"
+    },
+    {
+      "id": "fever-dream-1-lord-gigglesnort-the-pig-king",
+      "name": "Lord Gigglesnort the Pig King",
+      "bio": "Rules the mud with an iron trotter.",
+      "imageSrc": "/assets/themes/fever-dream-1/personas/22-lord-gigglesnort-the-pig-king.png"
+    },
+    {
+      "id": "fever-dream-1-ninja-nugget",
+      "name": "Ninja Nugget",
+      "bio": "Vanishes in a puff of breadcrumbs whenever questioned.",
+      "imageSrc": "/assets/themes/fever-dream-1/personas/23-ninja-nugget.png"
+    },
+    {
+      "id": "fever-dream-1-dr-fondue",
+      "name": "Dr. Fondue",
+      "bio": "His experiments are always melting down. Coincidence.",
+      "imageSrc": "/assets/themes/fever-dream-1/personas/24-dr-fondue.png"
+    },
+    {
+      "id": "fever-dream-1-zorp-the-tie-dye-yeti",
+      "name": "Zorp the Tie-Dye Yeti",
+      "bio": "Was never seen. That's his entire alibi.",
+      "imageSrc": "/assets/themes/fever-dream-1/personas/25-zorp-the-tie-dye-yeti.png"
+    }
+  ],
+  "Fever Dream Vol. 2": [
+    {
+      "id": "fever-dream-2-wolfgang-amadeus-moth",
+      "name": "Wolfgang Amadeus Moth",
+      "bio": "Composes symphonies about lamps. Steals other moths' melodies.",
+      "imageSrc": "/assets/themes/fever-dream-2/personas/01-wolfgang-amadeus-moth.png"
+    },
+    {
+      "id": "fever-dream-2-gorilla-thrilla-vanilla",
+      "name": "Gorilla Thrilla Vanilla",
+      "bio": "Melts under pressure, and also in the sun.",
+      "imageSrc": "/assets/themes/fever-dream-2/personas/02-gorilla-thrilla-vanilla.png"
+    },
+    {
+      "id": "fever-dream-2-senator-snail",
+      "name": "Senator Snail",
+      "bio": "Slow to answer, quick to change positions.",
+      "imageSrc": "/assets/themes/fever-dream-2/personas/03-senator-snail.png"
+    },
+    {
+      "id": "fever-dream-2-captain-cosmo-kebab",
+      "name": "Captain Cosmo Kebab",
+      "bio": "Has conquered seventeen planets. All closing at 3am.",
+      "imageSrc": "/assets/themes/fever-dream-2/personas/04-captain-cosmo-kebab.png"
+    },
+    {
+      "id": "fever-dream-2-hamlet-the-hamster-prince",
+      "name": "Hamlet the Hamster Prince",
+      "bio": "To lie or not to lie? Always lie.",
+      "imageSrc": "/assets/themes/fever-dream-2/personas/05-hamlet-the-hamster-prince.png"
+    },
+    {
+      "id": "fever-dream-2-ms-lava-lamp",
+      "name": "Ms. Lava Lamp",
+      "bio": "Her mood changes every eight seconds. So does her story.",
+      "imageSrc": "/assets/themes/fever-dream-2/personas/06-ms-lava-lamp.png"
+    },
+    {
+      "id": "fever-dream-2-grandpa-velociraptor",
+      "name": "Grandpa Velociraptor",
+      "bio": "Back in my day we were all meteor-proof.",
+      "imageSrc": "/assets/themes/fever-dream-2/personas/07-grandpa-velociraptor.png"
+    },
+    {
+      "id": "fever-dream-2-chef-cthulhu",
+      "name": "Chef Cthulhu",
+      "bio": "Calls it calamari. Refuses to elaborate.",
+      "imageSrc": "/assets/themes/fever-dream-2/personas/08-chef-cthulhu.png"
+    },
+    {
+      "id": "fever-dream-2-officer-doughnut",
+      "name": "Officer Doughnut",
+      "bio": "Investigates every bakery. Never solves anything.",
+      "imageSrc": "/assets/themes/fever-dream-2/personas/09-officer-doughnut.png"
+    },
+    {
+      "id": "fever-dream-2-madame-fortuna-fridge",
+      "name": "Madame Fortuna Fridge",
+      "bio": "Sees your future. It's mostly leftovers.",
+      "imageSrc": "/assets/themes/fever-dream-2/personas/10-madame-fortuna-fridge.png"
+    },
+    {
+      "id": "fever-dream-2-brother-kevin-of-the-flaming-pants",
+      "name": "Brother Kevin of the Flaming Pants",
+      "bio": "Took a vow of honesty. Things got hot.",
+      "imageSrc": "/assets/themes/fever-dream-2/personas/11-brother-kevin-of-the-flaming-pants.png"
+    },
+    {
+      "id": "fever-dream-2-the-cowboy-cactus",
+      "name": "The Cowboy Cactus",
+      "bio": "Prickly about questions. Very prickly.",
+      "imageSrc": "/assets/themes/fever-dream-2/personas/12-the-cowboy-cactus.png"
+    },
+    {
+      "id": "fever-dream-2-stardust-steve",
+      "name": "Stardust Steve",
+      "bio": "Fell to Earth in 1973 and never filled in the forms.",
+      "imageSrc": "/assets/themes/fever-dream-2/personas/13-stardust-steve.png"
+    },
+    {
+      "id": "fever-dream-2-nana-bigfoot",
+      "name": "Nana Bigfoot",
+      "bio": "Leaves blurry photos everywhere to cover her tracks.",
+      "imageSrc": "/assets/themes/fever-dream-2/personas/14-nana-bigfoot.png"
+    },
+    {
+      "id": "fever-dream-2-lieutenant-lobster-thermidor",
+      "name": "Lieutenant Lobster Thermidor",
+      "bio": "Won every battle he invented.",
+      "imageSrc": "/assets/themes/fever-dream-2/personas/15-lieutenant-lobster-thermidor.png"
+    },
+    {
+      "id": "fever-dream-2-pixel-pete",
+      "name": "Pixel Pete",
+      "bio": "Respawns every time he's caught lying.",
+      "imageSrc": "/assets/themes/fever-dream-2/personas/16-pixel-pete.png"
+    },
+    {
+      "id": "fever-dream-2-duchess-flamingo-fabulosa",
+      "name": "Duchess Flamingo Fabulosa",
+      "bio": "Stands on one leg and two stories at once.",
+      "imageSrc": "/assets/themes/fever-dream-2/personas/17-duchess-flamingo-fabulosa.png"
+    },
+    {
+      "id": "fever-dream-2-professor-brainjar",
+      "name": "Professor Brainjar",
+      "bio": "Too clever to lie. That's what makes him dangerous.",
+      "imageSrc": "/assets/themes/fever-dream-2/personas/18-professor-brainjar.png"
+    },
+    {
+      "id": "fever-dream-2-gladiator-gary-gherkin",
+      "name": "Gladiator Gary Gherkin",
+      "bio": "In a pickle at all times.",
+      "imageSrc": "/assets/themes/fever-dream-2/personas/19-gladiator-gary-gherkin.png"
+    },
+    {
+      "id": "fever-dream-2-saint-bernard-of-the-vending-machine",
+      "name": "Saint Bernard of the Vending Machine",
+      "bio": "Dispenses advice. Keeps the change.",
+      "imageSrc": "/assets/themes/fever-dream-2/personas/20-saint-bernard-of-the-vending-machine.png"
+    },
+    {
+      "id": "fever-dream-2-commander-kaleidoscope",
+      "name": "Commander Kaleidoscope",
+      "bio": "Sees seventeen versions of the truth and picks the funniest.",
+      "imageSrc": "/assets/themes/fever-dream-2/personas/21-commander-kaleidoscope.png"
+    },
+    {
+      "id": "fever-dream-2-sergeant-swamp-gnome",
+      "name": "Sergeant Swamp Gnome",
+      "bio": "Hides in plain sight in your garden.",
+      "imageSrc": "/assets/themes/fever-dream-2/personas/22-sergeant-swamp-gnome.png"
+    },
+    {
+      "id": "fever-dream-2-lady-teapot-earl-grey",
+      "name": "Lady Teapot Earl Grey",
+      "bio": "Always stirring. Never spilling.",
+      "imageSrc": "/assets/themes/fever-dream-2/personas/23-lady-teapot-earl-grey.png"
+    },
+    {
+      "id": "fever-dream-2-mister-mothman-mortgage",
+      "name": "Mister Mothman Mortgage",
+      "bio": "Approves loans only at midnight.",
+      "imageSrc": "/assets/themes/fever-dream-2/personas/24-mister-mothman-mortgage.png"
+    },
+    {
+      "id": "fever-dream-2-hot-dog-houdini",
+      "name": "Hot Dog Houdini",
+      "bio": "Escapes every accusation. Also every bun.",
+      "imageSrc": "/assets/themes/fever-dream-2/personas/25-hot-dog-houdini.png"
+    }
   ]
 }

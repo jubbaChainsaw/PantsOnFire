@@ -16,10 +16,14 @@ function normalizeCode(lobbyCode) {
   return String(lobbyCode || '').trim().toUpperCase();
 }
 
-async function requestJson(path, { method = 'GET', body } = {}) {
+async function requestJson(path, { method = 'GET', body, accessToken = '' } = {}) {
+  const headers = { 'Content-Type': 'application/json' };
+  if (accessToken) {
+    headers.Authorization = `Bearer ${accessToken}`;
+  }
   const response = await fetch(`${LOBBY_API_BASE}${path}`, {
     method,
-    headers: { 'Content-Type': 'application/json' },
+    headers,
     body: body === undefined ? undefined : JSON.stringify(body),
   });
   let payload = null;
@@ -53,10 +57,17 @@ export function createOnlinePlayer({ name, clientId, isHost = false }) {
   };
 }
 
-export async function createLobbyOnServer({ hostName, hostPlayer, maxPlayers, settings } = {}) {
+export async function createLobbyOnServer({
+  hostName,
+  hostPlayer,
+  maxPlayers,
+  settings,
+  accessToken = '',
+} = {}) {
   const payload = await requestJson('/lobbies', {
     method: 'POST',
     body: { hostName, hostPlayer, maxPlayers, settings },
+    accessToken,
   });
   return {
     lobby: payload?.lobby || null,

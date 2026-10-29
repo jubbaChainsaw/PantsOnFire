@@ -58,13 +58,14 @@ import {
   PICTURE_DLC_MANIFESTS,
   buildPictureRoundsFromManifest,
   validatePictureDlcManifest,
-} from './pictureDlcManifests';
+} from './pictureDlcManifests.js';
 import {
   NAME_AND_BLAME_ROUNDS as UPLOADED_NAME_AND_BLAME_ROUNDS,
   SOUND_CLUES_ROUNDS as UPLOADED_SOUND_CLUES_ROUNDS,
-} from './specialRoundPromptPools';
-import { CATEGORY_PROMPT_PACKS } from './packs/categoryPromptPacks';
-import { buildExpandedEntityPrompts, CATEGORY_GUESSABLE_ENTITY_POOLS } from './guessableEntityPools';
+} from './specialRoundPromptPools.js';
+import { CATEGORY_PROMPT_PACKS } from './packs/categoryPromptPacks.js';
+import { buildExpandedEntityPrompts, CATEGORY_GUESSABLE_ENTITY_POOLS } from './guessableEntityPools.js';
+import { buildTwoTruthsOneFireRoundsForCategory } from './twoTruthsOneFirePrompts.js';
 
 export const DEFAULT_CATEGORIES = CATEGORY_PROMPT_PACKS.map((categoryPack) => ({
   ...categoryPack,
@@ -451,6 +452,31 @@ export const OFFTOPIC_DEFENSE_ROUNDS = Object.fromEntries(
   DEFAULT_CATEGORIES.map((category) => [category.id, buildOffTopicRoundsForCategory(category)])
 );
 
+function getCategoryPerModePoolBenchmark(category) {
+  const id = category.id;
+  return Math.max(
+    (category.prompts || []).length,
+    (CHAIN_REACTION_ROUNDS[id] || []).length,
+    (OFFTOPIC_DEFENSE_ROUNDS[id] || []).length,
+    (SOUND_OFF_ROUNDS[id] || []).length,
+    (MEME_DECODER_ROUNDS[id] || []).length,
+  );
+}
+
+export const TWO_TRUTHS_ONE_FIRE_ROUNDS = Object.fromEntries(
+  DEFAULT_CATEGORIES.map((category) => {
+    const targetCount = getCategoryPerModePoolBenchmark(category);
+    const adultCount = Math.min(
+      CATEGORY_ADULT_ROUNDS_PER_CATEGORY,
+      Math.max(0, Math.floor(targetCount * (CATEGORY_ADULT_ROUNDS_PER_CATEGORY / CATEGORY_ROUNDS_PER_CATEGORY))),
+    );
+    return [
+      category.id,
+      buildTwoTruthsOneFireRoundsForCategory(category, targetCount, adultCount),
+    ];
+  }),
+);
+
 export const NOISE_OFF_ROUNDS = SOUND_OFF_ROUNDS;
 
 const OPINION_ADULT_ENTITIES_MAIN = [
@@ -553,12 +579,27 @@ OPINION_ROUNDS.push(
 
 function buildPicturePromptRounds() {
   return PICTURE_DLC_MANIFESTS
-    .filter((manifest) => validatePictureDlcManifest(manifest))
+    .filter(
+      (manifest) =>
+        validatePictureDlcManifest(manifest) &&
+        String(manifest.roundType || 'picture').trim() !== 'pairs',
+    )
+    .flatMap((manifest) => buildPictureRoundsFromManifest(manifest));
+}
+
+function buildPairsPromptRounds() {
+  return PICTURE_DLC_MANIFESTS
+    .filter(
+      (manifest) =>
+        validatePictureDlcManifest(manifest) &&
+        String(manifest.roundType || '').trim() === 'pairs',
+    )
     .flatMap((manifest) => buildPictureRoundsFromManifest(manifest));
 }
 
 export const MEDIA_ROUNDS = {
   picture: buildPicturePromptRounds(),
+  pairs: buildPairsPromptRounds(),
   sound: [
     { hint: 'Sound Clue', main: 'arcade-coin-drop', imposter: 'slot-machine-jingle', previewLabel: 'Audio round placeholder' },
     { hint: 'Sound Clue', main: 'lion-roar', imposter: 'tiger-growl', previewLabel: 'Audio round placeholder' },
@@ -947,6 +988,10 @@ function ensureBannedWordCoverage() {
     });
     (OFFTOPIC_DEFENSE_ROUNDS[category.id] || []).forEach((prompt, index) => {
       const key = `offtopic::${category.id}::${index}`;
+      BANNED_WORD_BANK[key] = autoBannedWords(prompt, BANNED_WORD_BANK[key] || []);
+    });
+    (TWO_TRUTHS_ONE_FIRE_ROUNDS[category.id] || []).forEach((prompt, index) => {
+      const key = `twotruths::${category.id}::${index}`;
       BANNED_WORD_BANK[key] = autoBannedWords(prompt, BANNED_WORD_BANK[key] || []);
     });
   });

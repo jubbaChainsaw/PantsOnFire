@@ -1,5 +1,10 @@
 import { DEFAULT_CATEGORIES } from './categories.js';
 import { getIanPosterThemeSlug } from './ianPosterThemeVoice.js';
+import { publicAssetUrl } from '../lib/publicAssetUrl.js';
+import {
+  getThemePromptCardBackSrc,
+  getThemePromptCardFrontSrc,
+} from './themeAssets.js';
 
 /**
  * Active UI asset pack folder under public/assets/.
@@ -11,7 +16,7 @@ import { getIanPosterThemeSlug } from './ianPosterThemeVoice.js';
 export const UI_PACK_SLUG = 'ui';
 
 /** Public URL base for the active UI pack. */
-export const UI_ASSET_BASE = `/assets/${UI_PACK_SLUG}`;
+export const UI_ASSET_BASE = publicAssetUrl(UI_PACK_SLUG);
 
 export const UI_WALLPAPER_HOME_SRC = `${UI_ASSET_BASE}/wallpapers/home-page.png`;
 export const UI_WALLPAPER_IN_GAME_SRC = `${UI_ASSET_BASE}/wallpapers/in-game.png`;
@@ -24,7 +29,16 @@ export const UI_CARD_DEFAULT_FRONT_SRC = `${UI_CARD_BASE}/default-front.png`;
 export const UI_CARD_DEFAULT_BACK_SRC = `${UI_CARD_BASE}/default-back.png`;
 export const UI_CARD_LIAR_FRONT_SRC = `${UI_CARD_BASE}/liar-front.png`;
 
-/** Themes with themed front/back card art in ui/cards/ */
+export const UI_CATEGORY_ICON_BASE = `${UI_ASSET_BASE}/categories`;
+export const UI_GAME_MODE_ICON_BASE = `${UI_ASSET_BASE}/game-modes`;
+
+/** Double Take (pairs) square card art — see commit "Add Double Take mode icon and square card art". */
+export const UI_CARD_DOUBLE_TAKE_BACK_SRC = `${UI_CARD_BASE}/double-take-back.png`;
+export const UI_CARD_DOUBLE_TAKE_FRONT_SRC = `${UI_CARD_BASE}/double-take-front.png`;
+export const UI_CARD_DOUBLE_TAKE_LIAR_FRONT_SRC = `${UI_CARD_BASE}/double-take-liar-front.png`;
+export const UI_GAME_MODE_DOUBLE_TAKE_SRC = `${UI_GAME_MODE_ICON_BASE}/double-take.png`;
+
+/** Legacy ui/cards themed slugs (preload only; round cards use themeAssets). */
 export const UI_THEMED_CARD_SLUGS = new Set([
   'default',
   'murder-mystery',
@@ -33,16 +47,16 @@ export const UI_THEMED_CARD_SLUGS = new Set([
   'ghosts-and-ghouls',
 ]);
 
-export const UI_CATEGORY_ICON_BASE = `${UI_ASSET_BASE}/categories`;
-export const UI_GAME_MODE_ICON_BASE = `${UI_ASSET_BASE}/game-modes`;
-
 export const UI_GAME_MODE_ICON_BY_ID = Object.freeze({
   prompt: `${UI_GAME_MODE_ICON_BASE}/prompt.png`,
   opinion: `${UI_GAME_MODE_ICON_BASE}/opinion.png`,
   picture: `${UI_GAME_MODE_ICON_BASE}/picture.png`,
-  nameblame: '/assets/images/round-types/name-and-shame.png',
+  pairs: `${UI_GAME_MODE_DOUBLE_TAKE_SRC}`,
+  nameblame: publicAssetUrl('images/round-types/name-and-shame.png'),
   noise: `${UI_GAME_MODE_ICON_BASE}/noise.png`,
   chain: `${UI_GAME_MODE_ICON_BASE}/chain.png`,
+  twotruths: `${UI_GAME_MODE_ICON_BASE}/twotruths.png`,
+  offtopic: `${UI_GAME_MODE_ICON_BASE}/offtopic.png`,
   grill: `${UI_GAME_MODE_ICON_BASE}/grill.png`,
   sound: `${UI_GAME_MODE_ICON_BASE}/sound.png`,
   video: `${UI_GAME_MODE_ICON_BASE}/video.png`,
@@ -81,20 +95,12 @@ export function getUiThemeSlug(themeName = 'Default') {
   return getIanPosterThemeSlug(themeName);
 }
 
-export function getUiCardFrontSrc(themeName = 'Default') {
-  const slug = getUiThemeSlug(themeName);
-  if (UI_THEMED_CARD_SLUGS.has(slug)) {
-    return `${UI_CARD_BASE}/${slug}-front.png`;
-  }
-  return UI_CARD_DEFAULT_FRONT_SRC;
+export function getUiCardFrontSrc(themeName = 'Default', options = {}) {
+  return getThemePromptCardFrontSrc(themeName, options);
 }
 
-export function getUiCardBackSrc(themeName = 'Default') {
-  const slug = getUiThemeSlug(themeName);
-  if (UI_THEMED_CARD_SLUGS.has(slug)) {
-    return `${UI_CARD_BASE}/${slug}-back.png`;
-  }
-  return UI_CARD_DEFAULT_BACK_SRC;
+export function getUiCardBackSrc(themeName = 'Default', options = {}) {
+  return getThemePromptCardBackSrc(themeName, options);
 }
 
 export function getUiCategoryIconSrc(categoryId = '') {
@@ -106,8 +112,7 @@ export function getUiCategoryIconSrc(categoryId = '') {
 export function getUiGameModeIconSrc(roundTypeId = 'prompt') {
   const id = String(roundTypeId || 'prompt').trim().toLowerCase();
   if (!id) return UI_GAME_MODE_ICON_BY_ID.prompt;
-  if (id === 'offtopic') return UI_GAME_MODE_ICON_BY_ID.prompt;
-  return UI_GAME_MODE_ICON_BY_ID[id] || UI_GAME_MODE_ICON_BY_ID.prompt;
+  return UI_GAME_MODE_ICON_BY_ID[id] || '';
 }
 
 /** Sources to preload on startup (wallpapers, cards, modes, categories). */
@@ -120,6 +125,9 @@ export function listUiPreloadSources() {
     UI_CARD_DEFAULT_FRONT_SRC,
     UI_CARD_DEFAULT_BACK_SRC,
     UI_CARD_LIAR_FRONT_SRC,
+    UI_CARD_DOUBLE_TAKE_BACK_SRC,
+    UI_CARD_DOUBLE_TAKE_FRONT_SRC,
+    UI_CARD_DOUBLE_TAKE_LIAR_FRONT_SRC,
     ...UI_THEMED_CARD_SLUGS.values()
       .filter((slug) => slug !== 'default')
       .flatMap((slug) => [

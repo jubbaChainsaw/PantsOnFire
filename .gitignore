@@ -1,4 +1,8 @@
 node_modules
+dist-e2e-full
+dist-e2e-web
+test-results/
+playwright-report/
 .local-secrets/
 scripts/royaltyFreeApiKeys.local.json
 scripts/royaltyFreeApiKeys.json

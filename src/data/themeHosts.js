@@ -11,6 +11,7 @@ const ROUND_TYPE_FLAVOR_BY_ID = {
   prompt: 'hot-seat clues',
   opinion: 'truth-or-twisted debates',
   picture: 'flash-frame visuals',
+  pairs: 'double-take visuals',
   nameblame: 'name-and-blame callouts',
   noise: 'sound-off bluffs',
   offtopic: 'off-topic defenses',

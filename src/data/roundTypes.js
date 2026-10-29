@@ -1,3 +1,8 @@
+import {
+  DOUBLE_TAKE_DISPLAY_NAME,
+  DOUBLE_TAKE_ROUND_TAGLINE,
+} from './doubleTakeRound.js';
+
 export const ROUND_TYPES = {
   prompt: {
     id: 'prompt',
@@ -23,6 +28,14 @@ export const ROUND_TYPES = {
     passThePhoneReady: true,
     onlineOnly: false,
   },
+  pairs: {
+    id: 'pairs',
+    name: DOUBLE_TAKE_DISPLAY_NAME,
+    tagline: DOUBLE_TAKE_ROUND_TAGLINE,
+    logoSrc: '/assets/ui/game-modes/double-take.png',
+    passThePhoneReady: true,
+    onlineOnly: false,
+  },
   nameblame: {
     id: 'nameblame',
     name: 'Name and Blame',
@@ -43,7 +56,7 @@ export const ROUND_TYPES = {
     id: 'offtopic',
     name: 'Off Topic Defense',
     tagline: 'Liars get a rogue scenario and must argue like it belongs.',
-    logoSrc: '/assets/images/round-types/offtopic-logo.svg',
+    logoSrc: '/assets/ui/game-modes/offtopic.png',
     passThePhoneReady: true,
     onlineOnly: false,
   },
@@ -51,6 +64,14 @@ export const ROUND_TYPES = {
     id: 'chain',
     name: 'Chain Reaction',
     tagline: 'Different clue cards, one hidden topic. Find the broken link.',
+    passThePhoneReady: true,
+    onlineOnly: false,
+  },
+  twotruths: {
+    id: 'twotruths',
+    name: 'Two Truths, One Fire',
+    tagline: 'Three items each — two truths, one lie. Spot the fib after the shuffle.',
+    logoSrc: '/assets/ui/game-modes/twotruths.png',
     passThePhoneReady: true,
     onlineOnly: false,
   },

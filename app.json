@@ -17,6 +17,7 @@
       "supportsTablet": true
     },
     "android": {
+      "package": "app.pantsonfire.findtheliar",
       "adaptiveIcon": {
         "backgroundColor": "#120038"
       }

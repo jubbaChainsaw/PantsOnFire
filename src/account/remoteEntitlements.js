@@ -3,13 +3,14 @@ import { TIER_FIBBER } from '../account/tierModel.js';
 import { getLobbyApiBase } from '../lib/lobbyApiEnv.js';
 
 /**
- * Build the same session shape the game uses from Supabase user + API payload.
- * @param {object} user Supabase user object
+ * Build the same session shape the game uses from a cloud user + API payload.
+ * @param {object} user Cloud user object (PoF or legacy Supabase shape)
  * @param {{ tierId?: string, addonTwistTruth?: boolean, unlockedThemePackIds?: string[] }} payload
+ * @param {'pof' | 'supabase'} authProvider
  */
-export function buildSessionFromRemote(user, payload = {}) {
+export function buildSessionFromRemote(user, payload = {}, authProvider = 'pof') {
   const email = String(user?.email || '').trim();
-  const metaName = String(user?.user_metadata?.full_name || '').trim();
+  const metaName = String(user?.user_metadata?.full_name || user?.display_name || '').trim();
   const displayName =
     metaName ||
     (email ? email.split('@')[0] : '') ||
@@ -22,7 +23,7 @@ export function buildSessionFromRemote(user, payload = {}) {
     unlockedThemePackIds: normalizeUnlockedThemePackIds(
       payload.unlockedThemePackIds || [],
     ),
-    authProvider: 'supabase',
+    authProvider: authProvider === 'supabase' ? 'supabase' : 'pof',
   };
 }
 

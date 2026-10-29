@@ -1,4 +1,5 @@
 import { randomBytes, randomInt } from 'node:crypto';
+import { toCanonicalThemeName } from '../../src/data/themeAliases.js';
 
 const LOBBY_CODE_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 const LOBBY_CODE_LENGTH = 6;
@@ -16,7 +17,7 @@ const DEFAULT_LOBBY_SETTINGS = {
   winCondition: 'rounds',
   pointsToWin: 15,
   roundsPerPlayer: 1,
-  adultMode: false,
+  themeCardStyle: 'classic',
   allowFriendsJoinLobby: false,
   inviteUsernames: [],
   grillSettings: {
@@ -192,7 +193,11 @@ function sanitizeLobbySettings(raw = {}) {
     roundsPerPlayer: Number.isFinite(roundsPerPlayer)
       ? Math.max(1, Math.min(6, Math.floor(roundsPerPlayer)))
       : DEFAULT_LOBBY_SETTINGS.roundsPerPlayer,
-    adultMode: Boolean(raw.adultMode),
+    themeCardStyle:
+      String(raw.themeCardStyle || DEFAULT_LOBBY_SETTINGS.themeCardStyle).trim()
+      === 'alt'
+        ? 'alt'
+        : 'classic',
     allowFriendsJoinLobby: Boolean(raw.allowFriendsJoinLobby),
     inviteUsernames,
     grillSettings: {
@@ -327,6 +332,28 @@ function getNextRoundPhase(currentPhase, roundTypeId = 'prompt') {
   return null;
 }
 
+function isOnlineGameComplete(lobby) {
+  if (!lobby || lobby.status !== 'started') return false;
+  const settings = lobby.settings || {};
+  const players = Array.isArray(lobby.players) ? lobby.players : [];
+  if (players.length < MIN_PLAYERS) return false;
+  const winCondition = settings.winCondition === 'points' ? 'points' : 'rounds';
+  if (winCondition === 'points') {
+    const target = Math.max(5, Number(settings.pointsToWin) || 15);
+    return players.some((player) => Number(player?.score || 0) >= target);
+  }
+  const roundsPerPlayer = Math.max(1, Number(settings.roundsPerPlayer) || 1);
+  const totalRounds = players.length * roundsPerPlayer;
+  const roundsDone = Number(lobby.roundCounter || 0) >= totalRounds;
+  if (!roundsDone) return false;
+  if (!lobby.activeRound) return true;
+  const phase = normalizeRoundPhase(
+    lobby.activeRound.phase,
+    lobby.activeRound.roundTypeId,
+  );
+  return ['liar-reveal', 'results', 'final'].includes(phase);
+}
+
 function normalizeVotes(votesByPlayerId, players = []) {
   if (!votesByPlayerId || typeof votesByPlayerId !== 'object') return {};
   const validVoterIds = new Set(players.map((player) => player.id));
@@ -436,6 +463,7 @@ function toPublicRound(round) {
     imposterPrompt,
     commonPrompt,
     grillData,
+    pairsRevealImages,
     ...publicRound
   } = round;
   // Liar identity and the real/imposter prompt pair stay server-side until the
@@ -449,6 +477,7 @@ function toPublicRound(round) {
       imposterPrompt: imposterPrompt ?? null,
       commonPrompt: commonPrompt ?? null,
       grillData: grillData ?? null,
+      pairsRevealImages: pairsRevealImages ?? null,
     };
   }
   return publicRound;
@@ -494,6 +523,8 @@ function hydrateLobby(rawLobby) {
       : (rawLobby.status === 'ended' ? 'ended' : 'waiting'),
     hostName: String(rawLobby.hostName || 'Host'),
     hostClientId: String(rawLobby.hostClientId || ''),
+    hostAuthUserId: String(rawLobby.hostAuthUserId || '').trim(),
+    altUnlockRecorded: Boolean(rawLobby.altUnlockRecorded),
     createdAt,
     updatedAt: rawLobby.updatedAt || createdAt,
     startedAt: rawLobby.startedAt || null,
@@ -580,7 +611,7 @@ function buildStoreCore({
     return removeLobbyRaw(normalized);
   }
 
-  async function createLobby({ hostPlayer, hostName, maxPlayers, settings } = {}) {
+  async function createLobby({ hostPlayer, hostName, maxPlayers, settings, hostAuthUserId = '' } = {}) {
     const code = await ensureUniqueCode();
     const createdAt = nowIso();
     const host = sanitizePlayer(hostPlayer, { fallbackName: hostName || 'Host', forceHost: true });
@@ -589,6 +620,8 @@ function buildStoreCore({
       status: 'waiting',
       hostName: hostName || host.name || 'Host',
       hostClientId: host.clientId || '',
+      hostAuthUserId: String(hostAuthUserId || '').trim(),
+      altUnlockRecorded: false,
       createdAt,
       updatedAt: createdAt,
       startedAt: null,
@@ -1071,9 +1104,43 @@ function buildStoreCore({
     };
   }
 
+  async function completeHostedOnlineGame(code, playerId, sessionToken = '') {
+    const lobby = await getLobby(code);
+    if (!lobby) return { error: 'not-found' };
+    if (lobby.status !== 'started') return { error: 'lobby-not-started' };
+    const normalizedPlayerId = String(playerId || '').trim();
+    if (!normalizedPlayerId) return { error: 'player-id-required' };
+    const validation = validatePlayerSession(lobby, sessionToken, normalizedPlayerId);
+    if (validation.error === 'session-token-expired') {
+      await saveLobby(lobby);
+      return { error: 'session-token-expired' };
+    }
+    if (validation.error) return { error: validation.error };
+    const hostPlayer = lobby.players.find((entry) => entry.id === normalizedPlayerId);
+    if (!hostPlayer?.isHost) return { error: 'host-required' };
+    if (!lobby.hostAuthUserId) return { error: 'host-not-linked' };
+    if (!isOnlineGameComplete(lobby)) return { error: 'game-not-complete' };
+    const themeName =
+      toCanonicalThemeName(lobby.settings?.themeName) ||
+      String(lobby.settings?.themeName || 'Default').trim() ||
+      'Default';
+    const alreadyRecorded = Boolean(lobby.altUnlockRecorded);
+    if (!alreadyRecorded) {
+      lobby.altUnlockRecorded = true;
+      await saveLobby(lobby);
+    }
+    return {
+      ok: true,
+      hostAuthUserId: lobby.hostAuthUserId,
+      themeName,
+      alreadyRecorded,
+    };
+  }
+
   return {
     kind,
     getLobby,
+    saveLobby,
     createLobby,
     upsertPlayer,
     setPlayerReady,
@@ -1085,6 +1152,7 @@ function buildStoreCore({
     createNextRound,
     getCurrentRound,
     getPlayerRoundView,
+    completeHostedOnlineGame,
     deleteLobby,
     getRoleForPlayer: helpers.getRoleForPlayer,
     shutdown,

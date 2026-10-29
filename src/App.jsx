@@ -39,6 +39,8 @@ import {
   UsersRound,
   Bell,
   Upload,
+  Bug,
+  Pause,
 } from "lucide-react";
 import { Button } from "./components/ui/button";
 import { Input } from "./components/ui/input";
@@ -99,6 +101,42 @@ import {
   normalizeUnlockedThemePackIds,
 } from "./data/themeCatalog";
 import {
+  THEME_ALT_CARD_UNLOCKS_STORAGE_KEY,
+  THEME_CARD_STYLE_ALT,
+  THEME_CARD_STYLE_BY_THEME_STORAGE_KEY,
+  THEME_CARD_STYLE_CLASSIC,
+  THEME_CARD_STYLE_LABELS,
+  getSelectedThemeCardStyle,
+  isAltCardStyleUnlocked,
+  normalizeThemeCardStyle,
+  normalizeThemeCardStyleByTheme,
+  normalizeUnlockedAltCardThemeKeys,
+  resolveActiveThemeCardStyle,
+} from "./data/themeCardStyles";
+import {
+  readLocalPlayerProfile,
+  writeLocalPlayerProfile,
+  mergeRemotePlayerProfile,
+} from "./data/playerProfile/profileStorage.js";
+import {
+  recordCompletedGame,
+  recordHostedGame,
+  recordRoundOutcome,
+} from "./data/playerProfile/profileProgress.js";
+import {
+  fetchRemotePlayerProfile,
+  pushRemotePlayerProfile,
+} from "./lib/playerProfileApi.js";
+import { fetchMyReferral, attributeReferralCode } from "./lib/referralApi.js";
+import {
+  parseReferralCodeFromLocation,
+  storePendingReferralCode,
+  readPendingReferralCode,
+  clearPendingReferralCode,
+} from "./lib/referralAttribution.js";
+import { completeHostedOnlineGameOnServer } from "./lib/altCardUnlockApi.js";
+import NeonPlayerProfileScreen from "./components/neon/NeonPlayerProfileScreen.jsx";
+import {
   ADDON_TWIST_TRUTH,
   computeEntitlements,
   DLC_STORE_BLURB,
@@ -117,7 +155,9 @@ import {
   readAccountSession,
   registerAccount,
   syncSessionPackIds,
+  syncSessionAltCardUnlocks,
 } from "./account/accountStorage";
+import { isCloudAuthProvider } from "./account/cloudAuth.js";
 import { buildSessionFromRemote, fetchRemoteEntitlements } from "./account/remoteEntitlements";
 import { notifyNativePurchasesUser } from "./billing/nativePurchasesBridge";
 import { useAuth } from "./auth/AuthProvider.jsx";
@@ -136,9 +176,19 @@ import {
   OPINION_ROUNDS,
   MEDIA_ROUNDS,
   GRILL_EM_ROUNDS,
+  TWO_TRUTHS_ONE_FIRE_ROUNDS,
   BANNED_WORD_BANK,
   sanitizeBannedWords,
 } from "./data/categories";
+import {
+  buildPresentationsFromSubmissions,
+  calculateTwoTruthsRoundResolution,
+  createEmptyTwoTruthsData,
+} from "./lib/twoTruthsOneFire.js";
+import NeonTwoTruthsInputScreen from "./components/neon/NeonTwoTruthsInputScreen.jsx";
+import NeonTwoTruthsVotingScreen from "./components/neon/NeonTwoTruthsVotingScreen.jsx";
+import NeonTwoTruthsRevealScreen from "./components/neon/NeonTwoTruthsRevealScreen.jsx";
+import DoubleTakeSquareRevealCard from "./components/neon/DoubleTakeSquareRevealCard.jsx";
 import { PICTURE_DLC_MANIFESTS } from "./data/pictureDlcManifests";
 import { getHostVoiceSrcCandidatesForLine } from "./data/hostVoiceLineMap";
 import {
@@ -166,6 +216,60 @@ import {
   toGamePlayers,
 } from "./online/lobbyTransport";
 import { createVoicePartyTransport } from "./online/voicePartyTransport";
+import NeonHomeScreen from "./components/neon/NeonHomeScreen.jsx";
+import NeonStoreScreen from "./components/neon/NeonStoreScreen.jsx";
+import {
+  isWebJoinOnlyMode,
+  parseJoinCodeFromLocation,
+} from "./lib/webPlayerMode.js";
+import { startWebStripeCheckout } from "./billing/webStripeCheckout.js";
+import {
+  isWebBillingSimulateEnabled,
+  simulateWebPurchase,
+} from "./billing/webBillingSimulate.js";
+import {
+  drawTurnOptions,
+  drawCategoriesForRoundChoice,
+  pickRandomFromShown,
+} from "./lib/turnDraw.js";
+import { usePofViewportHeight } from "./hooks/usePofViewportHeight.js";
+import { resolveBundledAssetSrc } from "./lib/publicAssetUrl.js";
+import { useTimedChoice } from "./hooks/useTimedChoice.js";
+import {
+  loadFx,
+  music,
+  saveFx,
+  syncMusicForScreen,
+  tapFx,
+} from "./lib/pofFx.js";
+import {
+  EXCLUDED_PLAYER_ROUND_TYPE_IDS,
+  NEON_ASSETS,
+  neonThemeVars,
+  ONLINE_SELECTION_TIMER_SEC,
+} from "./data/uiNeonAssets.js";
+import NeonTimerBar from "./components/neon/NeonTimerBar.jsx";
+import { useContentPacks } from "./hooks/useContentPacks.js";
+import {
+  ContentPackPromptModal,
+  ContentPackSettingsPanel,
+} from "./components/ContentPackDownloadUI.jsx";
+import { BugReportScreen } from "./components/BugReportScreen.jsx";
+import { anonymizeLobbyId } from "./lib/bugReportClient.js";
+import { installNativeDiagnosticsBridge } from "./lib/nativeDiagnosticsBridge.js";
+
+const E2E_FORCE_ROUND_TYPE = String(
+  import.meta.env.VITE_E2E_FORCE_ROUND_TYPE || "",
+).trim();
+
+function withE2eRoundTypeDraw(drawn) {
+  if (!E2E_FORCE_ROUND_TYPE) return drawn;
+  const match = PASS_THE_PHONE_ROUND_TYPES.find(
+    (type) => type.id === E2E_FORCE_ROUND_TYPE,
+  );
+  if (!match) return drawn;
+  return { ...drawn, roundTypeOptions: [match] };
+}
 
 const LOGO_SRC = "/assets/images/logo.png";
 const LOGO_18PLUS_SRC = "/assets/images/logo-18plus.png";
@@ -253,14 +357,15 @@ const UI_ICON_BADGE_LIAR_SRC = "/assets/images/ui-icons/badge-liar.png";
 const UI_ICON_MAGNIFIER_FIRE_SRC = "/assets/images/ui-icons/magnifier-fire.png";
 const MIN_PLAYERS = 3;
 const MAX_PLAYERS = 12;
-const WEB_JOIN_ONLY_MODE =
-  String(import.meta?.env?.VITE_WEB_JOIN_ONLY ?? "false").trim() !== "false";
 const ONLINE_VOICE_ACTIVE_SCREENS = new Set([
   "online-lobby-created",
   "online-lobby-waiting",
   "discussion",
   "grill",
   "voting",
+  "twotruths-input",
+  "twotruths-voting",
+  "twotruths-reveal",
   "results",
 ]);
 const ONLINE_CONNECTION_ACTIVE_SCREENS = new Set([
@@ -272,6 +377,9 @@ const ONLINE_CONNECTION_ACTIVE_SCREENS = new Set([
   "discussion",
   "grill",
   "voting",
+  "twotruths-input",
+  "twotruths-voting",
+  "twotruths-reveal",
   "liar-reveal",
   "results",
   "final",
@@ -284,6 +392,9 @@ const ONLINE_IN_SESSION_LEAVE_SCREENS = new Set([
   "discussion",
   "grill",
   "voting",
+  "twotruths-input",
+  "twotruths-voting",
+  "twotruths-reveal",
   "liar-reveal",
   "results",
   "final",
@@ -298,9 +409,28 @@ const ONLINE_PARTY_CHAT_ACTIVE_SCREENS = new Set([
   "discussion",
   "grill",
   "voting",
+  "twotruths-input",
+  "twotruths-voting",
+  "twotruths-reveal",
   "liar-reveal",
   "results",
   "final",
+]);
+const LOCAL_GAME_PAUSE_SCREENS = new Set([
+  "game-intro",
+  "rules",
+  "host-intro",
+  "category-choice",
+  "round-type-choice",
+  "reveal",
+  "discussion",
+  "grill",
+  "voting",
+  "twotruths-input",
+  "twotruths-voting",
+  "twotruths-reveal",
+  "liar-reveal",
+  "results",
 ]);
 
 const DESKTOP_LANDSCAPE_MIN_WIDTH = 1100;
@@ -314,7 +444,7 @@ const DESKTOP_LANDSCAPE_SCREENS = new Set([
   "online-lobby-created",
   "online-lobby-waiting",
 ]);
-const NO_CATEGORY_SELECTION_ROUND_TYPE_IDS = new Set(["noise", "nameblame"]);
+const NO_CATEGORY_SELECTION_ROUND_TYPE_IDS = new Set(["noise", "nameblame", "pairs"]);
 const IN_GAME_PERSONA_BIO_MAX = 140;
 const PERSONA_PROFILE_STORAGE_KEY = "imposter-persona-profile-v1";
 const FRIENDS_STORAGE_KEY = "imposter-friends-v1";
@@ -571,6 +701,11 @@ const VOTING_STINGER_BY_ROUND_TYPE = {
     "Pass the phone and spot the wrong snapshot.",
     "Vote for the player whose details felt staged.",
   ],
+  pairs: [
+    "Double Take verdict: whose description did not match the room?",
+    "Pass the phone and vote for the odd detail out.",
+    "Same round, different eyes — call the bluff.",
+  ],
   nameblame: [
     "Name and Blame is over. Point at the fake accusation.",
     "Pass the phone and vote for the dodgiest callout.",
@@ -595,6 +730,11 @@ const VOTING_STINGER_BY_ROUND_TYPE = {
     "AI grilling done. Vote who sounded too prepared.",
     "Pass the phone and call out the over-confident answerer.",
     "Blaze Byte is done talking. Now it's your turn to judge.",
+  ],
+  twotruths: [
+    "Three items, one lie. Pass the phone and pick the fib.",
+    "Shuffle complete — vote for the lie in each list.",
+    "Spot the blaze: which line was the lie?",
   ],
 };
 function pickVotingStinger(roundTypeId = "prompt") {
@@ -880,7 +1020,9 @@ function applyPicturePackSelection(
   enabledPictureReleaseChannels,
   picturePackReleaseChannelsById,
 ) {
-  if (selectedRoundTypeId !== "picture") return promptOptions;
+  if (selectedRoundTypeId !== "picture" && selectedRoundTypeId !== "pairs") {
+    return promptOptions;
+  }
   const enabled = promptOptions.filter((item) => {
     const packId = item.prompt?.picturePackId;
     const releaseChannel =
@@ -935,10 +1077,12 @@ function getCompatibleRoundTypes(
   { excludeRoundTypeId = null } = {},
 ) {
   return PASS_THE_PHONE_ROUND_TYPES.filter(
-    (roundType) => roundType.id !== excludeRoundTypeId,
-  ).filter((roundType) =>
-    hasAllowedCategoriesForRoundType(categories, roundType.id),
-  );
+    (roundType) => !EXCLUDED_PLAYER_ROUND_TYPE_IDS.has(roundType.id),
+  )
+    .filter((roundType) => roundType.id !== excludeRoundTypeId)
+    .filter((roundType) =>
+      hasAllowedCategoriesForRoundType(categories, roundType.id),
+    );
 }
 
 function pickCompatibleRoundTypeId(
@@ -961,7 +1105,6 @@ function buildLocalRound(
   recentPromptKeys = [],
   selectedRoundTypeId = null,
   grillSettings = { micEnabled: true, ttsEnabled: true },
-  adultMode = false,
   picturePackConfig = {
     enabledPacks: {},
     weights: {},
@@ -1020,11 +1163,20 @@ function buildLocalRound(
       prompt,
       key: `grill::global::${index}`,
     }));
+  } else if (selectedRoundType.id === "twotruths") {
+    promptOptions = (TWO_TRUTHS_ONE_FIRE_ROUNDS[effectiveCategory.id] || []).map(
+      (prompt, index) => ({
+        prompt,
+        key: `twotruths::${effectiveCategory.id}::${index}`,
+      }),
+    );
   } else {
     promptOptions = (MEDIA_ROUNDS[selectedRoundType.id] || []).map(
       (prompt, index) => ({
         prompt,
-        key: `${selectedRoundType.id}::global::${index}`,
+        key: prompt.entryId
+          ? `${selectedRoundType.id}::${prompt.entryId}`
+          : `${selectedRoundType.id}::global::${index}`,
       }),
     );
   }
@@ -1037,9 +1189,9 @@ function buildLocalRound(
     picturePackConfig.releaseChannelsByPackId,
   );
 
-  const ageFilteredOptions = adultMode
-    ? promptOptions
-    : promptOptions.filter((item) => !item.prompt?.adultOnly);
+  const ageFilteredOptions = promptOptions.filter(
+    (item) => !item.prompt?.adultOnly,
+  );
   if (!ageFilteredOptions.length) return null;
   const filteredOptions = ageFilteredOptions.filter(
     (item) => !recentPromptKeys.includes(item.key),
@@ -1047,22 +1199,30 @@ function buildLocalRound(
   const selected = pickRandom(
     filteredOptions.length ? filteredOptions : ageFilteredOptions,
   );
-  const liarIds = shuffle(players)
-    .slice(0, Math.max(1, Math.min(liarCount, players.length - 1)))
-    .map((p) => p.id);
+  const isTwoTruthsRound = selectedRoundType.id === "twotruths";
+  const isPairsRound = selectedRoundType.id === "pairs";
+  const neutralPairsPrompt =
+    selected.prompt.previewLabel ||
+    "Describe your picture without giving it away.";
+  const liarIds = isTwoTruthsRound
+    ? []
+    : shuffle(players)
+        .slice(0, Math.max(1, Math.min(liarCount, players.length - 1)))
+        .map((p) => p.id);
   const bannedWords = sanitizeBannedWords(
     effectiveCategory.name,
     selected.prompt.hint,
-    selected.prompt.main,
-    selected.prompt.imposter,
+    isPairsRound ? neutralPairsPrompt : selected.prompt.main,
+    isPairsRound || isTwoTruthsRound ? "" : selected.prompt.imposter,
     BANNED_WORD_BANK[selected.key] || [],
   );
   const truthDeck = shuffle(selected.prompt.mainWords || []);
   const liarDeck = shuffle(selected.prompt.imposterWords || []);
   let truthCursor = 0;
   let liarCursor = 0;
-  const mediaByPlayerId =
-    selectedRoundType.id === "picture"
+  const isPictureLikeRound =
+    selectedRoundType.id === "picture" || isPairsRound;
+  const mediaByPlayerId = isPictureLikeRound
       ? Object.fromEntries(
           players.map((player) => [
             player.id,
@@ -1072,6 +1232,16 @@ function buildLocalRound(
           ]),
         )
       : {};
+
+  const pairsRevealImages =
+    isPairsRound &&
+    selected.prompt.mainImageSrc &&
+    selected.prompt.imposterImageSrc
+      ? {
+          truthImageSrc: selected.prompt.mainImageSrc,
+          liarImageSrc: selected.prompt.imposterImageSrc,
+        }
+      : null;
 
   return {
     roundNumber,
@@ -1085,7 +1255,9 @@ function buildLocalRound(
     hint: selected.prompt.hint,
     commonPrompt: selected.prompt.main,
     imposterPrompt:
-      selectedRoundType.id === "opinion" ? null : selected.prompt.imposter,
+      selectedRoundType.id === "opinion" || isPairsRound
+        ? null
+        : selected.prompt.imposter,
     aiPrompt: selected.prompt.aiPrompt || null,
     mediaPreviewLabel: selected.prompt.previewLabel || null,
     mediaPackId: selected.prompt.picturePackId || null,
@@ -1108,10 +1280,12 @@ function buildLocalRound(
       endedByCorrectGuess: false,
     },
     mediaByPlayerId,
+    pairsRevealImages,
     promptsByPlayerId: Object.fromEntries(
       players.map((player) => {
         if (selectedRoundType.id === "opinion")
           return [player.id, selected.prompt.main];
+        if (isPairsRound) return [player.id, neutralPairsPrompt];
         if (selectedRoundType.id === "grill")
           return [
             player.id,
@@ -1147,10 +1321,25 @@ function buildLocalRound(
         ];
       }),
     ),
+    ...(isTwoTruthsRound
+      ? {
+          twoTruthsData: {
+            ...createEmptyTwoTruthsData(),
+            promptText: selected.prompt.main,
+          },
+        }
+      : {}),
   };
 }
 
 function calculateRoundResolutionLocal(players, round, votesByPlayerId = {}) {
+  if (round?.roundTypeId === "twotruths") {
+    return calculateTwoTruthsRoundResolution(
+      players,
+      round,
+      votesByPlayerId,
+    );
+  }
   const validPlayerIds = new Set(players.map((player) => player.id));
   const normalizedVotes = Object.fromEntries(
     Object.entries(votesByPlayerId || {}).filter(([voterId, targetId]) => {
@@ -1288,11 +1477,7 @@ function applyGrillRoundDataToRound(round, grillData = {}, players = []) {
 
 function GlassPanel({ children, className = "" }) {
   return (
-    <div
-      className={`backdrop-blur-xl bg-white/8 border border-white/10 shadow-2xl ${className}`}
-    >
-      {children}
-    </div>
+    <div className={`pof-glass rounded-[1.4rem] ${className}`}>{children}</div>
   );
 }
 function ZanyAccentBurst({ className = "", glowClass = "bg-fuchsia-500/25" }) {
@@ -1320,38 +1505,22 @@ function LightningBolt({ className = "", boltClass = "text-yellow-300" }) {
   );
 }
 function TopFrame({ children, theme = "Default", allowScroll = false }) {
-  const themeMeta = THEME_META[theme] || THEME_META.Default;
-  const gradient = themeMeta.gradient || THEME_META.Default.gradient;
-  const uiGlowClass =
-    themeMeta.uiGlowClass ||
-    THEME_META.Default.uiGlowClass ||
-    "bg-fuchsia-500/25";
-  const uiBoltClass =
-    themeMeta.uiBoltClass ||
-    THEME_META.Default.uiBoltClass ||
-    "text-yellow-300";
+  const wallSrc = resolveBundledAssetSrc(UI_WALLPAPER_IN_GAME_SRC);
   return (
     <div
-      className={`relative min-h-screen min-h-[100dvh] overflow-x-hidden ${allowScroll ? "overflow-y-auto" : "overflow-y-hidden"} bg-black text-white`}
+      className={`relative min-h-screen min-h-[100dvh] overflow-x-hidden text-white ${allowScroll ? "overflow-y-auto pof-scroll" : "overflow-y-hidden"}`}
+      style={neonThemeVars()}
     >
       <div
-        className="fixed inset-0 bg-cover bg-center bg-no-repeat"
-        style={{ backgroundImage: `url(${UI_WALLPAPER_IN_GAME_SRC})` }}
+        className="pof-wall fixed inset-0"
+        style={{
+          backgroundImage: wallSrc ? `url("${wallSrc}")` : undefined,
+          backgroundSize: "cover",
+          backgroundRepeat: "no-repeat",
+          backgroundPosition: "center top",
+        }}
       />
-      <div className="fixed inset-0 bg-black/45" />
-      <div
-        className={`fixed inset-0 opacity-20 bg-gradient-to-br ${gradient}`}
-      />
-      <ZanyAccentBurst className="left-5 top-12" glowClass={uiGlowClass} />
-      <ZanyAccentBurst
-        className="right-5 bottom-20 scale-125"
-        glowClass={uiGlowClass}
-      />
-      <LightningBolt className="left-8 bottom-28" boltClass={uiBoltClass} />
-      <LightningBolt
-        className="right-8 top-24 -rotate-12"
-        boltClass={uiBoltClass}
-      />
+      <div className="fixed inset-0 bg-gradient-to-b from-black/40 via-black/25 to-black/55" />
       <div
         className="relative z-10 md:p-8"
         style={{
@@ -1588,18 +1757,23 @@ function ThemedIcon({ src, alt = "", className = "" }) {
     />
   );
 }
-function ThemeArt({ src, alt, className = "" }) {
+function ThemeArt({ src, alt, className = "", ...rest }) {
   const [isBroken, setIsBroken] = useState(false);
+  const resolvedSrc = useMemo(
+    () => resolveBundledAssetSrc(String(src || "").trim()),
+    [src],
+  );
   useEffect(() => {
     setIsBroken(false);
-  }, [src]);
-  if (!src || isBroken) return null;
+  }, [resolvedSrc]);
+  if (!resolvedSrc || isBroken) return null;
   return (
     <img
-      src={src}
+      src={resolvedSrc}
       alt={alt}
       className={className}
       onError={() => setIsBroken(true)}
+      {...rest}
     />
   );
 }
@@ -1619,20 +1793,32 @@ function MultiSourceVideo({
   preload = "metadata",
   ariaHidden = true,
   onLoadedData,
+  onTimeUpdate,
   onEnded,
   onError,
 }) {
   const [isBroken, setIsBroken] = useState(false);
+  const videoRef = useRef(null);
   const normalizedSrc = String(src || "").trim();
-  const isWebmSrc = normalizedSrc.toLowerCase().endsWith(".webm");
-  const webmSrc = isWebmSrc ? normalizedSrc : toWebmSrc(normalizedSrc);
-  const mp4Src = isWebmSrc ? "" : normalizedSrc;
+  const resolvedSrc = resolveBundledAssetSrc(normalizedSrc);
+  const isWebmSrc = resolvedSrc.toLowerCase().endsWith(".webm");
+  const webmSrc = isWebmSrc ? resolvedSrc : toWebmSrc(resolvedSrc);
+  const mp4Src = isWebmSrc ? "" : resolvedSrc;
   useEffect(() => {
     setIsBroken(false);
-  }, [normalizedSrc, webmSrc, mp4Src, poster]);
-  if (!normalizedSrc || isBroken) return null;
+  }, [resolvedSrc, webmSrc, mp4Src, poster]);
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video || !autoPlay || isBroken) return;
+    video.play().catch(() => {
+      setIsBroken(true);
+      if (typeof onError === "function") onError();
+    });
+  }, [autoPlay, isBroken, resolvedSrc, webmSrc, mp4Src]);
+  if (!resolvedSrc || isBroken) return null;
   return (
     <video
+      ref={videoRef}
       className={className}
       autoPlay={autoPlay}
       loop={loop}
@@ -1642,6 +1828,7 @@ function MultiSourceVideo({
       poster={poster || undefined}
       aria-hidden={ariaHidden ? "true" : undefined}
       onLoadedData={onLoadedData}
+      onTimeUpdate={onTimeUpdate}
       onEnded={onEnded}
       onError={(event) => {
         setIsBroken(true);
@@ -1656,63 +1843,113 @@ function MultiSourceVideo({
 function ThemeHostVisual({
   themeName = "Default",
   isTalking = false,
-  alt = "",
+  alt = "host",
   className = "",
+  testId = "theme-host-visual",
+  preferVideo = false,
 }) {
   const hostAssets = useMemo(() => getThemeHostAssets(themeName), [themeName]);
-  const animatedHostSrc = useTalkingAnimation({
+  const animatedHostRaw = useTalkingAnimation({
     enabled: isTalking,
     themeName,
   });
-  const talkingVideoSrc =
+  const animatedHostSrc = resolveBundledAssetSrc(animatedHostRaw);
+  const idlePosterSrc = resolveBundledAssetSrc(
+    hostAssets?.idle || getThemeHostFrameSources(themeName, "idle")[0] || "",
+  );
+  const talkingVideoSrc = resolveBundledAssetSrc(
     hostAssets?.talkingVideoWebm ||
-    hostAssets?.talkingVideo ||
-    hostAssets?.talkingVideoMp4 ||
-    "";
+      hostAssets?.talkingVideo ||
+      hostAssets?.talkingVideoMp4 ||
+      "",
+  );
+  const fallbackHostPoster = resolveBundledAssetSrc(
+    "/assets/themes/default/hosts/persona-host-idle.png",
+  );
+  const posterImgSrc =
+    idlePosterSrc || fallbackHostPoster || animatedHostSrc || "";
   const [videoBroken, setVideoBroken] = useState(false);
+  const [videoReady, setVideoReady] = useState(false);
+  const [videoHasPaintedFrame, setVideoHasPaintedFrame] = useState(false);
+  const shouldTryVideo = Boolean(talkingVideoSrc) && (isTalking || preferVideo);
+  const showVideoLayer =
+    shouldTryVideo &&
+    !videoBroken &&
+    videoReady &&
+    videoHasPaintedFrame &&
+    isTalking;
 
   useEffect(() => {
     setVideoBroken(false);
+    setVideoReady(false);
+    setVideoHasPaintedFrame(false);
   }, [talkingVideoSrc, themeName]);
 
-  if (talkingVideoSrc && !videoBroken) {
-    return (
-      <div className={className}>
-        <div className="h-full w-full">
-          <MultiSourceVideo
-            src={talkingVideoSrc}
-            className="h-full w-full object-cover"
-            autoPlay={isTalking}
-            loop={isTalking}
-            muted
-            playsInline
-            preload="metadata"
-            poster={animatedHostSrc || undefined}
-            ariaHidden
-            onError={() => setVideoBroken(true)}
-          />
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className={className}>
-      <div className="grid h-full w-full [grid-template-areas:'stack']">
+    <div
+      data-testid={testId}
+      className={`relative h-full w-full overflow-hidden bg-black ${className}`}
+    >
+      {posterImgSrc ? (
+        <img
+          src={posterImgSrc}
+          alt={alt}
+          data-testid="host-idle-image"
+          className={`absolute inset-0 z-20 h-full w-full object-cover object-top transition-opacity duration-200 ${showVideoLayer ? "opacity-0" : "opacity-100"}`}
+          onError={(event) => {
+            const img = event.currentTarget;
+            if (
+              fallbackHostPoster &&
+              img.src !== fallbackHostPoster &&
+              !img.dataset.fallbackTried
+            ) {
+              img.dataset.fallbackTried = "1";
+              img.src = fallbackHostPoster;
+            }
+          }}
+        />
+      ) : null}
+      {shouldTryVideo && !videoBroken ? (
+        <MultiSourceVideo
+          src={talkingVideoSrc}
+          className={`absolute inset-0 z-10 h-full w-full object-cover object-top transition-opacity duration-200 ${showVideoLayer ? "opacity-100" : "opacity-0"}`}
+          autoPlay={isTalking || preferVideo}
+          loop={isTalking || preferVideo}
+          muted
+          playsInline
+          preload="auto"
+          poster={posterImgSrc || undefined}
+          ariaHidden
+          onLoadedData={() => setVideoReady(true)}
+          onTimeUpdate={(event) => {
+            const video = event.currentTarget;
+            if (video?.currentTime > 0.05) setVideoHasPaintedFrame(true);
+          }}
+          onError={() => {
+            setVideoBroken(true);
+            setVideoReady(false);
+            setVideoHasPaintedFrame(false);
+          }}
+        />
+      ) : !posterImgSrc ? (
         <ThemeArt
           src={animatedHostSrc}
           alt={alt}
-          className="[grid-area:stack] h-full w-full object-contain"
+          className="absolute inset-0 h-full w-full object-cover object-top"
         />
-      </div>
+      ) : null}
     </div>
   );
 }
 function RoundTypeLogo({ src, alt, className = "" }) {
-  if (!src) return null;
+  const resolvedSrc = useMemo(
+    () => resolveBundledAssetSrc(String(src || "").trim()),
+    [src],
+  );
+  if (!resolvedSrc) return null;
   return (
     <img
-      src={src}
+      src={resolvedSrc}
       alt={alt}
       className={className}
       onError={(event) => {
@@ -1725,6 +1962,7 @@ const MASCOT_BY_ROUND_TYPE = {
   prompt: { name: "Ian Poster", face: "🎤", blurb: "Classic chaos host." },
   opinion: { name: "Ian Poster", face: "🎭", blurb: "Debate instigator." },
   picture: { name: "Ian Poster", face: "🖼️", blurb: "Flash-frame ringmaster." },
+  pairs: { name: "Ian Poster", face: "👀", blurb: "Spot-the-difference host." },
   nameblame: {
     name: "Ian Poster",
     face: "👉",
@@ -1746,6 +1984,11 @@ const MASCOT_BY_ROUND_TYPE = {
     blurb: "Connect the clues, expose the break.",
   },
   grill: { name: "Blaze Byte", face: "🤖", blurb: "AI host for Grill 'Em." },
+  twotruths: {
+    name: "Ian Poster",
+    face: "🔥",
+    blurb: "Two truths, one lie — blend it or burn.",
+  },
 };
 function RoundMascot({ roundTypeId }) {
   const mascot =
@@ -1978,12 +2221,14 @@ function fitTextToBubble(
 }
 const HOST_DIALOGUE_TIMINGS = {
   gameIntroAdvanceMs: 6000,
-  roundIntroAdvanceMs: 6000,
+  roundIntroAdvanceMs: 2000,
   liarRevealAdvanceMs: 6000,
   liarRevealCompleteMs: 6000,
 };
+const POF_VIEWPORT_HEIGHT_CLASS =
+  "h-[calc(var(--pof-vh,1vh)*100)] max-h-[calc(var(--pof-vh,1vh)*100)]";
 const HOST_DIALOGUE_PANEL_CLASS =
-  "rounded-[1.5rem] bg-[#e60096] text-white shadow-[0_18px_38px_rgba(0,0,0,0.55)]";
+  "pof-ui-copy rounded-[1.5rem] border border-fuchsia-200/35 bg-[#b8007a] text-white shadow-[0_18px_38px_rgba(0,0,0,0.55)] text-base sm:text-lg leading-relaxed [background-color:#b8007a]";
 const HOST_DIALOGUE_BUTTON_CLASS =
   "h-16 flex-1 rounded-[1.25rem] bg-[#e60096] px-4 text-xl font-black uppercase tracking-[0.04em] text-white shadow-[0_12px_24px_rgba(0,0,0,0.5)] hover:bg-[#ff16ac]";
 
@@ -2090,7 +2335,7 @@ function GameIntroScreen({
             <ThemeHostVisual
               themeName={theme}
               isTalking={isTalking}
-              alt={`${theme} host ${themedHostPersona.name}`}
+              alt="host"
               className="h-full w-full"
             />
           </div>
@@ -2128,7 +2373,11 @@ function GameIntroScreen({
             <Button className={HOST_DIALOGUE_BUTTON_CLASS} onClick={handleNextIntroAction}>
               Next
             </Button>
-            <Button className={HOST_DIALOGUE_BUTTON_CLASS} onClick={onContinue}>
+            <Button
+              className={HOST_DIALOGUE_BUTTON_CLASS}
+              data-testid="intro-skip"
+              onClick={onContinue}
+            >
               Skip
             </Button>
           </div>
@@ -2156,24 +2405,88 @@ function getRoundRuleText(roundTypeId = "prompt") {
   if (roundTypeId === "grill") {
     return "Grill 'Em: players ask by microphone and Blaze Byte talks back with AI answers. Liars already saw the hidden prompt and will try to steer the room.";
   }
+  if (roundTypeId === "twotruths") {
+    return "Two Truths, One Fire: everyone lists three related items — two truths and one lie. After the shuffle, spot each player's lie to score.";
+  }
+  if (roundTypeId === "pairs") {
+    return "Double Take: everyone sees a picture and describes it. Liars see a slightly different image but get the same instructions — spot who is describing the wrong scene.";
+  }
   return "Give one clue, blend in, and avoid revealing your exact prompt.";
 }
 function getCategoryIconSrc(categoryId = "") {
   return getUiCategoryIconSrc(categoryId);
 }
-function getRoundTypeIconSrc(roundTypeId = "prompt") {
-  const normalizedId = String(roundTypeId || "prompt").trim().toLowerCase();
+function getRoundTypeIconSrc(roundTypeId = "") {
+  const normalizedId = String(roundTypeId || "").trim().toLowerCase();
+  if (!normalizedId) return "";
+  const uiIcon = getUiGameModeIconSrc(normalizedId);
+  if (uiIcon) return resolveBundledAssetSrc(uiIcon);
+  const logoSrc = ROUND_TYPES[normalizedId]?.logoSrc;
+  if (logoSrc) return resolveBundledAssetSrc(logoSrc);
+  return "";
+}
+
+function getPairsRevealImages(round) {
+  if (!round || round.roundTypeId !== "pairs") return null;
+  const payload = round.pairsRevealImages;
+  if (!payload || typeof payload !== "object") return null;
+  const truthImageSrc = String(payload.truthImageSrc || "").trim();
+  const liarImageSrc = String(payload.liarImageSrc || "").trim();
+  if (!truthImageSrc || !liarImageSrc) return null;
+  return {
+    truthImageSrc: resolveBundledAssetSrc(truthImageSrc),
+    liarImageSrc: resolveBundledAssetSrc(liarImageSrc),
+  };
+}
+
+function DoubleTakePairsRevealPanel({ round, className = "" }) {
+  const images = getPairsRevealImages(round);
+  if (!images) return null;
   return (
-    getUiGameModeIconSrc(normalizedId) ||
-    ROUND_TYPES[normalizedId]?.logoSrc ||
-    getUiGameModeIconSrc("prompt")
+    <div
+      className={`rounded-[1.2rem] border border-cyan-300/35 bg-black/35 p-3 sm:p-4 ${className}`}
+      data-testid="double-take-pairs-reveal"
+    >
+      <div className="pof-heading text-xs tracking-[0.28em] text-cyan-200/90">
+        Double Take — the two pictures
+      </div>
+      <div className="mt-3 grid gap-3 sm:grid-cols-2">
+        <div className="text-center">
+          <div className="pof-heading text-[0.65rem] text-emerald-200">
+            Everyone saw
+          </div>
+          <img
+            src={images.truthImageSrc}
+            alt=""
+            className="mt-2 w-full rounded-xl border border-emerald-400/40 object-cover"
+          />
+        </div>
+        <div className="text-center">
+          <div className="pof-heading text-[0.65rem] text-orange-200">
+            The liar saw
+          </div>
+          <img
+            src={images.liarImageSrc}
+            alt=""
+            className="mt-2 w-full rounded-xl border border-orange-400/40 object-cover"
+          />
+        </div>
+      </div>
+    </div>
   );
 }
-function getRoundCardBackSrc(themeName = "Default") {
-  return getUiCardBackSrc(themeName);
+
+function getRoundCardBackSrc(
+  themeName = "Default",
+  { cardStyle = "classic", defaultBackSlug = "classic" } = {},
+) {
+  return getUiCardBackSrc(themeName, { cardStyle, defaultBackSlug });
 }
-function getRoundCardFrontSrc(themeName = "Default") {
-  return getUiCardFrontSrc(themeName);
+function getRoundCardFrontSrc(
+  themeName = "Default",
+  { cardStyle = "classic", defaultBackSlug = "classic" } = {},
+) {
+  return getUiCardFrontSrc(themeName, { cardStyle, defaultBackSlug });
 }
 function getImposterCardFrontSrc() {
   return UI_CARD_LIAR_FRONT_SRC;
@@ -2302,8 +2615,10 @@ function useGlobalGraphicsPreload() {
       .filter(Boolean);
     const allSources = [...coreUiSources, ...themeSources];
     preloadImageSources(allSources);
-    const maxOverlayMs = 3000;
-    const minOverlayMs = 700;
+    const fastBoot =
+      String(import.meta.env?.VITE_E2E_FAST_TIMERS || '').trim() === '1';
+    const maxOverlayMs = fastBoot ? 150 : 3000;
+    const minOverlayMs = fastBoot ? 0 : 700;
     Promise.race([
       preloadImageSourcesWithPromise(allSources),
       new Promise((resolve) => setTimeout(resolve, maxOverlayMs)),
@@ -2331,6 +2646,7 @@ function StartupPreloadOverlay({ show = false }) {
       {show && (
         <motion.div
           key="startup-preload-overlay"
+          data-testid="startup-loading-overlay"
           initial={{ opacity: 1 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -2392,6 +2708,13 @@ function getInstructionHostLines(roundTypeId = "prompt") {
       "Watch for players forcing random image details that do not fit.",
     ];
   }
+  if (roundTypeId === "pairs") {
+    return [
+      "You will see a private picture card — same instructions for every player.",
+      "Describe what you see without giving away too much detail.",
+      "If someone's story does not line up with the rest of the table, vote accordingly.",
+    ];
+  }
   if (roundTypeId === "nameblame") {
     return [
       "Name and Blame means answering one lobby callout.",
@@ -2440,6 +2763,12 @@ function getHostExamplePrompts(roundTypeId = "prompt") {
       liar: "Great Wall at sunrise",
     };
   }
+  if (roundTypeId === "pairs") {
+    return {
+      normal: "A busy beach scene",
+      liar: "A busy beach scene",
+    };
+  }
   if (roundTypeId === "opinion") {
     return {
       normal: "Pineapple belongs on pizza",
@@ -2476,6 +2805,12 @@ function getHostExamplePrompts(roundTypeId = "prompt") {
       liar: "Eiffel Tower",
     };
   }
+  if (roundTypeId === "twotruths") {
+    return {
+      normal: "Name three martial arts",
+      liar: "Name three bands",
+    };
+  }
   return {
     normal: "Street market in Bangkok",
     liar: "Souk in Marrakech",
@@ -2489,7 +2824,6 @@ function resolveCategoryChoiceCardArt(category, themeName = "Default") {
 function HostIntroScreen({ round, stingerLine, onContinue, theme }) {
   const hostSizeConfig = useMemo(() => getHostSizeConfig(theme), [theme]);
   const themedHostPersona = useMemo(() => getIanPosterHostDisplayPersona(theme), [theme]);
-  const exampleCardSrc = getRoundCardFrontSrc(theme);
   const examplePrompts = getHostExamplePrompts(round.roundTypeId);
   const normalExamplePrompt = examplePrompts.normal;
   const liarExamplePrompt = examplePrompts.liar;
@@ -2532,8 +2866,8 @@ function HostIntroScreen({ round, stingerLine, onContinue, theme }) {
       speechBubbleTextRef.current,
       speechBubbleFitRef.current,
       {
-        maxSize: 28,
-        minSize: 12,
+        maxSize: 26,
+        minSize: 15,
         lineHeight: 1.12,
       },
     );
@@ -2557,41 +2891,57 @@ function HostIntroScreen({ round, stingerLine, onContinue, theme }) {
     <BrandedScreen
       wallpaperSrc={UI_WALLPAPER_IN_GAME_SRC}
       overlayClassName="bg-black/65"
+      lockViewport
+      contentClassName="!min-h-0 !py-2 !px-3 flex flex-col"
     >
-      <div className="relative mx-auto flex h-[calc(100dvh-1.25rem)] w-full max-w-[28rem] flex-col items-center justify-between gap-3 overflow-hidden py-1">
-        <div
-          className="pointer-events-none absolute inset-x-[-30%] bottom-[8.25rem] h-32 opacity-80 blur-[0.3px]"
-          style={{
-            background:
-              "radial-gradient(circle at 50% 100%, rgba(255,130,0,0.95), rgba(255,0,160,0.55) 18%, rgba(0,180,255,0.28) 33%, transparent 62%)",
-          }}
-        />
-        <div className="relative z-10 w-full max-w-[18rem] rounded-[1.65rem] bg-[#e60096] p-2.5 shadow-[0_20px_45px_rgba(0,0,0,0.7)] sm:max-w-[20rem]">
-          <div className="aspect-[2/3] overflow-hidden rounded-[1.15rem] bg-black">
+      <div className="relative mx-auto flex h-full min-h-0 w-full max-w-[28rem] flex-col gap-2 overflow-hidden">
+        <div className="relative z-10 flex min-h-0 flex-[1.15] w-full flex-col rounded-[1.65rem] bg-[#e60096] p-2 shadow-[0_20px_45px_rgba(0,0,0,0.7)]">
+          <div className="min-h-0 flex-1 overflow-hidden rounded-[1.15rem] bg-black">
             <ThemeHostVisual
               themeName={theme}
               isTalking={isTalking}
-              alt={`${theme} presenter`}
+              preferVideo
+              testId="host-intro-visual"
+              alt="host"
               className="h-full w-full"
             />
           </div>
         </div>
-        <div className="relative z-10 flex w-full flex-1 flex-col justify-end gap-3">
-          <motion.div
-            key={`${round.id || round.roundNumber}-${speechIndex}`}
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.28, ease: "easeOut" }}
-            className={`${HOST_DIALOGUE_PANEL_CLASS} flex min-h-[7.5rem] items-center justify-center px-5 py-4 text-center sm:min-h-[9rem]`}
+        <div className="relative z-10 flex min-h-0 flex-[0.85] flex-col justify-end gap-2">
+          <div
+            role={canContinue ? undefined : "button"}
+            tabIndex={canContinue ? undefined : 0}
+            data-testid="host-intro-caption"
+            className={`pof-host-intro-caption-panel relative z-20 flex min-h-[4.5rem] flex-1 cursor-pointer items-center justify-center rounded-[1.5rem] border border-fuchsia-200/35 px-4 py-3 text-center ${canContinue ? "" : "pof-focus"}`}
+            style={{
+              backgroundColor: "#b8007a",
+              backgroundImage: "none",
+            }}
+            onClick={() => {
+              if (!canContinue) advanceSpeechLine();
+            }}
+            onKeyDown={(event) => {
+              if (canContinue) return;
+              if (event.key === "Enter" || event.key === " ") {
+                event.preventDefault();
+                advanceSpeechLine();
+              }
+            }}
           >
             <div
               ref={speechBubbleFitRef}
-              className="flex h-full max-h-[8.5rem] w-full items-center justify-center overflow-hidden sm:max-h-[9.5rem]"
+              className="flex h-full max-h-[26dvh] w-full items-center justify-center overflow-hidden"
             >
-              <p
+              <motion.p
+                key={`${round.id || round.roundNumber}-${speechIndex}`}
                 ref={speechBubbleTextRef}
-                className="w-full font-black uppercase tracking-[0.03em] text-white [text-shadow:0_3px_10px_rgba(0,0,0,0.35)]"
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.22, ease: "easeOut" }}
+                className="pof-host-intro-caption-text w-full"
                 style={{
+                  color: "#ffffff",
+                  fontFamily: "Inter, system-ui, sans-serif",
                   fontSize: `${speechBubbleFontSize}px`,
                   lineHeight: 1.12,
                   wordBreak: "normal",
@@ -2602,14 +2952,18 @@ function HostIntroScreen({ round, stingerLine, onContinue, theme }) {
                 }}
               >
                 {speechSentences[speechIndex]}
-              </p>
+              </motion.p>
             </div>
-          </motion.div>
+          </div>
           <div className="flex gap-3">
             <Button className={HOST_DIALOGUE_BUTTON_CLASS} onClick={handleNextSpeechAction}>
               Next
             </Button>
-            <Button className={HOST_DIALOGUE_BUTTON_CLASS} onClick={onContinue}>
+            <Button
+              className={HOST_DIALOGUE_BUTTON_CLASS}
+              data-testid="host-intro-skip"
+              onClick={onContinue}
+            >
               Skip
             </Button>
           </div>
@@ -2630,12 +2984,12 @@ function RulesSplashScreen({ onContinue, theme, isOnlineMode = false }) {
             Quick Rules
           </h2>
           <div className="mt-6 grid gap-3 text-center">
-            <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+            <div className="pof-ui-copy rounded-2xl border border-white/15 bg-black/35 p-4 text-base leading-relaxed">
               {isOnlineMode
                 ? "Online mode: each player checks prompts on their own device. No phone passing."
                 : "Pass the phone one player at a time so only that player sees their card."}
             </div>
-            <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+            <div className="pof-ui-copy rounded-2xl border border-white/15 bg-black/35 p-4 text-base leading-relaxed">
               Give one related clue out loud during discussion, but never say
               your exact prompt.
             </div>
@@ -2645,24 +2999,26 @@ function RulesSplashScreen({ onContinue, theme, isOnlineMode = false }) {
                 auto-pauses during prompt/instruction phases.
               </div>
             )}
-            <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+            <div className="pof-ui-copy rounded-2xl border border-white/15 bg-black/35 p-4 text-base leading-relaxed">
               You cannot use any words from the{" "}
               <span className="font-semibold text-cyan-200">category</span>,{" "}
               your exact prompt, or any of the{" "}
               <span className="font-semibold text-cyan-200">5 banned words</span>{" "}
               shown on your reveal card.
             </div>
-            <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+            <div className="pof-ui-copy rounded-2xl border border-white/15 bg-black/35 p-4 text-base leading-relaxed">
               Vote for the liar. Correct votes score points. Uncaught liars
               score extra.
             </div>
           </div>
-          <Button
-            className="rounded-[1.5rem] h-14 px-8 mt-8 bg-yellow-300 text-zinc-950 hover:bg-yellow-200 border-2 border-white"
+          <button
+            type="button"
+            className="pof-btn pof-btn-fire pof-focus mt-8"
+            data-testid="rules-continue"
             onClick={onContinue}
           >
             Start Round One
-          </Button>
+          </button>
         </GlassPanel>
       </div>
     </TopFrame>
@@ -2727,6 +3083,119 @@ function AccountGateScreen({ onSignedIn }) {
     }
     // Supabase session is picked up by App; optional email-confirm flow may require no session yet
   };
+  const webJoinOnly = isWebJoinOnlyMode();
+  if (webJoinOnly) {
+    return (
+      <BrandedScreen allowScroll overlayClassName="bg-black/45">
+        <div className="flex flex-col gap-5">
+          <header className="text-center">
+            <p className="pof-heading text-xs tracking-[0.35em] text-cyan-200/80">
+              Account
+            </p>
+            <h1 className="pof-heading mt-2 text-2xl text-yellow-300">
+              Sign in to play
+            </h1>
+            <p className="pof-body mt-2 text-sm text-white/75">
+              New players start as{" "}
+              <span className="font-semibold text-cyan-100">Fibber</span> (free)
+              so you can join online lobbies. Upgrade in the store to host local
+              or online games.
+            </p>
+            {cloudConfigured && authLoading && (
+              <p className="pof-body mt-2 text-xs text-cyan-100/90">
+                Checking cloud session…
+              </p>
+            )}
+          </header>
+          {!cloudConfigured ? (
+            <div className="pof-body rounded-2xl border border-red-400/30 bg-red-500/15 px-4 py-3 text-sm text-red-100">
+              Cloud sign-in is not available on this site yet. Try again later or
+              use the mobile app.
+            </div>
+          ) : (
+            <div className="pof-glass rounded-3xl p-5 text-left">
+              <p className="pof-heading text-xs tracking-[0.28em] text-cyan-200/90">
+                Cloud account
+              </p>
+              <p className="pof-body mt-2 text-sm text-white/70">
+                Use the same email and password on the website and in the mobile
+                app. Purchases from the web shop sync through the Pants on Fire
+                lobby server.
+              </p>
+              <div className="mt-4 flex gap-2">
+                <button
+                  type="button"
+                  className={`pof-chip flex-1 text-sm ${cloudMode === "login" ? "border-fuchsia-300 bg-fuchsia-500/25" : ""}`}
+                  onClick={() => {
+                    setCloudMode("login");
+                    setCloudError("");
+                  }}
+                >
+                  Log in
+                </button>
+                <button
+                  type="button"
+                  className={`pof-chip flex-1 text-sm ${cloudMode === "register" ? "border-fuchsia-300 bg-fuchsia-500/25" : ""}`}
+                  onClick={() => {
+                    setCloudMode("register");
+                    setCloudError("");
+                  }}
+                >
+                  Register
+                </button>
+              </div>
+              <form className="mt-4 space-y-3" onSubmit={submitCloud}>
+                <div>
+                  <Label className="pof-heading text-xs text-cyan-200/80">
+                    Email
+                  </Label>
+                  <input
+                    type="email"
+                    value={cloudEmail}
+                    onChange={(event) => setCloudEmail(event.target.value)}
+                    autoComplete="email"
+                    className="pof-field mt-2 text-left font-sans text-base tracking-normal"
+                  />
+                </div>
+                <div>
+                  <Label className="pof-heading text-xs text-cyan-200/80">
+                    Password
+                  </Label>
+                  <input
+                    type="password"
+                    value={cloudPassword}
+                    onChange={(event) => setCloudPassword(event.target.value)}
+                    autoComplete={
+                      cloudMode === "register"
+                        ? "new-password"
+                        : "current-password"
+                    }
+                    className="pof-field mt-2 text-left font-sans text-base tracking-normal"
+                  />
+                </div>
+                {cloudError && (
+                  <div className="pof-body rounded-xl border border-red-400/30 bg-red-500/15 px-3 py-2 text-sm text-red-100">
+                    {cloudError}
+                  </div>
+                )}
+                <button
+                  type="submit"
+                  disabled={cloudBusy}
+                  className="pof-btn pof-btn-blue pof-btn-sm pof-focus w-full disabled:opacity-60"
+                >
+                  {cloudBusy
+                    ? "Please wait…"
+                    : cloudMode === "register"
+                      ? "Create cloud account"
+                      : "Cloud log in"}
+                </button>
+              </form>
+            </div>
+          )}
+        </div>
+      </BrandedScreen>
+    );
+  }
   return (
     <TopFrame theme="Default" allowScroll>
       <div className="mx-auto flex min-h-[100dvh] max-w-md flex-col gap-6 px-4 py-10">
@@ -2750,12 +3219,12 @@ function AccountGateScreen({ onSignedIn }) {
         {cloudConfigured && (
           <GlassPanel className="rounded-[2rem] border border-cyan-400/25 bg-black/35 p-6">
             <div className="text-xs uppercase tracking-[0.28em] text-cyan-200/90">
-              Cloud account (Supabase)
+              Cloud account
             </div>
             <p className="mt-2 text-sm text-white/70">
-              Use the same login on web and in the Expo app. Purchases from the
-              App Store / Play Store sync through your project&apos;s lobby
-              server webhooks.
+              Use the same email and password on the website and in the mobile
+              app. Purchases from the web shop, App Store, or Play Store sync
+              through the Pants on Fire lobby server.
             </p>
             <div className="mt-4 flex gap-2 rounded-2xl border border-white/10 bg-black/30 p-1">
               <button
@@ -3491,8 +3960,6 @@ function OnlineLobbySetupScreen({
   setPointsToWin,
   roundsPerPlayer,
   setRoundsPerPlayer,
-  adultMode,
-  setAdultMode,
   grillSettings,
   setGrillSettings,
   themeOptions = [],
@@ -3501,6 +3968,9 @@ function OnlineLobbySetupScreen({
   setAllowFriendsJoinLobby = () => {},
   selectedFriendInviteUsernames = [],
   onToggleInviteFriend = () => {},
+  themeCardStyleByTheme = {},
+  unlockedAltCardThemeKeys = [],
+  onSelectThemeCardStyle = () => {},
   onBack,
   onContinue,
   setupError = "",
@@ -3569,6 +4039,15 @@ function OnlineLobbySetupScreen({
                   </option>
                 ))}
               </select>
+              <ThemeCardStylePicker
+                themeName={nameTheme}
+                selectedStyle={getSelectedThemeCardStyle(
+                  nameTheme,
+                  themeCardStyleByTheme,
+                )}
+                unlockedAltKeys={unlockedAltCardThemeKeys}
+                onSelectStyle={(style) => onSelectThemeCardStyle(nameTheme, style)}
+              />
             </div>
             <div>
               <Label className="text-white/80">Max players in lobby</Label>
@@ -3633,12 +4112,6 @@ function OnlineLobbySetupScreen({
               )}
             </div>
             <div className="grid grid-cols-2 gap-2">
-              <Button
-                className={`rounded-2xl px-4 py-3 ${adultMode ? "bg-red-500 text-white" : "border border-white/10 bg-white/5 text-white"}`}
-                onClick={() => setAdultMode(!adultMode)}
-              >
-                {adultMode ? "18+ On" : "18+ Off"}
-              </Button>
               <Button
                 className={`rounded-2xl px-4 py-3 ${grillSettings.micEnabled ? "bg-emerald-400 text-zinc-950" : "border border-white/10 bg-white/5 text-white"}`}
                 onClick={() =>
@@ -3743,46 +4216,179 @@ function OnlineLobbySetupScreen({
 }
 function BrandedScreen({
   children,
-  wallpaperSrc = UI_WALLPAPER_IN_GAME_SRC,
+  wallpaperSrc = NEON_ASSETS.wallGame,
   overlayClassName = "bg-black/35",
   frameClassName = "",
   contentClassName = "",
+  allowScroll = false,
+  lockViewport = false,
 }) {
-  const resolvedWallpaperSrc = String(wallpaperSrc || "").trim();
+  const resolvedWallpaperSrc = resolveBundledAssetSrc(
+    String(wallpaperSrc || UI_WALLPAPER_IN_GAME_SRC || NEON_ASSETS.wallGame).trim(),
+  );
+  const viewportClass = lockViewport || !allowScroll ? POF_VIEWPORT_HEIGHT_CLASS : "min-h-screen min-h-[100dvh]";
   return (
     <div
-      className={`relative min-h-screen min-h-[100dvh] overflow-hidden bg-[#12002d] text-white ${frameClassName}`}
+      className={`relative overflow-hidden bg-[#05010f] text-white ${viewportClass} ${frameClassName}`}
+      style={neonThemeVars()}
     >
       <div
-        className="fixed inset-0 bg-cover bg-center bg-no-repeat"
-        style={
-          resolvedWallpaperSrc
-            ? { backgroundImage: `url(${resolvedWallpaperSrc})` }
-            : {
-                background:
-                  "radial-gradient(circle at 15% 8%, rgba(255,0,200,0.35), transparent 28%), radial-gradient(circle at 85% 18%, rgba(0,218,255,0.28), transparent 26%), linear-gradient(160deg, #260061 0%, #11002f 48%, #05010f 100%)",
-              }
-        }
+        className="pof-wall fixed inset-0"
+        style={{
+          backgroundImage: `url(${resolvedWallpaperSrc})`,
+          backgroundSize: "cover",
+          backgroundRepeat: "no-repeat",
+          backgroundPosition: "center",
+        }}
       />
-      {!resolvedWallpaperSrc && (
-        <div
-          className="fixed inset-0 opacity-[0.16]"
-          style={{
-            backgroundImage:
-              "linear-gradient(135deg, rgba(255,255,255,0.18) 1px, transparent 1px), linear-gradient(45deg, rgba(255,255,255,0.08) 1px, transparent 1px)",
-            backgroundSize: "34px 34px",
-          }}
-        />
-      )}
       <div className={`fixed inset-0 ${overlayClassName}`} />
       <div
-        className={`relative z-10 mx-auto flex min-h-screen min-h-[100dvh] w-full max-w-[460px] flex-col px-5 py-6 ${contentClassName}`}
+        className={`relative z-10 mx-auto flex w-full max-w-[460px] flex-col px-5 py-6 ${viewportClass} ${allowScroll ? "overflow-y-auto pof-scroll" : "overflow-hidden"} ${contentClassName}`}
         style={{
           paddingTop: "max(1.25rem, env(safe-area-inset-top))",
           paddingBottom: "max(1.25rem, env(safe-area-inset-bottom))",
         }}
       >
         {children}
+      </div>
+    </div>
+  );
+}
+function RoundTypeChoiceGrid({
+  roundTypeOptions,
+  onlineMode,
+  onSelectRoundType,
+}) {
+  const optionIds = useMemo(
+    () => roundTypeOptions.map((type) => type.id),
+    [roundTypeOptions],
+  );
+  const timed = useTimedChoice({
+    enabled: Boolean(onlineMode),
+    optionIds,
+    onPick: (id) => onSelectRoundType(id),
+  });
+  return (
+    <div
+      className="flex min-h-0 flex-1 flex-col gap-3 pt-2"
+      data-testid="round-type-choice-grid"
+    >
+      {onlineMode && optionIds.length > 0 && (
+        <div className="shrink-0">
+          <NeonTimerBar
+            secondsLeft={timed.secondsLeft}
+            totalSeconds={ONLINE_SELECTION_TIMER_SEC}
+          />
+        </div>
+      )}
+      {roundTypeOptions.map((type) => {
+        const roundTypeLogoSrc = getRoundTypeIconSrc(type.id);
+        const highlighted =
+          onlineMode &&
+          timed.highlightedId === type.id &&
+          (timed.isFlashing || timed.secondsLeft <= 3);
+        return (
+          <button
+            key={type.id}
+            type="button"
+            className={`flex min-h-0 flex-1 flex-col items-stretch overflow-hidden rounded-[1.75rem] border-2 border-white/25 bg-black/40 px-3 py-3 text-left shadow-[0_16px_34px_rgba(0,0,0,0.55)] transition-transform duration-200 hover:scale-[1.01] ${highlighted ? "pof-choice-flash" : ""}`}
+            onClick={() => {
+              if (onlineMode) timed.pick(type.id);
+              else onSelectRoundType(type.id);
+            }}
+            aria-label={`Choose ${type.name}`}
+            data-testid={`round-type-${type.id}`}
+            data-round-type-id={type.id}
+            data-round-type-name={type.name}
+          >
+            <div className="flex min-h-0 flex-1 items-center justify-center">
+              <ThemeArt
+                src={roundTypeLogoSrc}
+                alt={`${type.name} mode icon`}
+                data-testid={`round-type-icon-${type.id}`}
+                className="max-h-full max-w-full object-contain drop-shadow-[0_12px_22px_rgba(0,0,0,0.72)]"
+              />
+            </div>
+            <div className="shrink-0 pt-2 text-center text-lg font-black uppercase tracking-wide text-yellow-300 [text-shadow:0_2px_10px_rgba(0,0,0,0.75)] sm:text-xl">
+              {type.name}
+            </div>
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+function CategoryChoiceGrid({
+  categoryOptions,
+  categoryChoiceGridClass,
+  onlineMode,
+  canonicalThemeName,
+  onChooseCategory,
+}) {
+  const optionIds = useMemo(
+    () => categoryOptions.map((category) => category.id),
+    [categoryOptions],
+  );
+  const timed = useTimedChoice({
+    enabled: Boolean(onlineMode),
+    optionIds,
+    onPick: (id) => onChooseCategory(id),
+  });
+  return (
+    <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+      {onlineMode && optionIds.length > 0 && (
+        <div className="shrink-0 pb-2">
+          <NeonTimerBar
+            secondsLeft={timed.secondsLeft}
+            totalSeconds={ONLINE_SELECTION_TIMER_SEC}
+          />
+        </div>
+      )}
+      <div
+        data-testid="category-choice-scroll"
+        className="flex min-h-0 flex-1 flex-col overflow-hidden justify-center px-0.5"
+        style={{
+          paddingBottom:
+            "max(0.5rem, calc(env(safe-area-inset-bottom, 0px) + 0.25rem))",
+        }}
+      >
+        <div
+          className={categoryChoiceGridClass}
+          data-testid="category-choice-grid"
+          data-category-count={categoryOptions.length}
+        >
+        {categoryOptions.map((category) => {
+          const categoryIconSrc =
+            category?.iconSrc ||
+            getCategoryIconSrc(category.id) ||
+            resolveCategoryChoiceCardArt(category, canonicalThemeName);
+          const highlighted =
+            onlineMode &&
+            timed.highlightedId === category.id &&
+            (timed.isFlashing || timed.secondsLeft <= 3);
+          return (
+            <button
+              key={category.id}
+              type="button"
+              className={`block w-full transition-transform duration-200 hover:scale-[1.02] ${highlighted ? "pof-choice-flash rounded-2xl" : ""}`}
+              onClick={() => {
+                if (onlineMode) timed.pick(category.id);
+                else onChooseCategory(category.id);
+              }}
+              aria-label={`Choose ${category.name}`}
+              data-testid={`category-${category.id}`}
+            >
+              <div className="aspect-square w-full max-h-[7.25rem] sm:max-h-[9rem] mx-auto">
+                <ThemeArt
+                  src={categoryIconSrc}
+                  alt={`${category.name} category icon`}
+                  className="h-full w-full object-contain drop-shadow-[0_8px_16px_rgba(0,0,0,0.65)]"
+                />
+              </div>
+            </button>
+          );
+        })}
+        </div>
       </div>
     </div>
   );
@@ -3805,6 +4411,110 @@ function OnlineJoinLobbyScreen({
 }) {
   const canContinueCode = joinCode.trim().length >= 4;
   const canJoin = playerName.trim().length > 0;
+  const webJoinOnly = isWebJoinOnlyMode();
+  if (webJoinOnly) {
+    return (
+      <BrandedScreen
+        wallpaperSrc={UI_WALLPAPER_IN_GAME_SRC}
+        overlayClassName="bg-black/45"
+      >
+        <div className="pof-glass rounded-3xl p-5 text-left">
+          <p className="pof-heading text-xs tracking-[0.35em] text-indigo-200/80">
+            Join Online Lobby
+          </p>
+          <h2 className="pof-heading mt-3 text-2xl text-yellow-300 sm:text-3xl">
+            {step === "code" ? "Enter lobby code" : "Choose your player name"}
+          </h2>
+          <p className="pof-body mt-2 text-sm text-white/75">
+            Join from your own device. Prompts stay private to your screen.
+          </p>
+          <div className="mt-6 grid gap-4">
+            {step === "code" ? (
+              <div>
+                <Label className="pof-heading text-xs text-white/80">
+                  Lobby code
+                </Label>
+                <input
+                  value={joinCode}
+                  onChange={(event) =>
+                    setJoinCode(event.target.value.toUpperCase())
+                  }
+                  className="pof-field mt-2 uppercase tracking-[0.25em]"
+                />
+              </div>
+            ) : (
+              <>
+                <div className="pof-body rounded-2xl border border-cyan-300/25 bg-cyan-500/10 p-3 text-sm text-cyan-100">
+                  Host:{" "}
+                  <span className="pof-heading text-sm text-white">
+                    {hostName || "Host"}
+                  </span>{" "}
+                  • Theme:{" "}
+                  <span className="pof-heading text-sm text-white">
+                    {nameTheme}
+                  </span>{" "}
+                  • Players: {playerCount}/{maxPlayers}
+                </div>
+                <div>
+                  <Label className="pof-heading text-xs text-white/80">
+                    Your player name
+                  </Label>
+                  <div className="mt-2 flex gap-2">
+                    <input
+                      value={playerName}
+                      onChange={(event) => setPlayerName(event.target.value)}
+                      className="pof-field min-w-0 flex-1 text-left font-sans text-base tracking-normal"
+                    />
+                    <button
+                      type="button"
+                      className="pof-sq cyan pof-focus shrink-0"
+                      onClick={onRandomizeName}
+                      aria-label="Randomize name"
+                    >
+                      <Dice6 className="h-4 w-4" />
+                    </button>
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
+          <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+            <button
+              type="button"
+              className="pof-btn pof-btn-steel pof-btn-sm pof-focus sm:flex-1"
+              onClick={onBack}
+            >
+              Back
+            </button>
+            {step === "code" ? (
+              <button
+                type="button"
+                className="pof-btn pof-btn-fire pof-btn-sm pof-focus sm:flex-1"
+                disabled={!canContinueCode}
+                onClick={onContinueCode}
+              >
+                Continue
+              </button>
+            ) : (
+              <button
+                type="button"
+                className="pof-btn pof-btn-fire pof-btn-sm pof-focus sm:flex-1"
+                disabled={!canJoin}
+                onClick={onJoin}
+              >
+                Join Game
+              </button>
+            )}
+          </div>
+          {joinError && (
+            <div className="pof-body mt-4 rounded-2xl border border-red-400/30 bg-red-500/10 p-3 text-sm text-red-100">
+              {joinError}
+            </div>
+          )}
+        </div>
+      </BrandedScreen>
+    );
+  }
   return (
     <BrandedScreen
       wallpaperSrc={UI_WALLPAPER_IN_GAME_SRC}
@@ -3947,7 +4657,7 @@ function OnlineLobbyCodeScreen({
             </span>
           </p>
           <div className="mt-6 rounded-[1.8rem] border border-cyan-300/40 bg-cyan-500/10 p-5 flex items-center justify-between gap-4">
-            <div className="text-4xl font-black tracking-[0.35em] text-cyan-100">
+            <div className="font-mono text-4xl font-bold tracking-widest text-cyan-100">
               {lobbyCode || "------"}
             </div>
             <Button
@@ -4117,7 +4827,9 @@ function SetupScreen(props) {
     onToggleCategory,
     grillSettings,
     setGrillSettings,
-    adultMode,
+    themeCardStyleByTheme,
+    unlockedAltCardThemeKeys,
+    onSelectThemeCardStyle,
     categoryCount,
     onOpenAdmin,
     canOpenAdminDialog = true,
@@ -4219,6 +4931,7 @@ function SetupScreen(props) {
       ];
   return (
     <BrandedScreen
+      allowScroll
       wallpaperSrc={UI_WALLPAPER_IN_GAME_SRC}
       overlayClassName="bg-black/45"
       contentClassName={desktopLandscape ? "max-w-[1320px]" : "max-w-[1120px]"}
@@ -4295,6 +5008,16 @@ function SetupScreen(props) {
                   </option>
                 ))}
               </select>
+              <ThemeCardStylePicker
+                themeName={nameTheme}
+                selectedStyle={getSelectedThemeCardStyle(
+                  nameTheme,
+                  themeCardStyleByTheme,
+                )}
+                unlockedAltKeys={unlockedAltCardThemeKeys}
+                onSelectStyle={(style) => onSelectThemeCardStyle(nameTheme, style)}
+                labelClassName={setupThemeLabelClass}
+              />
               {hasThemePersonas && (
                 <Button
                   type="button"
@@ -4541,40 +5264,6 @@ function SetupScreen(props) {
                 )}
               </GlassPanel>
               <GlassPanel className="rounded-[1.5rem] bg-white/5 p-4">
-                <div className="mb-3 font-semibold">Grill 'Em Defaults</div>
-                <div className="mb-2 text-xs text-white/55">
-                  Questions are auto-set each round to target ~20 total
-                  questions (based on player count).
-                </div>
-                <div className="mt-2 grid grid-cols-2 gap-2">
-                  <Button
-                    className={`rounded-2xl px-4 py-3 ${grillSettings.micEnabled ? "bg-emerald-400 text-zinc-950" : "border border-white/10 bg-white/5 text-white"}`}
-                    onClick={() =>
-                      setGrillSettings((current) => ({
-                        ...current,
-                        micEnabled: !current.micEnabled,
-                      }))
-                    }
-                  >
-                    Mic {grillSettings.micEnabled ? "On" : "Off"}
-                  </Button>
-                  <Button
-                    className={`rounded-2xl px-4 py-3 ${grillSettings.ttsEnabled ? "bg-emerald-400 text-zinc-950" : "border border-white/10 bg-white/5 text-white"}`}
-                    onClick={() =>
-                      setGrillSettings((current) => ({
-                        ...current,
-                        ttsEnabled: !current.ttsEnabled,
-                      }))
-                    }
-                  >
-                    Voice {grillSettings.ttsEnabled ? "On" : "Off"}
-                  </Button>
-                </div>
-                <div className="mt-3 text-xs text-cyan-200">
-                  Example: 7 players gives 3 each, 4 players gives 5 each.
-                </div>
-              </GlassPanel>
-              <GlassPanel className="rounded-[1.5rem] bg-white/5 p-4">
                 <div className="flex items-center justify-between">
                   <div>
                     <div className="font-semibold">Category Edit</div>
@@ -4591,13 +5280,15 @@ function SetupScreen(props) {
                 </div>
               </GlassPanel>
               <div className="grid gap-3 sm:grid-cols-2">
-                <Button
-                  className="h-14 rounded-[1.5rem] border-2 border-white bg-yellow-300 text-zinc-950"
+                <button
+                  type="button"
+                  className="pof-btn pof-btn-fire pof-focus"
+                  data-testid="start-match"
                   onClick={onStart}
                   disabled={!canStart}
                 >
                   {startLabel}
-                </Button>
+                </button>
                 <Button
                   className="h-14 rounded-[1.5rem] border border-fuchsia-400/30 bg-fuchsia-500/10 text-white disabled:opacity-40"
                   onClick={onOpenAdmin}
@@ -4699,6 +5390,8 @@ function RevealScreen({
   onlinePrivatePromptError = "",
   privatePromptLoading = false,
   playSfx = () => {},
+  cardStyle = THEME_CARD_STYLE_CLASSIC,
+  defaultBackSlug = "classic",
 }) {
   const player = players[currentRevealIndex];
   const personaCalloutLine = getPersonaCalloutLineTextForPlayer(player, theme);
@@ -4731,6 +5424,8 @@ function RevealScreen({
   const isImposter = onlineMode
     ? Boolean(onlinePrivatePrompt?.isImposter)
     : (round.imposterIds || []).includes(player.id);
+  const isPairsRound = round.roundTypeId === "pairs";
+  const showImposterRevealUi = isImposter && !isPairsRound;
   const bannedWords = Array.isArray(round.bannedWords)
     ? round.bannedWords
     : Array.isArray(onlinePrivatePrompt?.bannedWords)
@@ -4744,10 +5439,22 @@ function RevealScreen({
   const fireAudioRef = useRef(null);
   const promptTextRef = useRef(null);
   const promptFitContainerRef = useRef(null);
-  const cardBackSrc = getRoundCardBackSrc(theme);
-  const themedCardFrontSrc = getRoundCardFrontSrc(theme);
-  const cardFrontSrc = isImposter
-    ? getImposterCardFrontSrc()
+  const cardBackSrc = useMemo(
+    () =>
+      resolveBundledAssetSrc(
+        getRoundCardBackSrc(theme, { cardStyle, defaultBackSlug }),
+      ),
+    [theme, cardStyle, defaultBackSlug],
+  );
+  const themedCardFrontSrc = useMemo(
+    () =>
+      resolveBundledAssetSrc(
+        getRoundCardFrontSrc(theme, { cardStyle, defaultBackSlug }),
+      ),
+    [theme, cardStyle, defaultBackSlug],
+  );
+  const cardFrontSrc = showImposterRevealUi
+    ? resolveBundledAssetSrc(getImposterCardFrontSrc())
     : themedCardFrontSrc;
   const roundTypeLogoSrc = getRoundTypeIconSrc(round.roundTypeId);
 
@@ -4771,7 +5478,7 @@ function RevealScreen({
       } catch {}
       return undefined;
     }
-    if (!isImposter) return undefined;
+    if (!showImposterRevealUi) return undefined;
     try {
       const audio = new Audio(FIRE_CRACKLE_SFX_SRC);
       audio.volume = 0.4;
@@ -4785,10 +5492,10 @@ function RevealScreen({
       } catch {}
       fireAudioRef.current = null;
     };
-  }, [cardFace, isImposter]);
+  }, [cardFace, showImposterRevealUi]);
 
   useLayoutEffect(() => {
-    if (cardFace !== "front") {
+    if (isPairsRound || cardFace !== "front") {
       setPromptFontSize((current) => (current === 50 ? current : 50));
       return;
     }
@@ -4812,7 +5519,7 @@ function RevealScreen({
     }
 
     setPromptFontSize((current) => (current === nextSize ? current : nextSize));
-  }, [prompt, mediaSrc, cardFace, isImposter]);
+  }, [prompt, mediaSrc, cardFace, showImposterRevealUi, isPairsRound]);
 
   const imposterEmberParticles = useMemo(
     () =>
@@ -4848,7 +5555,7 @@ function RevealScreen({
               ? `Reveal for ${localPlayerName || player.name}`
               : `Pass the phone to ${player.name}`}
           </h2>
-          <div className="mt-2 rounded-[1.5rem] border border-fuchsia-200/40 bg-fuchsia-500/35 px-4 py-3 text-sm sm:text-base font-semibold text-white/95 shadow-[0_8px_20px_rgba(0,0,0,0.28)]">
+          <div className="pof-ui-copy mt-2 rounded-[1.5rem] border border-fuchsia-200/50 bg-fuchsia-950/75 px-4 py-3 text-sm sm:text-base font-semibold shadow-[0_8px_20px_rgba(0,0,0,0.28)]">
             {passLine}
           </div>
           {onlineMode && onlinePrivatePromptError && (
@@ -4857,7 +5564,29 @@ function RevealScreen({
             </div>
           )}
 
-          <div className="mt-3 mx-auto w-full max-w-[24.25rem] sm:max-w-[26rem] [perspective:1200px]">
+          <div className="mt-3 mx-auto w-full max-w-[24.25rem] sm:max-w-[26rem]">
+            {isPairsRound ? (
+              <>
+                <DoubleTakeSquareRevealCard
+                  cardFace={cardFace}
+                  mediaSrc={mediaSrc}
+                  isLiar={isImposter}
+                  isCountingDown={isCountingDown}
+                  countdownValue={countdownValue}
+                />
+                {cardFace === "front" && (
+                  <p
+                    className={`mt-3 text-center pof-heading text-xs tracking-[0.28em] ${
+                      isImposter ? "text-orange-200" : "text-emerald-200"
+                    }`}
+                    data-testid="double-take-reveal-label"
+                  >
+                    {isImposter ? "You're the liar" : "Your picture"}
+                  </p>
+                )}
+              </>
+            ) : (
+              <div className="[perspective:1200px]" data-testid="themed-prompt-card">
             <motion.div
               animate={{ rotateY: cardFace === "front" ? 180 : 0 }}
               transition={{ duration: 0.75, ease: "easeInOut" }}
@@ -4868,17 +5597,9 @@ function RevealScreen({
                   <img
                     src={cardBackSrc}
                     alt="Prompt card back"
-                    className="absolute inset-0 h-full w-full object-contain object-center bg-black/30"
+                    className="absolute inset-0 h-full w-full object-contain object-center drop-shadow-[0_16px_34px_rgba(0,0,0,0.55)]"
                   />
                 )}
-                <div className="absolute inset-0 bg-black/20" />
-                <div className="relative z-10 flex h-full flex-col items-center justify-start px-4 pt-6 pb-6 text-center text-white [text-shadow:0_2px_8px_rgba(0,0,0,0.85)]">
-                  <RoundTypeLogo
-                    src={roundTypeLogoSrc}
-                    alt={`${round.roundTypeName} logo`}
-                    className="mx-auto h-16 w-auto sm:h-20"
-                  />
-                </div>
                 {isCountingDown &&
                   typeof countdownValue === "number" &&
                   countdownValue > 0 && (
@@ -4891,50 +5612,48 @@ function RevealScreen({
               </div>
 
               <div
-                className={`absolute inset-0 overflow-visible rounded-[1.7rem] [backface-visibility:hidden] [transform:rotateY(180deg)] ${isImposter ? "shadow-[0_0_42px_rgba(255,94,0,0.62)]" : ""}`}
+                className={`absolute inset-0 overflow-visible rounded-[1.7rem] [backface-visibility:hidden] [transform:rotateY(180deg)] ${showImposterRevealUi ? "shadow-[0_0_42px_rgba(255,94,0,0.62)]" : ""}`}
               >
                 {cardFrontSrc && (
                   <img
                     src={cardFrontSrc}
-                    alt="Prompt card front"
-                    className={`absolute inset-0 h-full w-full object-contain object-center bg-black/30 ${isImposter ? "scale-[1.25]" : ""}`}
+                    alt=""
+                    aria-hidden
+                    className={`pointer-events-none absolute inset-0 z-0 h-full w-full object-contain object-center ${showImposterRevealUi ? "scale-[1.25]" : ""}`}
                   />
                 )}
-                <div
-                  className={`absolute inset-0 ${isImposter ? "bg-gradient-to-b from-orange-400/34 via-red-600/26 to-red-950/42" : "bg-black/15"}`}
-                />
-                {isImposter && (
+                {showImposterRevealUi && (
                   <>
-                    <div className="pointer-events-none absolute -inset-2 rounded-[2rem] border-2 border-orange-300/45 shadow-[inset_0_0_30px_rgba(255,97,24,0.45)]" />
-                    <div className="pointer-events-none absolute inset-0 rounded-[1.7rem] bg-[radial-gradient(circle_at_50%_90%,rgba(255,150,0,0.38)_0%,rgba(255,70,0,0.24)_35%,rgba(0,0,0,0)_68%)]" />
+                    <div className="pointer-events-none absolute -inset-2 z-[5] rounded-[2rem] border-2 border-orange-300/45 shadow-[inset_0_0_30px_rgba(255,97,24,0.45)]" />
+                    <div className="pointer-events-none absolute inset-0 z-[5] rounded-[1.7rem] bg-[radial-gradient(circle_at_50%_90%,rgba(255,150,0,0.38)_0%,rgba(255,70,0,0.24)_35%,rgba(0,0,0,0)_68%)]" />
                     <img
                       src={CARD_FIRE_FLAME_SOURCES[0] || FLAME_SRC}
                       alt=""
                       aria-hidden="true"
-                      className="pointer-events-none absolute -top-4 -left-2 h-14 w-14 opacity-95 animate-pulse drop-shadow-[0_0_12px_rgba(255,98,0,0.95)]"
+                      className="pointer-events-none absolute -top-4 -left-2 z-[6] h-14 w-14 opacity-95 animate-pulse drop-shadow-[0_0_12px_rgba(255,98,0,0.95)]"
                     />
                     <img
                       src={CARD_FIRE_FLAME_SOURCES[1] || FLAME_SRC}
                       alt=""
                       aria-hidden="true"
-                      className="pointer-events-none absolute -top-4 -right-2 h-14 w-14 opacity-95 animate-pulse drop-shadow-[0_0_12px_rgba(255,98,0,0.95)]"
+                      className="pointer-events-none absolute -top-4 -right-2 z-[6] h-14 w-14 opacity-95 animate-pulse drop-shadow-[0_0_12px_rgba(255,98,0,0.95)]"
                     />
                     <img
                       src={CARD_FIRE_FLAME_SOURCES[2] || FLAME_SRC}
                       alt=""
                       aria-hidden="true"
-                      className="pointer-events-none absolute -bottom-3 -right-2 h-14 w-14 opacity-90 animate-pulse drop-shadow-[0_0_12px_rgba(255,98,0,0.95)]"
+                      className="pointer-events-none absolute -bottom-3 -right-2 z-[6] h-14 w-14 opacity-90 animate-pulse drop-shadow-[0_0_12px_rgba(255,98,0,0.95)]"
                     />
                     <img
                       src={CARD_FIRE_FLAME_SOURCES[3] || FLAME_SRC}
                       alt=""
                       aria-hidden="true"
-                      className="pointer-events-none absolute -bottom-3 -left-2 h-14 w-14 opacity-90 animate-pulse drop-shadow-[0_0_12px_rgba(255,98,0,0.95)]"
+                      className="pointer-events-none absolute -bottom-3 -left-2 z-[6] h-14 w-14 opacity-90 animate-pulse drop-shadow-[0_0_12px_rgba(255,98,0,0.95)]"
                     />
                     {imposterEmberParticles.map((particle) => (
                       <span
                         key={particle.id}
-                        className="pointer-events-none absolute rounded-full bg-orange-300/90 shadow-[0_0_8px_rgba(255,143,46,0.95)]"
+                        className="pointer-events-none absolute z-[6] rounded-full bg-orange-300/90 shadow-[0_0_8px_rgba(255,143,46,0.95)]"
                         style={{
                           left: particle.left,
                           bottom: "-10%",
@@ -4946,18 +5665,20 @@ function RevealScreen({
                     ))}
                   </>
                 )}
-                <div className="relative z-10 flex h-full flex-col p-5 text-center text-white [text-shadow:0_2px_8px_rgba(0,0,0,0.85)]">
+                <div
+                  className={`absolute left-[10%] top-[14%] z-10 flex h-[72%] w-[80%] flex-col overflow-hidden text-center text-white [text-shadow:0_2px_8px_rgba(0,0,0,0.85)] ${showImposterRevealUi ? "bg-gradient-to-b from-orange-400/20 via-red-600/12 to-red-950/22" : ""}`}
+                >
                   <RoundTypeLogo
                     src={roundTypeLogoSrc}
                     alt={`${round.roundTypeName} logo`}
-                    className="mt-1 h-20 w-auto mx-auto sm:h-24"
+                    className="mx-auto h-14 w-auto shrink-0 sm:h-16"
                   />
                   <div
-                    className={`mt-3 inline-flex items-center justify-center gap-2 rounded-xl border border-fuchsia-200/40 bg-fuchsia-500/35 px-3 py-2 text-xs font-semibold uppercase tracking-[0.2em] ${isImposter ? "text-orange-100" : "text-cyan-100"}`}
+                    className={`mt-3 inline-flex items-center justify-center gap-2 rounded-xl border border-fuchsia-200/40 bg-fuchsia-500/35 px-3 py-2 text-xs font-semibold uppercase tracking-[0.2em] ${showImposterRevealUi ? "text-orange-100" : "text-cyan-100"}`}
                   >
                     <img
                       src={
-                        isImposter
+                        showImposterRevealUi
                           ? UI_ICON_BADGE_LIAR_SRC
                           : UI_ICON_MAGNIFIER_FIRE_SRC
                       }
@@ -4965,7 +5686,13 @@ function RevealScreen({
                       aria-hidden="true"
                       className="h-4 w-4 object-contain"
                     />
-                    <span>{isImposter ? "LIAR CARD" : "YOUR CARD"}</span>
+                    <span>
+                      {isPairsRound
+                        ? "YOUR CARD"
+                        : showImposterRevealUi
+                          ? "LIAR CARD"
+                          : "YOUR CARD"}
+                    </span>
                   </div>
                   {round.mediaPreviewLabel && (
                     <div className="mt-2 text-sm text-white/85">
@@ -4981,11 +5708,11 @@ function RevealScreen({
                   )}
                   <div
                     ref={promptFitContainerRef}
-                    className="mt-2 max-h-[14.25rem] overflow-hidden px-1"
+                    className="mt-2 min-h-0 flex-1 overflow-hidden px-1"
                   >
                     <div
                       ref={promptTextRef}
-                      className={`font-black ${isImposter ? "text-yellow-300" : "text-white"}`}
+                      className={`font-black ${showImposterRevealUi ? "text-yellow-300" : "text-white"}`}
                       style={{
                         fontSize: `${promptFontSize}px`,
                         wordBreak: "normal",
@@ -5005,16 +5732,20 @@ function RevealScreen({
                     </div>
                   )}
                   <div
-                    className={`mt-2 rounded-xl border border-fuchsia-200/40 bg-fuchsia-500/35 px-3 py-2 text-sm font-semibold ${isImposter ? "text-orange-100" : "text-white/95"}`}
+                    className={`mt-2 rounded-xl border border-fuchsia-200/40 bg-fuchsia-500/35 px-3 py-2 text-sm font-semibold ${showImposterRevealUi ? "text-orange-100" : "text-white/95"}`}
                   >
-                    {isImposter ? `🔥 ${liarLine} 🔥` : normalLine}
+                    {isPairsRound
+                      ? normalLine
+                      : showImposterRevealUi
+                        ? `🔥 ${liarLine} 🔥`
+                        : normalLine}
                   </div>
                   {bannedWords.length > 0 && (
                     <div className="mt-4 rounded-xl border border-fuchsia-200/40 bg-fuchsia-500/35 px-3 py-2">
-                      <div className="text-xs uppercase tracking-[0.2em] text-red-300">
+                      <div className="pof-ui-copy text-xs font-bold uppercase tracking-[0.2em] text-red-200">
                         Banned Words
                       </div>
-                      <div className="mt-1 text-xs text-red-200">
+                      <div className="pof-ui-copy mt-1 text-sm font-medium text-red-100">
                         {bannedWords.join(" • ")}
                       </div>
                     </div>
@@ -5022,20 +5753,26 @@ function RevealScreen({
                 </div>
               </div>
             </motion.div>
+              </div>
+            )}
           </div>
 
           {cardFace === "back" && !readyToReveal && !isCountingDown && (
-            <Button
-              className="rounded-[1.5rem] h-12 sm:h-13 px-6 mt-3 bg-yellow-300 text-zinc-950 border-2 border-white"
+            <button
+              type="button"
+              className="pof-btn pof-btn-fire pof-btn-sm pof-focus mt-3"
+              data-testid="reveal-ready"
               onClick={startRevealCountdown}
             >
               I&apos;m Ready
-            </Button>
+            </button>
           )}
 
           {cardFace === "front" && (
-            <Button
-              className="rounded-[1.5rem] h-12 sm:h-13 px-6 mt-3 bg-white/10 border border-white/10 text-white"
+            <button
+              type="button"
+              className="pof-btn pof-btn-blue pof-btn-sm pof-btn-wrap pof-focus mt-3 max-w-full"
+              data-testid="reveal-next"
               onClick={onNext}
             >
               <EyeOff className="mr-2 h-5 w-5 inline" />
@@ -5044,7 +5781,7 @@ function RevealScreen({
                 : isLast
                   ? "Start discussion"
                   : `Hide & pass to ${players[currentRevealIndex + 1].name}`}
-            </Button>
+            </button>
           )}
         </div>
       </div>
@@ -6067,14 +6804,16 @@ function DiscussionScreen({
             Discussion
           </h2>
           <div className="mt-8 flex justify-center">
-            <Button
-              className="h-16 min-w-[16rem] rounded-[1.5rem] border-2 border-white bg-yellow-300 px-8 text-zinc-950"
+            <button
+              type="button"
+              className="pof-btn pof-btn-fire pof-btn-wrap pof-focus w-full max-w-[20rem] px-3"
+              data-testid="discussion-continue"
               onClick={onContinue}
               disabled={submitPending}
             >
               <SkipForward className="mr-2 inline h-5 w-5" />
               {submitPending ? "Syncing..." : "Finish discussion and vote"}
-            </Button>
+            </button>
           </div>
         </GlassPanel>
       </div>
@@ -6100,12 +6839,18 @@ function VotingScreen({
   playSfx = () => {},
   talkingPlayers = {},
   onToggleChat = () => {},
+  votingPlayerOrder = [],
 }) {
   const leader = players.find((p) => p.id === round.leaderId);
-  const localVoters = useMemo(
-    () => players.filter((player) => player.id),
-    [players],
-  );
+  const localVoters = useMemo(() => {
+    if (Array.isArray(votingPlayerOrder) && votingPlayerOrder.length) {
+      const byId = new Map(players.map((player) => [player.id, player]));
+      return votingPlayerOrder
+        .map((playerId) => byId.get(playerId))
+        .filter(Boolean);
+    }
+    return players.filter((player) => player.id);
+  }, [players, votingPlayerOrder]);
   const activeLocalVoter = useMemo(
     () => localVoters.find((player) => !votesByPlayerId[player.id]) || null,
     [localVoters, votesByPlayerId],
@@ -6167,13 +6912,13 @@ function VotingScreen({
               <h2 className="text-4xl font-black mt-3 text-yellow-300">
                 Vote now
               </h2>
-              <p className="text-white/70 mt-2">
+              <p className="pof-ui-copy mt-2 text-base">
                 {onlineMode ? (
                   "Vote from your own device. Pick one suspect and submit."
                 ) : activeLocalVoter ? (
                   <>
                     Pass the phone to{" "}
-                    <span className="font-semibold text-cyan-300">
+                    <span className="font-semibold text-cyan-200">
                       {activeLocalVoter.name}
                     </span>
                     .{" "}
@@ -6199,16 +6944,18 @@ function VotingScreen({
                 className="rounded-[1.75rem] p-4 border-white/10 bg-black/20"
               >
                 <div className="font-black text-lg">{voter.name}</div>
-                <div className="text-sm text-white/55 mt-1">
+                <div className="pof-ui-muted mt-1 text-sm font-medium">
                   Who do they vote for?
                 </div>
                 <div className="grid grid-cols-2 gap-2 mt-4">
                   {players
                     .filter((player) => player.id !== voter.id)
                     .map((target) => (
-                      <Button
+                      <button
+                        type="button"
                         key={target.id}
-                        className={`rounded-2xl h-11 ${votesByPlayerId[voter.id] === target.id ? "bg-yellow-300 text-zinc-950" : "bg-white/5 border border-white/10 text-white"}`}
+                        data-testid={`vote-for-${target.id}`}
+                        className={`pof-chip pof-vote-chip pof-focus ${votesByPlayerId[voter.id] === target.id ? "!border-yellow-300 !bg-yellow-300/90 !text-zinc-950" : ""}`}
                         onClick={() =>
                           setVotesByPlayerId((cur) => ({
                             ...cur,
@@ -6218,7 +6965,7 @@ function VotingScreen({
                         disabled={submitPending}
                       >
                         {target.name}
-                      </Button>
+                      </button>
                     ))}
                 </div>
               </GlassPanel>
@@ -6256,14 +7003,16 @@ function VotingScreen({
                 {submitPending ? "Submitting vote..." : "Submit my vote"}
               </Button>
             ) : (
-              <Button
-                className="rounded-[1.5rem] h-14 px-8 bg-yellow-300 text-zinc-950 border-2 border-white"
+              <button
+                type="button"
+                className="pof-btn pof-btn-fire pof-btn-wrap pof-focus max-w-full px-4"
+                data-testid="submit-votes"
                 disabled={!canRevealResults || submitPending}
                 onClick={onSubmitVotes}
               >
                 <Vote className="mr-2 h-5 w-5 inline" />
                 Reveal results
-              </Button>
+              </button>
             )}
           </div>
         </GlassPanel>
@@ -6382,19 +7131,19 @@ function LiarRevealScreen({
     );
   }
   return (
-    <TopFrame theme={theme}>
-      <div className="mx-auto flex h-[calc(100dvh-2rem)] w-full max-w-4xl flex-col justify-center">
-        <GlassPanel className="relative overflow-hidden rounded-[2.5rem] border-red-400/25 bg-black/35 p-6 sm:p-8 text-center">
+    <TopFrame theme={theme} allowScroll>
+      <div className="mx-auto flex min-h-[calc(100dvh-2rem)] w-full max-w-4xl flex-col justify-center py-2">
+        <GlassPanel className="relative overflow-visible rounded-[2.5rem] border-red-400/25 bg-black/35 p-6 sm:p-8 text-center">
           <div className="absolute inset-0 animate-pulse bg-[radial-gradient(circle,_rgba(255,0,80,0.16)_0%,_rgba(255,0,80,0.08)_35%,_transparent_70%)]" />
           <div className="relative z-10">
             <div className="text-xs uppercase tracking-[0.35em] text-white/50">
               Final accusation
             </div>
-            <div className="relative mx-auto mt-4 w-full max-w-3xl min-h-[230px] sm:min-h-[280px]">
+            <div className="relative mx-auto mt-4 w-full max-w-3xl min-h-[200px] sm:min-h-[240px]">
               <ThemeHostVisual
                 themeName={theme}
                 isTalking={isTalking}
-                alt={`${theme} presenter`}
+                alt="host"
                 className={`pointer-events-none absolute bottom-0 left-0 ${hostSizeConfig.liarReveal}`}
               />
               <motion.div
@@ -6402,16 +7151,16 @@ function LiarRevealScreen({
                 initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3, ease: "easeOut" }}
-                className={`${hostSizeConfig.liarBubbleMargin} h-[11rem] sm:h-[12rem] p-1 text-white`}
+                className={`${hostSizeConfig.liarBubbleMargin} min-h-[11rem] sm:min-h-[12rem] p-1 text-white`}
               >
                 <div
                   ref={announcementBubbleFitRef}
-                  className="relative mx-auto flex h-full max-w-2xl flex-col items-center justify-center overflow-hidden rounded-[2rem] border-2 border-red-300/70 bg-[#2a0f2e] px-4 py-4 shadow-[0_12px_24px_rgba(0,0,0,0.42)]"
+                  className="relative mx-auto flex max-h-[14rem] min-h-[10rem] w-full max-w-2xl flex-col items-center justify-center overflow-y-auto overflow-x-hidden rounded-[2rem] border-2 border-red-300/70 bg-[#2a0f2e] px-4 py-4 shadow-[0_12px_24px_rgba(0,0,0,0.42)] pof-scroll"
                 >
                   <div className="absolute -left-3 top-[58%] h-6 w-6 -translate-y-1/2 rotate-45 border-b-2 border-l-2 border-red-300/70 bg-[#2a0f2e]" />
                   <p
                     ref={announcementBubbleTextRef}
-                    className="font-black text-red-200"
+                    className="pof-ui-copy font-bold text-red-100"
                     style={{
                       fontSize: `${announcementBubbleFontSize}px`,
                       lineHeight: 1.1,
@@ -6453,15 +7202,19 @@ function LiarRevealScreen({
               </motion.div>
             </div>
             <div className="mt-6 flex justify-center">
-              <Button
-                className="h-14 rounded-[1.5rem] border border-white/30 bg-white/10 px-6 text-white"
+              <button
+                type="button"
+                className="pof-btn pof-btn-pink pof-btn-sm pof-btn-wrap pof-focus max-w-full px-5"
                 onClick={advanceAnnouncementLine}
               >
                 {announcementIndex >= announcementLines.length - 1
                   ? "Continue"
                   : "Next line"}
-              </Button>
+              </button>
             </div>
+            {announcementIndex >= announcementLines.length - 1 && (
+              <DoubleTakePairsRevealPanel round={round} className="relative z-10 mt-6" />
+            )}
           </div>
         </GlassPanel>
       </div>
@@ -6537,6 +7290,7 @@ function ResultsScreen({
                   {resultLine}
                 </p>
               </div>
+              <DoubleTakePairsRevealPanel round={round} className="mt-4" />
               <div className="mt-4 grid gap-2 content-start sm:grid-cols-2 lg:grid-cols-3">
                 {players.map((player, index) => {
                   const isLiar = (round.imposterIds || []).includes(player.id);
@@ -6705,11 +7459,21 @@ function ResultsScreen({
     </TopFrame>
   );
 }
-function FinalScreen({ players, onRestart, line, theme }) {
+function FinalScreen({ players, onRestart, line, theme, unlockToast = false }) {
   const ranked = [...players].sort((a, b) => b.score - a.score);
   const winner = ranked[0];
   return (
     <TopFrame theme={theme}>
+      {unlockToast ? (
+        <div
+          className="fixed bottom-6 left-1/2 z-[130] w-[min(22rem,calc(100%-2rem))] -translate-x-1/2 rounded-2xl border border-emerald-300/45 bg-emerald-500/20 px-4 py-3 text-center shadow-[0_12px_32px_rgba(0,0,0,0.45)]"
+          data-testid="card-style-unlock-toast"
+        >
+          <div className="pof-heading text-sm text-emerald-100">
+            New card style unlocked!
+          </div>
+        </div>
+      ) : null}
       <div className="mx-auto max-w-4xl space-y-6">
         <GlassPanel className="rounded-[2.5rem] border-yellow-300/20 bg-black/25 p-8 text-center">
           <div className="text-xs uppercase tracking-[0.3em] text-white/50">
@@ -6751,291 +7515,6 @@ function FinalScreen({ players, onRestart, line, theme }) {
     </TopFrame>
   );
 }
-function StoreScreen({
-  onBack,
-  theme,
-  dlcThemePacks = [],
-  unlockedThemePackIds = [],
-  onUnlockThemePack = () => {},
-  onRedeemThemeCode = () => ({ status: "invalid-code" }),
-  accountSession = null,
-  allDlcIncluded = false,
-  hasTwistAddon = false,
-  disableDlcDemo = false,
-  onSimulateTierPurchase = () => {},
-  onSimulateTwistAddon = () => {},
-}) {
-  const unlocked = new Set(unlockedThemePackIds || []);
-  const [redeemCodeInput, setRedeemCodeInput] = useState("");
-  const [redeemFeedback, setRedeemFeedback] = useState(null);
-  const [storeNotice, setStoreNotice] = useState(null);
-  const currentTierRank = accountSession
-    ? TIER_RANK[accountSession.tierId] ?? 0
-    : 0;
-  const packNameById = useMemo(
-    () =>
-      Object.fromEntries(
-        (dlcThemePacks || []).map((pack) => [pack.id, pack.name || pack.id]),
-      ),
-    [dlcThemePacks],
-  );
-  const handleRedeemSubmit = (event) => {
-    event.preventDefault();
-    const redemption = onRedeemThemeCode(redeemCodeInput);
-    if (!redemption || redemption.status === "invalid-code") {
-      setRedeemFeedback({
-        tone: "error",
-        message: "Invalid code. Double-check the code and try again.",
-      });
-      return;
-    }
-    if (redemption.status === "already-unlocked") {
-      setRedeemFeedback({
-        tone: "neutral",
-        message:
-          "Code accepted, but those DLC packs are already unlocked on this device.",
-      });
-      setRedeemCodeInput("");
-      return;
-    }
-    if (redemption.status === "unlocked") {
-      const unlockedNames = (redemption.newlyUnlockedPackIds || []).map(
-        (packId) => packNameById[packId] || packId,
-      );
-      setRedeemFeedback({
-        tone: "success",
-        message: unlockedNames.length
-          ? `Code redeemed! Unlocked: ${unlockedNames.join(", ")}.`
-          : "Code redeemed! New DLC unlocked.",
-      });
-      setRedeemCodeInput("");
-      return;
-    }
-    setRedeemFeedback({
-      tone: "error",
-      message: "Could not redeem this code right now. Please try again.",
-    });
-  };
-  return (
-    <TopFrame theme={theme}>
-      <div className="mx-auto max-w-4xl space-y-6">
-        <div className="flex justify-between items-center gap-4">
-          <Button
-            className="rounded-[1.4rem] bg-white/5 border border-white/10 px-4 py-2 text-white"
-            onClick={onBack}
-          >
-            Back
-          </Button>
-          <div className="text-center">
-            <div className="text-xs uppercase tracking-[0.35em] text-cyan-200/80">
-              Store
-            </div>
-            <div className="text-white/80 text-sm mt-1">
-              Subscriptions, add-ons, and DLC theme packs.
-            </div>
-          </div>
-          <div className="w-[72px]" />
-        </div>
-        {storeNotice && (
-          <div
-            className={`rounded-2xl border px-4 py-3 text-sm ${
-              String(storeNotice).startsWith("Successfully")
-                ? "border-emerald-400/30 bg-emerald-500/15 text-emerald-50"
-                : "border-red-300/40 bg-red-500/15 text-red-100"
-            }`}
-          >
-            {storeNotice}
-          </div>
-        )}
-        <GlassPanel className="rounded-[2.5rem] border border-amber-300/25 bg-black/30 p-8">
-          <div className="flex items-center gap-3 mb-3">
-            <Star className="h-6 w-6 text-amber-200" />
-            <h2 className="text-2xl font-black text-amber-200">Subscriptions</h2>
-          </div>
-          {accountSession && (
-            <p className="text-sm text-white/70 mb-4">
-              Signed in as{" "}
-              <span className="font-semibold text-cyan-100">
-                {accountSession.displayName}
-              </span>
-              . Buttons below simulate checkout on this device only.
-            </p>
-          )}
-          <div className="space-y-4">
-            {SUBSCRIPTION_TIERS.map((tier) => {
-              const targetRank = TIER_RANK[tier.tierId] ?? 0;
-              const owned = currentTierRank >= targetRank;
-              const isFibber = tier.tierId === TIER_FIBBER;
-              return (
-                <div
-                  key={tier.tierId}
-                  className="rounded-2xl border border-white/10 bg-black/25 p-4"
-                >
-                  <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
-                    <div>
-                      <div className="font-black text-lg text-white">
-                        {tier.name}{" "}
-                        <span className="text-yellow-300">{tier.priceLabel}</span>
-                      </div>
-                      <ul className="mt-2 list-disc space-y-1 pl-5 text-xs text-white/70">
-                        {tier.bullets.map((line) => (
-                          <li key={line}>{line}</li>
-                        ))}
-                      </ul>
-                      {tier.upgradeHint && (
-                        <div className="mt-2 text-[0.7rem] text-cyan-100/80">
-                          {tier.upgradeHint}
-                        </div>
-                      )}
-                    </div>
-                    {!isFibber && (
-                      <Button
-                        className="mt-2 shrink-0 rounded-xl bg-yellow-300 text-zinc-950 border border-white disabled:opacity-50 sm:mt-0"
-                        disabled={owned || !accountSession}
-                        onClick={() => {
-                          const msg = onSimulateTierPurchase(tier.tierId);
-                          setStoreNotice(msg || "");
-                        }}
-                      >
-                        {owned ? "Owned" : "Simulate purchase"}
-                      </Button>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </GlassPanel>
-        <GlassPanel className="rounded-[2.5rem] border border-fuchsia-400/20 bg-black/25 p-8">
-          <div className="flex items-center gap-3 mb-3">
-            <Flame className="h-6 w-6 text-fuchsia-200" />
-            <h2 className="text-2xl font-black text-fuchsia-100">
-              {ADDON_TWIST_TRUTH.name}
-            </h2>
-          </div>
-          <p className="text-sm text-white/75 mb-4">{ADDON_TWIST_TRUTH.description}</p>
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <div className="text-yellow-300 font-black">
-              {ADDON_TWIST_TRUTH.priceLabel}
-            </div>
-            <Button
-              className="rounded-xl bg-yellow-300 text-zinc-950 border border-white disabled:opacity-50"
-              disabled={
-                !accountSession ||
-                allDlcIncluded ||
-                hasTwistAddon ||
-                currentTierRank >= TIER_RANK[TIER_HOST_MOST]
-              }
-              onClick={() => {
-                const msg = onSimulateTwistAddon();
-                setStoreNotice(msg || "");
-              }}
-            >
-              {hasTwistAddon || allDlcIncluded
-                ? "Included"
-                : "Simulate purchase"}
-            </Button>
-          </div>
-        </GlassPanel>
-        <GlassPanel className="rounded-[2.5rem] p-8 border-fuchsia-400/20 bg-black/25">
-          <div className="flex items-center gap-3 mb-4">
-            <ShoppingBag className="h-6 w-6 text-yellow-300" />
-            <h2 className="text-2xl font-black text-yellow-300">
-              Theme DLC packs
-            </h2>
-          </div>
-          <p className="text-white/75 mb-5">{DLC_STORE_BLURB}</p>
-          <div className="space-y-3">
-            {(dlcThemePacks || []).map((pack) => {
-              const isUnlocked = allDlcIncluded || unlocked.has(pack.id);
-              return (
-                <div
-                  key={pack.id}
-                  className="rounded-2xl border border-white/10 bg-black/25 p-4"
-                >
-                  <div className="flex items-center justify-between gap-4">
-                    <div>
-                      <div className="font-black text-lg text-white">
-                        {pack.name}
-                      </div>
-                      <div className="text-xs text-cyan-200 mt-1">
-                        {(pack.themes || [])
-                          .map((themeName) => `${themeName} 🔥`)
-                          .join(" • ")}
-                      </div>
-                      {pack.description && (
-                        <div className="text-xs text-white/65 mt-2">
-                          {pack.description}
-                        </div>
-                      )}
-                    </div>
-                    <div className="text-right">
-                      <div className="text-yellow-300 font-black">
-                        {pack.priceLabel || "99p"}
-                      </div>
-                      <Button
-                        className="mt-2 rounded-xl bg-yellow-300 text-zinc-950 border border-white disabled:opacity-60"
-                        disabled={isUnlocked || disableDlcDemo}
-                        title={
-                          disableDlcDemo
-                            ? "DLC packs for cloud accounts are unlocked via App Store / Play (RevenueCat)."
-                            : undefined
-                        }
-                        onClick={() => onUnlockThemePack(pack.id)}
-                      >
-                        {isUnlocked ? "Unlocked" : "Unlock"}
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-          <div className="mt-6 rounded-2xl border border-cyan-400/25 bg-cyan-500/10 p-4">
-            <div className="flex items-center gap-2 text-cyan-100">
-              <KeyRound className="h-5 w-5" />
-              <div className="font-black">Redeem promo code</div>
-            </div>
-            <p className="text-sm text-white/75 mt-2">
-              Enter giveaway or marketing codes to unlock certain DLC bundles
-              instantly.
-            </p>
-            <form
-              className="mt-3 flex flex-col gap-2 sm:flex-row"
-              onSubmit={handleRedeemSubmit}
-            >
-              <Input
-                value={redeemCodeInput}
-                onChange={(event) => setRedeemCodeInput(event.target.value)}
-                placeholder="e.g. HISTORY-99"
-                className="rounded-xl bg-white/10 border-white/20 text-white"
-              />
-              <Button
-                type="submit"
-                className="rounded-xl bg-cyan-300 text-zinc-950 border border-white"
-              >
-                Redeem
-              </Button>
-            </form>
-            {redeemFeedback && (
-              <div
-                className={`mt-3 rounded-xl border px-3 py-2 text-sm ${
-                  redeemFeedback.tone === "success"
-                    ? "border-emerald-300/40 bg-emerald-500/20 text-emerald-100"
-                    : redeemFeedback.tone === "neutral"
-                      ? "border-amber-300/40 bg-amber-500/15 text-amber-100"
-                      : "border-red-300/40 bg-red-500/15 text-red-100"
-                }`}
-              >
-                {redeemFeedback.message}
-              </div>
-            )}
-          </div>
-        </GlassPanel>
-      </div>
-    </TopFrame>
-  );
-}
 
 function normalizeThemeSelection(themeName, themeOptions = []) {
   const canonicalTheme = toCanonicalThemeName(themeName || "Default");
@@ -7051,13 +7530,77 @@ function normalizeThemeSelection(themeName, themeOptions = []) {
   return fallback?.name || "Default";
 }
 
+function ThemeCardStylePicker({
+  themeName,
+  selectedStyle,
+  onSelectStyle,
+  unlockedAltKeys = [],
+  labelClassName = "text-white/80",
+}) {
+  const altUnlocked = isAltCardStyleUnlocked(themeName, unlockedAltKeys);
+  const activeStyle = normalizeThemeCardStyle(selectedStyle);
+  const pickStyle = (style) => {
+    if (
+      style === THEME_CARD_STYLE_ALT &&
+      !isAltCardStyleUnlocked(themeName, unlockedAltKeys)
+    ) {
+      return;
+    }
+    onSelectStyle(normalizeThemeCardStyle(style));
+  };
+  return (
+    <div
+      className="mt-3 rounded-2xl border border-white/10 bg-white/5 p-3"
+      data-testid="theme-card-style-picker"
+    >
+      <Label className={`text-xs uppercase tracking-[0.2em] ${labelClassName}`}>
+        Card style
+      </Label>
+      <p className="mt-1 text-xs text-white/60">
+        Classic is the default look. Alt unlocks after you finish a full game
+        with this theme.
+      </p>
+      <div className="mt-3 grid grid-cols-2 gap-2">
+        {[THEME_CARD_STYLE_CLASSIC, THEME_CARD_STYLE_ALT].map((style) => {
+          const isAlt = style === THEME_CARD_STYLE_ALT;
+          const locked = isAlt && !altUnlocked;
+          const selected = activeStyle === style;
+          return (
+            <button
+              key={style}
+              type="button"
+              data-testid={`theme-card-style-${style}${locked ? "-locked" : ""}`}
+              disabled={locked}
+              className={`rounded-2xl border px-3 py-3 text-left transition ${
+                selected
+                  ? "border-yellow-300/70 bg-yellow-400/20 text-yellow-100"
+                  : "border-white/15 bg-black/20 text-white/85"
+              } ${locked ? "cursor-not-allowed opacity-55" : "hover:border-cyan-300/40"}`}
+              onClick={() => pickStyle(style)}
+            >
+              <div className="pof-heading text-sm">
+                {THEME_CARD_STYLE_LABELS[style]}
+              </div>
+              {locked ? (
+                <div className="mt-1 text-[0.65rem] text-white/50">
+                  Finish a game to unlock
+                </div>
+              ) : null}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 function cloneOnlineLobbySettingsTemplate({
   themeName = "Default",
   winCondition = "rounds",
   pointsToWin = 15,
   roundsPerPlayer = 1,
   grillSettings = { micEnabled: true, ttsEnabled: true },
-  adultMode = false,
+  themeCardStyle = THEME_CARD_STYLE_CLASSIC,
   maxPlayers = MAX_PLAYERS,
 } = {}) {
   const normalizedThemeName = toCanonicalThemeName(themeName || "Default");
@@ -7071,7 +7614,7 @@ function cloneOnlineLobbySettingsTemplate({
     roundsPerPlayer: Number.isFinite(Number(roundsPerPlayer))
       ? Number(roundsPerPlayer)
       : 1,
-    adultMode: Boolean(adultMode),
+    themeCardStyle: normalizeThemeCardStyle(themeCardStyle),
     grillSettings: {
       micEnabled: grillSettings?.micEnabled !== false,
       ttsEnabled: grillSettings?.ttsEnabled !== false,
@@ -7123,12 +7666,58 @@ function redeemThemePackIds(currentPackIds = [], rawCode = "") {
   };
 }
 
+function SettingsToggleRow({ title, description, checked, onCheckedChange }) {
+  return (
+    <div className="rounded-[1.75rem] border border-white/10 bg-white/5 p-5">
+      <div className="flex items-center gap-4">
+        <div className="min-w-0 flex-1 text-left">
+          <div className="pof-heading text-lg text-white">{title}</div>
+          {description ? (
+            <p className="pof-desc mt-1 text-sm text-white/65">{description}</p>
+          ) : null}
+        </div>
+        <div className="pof-settings-toggle-col">
+          <Switch checked={checked} onCheckedChange={onCheckedChange} />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function SettingsSliderRow({ title, description, value, onChange, suffix }) {
+  return (
+    <div className="rounded-[1.75rem] border border-white/10 bg-white/5 p-5">
+      <div className="flex items-start gap-4">
+        <div className="min-w-0 flex-1 text-left">
+          <div className="pof-heading text-lg text-white">{title}</div>
+          {description ? (
+            <p className="pof-desc mt-1 text-sm text-white/65">{description}</p>
+          ) : null}
+        </div>
+        {suffix ? (
+          <div className="pof-settings-toggle-col pof-desc text-sm text-white/70">
+            {suffix}
+          </div>
+        ) : (
+          <div className="pof-settings-toggle-col" aria-hidden="true" />
+        )}
+      </div>
+      <input
+        type="range"
+        min={0}
+        max={100}
+        value={value}
+        onChange={onChange}
+        className="pof-range mt-3 w-full"
+      />
+    </div>
+  );
+}
+
 function SettingsScreen({
   onBack,
   premiumEnabled,
   setPremiumEnabled,
-  adultMode,
-  setAdultMode,
   audioSettings,
   setAudioSettings,
   theme,
@@ -7144,14 +7733,26 @@ function SettingsScreen({
   enabledCategories = {},
   onToggleCategory = () => {},
   defaultTab = "general",
+  contentPacks = null,
+  onReportBug = () => {},
 }) {
   const [effectsEnabled, setEffectsEnabled] = useState(true);
   const [largeText, setLargeText] = useState(false);
   const [activeTab, setActiveTab] = useState(
-    defaultTab === "categories" ? "categories" : "general",
+    defaultTab === "downloads"
+      ? "downloads"
+      : defaultTab === "categories"
+        ? "categories"
+        : "general",
   );
   useEffect(() => {
-    setActiveTab(defaultTab === "categories" ? "categories" : "general");
+    setActiveTab(
+      defaultTab === "downloads"
+        ? "downloads"
+        : defaultTab === "categories"
+          ? "categories"
+          : "general",
+    );
   }, [defaultTab]);
   const categoryRows = useMemo(
     () =>
@@ -7193,13 +7794,11 @@ function SettingsScreen({
           >
             Back
           </Button>
-          <div className="text-center">
-            <div className="text-xs uppercase tracking-[0.35em] text-cyan-200/80">
-              Settings
-            </div>
-            <div className="text-white/80 text-sm mt-1">
+          <div className="flex-1 text-center">
+            <div className="pof-heading text-sm text-cyan-200/90">Settings</div>
+            <p className="pof-desc mt-1 text-sm text-white/70">
               UI and app behaviour options live here.
-            </div>
+            </p>
           </div>
           <div className="w-[72px]" />
         </div>
@@ -7216,7 +7815,26 @@ function SettingsScreen({
           >
             Categories
           </Button>
+          <Button
+            className={`rounded-xl px-4 py-2 text-xs font-black uppercase tracking-[0.12em] ${activeTab === "downloads" ? "border border-yellow-300/35 bg-yellow-500/20 text-yellow-100" : "border border-white/10 bg-white/5 text-white/80"}`}
+            onClick={() => setActiveTab("downloads")}
+          >
+            Downloads
+          </Button>
         </div>
+        {activeTab === "downloads" && contentPacks ? (
+          <ContentPackSettingsPanel
+            packs={contentPacks.downloadablePacks}
+            installedPackIds={contentPacks.installedPackIds}
+            downloadByPackId={contentPacks.downloadByPackId}
+            onDownload={contentPacks.downloadPack}
+            onDelete={contentPacks.deletePack}
+            onRetry={contentPacks.retryPack}
+            onOpenDownloadOffer={contentPacks.reopenPrompt}
+            missingPackCount={contentPacks.missingPacks.length}
+            isNativeBridge={contentPacks.isNativeBridge}
+          />
+        ) : null}
         {activeTab === "categories" ? (
           <GlassPanel className="rounded-[2.2rem] p-5 border-fuchsia-300/25 bg-black/25">
             <div className="text-xs uppercase tracking-[0.3em] text-fuchsia-200/90">
@@ -7255,77 +7873,97 @@ function SettingsScreen({
               })}
             </div>
           </GlassPanel>
-        ) : (
+        ) : activeTab === "general" ? (
           <GlassPanel className="rounded-[2.5rem] p-8 border-cyan-400/20 bg-black/25 space-y-5">
-            <div className="rounded-[1.75rem] border border-white/10 bg-white/5 p-5 flex items-center justify-between gap-4">
-              <div>
-                <div className="font-black text-lg">18+ Mode</div>
-                <div className="text-sm text-white/60 mt-1">
-                  Enables risqué / non-PC prompts for adult groups.
-                </div>
-              </div>
-              <Switch checked={adultMode} onCheckedChange={setAdultMode} />
-            </div>
-            <div className="rounded-[1.75rem] border border-white/10 bg-white/5 p-5 flex items-center justify-between gap-4">
-              <div>
-                <div className="font-black text-lg">Premium Mode Toggle</div>
-                <div className="text-sm text-white/60 mt-1">
-                  Prototype switch for premium/admin features.
-                </div>
-              </div>
-              <Switch
-                checked={premiumEnabled}
-                onCheckedChange={setPremiumEnabled}
-              />
-            </div>
-            <div className="rounded-[1.75rem] border border-white/10 bg-white/5 p-5 flex items-center justify-between gap-4">
-              <div>
-                <div className="font-black text-lg">Background Music</div>
-                <div className="text-sm text-white/60 mt-1">
-                  Enable or disable background tracks (intro/setup/voting).
-                </div>
-              </div>
-              <Switch
-                checked={audioSettings.musicEnabled}
-                onCheckedChange={(next) =>
-                  setAudioSettings((cur) => ({ ...cur, musicEnabled: next }))
-                }
-              />
-            </div>
-            <div className="rounded-[1.75rem] border border-white/10 bg-white/5 p-5 flex items-center justify-between gap-4">
-              <div>
-                <div className="font-black text-lg">Sound Effects</div>
-                <div className="text-sm text-white/60 mt-1">
-                  Toggle fire, card flip, liar, and ByteBlitz cue SFX.
-                </div>
-              </div>
-              <Switch
-                checked={audioSettings.sfxEnabled}
-                onCheckedChange={(next) =>
-                  setAudioSettings((cur) => ({ ...cur, sfxEnabled: next }))
-                }
-              />
-            </div>
-            <div className="rounded-[1.75rem] border border-white/10 bg-white/5 p-5 flex items-center justify-between gap-4">
-              <div>
-                <div className="font-black text-lg">Visual Effects</div>
-                <div className="text-sm text-white/60 mt-1">
-                  Future hook for motion, glows, and extra juice.
-                </div>
-              </div>
-              <Switch
-                checked={effectsEnabled}
-                onCheckedChange={setEffectsEnabled}
-              />
-            </div>
-            <div className="rounded-[1.75rem] border border-white/10 bg-white/5 p-5 flex items-center justify-between gap-4">
-              <div>
-                <div className="font-black text-lg">Large Text</div>
-                <div className="text-sm text-white/60 mt-1">
-                  Accessibility-focused sizing option placeholder.
-                </div>
-              </div>
-              <Switch checked={largeText} onCheckedChange={setLargeText} />
+            <SettingsToggleRow
+              title="Premium Mode Toggle"
+              description="Prototype switch for premium/admin features."
+              checked={premiumEnabled}
+              onCheckedChange={setPremiumEnabled}
+            />
+            <SettingsToggleRow
+              title="Background Music"
+              description="Menu vocal and in-game instrumental tracks."
+              checked={audioSettings.musicEnabled}
+              onCheckedChange={(next) =>
+                setAudioSettings((cur) => ({ ...cur, musicEnabled: next }))
+              }
+            />
+            <SettingsSliderRow
+              title="Music Volume"
+              description="Loudness for menu and in-game music."
+              suffix={`${audioSettings.musicVol ?? 60}%`}
+              value={audioSettings.musicVol ?? 60}
+              onChange={(event) =>
+                setAudioSettings((cur) => ({
+                  ...cur,
+                  musicVol: Number(event.target.value),
+                }))
+              }
+            />
+            <SettingsToggleRow
+              title="Sound Effects"
+              description="Fire, card flip, liar, and ByteBlitz cue SFX."
+              checked={audioSettings.sfxEnabled}
+              onCheckedChange={(next) =>
+                setAudioSettings((cur) => ({ ...cur, sfxEnabled: next }))
+              }
+            />
+            <SettingsSliderRow
+              title="SFX Volume"
+              description="Loudness for sound effects."
+              suffix={`${audioSettings.sfxVol ?? 80}%`}
+              value={audioSettings.sfxVol ?? 80}
+              onChange={(event) =>
+                setAudioSettings((cur) => ({
+                  ...cur,
+                  sfxVol: Number(event.target.value),
+                }))
+              }
+            />
+            <SettingsToggleRow
+              title="Haptics"
+              description="Vibration on taps and timed selections."
+              checked={audioSettings.hapticsEnabled !== false}
+              onCheckedChange={(next) =>
+                setAudioSettings((cur) => ({ ...cur, hapticsEnabled: next }))
+              }
+            />
+            <SettingsToggleRow
+              title="Voice Chat"
+              description="Online party voice preference."
+              checked={audioSettings.voiceChatEnabled !== false}
+              onCheckedChange={(next) =>
+                setAudioSettings((cur) => ({ ...cur, voiceChatEnabled: next }))
+              }
+            />
+            <SettingsToggleRow
+              title="Visual Effects"
+              description="Motion, glows, and extra juice."
+              checked={effectsEnabled}
+              onCheckedChange={setEffectsEnabled}
+            />
+            <SettingsToggleRow
+              title="Large Text"
+              description="Accessibility-focused sizing option placeholder."
+              checked={largeText}
+              onCheckedChange={setLargeText}
+            />
+            <div className="rounded-[1.75rem] border border-rose-400/25 bg-rose-500/10 p-5">
+              <div className="font-black text-lg text-rose-100">Support</div>
+              <p className="pof-ui-copy mt-2 text-sm text-white/80">
+                Something broken? Send a report with diagnostics and an optional
+                screenshot.
+              </p>
+              <Button
+                type="button"
+                className="mt-4 w-full rounded-2xl border border-rose-200/40 bg-rose-500/20 px-4 py-3 text-sm font-bold text-rose-50"
+                onClick={onReportBug}
+                data-testid="settings-report-bug"
+              >
+                <Bug className="mr-2 inline h-4 w-4" />
+                Report a bug
+              </Button>
             </div>
             <div className="rounded-[1.75rem] border border-cyan-400/25 bg-cyan-500/10 p-5">
               <div className="font-black text-lg text-cyan-100">
@@ -7338,25 +7976,29 @@ function SettingsScreen({
                 {Object.keys(releaseChannelSummary).map((channel) => (
                   <div
                     key={channel}
-                    className="rounded-xl border border-white/10 bg-black/20 p-3 flex items-center justify-between gap-3"
+                    className="rounded-xl border border-white/10 bg-black/20 p-3"
                   >
-                    <div>
-                      <div className="font-semibold uppercase tracking-[0.18em] text-xs">
-                        {channel}
+                    <div className="flex items-center gap-3">
+                      <div className="min-w-0 flex-1 text-left">
+                        <div className="pof-heading text-xs text-white">
+                          {channel}
+                        </div>
+                        <p className="pof-desc text-xs text-white/55">
+                          {releaseChannelSummary[channel]} packs
+                        </p>
                       </div>
-                      <div className="text-xs text-white/55">
-                        {releaseChannelSummary[channel]} packs
+                      <div className="pof-settings-toggle-col">
+                        <Switch
+                          checked={enabledPictureReleaseChannels[channel] !== false}
+                          onCheckedChange={(next) =>
+                            setEnabledPictureReleaseChannels((cur) => ({
+                              ...cur,
+                              [channel]: next,
+                            }))
+                          }
+                        />
                       </div>
                     </div>
-                    <Switch
-                      checked={enabledPictureReleaseChannels[channel] !== false}
-                      onCheckedChange={(next) =>
-                        setEnabledPictureReleaseChannels((cur) => ({
-                          ...cur,
-                          [channel]: next,
-                        }))
-                      }
-                    />
                   </div>
                 ))}
               </div>
@@ -7377,22 +8019,26 @@ function SettingsScreen({
                       key={manifest.id}
                       className="rounded-xl border border-white/10 bg-black/20 p-3"
                     >
-                      <div className="flex items-center justify-between gap-3">
-                        <div>
-                          <div className="font-semibold">{manifest.label}</div>
-                          <div className="text-xs text-white/55">
-                            {manifest.id} • {manifest.releaseChannel}
+                      <div className="flex items-center gap-3">
+                        <div className="min-w-0 flex-1 text-left">
+                          <div className="pof-heading text-sm text-white">
+                            {manifest.label}
                           </div>
+                          <p className="pof-desc text-xs text-white/55">
+                            {manifest.id} • {manifest.releaseChannel}
+                          </p>
                         </div>
-                        <Switch
-                          checked={enabled}
-                          onCheckedChange={(next) =>
-                            setEnabledPicturePacks((cur) => ({
-                              ...cur,
-                              [manifest.id]: next,
-                            }))
-                          }
-                        />
+                        <div className="pof-settings-toggle-col">
+                          <Switch
+                            checked={enabled}
+                            onCheckedChange={(next) =>
+                              setEnabledPicturePacks((cur) => ({
+                                ...cur,
+                                [manifest.id]: next,
+                              }))
+                            }
+                          />
+                        </div>
                       </div>
                       <div className="mt-3 grid grid-cols-[1fr_auto] gap-3 items-center">
                         <div className="text-xs uppercase tracking-[0.2em] text-cyan-200/80">
@@ -7457,7 +8103,7 @@ function SettingsScreen({
               </div>
             </div>
           </GlassPanel>
-        )}
+        ) : null}
       </div>
     </TopFrame>
   );
@@ -7596,11 +8242,27 @@ export default function App() {
   const {
     loading: authLoading,
     session: supabaseSession,
+    cloudProvider,
     signOutCloud,
   } = useAuth();
-  const [screen, setScreen] = useState(() =>
-    readAccountSession() ? "home" : "account-gate",
-  );
+  const [screen, setScreen] = useState(() => {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get("pofScreen") === "store" && readAccountSession()) {
+        return "store";
+      }
+    } catch {
+      /* ignore */
+    }
+    return readAccountSession() ? "home" : "account-gate";
+  });
+  usePofViewportHeight();
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    window.scrollTo(0, 0);
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+  }, [screen]);
   const [isDesktopLandscapeWeb, setIsDesktopLandscapeWeb] = useState(false);
   const [players, setPlayers] = useState(() => {
     const initialThemeName = toCanonicalThemeName(
@@ -7623,9 +8285,34 @@ export default function App() {
     getStored("imposter-persona-only-v1", false),
   );
   const [premiumEnabled, setPremiumEnabled] = useState(false);
-  const [adultMode, setAdultMode] = useState(
-    getStored("imposter-adult-mode-v1", false),
+  const [unlockedAltCardThemeKeys, setUnlockedAltCardThemeKeys] = useState(() => {
+    const session = readAccountSession();
+    if (!isCloudAuthProvider(session?.authProvider)) {
+      return [];
+    }
+    const fromProfile = readLocalPlayerProfile()?.unlockedAltCardThemeKeys;
+    return normalizeUnlockedAltCardThemeKeys(
+      fromProfile?.length
+        ? fromProfile
+        : session?.unlockedAltCardThemeKeys || [],
+    );
+  });
+  const [themeCardStyleByTheme, setThemeCardStyleByTheme] = useState(() =>
+    normalizeThemeCardStyleByTheme(
+      getStored(THEME_CARD_STYLE_BY_THEME_STORAGE_KEY, {}),
+    ),
   );
+  const [onlineMatchThemeCardStyle, setOnlineMatchThemeCardStyle] = useState(
+    THEME_CARD_STYLE_CLASSIC,
+  );
+  const [cardStyleUnlockToast, setCardStyleUnlockToast] = useState(false);
+  const [playerProfile, setPlayerProfile] = useState(() => readLocalPlayerProfile());
+  const [achievementUnlockToast, setAchievementUnlockToast] = useState(null);
+  const [referralSummary, setReferralSummary] = useState(null);
+  const profileSyncTimerRef = useRef(null);
+  const profileGameRecordedRef = useRef("");
+  const profileRoundRecordedRef = useRef("");
+  const altUnlockServerRecordedRef = useRef("");
   const [customCategories, setCustomCategories] = useState(
     getStored("imposter-custom-categories-v2", []),
   );
@@ -7686,6 +8373,9 @@ export default function App() {
         : [];
     });
   const [homeProfileMenuOpen, setHomeProfileMenuOpen] = useState(false);
+  const [bugReportReturnScreen, setBugReportReturnScreen] = useState("home");
+  const [nativeDiagnostics, setNativeDiagnostics] = useState({});
+  const [gamePauseOpen, setGamePauseOpen] = useState(false);
   const [activeSettingsTab, setActiveSettingsTab] = useState("general");
   const [joinLobbyCodeInput, setJoinLobbyCodeInput] = useState("");
   const [onlineVoiceEnabled, setOnlineVoiceEnabled] = useState(false);
@@ -7727,18 +8417,30 @@ export default function App() {
   const [selectedRoundType, setSelectedRoundType] = useState(null);
   const [round, setRound] = useState(null);
   const [revealIndex, setRevealIndex] = useState(0);
+  const [twoTruthsInputIndex, setTwoTruthsInputIndex] = useState(0);
+  const [twoTruthsVotesByVoterId, setTwoTruthsVotesByVoterId] = useState({});
   const [categoryOptions, setCategoryOptions] = useState([]);
   const [votesByPlayerId, setVotesByPlayerId] = useState({});
+  const [votingPlayerOrder, setVotingPlayerOrder] = useState([]);
   const [tally, setTally] = useState({});
   const [roundGains, setRoundGains] = useState({});
   const [roundBreakdown, setRoundBreakdown] = useState({});
   const [imposterCaught, setImposterCaught] = useState(false);
-  const [audioSettings, setAudioSettings] = useState(
-    getStored("imposter-audio-settings-v1", {
-      musicEnabled: true,
-      sfxEnabled: true,
-    }),
-  );
+  const [audioSettings, setAudioSettings] = useState(() => {
+    const fxSettings = loadFx();
+    return {
+      musicEnabled: Boolean(fxSettings.music),
+      sfxEnabled: Boolean(fxSettings.sfx),
+      hapticsEnabled: Boolean(fxSettings.haptics),
+      voiceChatEnabled: Boolean(fxSettings.voiceChat),
+      musicVol: Number(fxSettings.musicVol) || 60,
+      sfxVol: Number(fxSettings.sfxVol) || 80,
+    };
+  });
+  const [joinHostEditorWarningOpen, setJoinHostEditorWarningOpen] =
+    useState(false);
+  const [joinHostEditorWarningAccepted, setJoinHostEditorWarningAccepted] =
+    useState(false);
   const [adminOpen, setAdminOpen] = useState(false);
   const [recentPromptKeys, setRecentPromptKeys] = useState([]);
   const [copyState, setCopyState] = useState({
@@ -7755,17 +8457,129 @@ export default function App() {
     onlineLobby: COPY_BANK.onlineLobby[0],
     hostStinger: COPY_BANK.hostStingerPrompt[0],
   });
+  const effectiveUnlockedPacks = useMemo(
+    () =>
+      effectiveUnlockedThemePackIds(accountSession, unlockedThemePackIds),
+    [accountSession, unlockedThemePackIds],
+  );
   const themeOptions = useMemo(
     () =>
       getThemeOptions(
-        effectiveUnlockedThemePackIds(accountSession, unlockedThemePackIds),
+        effectiveUnlockedPacks,
+        playerProfile?.achievementUnlockedThemeNames || [],
       ),
-    [accountSession, unlockedThemePackIds],
+    [effectiveUnlockedPacks, playerProfile?.achievementUnlockedThemeNames],
   );
+  const contentPacks = useContentPacks({
+    unlockedThemePackIds: effectiveUnlockedPacks,
+    shouldAutoPrompt: screen === "home",
+  });
+  useEffect(() => {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get("pofForceContentPackPrompt") === "1") {
+        contentPacks.setPromptOpen(true);
+      }
+    } catch {
+      /* ignore */
+    }
+  }, [contentPacks.setPromptOpen]);
   const entitlements = useMemo(
     () => computeEntitlements(accountSession),
     [accountSession],
   );
+  const webShopMode = isWebJoinOnlyMode();
+  const refreshCloudEntitlements = useCallback(async () => {
+    const token = supabaseSession?.access_token;
+    const user = supabaseSession?.user;
+    if (!token || !user) return;
+    const payload = await fetchRemoteEntitlements(token);
+    const built = buildSessionFromRemote(user, payload, cloudProvider);
+    setAccountSession(built);
+    setUnlockedThemePackIds(built.unlockedThemePackIds);
+  }, [supabaseSession?.access_token, supabaseSession?.user, cloudProvider]);
+  const applyRemotePlayerProfile = useCallback(
+    (remote, { accessToken } = {}) => {
+      if (!remote) return;
+      let merged = mergeRemotePlayerProfile(remote);
+      if (merged.referralUnlockToastPending) {
+        setAchievementUnlockToast({
+          title: "Secret theme unlocked!",
+          body: "A friend joined and upgraded. Check your deck collection.",
+        });
+        merged = {
+          ...merged,
+          referralUnlockToastPending: false,
+        };
+      }
+      setPlayerProfile(merged);
+      writeLocalPlayerProfile(merged);
+      setUnlockedAltCardThemeKeys(
+        normalizeUnlockedAltCardThemeKeys(merged.unlockedAltCardThemeKeys || []),
+      );
+      if (accessToken) {
+        pushRemotePlayerProfile(accessToken, merged).catch(() => {});
+      }
+    },
+    [],
+  );
+  const runWebPurchase = useCallback(
+    async (kind, productId) => {
+      if (!accountSession || !isCloudAuthProvider(accountSession.authProvider)) {
+        return "Sign in with your cloud account first.";
+      }
+      const userId = accountSession.userId;
+      const token = supabaseSession?.access_token;
+      if (!token) return "Sign in again to continue.";
+      try {
+        if (isWebBillingSimulateEnabled()) {
+          const row = await simulateWebPurchase(kind, productId, userId);
+          if (row) {
+            setAccountSession((session) => ({
+              ...session,
+              tierId: row.tierId || session.tierId,
+              addonTwistTruth: Boolean(row.addonTwistTruth ?? session.addonTwistTruth),
+              unlockedThemePackIds:
+                row.unlockedThemePackIds || session.unlockedThemePackIds,
+            }));
+            setUnlockedThemePackIds(row.unlockedThemePackIds || []);
+          }
+          await refreshCloudEntitlements();
+          const profileRemote = await fetchRemotePlayerProfile(token);
+          if (profileRemote) {
+            applyRemotePlayerProfile(profileRemote, { accessToken: token });
+          }
+          return "Purchase applied (test mode). Your unlocks will appear in the mobile app when you sign in with the same account.";
+        }
+        await startWebStripeCheckout(kind, productId, token);
+        return "";
+      } catch (err) {
+        return `Checkout could not start (${String(err?.message || err)}).`;
+      }
+    },
+    [
+      accountSession,
+      supabaseSession?.access_token,
+      refreshCloudEntitlements,
+      applyRemotePlayerProfile,
+    ],
+  );
+  useEffect(() => {
+    if (!webShopMode || typeof window === "undefined") return;
+    const code = parseJoinCodeFromLocation(window.location);
+    if (!code) return;
+    setJoinLobbyCodeInput(code);
+    setOnlineJoinStep("code");
+    setScreen((current) =>
+      current === "account-gate" ? current : "online-join",
+    );
+  }, [webShopMode]);
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("checkout") !== "success") return;
+    void refreshCloudEntitlements();
+  }, [refreshCloudEntitlements]);
   useEffect(() => {
     if (authLoading) return;
     const token = supabaseSession?.access_token;
@@ -7776,7 +8590,7 @@ export default function App() {
       try {
         const payload = await fetchRemoteEntitlements(token);
         if (cancelled) return;
-        const built = buildSessionFromRemote(user, payload);
+        const built = buildSessionFromRemote(user, payload, cloudProvider);
         setAccountSession(built);
         setUnlockedThemePackIds(built.unlockedThemePackIds);
         notifyNativePurchasesUser(built.userId);
@@ -7784,7 +8598,7 @@ export default function App() {
       } catch (err) {
         console.warn("[cloud-entitlements]", err);
         if (cancelled) return;
-        const built = buildSessionFromRemote(user, {});
+        const built = buildSessionFromRemote(user, {}, cloudProvider);
         setAccountSession(built);
         setUnlockedThemePackIds(built.unlockedThemePackIds);
         notifyNativePurchasesUser(built.userId);
@@ -7793,17 +8607,44 @@ export default function App() {
     return () => {
       cancelled = true;
     };
-  }, [authLoading, supabaseSession?.access_token, supabaseSession?.user]);
+  }, [authLoading, supabaseSession?.access_token, supabaseSession?.user, cloudProvider]);
   useEffect(() => {
     if (authLoading) return;
     if (supabaseSession?.access_token) return;
-    setAccountSession(readAccountSession());
+    const session = readAccountSession();
+    setAccountSession(session);
+    if (!isCloudAuthProvider(session?.authProvider)) {
+      setUnlockedAltCardThemeKeys([]);
+    }
   }, [authLoading, supabaseSession?.access_token]);
   const normalizedThemeName = useMemo(
     () => normalizeThemeSelection(nameTheme, themeOptions),
     [nameTheme, themeOptions],
   );
   const canonicalThemeName = normalizedThemeName;
+  const activeThemeCardStyle = useMemo(() => {
+    if (onlineMode) {
+      return normalizeThemeCardStyle(onlineMatchThemeCardStyle);
+    }
+    return resolveActiveThemeCardStyle(
+      canonicalThemeName,
+      themeCardStyleByTheme,
+      unlockedAltCardThemeKeys,
+    );
+  }, [
+    onlineMode,
+    onlineMatchThemeCardStyle,
+    canonicalThemeName,
+    themeCardStyleByTheme,
+    unlockedAltCardThemeKeys,
+  ]);
+  const handleSelectThemeCardStyle = useCallback((themeName, style) => {
+    const key = toCanonicalThemeName(themeName) || "Default";
+    setThemeCardStyleByTheme((current) => ({
+      ...normalizeThemeCardStyleByTheme(current),
+      [key]: normalizeThemeCardStyle(style),
+    }));
+  }, []);
   const themeCopyBank = useMemo(() => {
     if (!isIanPosterVoiceTheme(canonicalThemeName)) return COPY_BANK;
     return { ...COPY_BANK, ...buildIanPosterThemeCopyBank(canonicalThemeName) };
@@ -7830,6 +8671,31 @@ export default function App() {
       "discussion", "voting", "caught", "escaped", "winner", "onlineLobby",
     ]);
   }, [canonicalThemeName, refreshCopy]);
+  const handleSelectDefaultBackSlug = useCallback((slug) => {
+    setPlayerProfile((current) => {
+      const next = {
+        ...current,
+        selectedDefaultBackSlug: String(slug || "classic").trim() || "classic",
+      };
+      writeLocalPlayerProfile(next);
+      return next;
+    });
+  }, []);
+  const commitPlayerProfileUpdate = useCallback((updater) => {
+    setPlayerProfile((current) => {
+      const next = typeof updater === "function" ? updater(current) : updater;
+      writeLocalPlayerProfile(next);
+      return next;
+    });
+  }, []);
+  const applyNewlyUnlockedAchievements = useCallback((newlyUnlocked = []) => {
+    if (!Array.isArray(newlyUnlocked) || !newlyUnlocked.length) return;
+    const first = newlyUnlocked[0];
+    setAchievementUnlockToast({
+      title: first?.name || "Achievement unlocked!",
+      body: first?.description || "",
+    });
+  }, []);
   const themeMeta = THEME_META[normalizedThemeName] || THEME_META.Default;
   const availablePicturePackManifests = useMemo(
     () => PICTURE_DLC_MANIFESTS || [],
@@ -7887,7 +8753,6 @@ export default function App() {
     () => setStored("imposter-custom-categories-v2", customCategories),
     [customCategories],
   );
-  useEffect(() => setStored("imposter-adult-mode-v1", adultMode), [adultMode]);
   useEffect(
     () => setStored("imposter-enabled-picture-packs-v1", enabledPicturePacks),
     [enabledPicturePacks],
@@ -7906,12 +8771,249 @@ export default function App() {
   );
   useEffect(() => {
     setStored("imposter-unlocked-theme-packs-v1", unlockedThemePackIds);
-    if (accountSession?.authProvider === "supabase") return;
+    if (isCloudAuthProvider(accountSession?.authProvider)) return;
     const local = readAccountSession();
     if (!local) return;
     syncSessionPackIds(unlockedThemePackIds);
     setAccountSession(readAccountSession());
   }, [unlockedThemePackIds, accountSession?.authProvider]);
+  useEffect(() => {
+    setStored(THEME_ALT_CARD_UNLOCKS_STORAGE_KEY, unlockedAltCardThemeKeys);
+    if (isCloudAuthProvider(accountSession?.authProvider)) return;
+    const local = readAccountSession();
+    if (!local) return;
+    syncSessionAltCardUnlocks(unlockedAltCardThemeKeys);
+    setAccountSession(readAccountSession());
+  }, [unlockedAltCardThemeKeys, accountSession?.authProvider]);
+  useEffect(
+    () => setStored(THEME_CARD_STYLE_BY_THEME_STORAGE_KEY, themeCardStyleByTheme),
+    [themeCardStyleByTheme],
+  );
+  useEffect(() => {
+    if (screen !== "final") return;
+    const isGameHost = !onlineMode || onlineRole === "host";
+    const recordKey = `${canonicalThemeName}:${onlineMode}:${onlineRole}:${roundNumber}`;
+    if (profileGameRecordedRef.current !== recordKey) {
+      profileGameRecordedRef.current = recordKey;
+      const winner = [...players].sort(
+        (a, b) => Number(b.score || 0) - Number(a.score || 0),
+      )[0];
+      const personaName =
+        normalizePersonaProfile(personaProfile).inGameName || "";
+      const selfWon =
+        onlineMode && onlineJoinedPlayerId
+          ? winner?.id === onlineJoinedPlayerId
+          : winner?.name === personaName ||
+            winner?.name === players[0]?.name;
+      commitPlayerProfileUpdate((current) => {
+        const result = recordCompletedGame(current, {
+          themeName: canonicalThemeName,
+          mode: onlineMode ? "online" : "local",
+          role: onlineMode
+            ? onlineRole === "host"
+              ? "host"
+              : "player"
+            : "host",
+          won: Boolean(selfWon),
+          onlinePlayerId: onlineJoinedPlayerId,
+          personaInGameName: personaName,
+          players,
+        });
+        applyNewlyUnlockedAchievements(result.newlyUnlockedAchievements);
+        return result.profile;
+      });
+    }
+  }, [
+    screen,
+    canonicalThemeName,
+    onlineMode,
+    onlineRole,
+    roundNumber,
+    players,
+    onlineJoinedPlayerId,
+    personaProfile,
+    commitPlayerProfileUpdate,
+    applyNewlyUnlockedAchievements,
+  ]);
+  const recordServerAltUnlockForOnlineHost = useCallback(async () => {
+    if (!onlineMode || onlineRole !== "host") return;
+    const token = supabaseSession?.access_token;
+    if (!token || !isCloudAuthProvider(accountSession?.authProvider)) return;
+    const sessionSnapshot = onlineSessionRef.current;
+    const playerId = sessionSnapshot?.playerId || onlineJoinedPlayerId;
+    const sessionToken = sessionSnapshot?.sessionToken || "";
+    const code = String(lobbyCode || "").trim().toUpperCase();
+    if (!code || !playerId || !sessionToken) return;
+    const recordKey = `${code}:${canonicalThemeName}`;
+    if (altUnlockServerRecordedRef.current === recordKey) return;
+    try {
+      const result = await completeHostedOnlineGameOnServer(code, {
+        playerId,
+        sessionToken,
+        accessToken: token,
+      });
+      altUnlockServerRecordedRef.current = recordKey;
+      if (result?.unlockedThemeKeys) {
+        setUnlockedAltCardThemeKeys(
+          normalizeUnlockedAltCardThemeKeys(result.unlockedThemeKeys),
+        );
+      }
+      if (result?.newlyUnlocked) {
+        setCardStyleUnlockToast(true);
+      }
+      if (result?.unlockedThemeKeys?.length) {
+        commitPlayerProfileUpdate((current) => ({
+          ...current,
+          unlockedAltCardThemeKeys: normalizeUnlockedAltCardThemeKeys(
+            result.unlockedThemeKeys,
+          ),
+        }));
+      }
+    } catch {
+      /* server is source of truth; ignore transient failures */
+    }
+  }, [
+    onlineMode,
+    onlineRole,
+    supabaseSession?.access_token,
+    accountSession?.authProvider,
+    onlineJoinedPlayerId,
+    lobbyCode,
+    canonicalThemeName,
+    commitPlayerProfileUpdate,
+  ]);
+  useEffect(() => {
+    if (screen !== "final") return;
+    void recordServerAltUnlockForOnlineHost();
+  }, [screen, recordServerAltUnlockForOnlineHost]);
+  useEffect(() => {
+    if (typeof window === "undefined") return undefined;
+    const onE2eCompleteGame = (event) => {
+      const themeName =
+        event?.detail?.themeName || canonicalThemeName || "Default";
+      commitPlayerProfileUpdate((current) => {
+        const result = recordCompletedGame(current, {
+          themeName,
+          mode: "local",
+          role: "host",
+          won: true,
+          players,
+        });
+        applyNewlyUnlockedAchievements(result.newlyUnlockedAchievements);
+        return result.profile;
+      });
+      refreshCopy(["winner"]);
+      setScreen("final");
+    };
+    window.addEventListener("pof-e2e-complete-game", onE2eCompleteGame);
+    const onE2eAchievementToast = (event) => {
+      const title = event?.detail?.title || "Achievement unlocked!";
+      const body = event?.detail?.body || "";
+      setAchievementUnlockToast({ title, body });
+    };
+    window.addEventListener("pof-e2e-achievement-toast", onE2eAchievementToast);
+    const onE2eCardStyleUnlockToast = () => {
+      setCardStyleUnlockToast(true);
+    };
+    window.addEventListener(
+      "pof-e2e-card-style-unlock-toast",
+      onE2eCardStyleUnlockToast,
+    );
+    return () => {
+      window.removeEventListener("pof-e2e-complete-game", onE2eCompleteGame);
+      window.removeEventListener(
+        "pof-e2e-achievement-toast",
+        onE2eAchievementToast,
+      );
+      window.removeEventListener(
+        "pof-e2e-card-style-unlock-toast",
+        onE2eCardStyleUnlockToast,
+      );
+    };
+  }, [
+    canonicalThemeName,
+    refreshCopy,
+    players,
+    commitPlayerProfileUpdate,
+    applyNewlyUnlockedAchievements,
+  ]);
+  useEffect(() => {
+    writeLocalPlayerProfile(playerProfile);
+  }, [playerProfile]);
+  useEffect(() => {
+    if (!isCloudAuthProvider(accountSession?.authProvider)) return undefined;
+    const token = supabaseSession?.access_token;
+    if (!token) return undefined;
+    if (profileSyncTimerRef.current) {
+      clearTimeout(profileSyncTimerRef.current);
+    }
+    profileSyncTimerRef.current = setTimeout(() => {
+      pushRemotePlayerProfile(token, playerProfile).catch(() => {});
+    }, 1200);
+    return () => {
+      if (profileSyncTimerRef.current) {
+        clearTimeout(profileSyncTimerRef.current);
+      }
+    };
+  }, [playerProfile, accountSession?.authProvider, supabaseSession?.access_token]);
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const code = parseReferralCodeFromLocation(window.location);
+    if (code) storePendingReferralCode(code);
+  }, []);
+  useEffect(() => {
+    const token = supabaseSession?.access_token;
+    if (!token || !isCloudAuthProvider(accountSession?.authProvider)) return;
+    const pending = readPendingReferralCode();
+    if (!pending) return;
+    attributeReferralCode(token, pending)
+      .then((result) => {
+        if (result?.ok || result?.alreadyAttributed) {
+          clearPendingReferralCode();
+        }
+      })
+      .catch(() => {});
+  }, [supabaseSession?.access_token, accountSession?.authProvider]);
+  useEffect(() => {
+    const token = supabaseSession?.access_token;
+    if (!token || !isCloudAuthProvider(accountSession?.authProvider)) return;
+    fetchMyReferral(token)
+      .then((payload) => {
+        setReferralSummary(payload);
+        const secretNames = payload?.unlockedSecretThemeNames;
+        if (!Array.isArray(secretNames) || !secretNames.length) return;
+        commitPlayerProfileUpdate((current) => ({
+          ...current,
+          achievementUnlockedThemeNames: [
+            ...new Set([
+              ...(current.achievementUnlockedThemeNames || []),
+              ...secretNames,
+            ]),
+          ],
+        }));
+      })
+      .catch(() => setReferralSummary(null));
+  }, [
+    supabaseSession?.access_token,
+    accountSession?.authProvider,
+    screen,
+    commitPlayerProfileUpdate,
+  ]);
+  useEffect(() => {
+    const token = supabaseSession?.access_token;
+    if (!token || !isCloudAuthProvider(accountSession?.authProvider)) return;
+    fetchRemotePlayerProfile(token)
+      .then((remote) => {
+        if (remote) {
+          applyRemotePlayerProfile(remote, { accessToken: token });
+        }
+      })
+      .catch(() => {});
+  }, [
+    supabaseSession?.access_token,
+    accountSession?.authProvider,
+    applyRemotePlayerProfile,
+  ]);
   useEffect(
     () => setStored("imposter-theme-v3", normalizedThemeName),
     [normalizedThemeName],
@@ -7920,10 +9022,16 @@ export default function App() {
     () => setStored("imposter-persona-only-v1", Boolean(personaOnlyMode)),
     [personaOnlyMode],
   );
-  useEffect(
-    () => setStored("imposter-audio-settings-v1", audioSettings),
-    [audioSettings],
-  );
+  useEffect(() => {
+    saveFx({
+      music: audioSettings.musicEnabled,
+      sfx: audioSettings.sfxEnabled,
+      haptics: audioSettings.hapticsEnabled !== false,
+      voiceChat: audioSettings.voiceChatEnabled !== false,
+      musicVol: audioSettings.musicVol ?? 60,
+      sfxVol: audioSettings.sfxVol ?? 80,
+    });
+  }, [audioSettings]);
   useEffect(
     () =>
       setStored(
@@ -7952,19 +9060,20 @@ export default function App() {
       ),
     [selectedFriendInviteUsernames],
   );
-  const bgmAudioRef = useRef(null);
-  const playSfx = useCallback(
-    (src, { volume = 0.55 } = {}) => {
-      if (!audioSettings?.sfxEnabled) return;
-      if (!src) return;
-      try {
-        const audio = new Audio(src);
-        audio.volume = Math.max(0, Math.min(1, Number(volume) || 0.55));
-        audio.play().catch(() => {});
-      } catch {}
-    },
-    [audioSettings?.sfxEnabled],
-  );
+  const playSfx = useCallback((src, { volume = 0.55 } = {}) => {
+    const fxSettings = loadFx();
+    if (!fxSettings.sfx) return;
+    if (!src) return;
+    const volScale = (Number(fxSettings.sfxVol) || 80) / 100;
+    try {
+      const audio = new Audio(src);
+      audio.volume = Math.max(
+        0,
+        Math.min(1, (Number(volume) || 0.55) * volScale),
+      );
+      audio.play().catch(() => {});
+    } catch {}
+  }, []);
   const disconnectOnlineVoiceTransport = useCallback(async () => {
     const activeTransport = onlineVoiceTransportRef.current;
     if (!activeTransport) return;
@@ -7973,50 +9082,15 @@ export default function App() {
       await activeTransport.transport.disconnect();
     } catch {}
   }, []);
-  const resolveBgmForScreen = useCallback((currentScreen) => {
-    if (currentScreen === "home") return INTRO_THEME_BGM_SRC;
-    if (currentScreen === "setup") return INTRO_THEME_BGM_SRC;
-    if (currentScreen === "game-intro") return INTRO_THEME_BGM_SRC;
-    if (currentScreen === "voting") return VOTING_THEME_BGM_SRC;
-    return "";
-  }, []);
   useEffect(() => {
-    const trackSrc = resolveBgmForScreen(screen);
-    if (!audioSettings?.musicEnabled || !trackSrc) {
-      try {
-        bgmAudioRef.current?.pause();
-      } catch {}
-      bgmAudioRef.current = null;
-      return;
-    }
-    const currentAudio = bgmAudioRef.current;
-    if (currentAudio && currentAudio.src.includes(trackSrc)) {
-      currentAudio.volume = 0.42;
-      if (currentAudio.paused) currentAudio.play().catch(() => {});
-      return;
-    }
-    try {
-      currentAudio?.pause();
-    } catch {}
-    try {
-      const next = new Audio(trackSrc);
-      next.loop = true;
-      next.volume = 0.42;
-      bgmAudioRef.current = next;
-      next.play().catch(() => {});
-    } catch {
-      bgmAudioRef.current = null;
-    }
-  }, [screen, audioSettings?.musicEnabled, resolveBgmForScreen]);
-  useEffect(
-    () => () => {
-      try {
-        bgmAudioRef.current?.pause();
-      } catch {}
-      bgmAudioRef.current = null;
-    },
-    [],
-  );
+    syncMusicForScreen(screen);
+  }, [screen]);
+  useEffect(() => {
+    if (typeof window === "undefined") return undefined;
+    const unlock = () => music.unlock();
+    window.addEventListener("pointerdown", unlock, { once: true });
+    return () => window.removeEventListener("pointerdown", unlock);
+  }, []);
   useEffect(() => {
     if (nameTheme !== normalizedThemeName) setNameTheme(normalizedThemeName);
   }, [nameTheme, normalizedThemeName]);
@@ -8242,6 +9316,14 @@ export default function App() {
       selectedFriendInviteUsernames,
     ],
   );
+  useEffect(() => installNativeDiagnosticsBridge(setNativeDiagnostics), []);
+
+  const openBugReport = useCallback(() => {
+    setBugReportReturnScreen(screen);
+    setGamePauseOpen(false);
+    setScreen("bug-report");
+  }, [screen]);
+
   const handleSelectHomeProfileMenu = useCallback((target) => {
     setHomeProfileMenuOpen(false);
     if (target === "persona") {
@@ -8259,7 +9341,7 @@ export default function App() {
     }
     if (target === "sign-out") {
       void (async () => {
-        const startedCloud = accountSession?.authProvider === "supabase";
+        const startedCloud = isCloudAuthProvider(accountSession?.authProvider);
         await signOutCloud();
         if (!startedCloud) {
           clearAccountSession();
@@ -8790,6 +9872,19 @@ export default function App() {
       setScreen("host-intro");
       return serverRound;
     }
+    if (normalizedPhase === "twotruths-input") {
+      refreshCopy(["passPhone"]);
+      setTwoTruthsInputIndex(0);
+      setScreen("twotruths-input");
+      return serverRound;
+    }
+    if (normalizedPhase === "twotruths-voting") {
+      setTwoTruthsVotesByVoterId(serverRound.twoTruthsData?.votesByVoterId || {});
+      setVotingPlayerOrder(shuffle(players.map((player) => player.id)));
+      refreshCopy(["voting"]);
+      setScreen("twotruths-voting");
+      return serverRound;
+    }
     if (normalizedPhase === "reveal") {
       refreshCopy(["passPhone", "revealNormal", "revealLiar"]);
       setScreen("reveal");
@@ -8801,6 +9896,11 @@ export default function App() {
       return serverRound;
     }
     if (normalizedPhase === "voting") {
+      setVotingPlayerOrder(
+        shuffle(
+          (Array.isArray(players) ? players : []).map((player) => player.id),
+        ),
+      );
       refreshCopy(["voting"]);
       setScreen("voting");
       return serverRound;
@@ -8808,6 +9908,27 @@ export default function App() {
     if (normalizedPhase === "liar-reveal") {
       playSfx(IMPOSTER_FOUND_SFX_SRC, { volume: 0.8 });
       refreshCopy([Boolean(resolution?.imposterCaught) ? "caught" : "escaped"]);
+      const roundRecordKey = `${snapshot.code || lobbyCode}:${serverRound.roundNumber || 0}:round`;
+      if (profileRoundRecordedRef.current !== roundRecordKey && resolution) {
+        profileRoundRecordedRef.current = roundRecordKey;
+        const snapshotGamePlayers = toGamePlayers(snapshotPlayers);
+        const selfPlayerId =
+          sessionSnapshot?.playerId || onlineJoinedPlayerId || "";
+        commitPlayerProfileUpdate((current) => {
+          const result = recordRoundOutcome(current, {
+            players: snapshotGamePlayers,
+            round: serverRound,
+            resolution,
+            themeName: canonicalThemeName,
+            attribution: "online",
+            onlinePlayerId: selfPlayerId,
+            personaInGameName:
+              normalizePersonaProfile(personaProfile).inGameName || "",
+          });
+          applyNewlyUnlockedAchievements(result.newlyUnlockedAchievements);
+          return result.profile;
+        });
+      }
       setScreen("liar-reveal");
       return serverRound;
     }
@@ -9002,27 +10123,70 @@ export default function App() {
     setScreen("discussion");
   }
 
+  function beginVotingPhase() {
+    setVotesByPlayerId(
+      Object.fromEntries(players.map((player) => [player.id, ""])),
+    );
+    setVotingPlayerOrder(shuffle(players.map((player) => player.id)));
+    refreshCopy(["voting"]);
+    setScreen("voting");
+  }
+
+  function finalizeTwoTruthsInputPhase(nextRound) {
+    const submissions =
+      nextRound?.twoTruthsData?.submissionsByPlayerId &&
+      typeof nextRound.twoTruthsData.submissionsByPlayerId === "object"
+        ? nextRound.twoTruthsData.submissionsByPlayerId
+        : {};
+    const presentationsByPlayerId = buildPresentationsFromSubmissions(submissions);
+    setRound((current) => ({
+      ...current,
+      twoTruthsData: {
+        ...(current?.twoTruthsData || createEmptyTwoTruthsData()),
+        presentationsByPlayerId,
+      },
+    }));
+    setTwoTruthsVotesByVoterId({});
+    setVotingPlayerOrder(shuffle(players.map((player) => player.id)));
+    refreshCopy(["voting"]);
+    setScreen("twotruths-voting");
+  }
+
+  function handleTwoTruthsPlayerSubmission(submission) {
+    const player = players[twoTruthsInputIndex];
+    if (!player?.id || !round) return;
+    const nextSubmissions = {
+      ...(round.twoTruthsData?.submissionsByPlayerId || {}),
+      [player.id]: submission,
+    };
+    const nextRound = {
+      ...round,
+      twoTruthsData: {
+        ...(round.twoTruthsData || createEmptyTwoTruthsData()),
+        submissionsByPlayerId: nextSubmissions,
+      },
+    };
+    setRound(nextRound);
+    if (twoTruthsInputIndex < players.length - 1) {
+      setTwoTruthsInputIndex((index) => index + 1);
+      return;
+    }
+    finalizeTwoTruthsInputPhase(nextRound);
+  }
+
   function startGame(seedPlayers = null) {
     const basePlayers =
       seedPlayers && seedPlayers.length ? seedPlayers : players;
-    const starterTypeId = pickCompatibleRoundTypeId(activeCategories);
-    const allowedCategories = categoriesAllowedForRoundType(
-      activeCategories,
-      starterTypeId,
-    );
-    const options = shuffle(allowedCategories).slice(
-      0,
-      Math.min(4, allowedCategories.length),
-    );
-    if (!options.length) return;
+    const drawn = withE2eRoundTypeDraw(drawTurnOptions(activeCategories));
+    if (!drawn.categoryOptions.length) return;
     const resetPlayers = basePlayers.map((player) => ({ ...player, score: 0 }));
     setPlayers(resetPlayers);
     setRoundNumber(1);
     setCurrentRoundOwnerIndex(0);
     setPreviousRoundType(null);
-    setSelectedRoundType(starterTypeId);
-    setRoundTypeOptions([]);
-    setCategoryOptions(options);
+    setSelectedRoundType(null);
+    setRoundTypeOptions(drawn.roundTypeOptions);
+    setCategoryOptions(drawn.categoryOptions);
     setRound({ chooserId: resetPlayers[0]?.id, roundNumber: 1 });
     setRecentPromptKeys([]);
     setVotesByPlayerId({});
@@ -9033,6 +10197,11 @@ export default function App() {
     setOnlinePrivatePrompt(null);
     setOnlinePrivatePromptError("");
     refreshCopy(["chooser"]);
+    commitPlayerProfileUpdate((current) => {
+      const result = recordHostedGame(current);
+      applyNewlyUnlockedAchievements(result.newlyUnlockedAchievements);
+      return result.profile;
+    });
     setScreen("game-intro");
   }
   useEffect(() => {
@@ -9061,10 +10230,11 @@ export default function App() {
       category,
       roundNumber,
       liarCount,
-      recentPromptKeys.slice(-4),
+      selectedTypeForRound === "pairs"
+        ? recentPromptKeys
+        : recentPromptKeys.slice(-4),
       selectedTypeForRound,
       grillSettings,
-      adultMode,
       {
         enabledPacks: enabledPicturePacks,
         weights: picturePackWeights,
@@ -9077,6 +10247,8 @@ export default function App() {
     setPreviousRoundType(built.roundTypeId);
     setRecentPromptKeys((cur) => [...cur, built.promptKey]);
     setRevealIndex(0);
+    setTwoTruthsInputIndex(0);
+    setTwoTruthsVotesByVoterId({});
     setVotesByPlayerId({});
     setOnlinePrivatePrompt(null);
     setOnlinePrivatePromptError("");
@@ -9092,6 +10264,21 @@ export default function App() {
     setScreen("host-intro");
   }
   async function revealResults() {
+    if (round?.roundTypeId === "twotruths") {
+      const resolution = calculateRoundResolutionLocal(
+        players,
+        round,
+        twoTruthsVotesByVoterId,
+      );
+      setPlayers(resolution.nextPlayers);
+      setTally(resolution.tally);
+      setRoundGains(resolution.roundGains);
+      setRoundBreakdown(resolution.roundBreakdown);
+      setImposterCaught(false);
+      playSfx(IMPOSTER_FOUND_SFX_SRC, { volume: 0.74 });
+      setScreen("twotruths-reveal");
+      return;
+    }
     if (onlineMode) {
       const syncedRound = await submitOnlineVotes();
       if (syncedRound?.resolution) {
@@ -9109,6 +10296,20 @@ export default function App() {
     setRoundGains(resolution.roundGains);
     setRoundBreakdown(resolution.roundBreakdown);
     setImposterCaught(Boolean(resolution.imposterCaught));
+    commitPlayerProfileUpdate((current) => {
+      const result = recordRoundOutcome(current, {
+        players,
+        round,
+        resolution,
+        themeName: canonicalThemeName,
+        attribution: onlineMode ? "online" : "device",
+        onlinePlayerId: onlineJoinedPlayerId,
+        personaInGameName:
+          normalizePersonaProfile(personaProfile).inGameName || "",
+      });
+      applyNewlyUnlockedAchievements(result.newlyUnlockedAchievements);
+      return result.profile;
+    });
     playSfx(IMPOSTER_FOUND_SFX_SRC, { volume: 0.74 });
     setScreen("liar-reveal");
   }
@@ -9134,32 +10335,16 @@ export default function App() {
     }
     const next = roundNumber + 1;
     const nextOwner = (currentRoundOwnerIndex + 1) % players.length;
-    const compatibleRoundTypes = getCompatibleRoundTypes(activeCategories, {
-      excludeRoundTypeId: previousRoundType,
-    });
-    const fallbackRoundTypes = compatibleRoundTypes.length
-      ? compatibleRoundTypes
-      : getCompatibleRoundTypes(activeCategories);
-    const options = shuffle(fallbackRoundTypes).slice(
-      0,
-      Math.min(2, fallbackRoundTypes.length),
-    );
-    const defaultRoundTypeId =
-      options[0]?.id || PASS_THE_PHONE_ROUND_TYPES[0]?.id || "prompt";
-    const allowedCategories = categoriesAllowedForRoundType(
-      activeCategories,
-      defaultRoundTypeId,
+    const drawn = withE2eRoundTypeDraw(
+      drawTurnOptions(activeCategories, {
+        excludeRoundTypeId: previousRoundType,
+      }),
     );
     setRoundNumber(next);
     setCurrentRoundOwnerIndex(nextOwner);
-    setRoundTypeOptions(options);
+    setRoundTypeOptions(drawn.roundTypeOptions);
     setSelectedRoundType(null);
-    setCategoryOptions(
-      shuffle(allowedCategories).slice(
-        0,
-        Math.min(4, allowedCategories.length),
-      ),
-    );
+    setCategoryOptions(drawn.categoryOptions);
     setRound({ chooserId: players[nextOwner]?.id, roundNumber: next });
     refreshCopy(["chooser"]);
     setScreen("round-type-choice");
@@ -9184,6 +10369,7 @@ export default function App() {
     onlineTransportRef.current?.close();
     onlineTransportRef.current = null;
     onlineStartedRevisionHandledRef.current = "";
+    altUnlockServerRecordedRef.current = "";
     onlineSessionRef.current = null;
     setStoredOnlineSession(null);
     setOnlineMode(false);
@@ -9226,17 +10412,28 @@ export default function App() {
     let resolvedHostPlayer = hostPlayer;
     let sessionToken = "";
     try {
+      const hostAccessToken =
+        isCloudAuthProvider(accountSession?.authProvider) &&
+        supabaseSession?.access_token
+          ? supabaseSession.access_token
+          : "";
       const result = await createLobbyOnServer({
         hostName: host,
         hostPlayer,
         maxPlayers: onlineLobbyMaxPlayers,
+        accessToken: hostAccessToken,
         settings: {
           themeName: canonicalThemeName,
           mode: "classic",
           winCondition,
           pointsToWin,
           roundsPerPlayer,
-          adultMode,
+          themeCardStyle: resolveActiveThemeCardStyle(
+            canonicalThemeName,
+            themeCardStyleByTheme,
+            unlockedAltCardThemeKeys,
+          ),
+          hostPromptEditorUnlocked: Boolean(entitlements.categoryEditorAdmin),
           grillSettings,
           allowFriendsJoinLobby: Boolean(allowFriendsJoinLobby),
           inviteUsernames: selectedFriendInviteUsernames,
@@ -9303,17 +10500,22 @@ export default function App() {
           ? Number(lobbySettings.roundsPerPlayer)
           : roundsPerPlayer,
       );
-      setAdultMode(Boolean(lobbySettings.adultMode));
       setGrillSettings({
         micEnabled: lobbySettings.grillSettings?.micEnabled !== false,
         ttsEnabled: lobbySettings.grillSettings?.ttsEnabled !== false,
       });
+      setOnlineMatchThemeCardStyle(
+        normalizeThemeCardStyle(
+          lobbySettings.themeCardStyle || THEME_CARD_STYLE_CLASSIC,
+        ),
+      );
     }
     setPartyChatMessages([]);
     setPartyTalkingPlayers({});
     setPartyChatOpen(false);
     setOnlineJoinPreview(null);
     setOnlineJoinStep("code");
+    setJoinHostEditorWarningAccepted(false);
     const session = {
       lobbyCode: snapshot.code,
       role: "host",
@@ -9325,6 +10527,11 @@ export default function App() {
     onlineSessionRef.current = session;
     setStoredOnlineSession(session);
     setPlayers(toGamePlayers(snapshot.players || []));
+    commitPlayerProfileUpdate((current) => {
+      const result = recordHostedGame(current);
+      applyNewlyUnlockedAchievements(result.newlyUnlockedAchievements);
+      return result.profile;
+    });
     setScreen("online-lobby-created");
   }
   async function runOnlineJoinCodeStep() {
@@ -9395,7 +10602,19 @@ export default function App() {
       return normalizePersonaProfile(personaProfile).inGameName || "Player 1";
     });
     setOnlineJoinStep("player");
+    setJoinHostEditorWarningAccepted(false);
     setOnlineLobbyError("");
+  }
+  function requestJoinOnlineLobby() {
+    const previewSettings = onlineJoinPreview?.settings || {};
+    if (
+      previewSettings.hostPromptEditorUnlocked &&
+      !joinHostEditorWarningAccepted
+    ) {
+      setJoinHostEditorWarningOpen(true);
+      return;
+    }
+    void joinOnlineLobby();
   }
   async function joinOnlineLobby() {
     const activePreview = onlineJoinPreview;
@@ -9499,12 +10718,17 @@ export default function App() {
           ? Number(nextSettings.roundsPerPlayer)
           : roundsPerPlayer,
       );
-      setAdultMode(Boolean(nextSettings.adultMode));
       setGrillSettings({
         micEnabled: nextSettings.grillSettings?.micEnabled !== false,
         ttsEnabled: nextSettings.grillSettings?.ttsEnabled !== false,
       });
+      setOnlineMatchThemeCardStyle(
+        normalizeThemeCardStyle(
+          nextSettings.themeCardStyle || THEME_CARD_STYLE_CLASSIC,
+        ),
+      );
     }
+    setJoinHostEditorWarningOpen(false);
     const session = {
       lobbyCode: normalizedCode,
       role: "player",
@@ -9705,6 +10929,10 @@ export default function App() {
     setPointsToWin(15);
     setRoundsPerPlayer(1);
     setGrillSettings({ micEnabled: true, ttsEnabled: true });
+    setCardStyleUnlockToast(false);
+    setAchievementUnlockToast(null);
+    profileGameRecordedRef.current = "";
+    profileRoundRecordedRef.current = "";
     setRound(null);
     setRoundNumber(1);
     setCurrentRoundOwnerIndex(0);
@@ -9712,6 +10940,8 @@ export default function App() {
     setRoundTypeOptions([]);
     setSelectedRoundType(null);
     setRevealIndex(0);
+    setTwoTruthsInputIndex(0);
+    setTwoTruthsVotesByVoterId({});
     setVotesByPlayerId({});
     setTally({});
     setRoundGains({});
@@ -9753,8 +10983,21 @@ export default function App() {
     setPartyChatInput("");
   };
   const categoryChoiceGridClass = isDesktopLandscapeWeb
-    ? "mt-8 grid grid-cols-4 gap-4 items-stretch"
-    : "mt-8 grid grid-cols-2 gap-4 items-stretch";
+    ? "grid grid-cols-3 grid-rows-2 gap-3 auto-rows-min w-full max-w-3xl mx-auto"
+    : "grid grid-cols-2 grid-rows-3 gap-x-2.5 gap-y-2 w-full flex-1 min-h-0 content-center";
+  const bugReportAppContext = useMemo(
+    () => ({
+      screen,
+      roundPhase: screen,
+      roundType: round?.roundTypeId || selectedRoundType || "",
+      lobbyIdAnon: anonymizeLobbyId(lobbyCode),
+      appVersion: import.meta.env.VITE_APP_VERSION || "0.1.0",
+      buildVersion: nativeDiagnostics.buildVersion || "",
+      runtimeVersion: nativeDiagnostics.runtimeVersion || "",
+      otaUpdateId: nativeDiagnostics.otaUpdateId || "",
+    }),
+    [screen, round?.roundTypeId, selectedRoundType, lobbyCode, nativeDiagnostics],
+  );
   const startupGraphicsReady = useGlobalGraphicsPreload();
   useCategoryAndModeIconPreload({
     screen,
@@ -9762,6 +11005,16 @@ export default function App() {
     categoryOptions,
     canonicalThemeName,
   });
+  useEffect(() => {
+    if (screen !== "round-type-choice" || roundTypeOptions.length > 0) return;
+    const drawn = withE2eRoundTypeDraw(drawTurnOptions(activeCategories));
+    if (drawn.roundTypeOptions.length) {
+      setRoundTypeOptions(drawn.roundTypeOptions);
+      if (!categoryOptions.length) {
+        setCategoryOptions(drawn.categoryOptions);
+      }
+    }
+  }, [screen, roundTypeOptions.length, activeCategories, categoryOptions.length]);
   const accountTierLabel = useMemo(() => {
     if (!accountSession) return "";
     const row = SUBSCRIPTION_TIERS.find(
@@ -9778,13 +11031,13 @@ export default function App() {
   useEffect(() => {
     if (
       screen === "setup" &&
-      (!entitlements.canCreateLocalGame || WEB_JOIN_ONLY_MODE)
+      (!entitlements.canCreateLocalGame || isWebJoinOnlyMode())
     ) {
       setScreen("home");
     }
     if (
       screen === "online-setup" &&
-      (!entitlements.canCreateOnlineLobby || WEB_JOIN_ONLY_MODE)
+      (!entitlements.canCreateOnlineLobby || isWebJoinOnlyMode())
     ) {
       setScreen("home");
     }
@@ -9795,7 +11048,11 @@ export default function App() {
   ]);
 
   return (
-    <>
+    <div
+      className="pof-root min-h-[100dvh]"
+      style={neonThemeVars()}
+      data-testid={startupGraphicsReady ? 'app-shell-ready' : undefined}
+    >
       {screen === "account-gate" && (
         <AccountGateScreen
           onSignedIn={(session) => {
@@ -9811,7 +11068,7 @@ export default function App() {
         />
       )}
       {screen === "home" && (
-        <HomeScreen
+        <NeonHomeScreen
           onNavigate={(to) => {
             if (to === "setup") {
               refreshCopy(["setup"]);
@@ -9840,20 +11097,26 @@ export default function App() {
               setScreen("online-join");
               return;
             }
+            if (to === "player-profile") {
+              setScreen("player-profile");
+              return;
+            }
             setScreen(to);
           }}
           homeLine={copyState.home}
-          adultMode={adultMode}
-          joinOnlyMode={WEB_JOIN_ONLY_MODE}
-          personaProfile={personaProfile}
-          profileMenuOpen={homeProfileMenuOpen}
-          onToggleProfileMenu={() =>
-            setHomeProfileMenuOpen((current) => !current)
-          }
-          onSelectProfileMenu={handleSelectHomeProfileMenu}
-          accountTierLabel={accountTierLabel}
+          joinOnlyMode={isWebJoinOnlyMode()}
           canCreateLocalGame={entitlements.canCreateLocalGame}
           canCreateOnlineLobby={entitlements.canCreateOnlineLobby}
+        />
+      )}
+      {screen === "player-profile" && (
+        <NeonPlayerProfileScreen
+          profile={playerProfile}
+          unlockedAltCardThemeKeys={unlockedAltCardThemeKeys}
+          onSelectDefaultBack={handleSelectDefaultBackSlug}
+          referralSummary={referralSummary}
+          cloudSignedIn={isCloudAuthProvider(accountSession?.authProvider)}
+          onBack={() => setScreen("home")}
         />
       )}
       {screen === "development-progress" && (
@@ -9868,7 +11131,7 @@ export default function App() {
       )}
       {screen === "setup" &&
         entitlements.canCreateLocalGame &&
-        !WEB_JOIN_ONLY_MODE && (
+        !isWebJoinOnlyMode() && (
         <SetupScreen
           players={players}
           setPlayers={setPlayers}
@@ -9884,7 +11147,6 @@ export default function App() {
           setRoundsPerPlayer={setRoundsPerPlayer}
           grillSettings={grillSettings}
           setGrillSettings={setGrillSettings}
-          adultMode={adultMode}
           enabledCategories={enabledCategories}
           onToggleCategory={(id) =>
             setEnabledCategories((cur) => ({ ...cur, [id]: !cur[id] }))
@@ -9902,12 +11164,15 @@ export default function App() {
           themeOptions={themeOptions}
           personaOnlyMode={personaOnlyMode}
           setPersonaOnlyMode={setPersonaOnlyMode}
+          themeCardStyleByTheme={themeCardStyleByTheme}
+          unlockedAltCardThemeKeys={unlockedAltCardThemeKeys}
+          onSelectThemeCardStyle={handleSelectThemeCardStyle}
           desktopLandscape={isDesktopLandscapeWeb}
         />
       )}
       {screen === "online-setup" &&
         entitlements.canCreateOnlineLobby &&
-        !WEB_JOIN_ONLY_MODE && (
+        !isWebJoinOnlyMode() && (
         <OnlineLobbySetupScreen
           hostName={onlineHostName}
           setHostName={setOnlineHostName}
@@ -9921,8 +11186,6 @@ export default function App() {
           setPointsToWin={setPointsToWin}
           roundsPerPlayer={roundsPerPlayer}
           setRoundsPerPlayer={setRoundsPerPlayer}
-          adultMode={adultMode}
-          setAdultMode={setAdultMode}
           grillSettings={grillSettings}
           setGrillSettings={setGrillSettings}
           themeOptions={themeOptions}
@@ -9931,6 +11194,9 @@ export default function App() {
           setAllowFriendsJoinLobby={setAllowFriendsJoinLobby}
           selectedFriendInviteUsernames={selectedFriendInviteUsernames}
           onToggleInviteFriend={toggleInviteFriendSelection}
+          themeCardStyleByTheme={themeCardStyleByTheme}
+          unlockedAltCardThemeKeys={unlockedAltCardThemeKeys}
+          onSelectThemeCardStyle={handleSelectThemeCardStyle}
           onBack={() => {
             if (onlineMode || lobbyCode) {
               void leaveOnlineLobby({ nextScreen: "home" });
@@ -9967,7 +11233,7 @@ export default function App() {
             setScreen("home");
           }}
           onContinueCode={runOnlineJoinCodeStep}
-          onJoin={joinOnlineLobby}
+          onJoin={requestJoinOnlineLobby}
           onRandomizeName={() =>
             setOnlinePlayerName(
               randomNameFromTheme(
@@ -10132,7 +11398,7 @@ export default function App() {
       )}
       {screen === "rules" && (
         <RulesSplashScreen
-          onContinue={() => setScreen("category-choice")}
+          onContinue={() => setScreen("round-type-choice")}
           theme={canonicalThemeName}
           isOnlineMode={onlineMode}
         />
@@ -10141,58 +11407,24 @@ export default function App() {
         <BrandedScreen
           wallpaperSrc={UI_WALLPAPER_IN_GAME_SRC}
           overlayClassName="bg-black/45"
+          lockViewport
+          contentClassName="!py-3 flex flex-col min-h-0"
         >
-          <div className="mx-auto max-w-4xl space-y-6">
-            <div className="px-1 pt-1 text-center">
-              <h2 className="mt-3 text-4xl font-black text-yellow-300 [text-shadow:0_4px_16px_rgba(0,0,0,0.65)]">
-                Choose the game mode
-              </h2>
-              <div className={categoryChoiceGridClass}>
-                {roundTypeOptions.map((type, index) => {
-                  const centeredOnSm =
-                    roundTypeOptions.length % 2 === 1 &&
-                    index === roundTypeOptions.length - 1;
-                  const roundTypeLogoSrc = getRoundTypeIconSrc(type.id);
-                  return (
-                    <div
-                      key={type.id}
-                      className={
-                        centeredOnSm
-                          ? "sm:col-span-2 sm:flex sm:justify-center"
-                          : ""
-                      }
-                    >
-                      <button
-                        type="button"
-                        className={`w-full transition-transform duration-200 hover:scale-[1.03] ${centeredOnSm ? "sm:max-w-[20rem]" : ""}`}
-                        onClick={() => {
-                          const allowedCategories =
-                            categoriesAllowedForRoundType(
-                              activeCategories,
-                              type.id,
-                            );
-                          const nextCategoryOptions = shuffle(
-                            allowedCategories,
-                          ).slice(0, Math.min(4, allowedCategories.length));
-                          setSelectedRoundType(type.id);
-                          setCategoryOptions(nextCategoryOptions);
-                          setScreen("category-choice");
-                        }}
-                        aria-label={`Choose ${type.name}`}
-                      >
-                        <div className="mx-auto aspect-square w-full max-w-[11.5rem] sm:max-w-[13rem]">
-                          <ThemeArt
-                            src={roundTypeLogoSrc}
-                            alt={`${type.name} mode icon`}
-                            className="h-full w-full object-contain drop-shadow-[0_12px_22px_rgba(0,0,0,0.72)]"
-                          />
-                        </div>
-                      </button>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
+          <div className="mx-auto flex min-h-0 w-full max-w-4xl flex-1 flex-col">
+            <h2 className="shrink-0 px-1 text-center text-2xl font-black leading-tight text-yellow-300 [text-shadow:0_4px_16px_rgba(0,0,0,0.65)] sm:text-3xl">
+              Choose the game mode
+            </h2>
+            <RoundTypeChoiceGrid
+              roundTypeOptions={roundTypeOptions}
+              onlineMode={onlineMode}
+              onSelectRoundType={(typeId) => {
+                setSelectedRoundType(typeId);
+                setCategoryOptions(
+                  drawCategoriesForRoundChoice(activeCategories, typeId),
+                );
+                setScreen("category-choice");
+              }}
+            />
           </div>
         </BrandedScreen>
       )}
@@ -10200,10 +11432,15 @@ export default function App() {
         <BrandedScreen
           wallpaperSrc={UI_WALLPAPER_IN_GAME_SRC}
           overlayClassName="bg-black/45"
+          lockViewport
+          contentClassName="!min-h-0 !py-3 flex flex-col overflow-hidden"
         >
-          <div className="mx-auto max-w-4xl space-y-6">
-            <div className="px-1 pt-1 text-center">
-              <div className="text-xs uppercase tracking-[0.3em] text-white/70">
+          <div className="mx-auto flex min-h-0 w-full max-w-4xl flex-1 flex-col overflow-hidden">
+            <div
+              className="shrink-0 px-2 pb-1 pt-11 text-center sm:pt-10"
+              data-testid="category-choice-header"
+            >
+              <div className="pof-ui-muted text-xs font-semibold uppercase tracking-[0.3em] pl-14 sm:pl-0">
                 Round owner: {players[currentRoundOwnerIndex]?.name}
               </div>
               <h2 className="mt-3 text-4xl font-black text-yellow-300 [text-shadow:0_4px_16px_rgba(0,0,0,0.65)]">
@@ -10214,46 +11451,49 @@ export default function App() {
               <RoundTypeLogo
                 src={getRoundTypeIconSrc(selectedRoundType || round.roundTypeId)}
                 alt={`${ROUND_TYPES[selectedRoundType]?.name || round.roundTypeName || "Round"} mode icon`}
-                className="mx-auto mt-4 h-24 w-24 sm:h-28 sm:w-28 object-contain drop-shadow-[0_8px_20px_rgba(0,0,0,0.7)]"
+                className="mx-auto mt-3 h-16 w-16 object-contain drop-shadow-[0_8px_20px_rgba(0,0,0,0.7)] sm:h-20 sm:w-20"
               />
-              {selectedRoundType && usesNoCategorySelection(selectedRoundType) ? (
-                <div className="mt-8 rounded-[1.8rem] border border-cyan-300/35 bg-cyan-500/10 px-6 py-8 text-cyan-100">
-                  <div className="text-xs uppercase tracking-[0.25em] text-cyan-200/80">
-                    Global prompt deck
-                  </div>
-                  <p className="mt-3 text-sm text-white/80">
-                    This round type uses one shared prompt pool for all themes.
-                  </p>
-                </div>
-              ) : (
-                <div className={categoryChoiceGridClass}>
-                  {categoryOptions.map((category) => {
-                  const categoryIconSrc =
-                    category?.iconSrc ||
-                    getCategoryIconSrc(category.id) ||
-                    resolveCategoryChoiceCardArt(category, canonicalThemeName);
-                  return (
-                    <div key={category.id} className="flex">
-                      <button
-                        type="button"
-                        className="w-full transition-transform duration-200 hover:scale-[1.03]"
-                        onClick={() => chooseCategory(category.id)}
-                        aria-label={`Choose ${category.name}`}
-                      >
-                        <div className="mx-auto aspect-square w-full max-w-[11.5rem] sm:max-w-[13rem]">
-                          <ThemeArt
-                            src={categoryIconSrc}
-                            alt={`${category.name} category icon`}
-                            className="h-full w-full object-contain drop-shadow-[0_12px_22px_rgba(0,0,0,0.72)]"
-                          />
-                        </div>
-                      </button>
-                    </div>
-                  );
-                  })}
-                </div>
-              )}
             </div>
+            {selectedRoundType && usesNoCategorySelection(selectedRoundType) ? (
+              <div className="mt-6 shrink-0 rounded-[1.8rem] border border-cyan-300/35 bg-cyan-500/10 px-6 py-8 text-cyan-100">
+                <div className="text-xs uppercase tracking-[0.25em] text-cyan-200/80">
+                  Global prompt deck
+                </div>
+                <p className="pof-ui-copy mt-3 text-sm">
+                  This round type uses one shared prompt pool for all themes.
+                </p>
+              </div>
+            ) : (
+              <>
+                <div
+                  className="relative z-20 shrink-0 border-b border-white/10 bg-[#05010f]/95 px-3 py-3 backdrop-blur-sm"
+                  data-testid="category-choice-random-bar"
+                >
+                  <button
+                    type="button"
+                    className="pof-btn pof-btn-blue pof-btn-sm pof-focus mx-auto max-w-xs px-6"
+                    data-testid="choose-category-random"
+                    onClick={() => {
+                      tapFx();
+                      const picked = pickRandomFromShown(categoryOptions);
+                      if (picked?.id) chooseCategory(picked.id);
+                    }}
+                  >
+                    <Dice6 className="h-5 w-5" />
+                    Choose for me
+                  </button>
+                </div>
+                <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+                  <CategoryChoiceGrid
+                    categoryOptions={categoryOptions}
+                    categoryChoiceGridClass={categoryChoiceGridClass}
+                    onlineMode={onlineMode}
+                    canonicalThemeName={canonicalThemeName}
+                    onChooseCategory={chooseCategory}
+                  />
+                </div>
+              </>
+            )}
           </div>
         </BrandedScreen>
       )}
@@ -10262,6 +11502,11 @@ export default function App() {
           round={round}
           stingerLine={copyState.hostStinger}
           onContinue={() => {
+            if (round.roundTypeId === "twotruths") {
+              setTwoTruthsInputIndex(0);
+              setScreen("twotruths-input");
+              return;
+            }
             if (onlineMode) {
               void runOnlinePhaseAdvance();
               return;
@@ -10269,6 +11514,56 @@ export default function App() {
             setScreen("reveal");
           }}
           theme={canonicalThemeName}
+        />
+      )}
+      {screen === "twotruths-input" && round && (
+        <NeonTwoTruthsInputScreen
+          players={players}
+          round={round}
+          inputPlayerIndex={twoTruthsInputIndex}
+          passLine={copyState.passPhone}
+          onSubmitSubmission={handleTwoTruthsPlayerSubmission}
+          onlineMode={onlineMode}
+          localPlayerId={onlineJoinedPlayerId}
+          theme={canonicalThemeName}
+          TopFrame={TopFrame}
+          GlassPanel={GlassPanel}
+          Button={Button}
+          Input={Input}
+          Label={Label}
+        />
+      )}
+      {screen === "twotruths-voting" && round && (
+        <NeonTwoTruthsVotingScreen
+          players={players}
+          round={round}
+          votesByVoterId={twoTruthsVotesByVoterId}
+          setVotesByVoterId={setTwoTruthsVotesByVoterId}
+          onSubmitVotes={revealResults}
+          votingPlayerOrder={votingPlayerOrder}
+          onlineMode={onlineMode}
+          onlinePlayerId={onlineJoinedPlayerId}
+          submitPending={onlineVoteSubmissionPending}
+          totalRounds={totalRounds}
+          theme={canonicalThemeName}
+          TopFrame={TopFrame}
+          GlassPanel={GlassPanel}
+          Progress={Progress}
+          ScoreStrip={ScoreStrip}
+        />
+      )}
+      {screen === "twotruths-reveal" && round && (
+        <NeonTwoTruthsRevealScreen
+          players={players}
+          round={round}
+          roundGains={roundGains}
+          roundBreakdown={roundBreakdown}
+          onComplete={finishLiarReveal}
+          theme={canonicalThemeName}
+          TopFrame={TopFrame}
+          GlassPanel={GlassPanel}
+          Button={Button}
+          playSfx={() => playSfx(IMPOSTER_FOUND_SFX_SRC, { volume: 0.7 })}
         />
       )}
       {screen === "reveal" && round && (
@@ -10293,6 +11588,8 @@ export default function App() {
             onlinePrivatePrompt={onlinePrivatePrompt}
             onlinePrivatePromptError={onlinePrivatePromptError}
             playSfx={playSfx}
+            cardStyle={activeThemeCardStyle}
+            defaultBackSlug={playerProfile?.selectedDefaultBackSlug || "classic"}
           />
         </BrandedScreen>
       )}
@@ -10309,15 +11606,11 @@ export default function App() {
                 players,
               ),
             );
-            setVotesByPlayerId(
-              Object.fromEntries(players.map((p) => [p.id, ""])),
-            );
             if (onlineMode) {
               void runOnlinePhaseAdvance();
               return;
             }
-            refreshCopy(["voting"]);
-            setScreen("voting");
+            beginVotingPhase();
           }}
           theme={canonicalThemeName}
           playSfx={playSfx}
@@ -10342,15 +11635,11 @@ export default function App() {
           round={round}
           totalRounds={totalRounds}
           onContinue={() => {
-            setVotesByPlayerId(
-              Object.fromEntries(players.map((p) => [p.id, ""])),
-            );
             if (onlineMode) {
               void runOnlinePhaseAdvance();
               return;
             }
-            refreshCopy(["voting"]);
-            setScreen("voting");
+            beginVotingPhase();
           }}
           line={copyState.discussion}
           theme={canonicalThemeName}
@@ -10375,6 +11664,7 @@ export default function App() {
           line={copyState.voting}
           theme={canonicalThemeName}
           onlineMode={onlineMode}
+          votingPlayerOrder={votingPlayerOrder}
           onlinePlayerId={onlineJoinedPlayerId}
           onlineVoiceEnabled={onlineMode}
           onlineVoiceMuted={onlineVoiceMuted}
@@ -10421,8 +11711,58 @@ export default function App() {
           onRestart={restartToHome}
           line={copyState.winner}
           theme={canonicalThemeName}
+          unlockToast={cardStyleUnlockToast}
         />
       )}
+      {(LOCAL_GAME_PAUSE_SCREENS.has(screen) ||
+        (onlineMode && ONLINE_IN_SESSION_LEAVE_SCREENS.has(screen))) &&
+        screen !== "bug-report" && (
+          <>
+            <button
+              type="button"
+              data-testid="game-pause-fab"
+              className="fixed left-3 top-3 z-[120] rounded-full border border-cyan-300/40 bg-black/55 px-3 py-2 text-xs font-black uppercase tracking-[0.12em] text-cyan-100"
+              onClick={() => setGamePauseOpen(true)}
+              aria-label="Pause game"
+            >
+              <Pause className="mr-1 inline h-3.5 w-3.5" />
+              Pause
+            </button>
+            {gamePauseOpen && (
+              <div
+                className="fixed inset-0 z-[125] flex items-center justify-center bg-black/70 px-6"
+                role="dialog"
+                aria-modal="true"
+                data-testid="game-pause-menu"
+              >
+                <div className="pof-glass w-full max-w-sm rounded-[1.75rem] p-6 text-center">
+                  <div className="pof-heading text-sm text-cyan-200">Paused</div>
+                  <p className="pof-ui-copy mt-2 text-sm text-white/85">
+                    Resume play or send a bug report with diagnostics attached.
+                  </p>
+                  <div className="mt-5 flex flex-col gap-3">
+                    <Button
+                      type="button"
+                      className="w-full rounded-2xl bg-yellow-300 text-zinc-950"
+                      onClick={() => setGamePauseOpen(false)}
+                    >
+                      Resume
+                    </Button>
+                    <Button
+                      type="button"
+                      className="w-full rounded-2xl border border-rose-200/35 bg-rose-500/15 text-rose-50"
+                      data-testid="pause-report-bug"
+                      onClick={openBugReport}
+                    >
+                      <Bug className="mr-2 inline h-4 w-4" />
+                      Report a bug
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            )}
+          </>
+        )}
       {onlineMode && ONLINE_IN_SESSION_LEAVE_SCREENS.has(screen) && (
         <button
           type="button"
@@ -10434,6 +11774,14 @@ export default function App() {
           Leave Session
         </button>
       )}
+      {screen === "bug-report" && (
+        <BugReportScreen
+          onBack={() => setScreen(bugReportReturnScreen || "home")}
+          theme={canonicalThemeName}
+          appContext={bugReportAppContext}
+          nativeBridge={nativeDiagnostics}
+        />
+      )}
       <PartySpeakerOverlay
         onlineMode={onlineMode}
         talkingPlayers={partyTalkingPlayers}
@@ -10441,19 +11789,39 @@ export default function App() {
         themeName={canonicalThemeName}
       />
       {screen === "store" && (
-        <StoreScreen
+        <NeonStoreScreen
           onBack={() => setScreen("home")}
-          theme={canonicalThemeName}
+          onOpenAccount={() => setScreen("account-gate")}
           dlcThemePacks={DLC_THEME_PACKS}
           unlockedThemePackIds={unlockedThemePackIds}
+          achievementUnlockedThemeNames={
+            playerProfile?.achievementUnlockedThemeNames || []
+          }
           accountSession={accountSession}
           allDlcIncluded={entitlements.allDlcIncluded}
           hasTwistAddon={Boolean(accountSession?.addonTwistTruth)}
-          disableDlcDemo={accountSession?.authProvider === "supabase"}
+          webShopMode={webShopMode}
+          onWebPurchaseTier={(tierId) => runWebPurchase("tier", tierId)}
+          onWebPurchaseAddon={() => runWebPurchase("addon", "twist_truth")}
+          onWebPurchaseDlc={(packId) => runWebPurchase("dlc", packId)}
+          disableDlcDemo={
+            isCloudAuthProvider(accountSession?.authProvider) && !webShopMode
+          }
+          contentPackManifest={contentPacks.manifest}
+          installedContentPackIds={contentPacks.installedPackIds}
+          onDownloadContentPack={(packId) => {
+            const pack = contentPacks.manifest?.packs?.find((p) => p.id === packId);
+            if (pack) contentPacks.downloadPack(pack);
+          }}
+          downloadByPackId={contentPacks.downloadByPackId}
           onSimulateTierPurchase={(tierId) => {
             if (!accountSession) return "Sign in from the account screen first.";
-            if (accountSession.authProvider === "supabase") {
-              return "Cloud accounts unlock tiers via App Store / Play Billing (RevenueCat). Demo checkout is only for device accounts.";
+            if (isCloudAuthProvider(accountSession.authProvider) && webShopMode) {
+              void runWebPurchase("tier", tierId);
+              return "";
+            }
+            if (isCloudAuthProvider(accountSession.authProvider)) {
+              return "Cloud accounts unlock tiers via the web shop or App Store / Play Billing (RevenueCat). Demo checkout is only for device accounts.";
             }
             const result = purchaseTierDemo(accountSession.userId, tierId);
             if (!result.ok) return result.error;
@@ -10470,8 +11838,12 @@ export default function App() {
           }}
           onSimulateTwistAddon={() => {
             if (!accountSession) return "Sign in from the account screen first.";
-            if (accountSession.authProvider === "supabase") {
-              return "Cloud accounts unlock add-ons via the native stores. Demo checkout is only for device accounts.";
+            if (isCloudAuthProvider(accountSession.authProvider) && webShopMode) {
+              void runWebPurchase("addon", "twist_truth");
+              return "";
+            }
+            if (isCloudAuthProvider(accountSession.authProvider)) {
+              return "Cloud accounts unlock add-ons via the web shop or native stores. Demo checkout is only for device accounts.";
             }
             const result = purchaseAddonTwistTruthDemo(accountSession.userId);
             if (!result.ok) return result.error;
@@ -10510,10 +11882,9 @@ export default function App() {
       {screen === "settings" && (
         <SettingsScreen
           onBack={() => setScreen("home")}
+          onReportBug={openBugReport}
           premiumEnabled={premiumEnabled}
           setPremiumEnabled={setPremiumEnabled}
-          adultMode={adultMode}
-          setAdultMode={setAdultMode}
           audioSettings={audioSettings}
           setAudioSettings={setAudioSettings}
           theme={canonicalThemeName}
@@ -10531,8 +11902,20 @@ export default function App() {
             setEnabledCategories((cur) => ({ ...cur, [id]: !cur[id] }))
           }
           defaultTab={activeSettingsTab}
+          contentPacks={contentPacks}
         />
       )}
+      <ContentPackPromptModal
+        open={contentPacks.promptOpen}
+        totalLabel={contentPacks.totalMissingLabel}
+        packCount={contentPacks.missingPacks.length}
+        progress={contentPacks.progress}
+        downloading={contentPacks.progress.anyActive || contentPacks.batchActive}
+        onDownload={() => {
+          contentPacks.downloadAllMissing();
+        }}
+        onLater={contentPacks.dismissPrompt}
+      />
       <PartyChatDrawer
         open={onlineMode && partyChatOpen}
         onClose={() => setPartyChatOpen(false)}
@@ -10541,6 +11924,48 @@ export default function App() {
         onInputChange={setPartyChatInput}
         onSend={sendPartyChatMessage}
       />
+      <Dialog
+        open={joinHostEditorWarningOpen}
+        onOpenChange={setJoinHostEditorWarningOpen}
+      >
+        <DialogContent
+          className="max-w-md rounded-[2rem] border border-amber-300/30 bg-[#13002d] p-6 text-white"
+          data-testid="editor-warning-dialog"
+        >
+          <DialogHeader>
+            <DialogTitle className="pof-title text-xl text-amber-200">
+              Custom prompts warning
+            </DialogTitle>
+            <DialogDescription className="pof-body text-white/80">
+              The host of this game has unlocked the prompt editor, so some
+              prompts may have been added by them and might not be suitable for
+              all ages. Do you wish to continue?
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="mt-4 flex flex-col gap-2 sm:flex-row sm:justify-end">
+            <button
+              type="button"
+              className="pof-btn pof-btn-steel pof-btn-sm pof-focus"
+              data-testid="editor-warning-cancel"
+              onClick={() => setJoinHostEditorWarningOpen(false)}
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              className="pof-btn pof-btn-fire pof-btn-sm pof-focus"
+              data-testid="editor-warning-continue"
+              onClick={() => {
+                setJoinHostEditorWarningAccepted(true);
+                setJoinHostEditorWarningOpen(false);
+                void joinOnlineLobby();
+              }}
+            >
+              Continue
+            </button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
       <AdminDialog
         open={adminOpen}
         onOpenChange={setAdminOpen}
@@ -10552,7 +11977,20 @@ export default function App() {
         setCustomCategories={setCustomCategories}
       />
       <StartupPreloadOverlay show={!startupGraphicsReady} />
-    </>
+      {achievementUnlockToast ? (
+        <div
+          className="fixed bottom-6 left-1/2 z-[135] w-[min(22rem,calc(100%-2rem))] -translate-x-1/2 rounded-2xl border border-fuchsia-300/45 bg-fuchsia-500/20 px-4 py-3 text-center shadow-[0_12px_32px_rgba(0,0,0,0.45)]"
+          data-testid="achievement-unlock-toast"
+        >
+          <div className="pof-heading text-sm text-fuchsia-100">
+            {achievementUnlockToast.title}
+          </div>
+          {achievementUnlockToast.body ? (
+            <p className="mt-1 text-xs text-white/75">{achievementUnlockToast.body}</p>
+          ) : null}
+        </div>
+      ) : null}
+    </div>
   );
 }
 

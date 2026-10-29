@@ -1,0 +1,62 @@
+[
+  {
+    "slug": "lie-detector",
+    "name": "Needle Ain't Lying",
+    "file": "back-lie-detector.png",
+    "webp": "back-lie-detector.webp"
+  },
+  {
+    "slug": "crime-scene",
+    "name": "Do Not Cross",
+    "file": "back-crime-scene.png",
+    "webp": "back-crime-scene.webp"
+  },
+  {
+    "slug": "flaming-pants",
+    "name": "Trousers Ablaze",
+    "file": "back-flaming-pants.png",
+    "webp": "back-flaming-pants.webp"
+  },
+  {
+    "slug": "neon-casino",
+    "name": "High Roller Fibber",
+    "file": "back-neon-casino.png",
+    "webp": "back-neon-casino.webp"
+  },
+  {
+    "slug": "comic-boom",
+    "name": "KA-FIB!",
+    "file": "back-comic-boom.png",
+    "webp": "back-comic-boom.webp"
+  },
+  {
+    "slug": "retro-arcade",
+    "name": "Insert Coin to Lie",
+    "file": "back-retro-arcade.png",
+    "webp": "back-retro-arcade.webp"
+  },
+  {
+    "slug": "gold-trophy",
+    "name": "Champion of Porkies",
+    "file": "back-gold-trophy.png",
+    "webp": "back-gold-trophy.webp"
+  },
+  {
+    "slug": "spy-dossier",
+    "name": "Top Secret Fibs",
+    "file": "back-spy-dossier.png",
+    "webp": "back-spy-dossier.webp"
+  },
+  {
+    "slug": "disco-glitter",
+    "name": "Boogie Wonderliar",
+    "file": "back-disco-glitter.png",
+    "webp": "back-disco-glitter.webp"
+  },
+  {
+    "slug": "glitch-hacker",
+    "name": "Error 404: Truth Not Found",
+    "file": "back-glitch-hacker.png",
+    "webp": "back-glitch-hacker.webp"
+  }
+]
