@@ -579,12 +579,27 @@ OPINION_ROUNDS.push(
 
 function buildPicturePromptRounds() {
   return PICTURE_DLC_MANIFESTS
-    .filter((manifest) => validatePictureDlcManifest(manifest))
+    .filter(
+      (manifest) =>
+        validatePictureDlcManifest(manifest) &&
+        String(manifest.roundType || 'picture').trim() !== 'pairs',
+    )
+    .flatMap((manifest) => buildPictureRoundsFromManifest(manifest));
+}
+
+function buildPairsPromptRounds() {
+  return PICTURE_DLC_MANIFESTS
+    .filter(
+      (manifest) =>
+        validatePictureDlcManifest(manifest) &&
+        String(manifest.roundType || '').trim() === 'pairs',
+    )
     .flatMap((manifest) => buildPictureRoundsFromManifest(manifest));
 }
 
 export const MEDIA_ROUNDS = {
   picture: buildPicturePromptRounds(),
+  pairs: buildPairsPromptRounds(),
   sound: [
     { hint: 'Sound Clue', main: 'arcade-coin-drop', imposter: 'slot-machine-jingle', previewLabel: 'Audio round placeholder' },
     { hint: 'Sound Clue', main: 'lion-roar', imposter: 'tiger-growl', previewLabel: 'Audio round placeholder' },

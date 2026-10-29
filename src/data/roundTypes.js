@@ -1,3 +1,8 @@
+import {
+  DOUBLE_TAKE_DISPLAY_NAME,
+  DOUBLE_TAKE_ROUND_TAGLINE,
+} from './doubleTakeRound.js';
+
 export const ROUND_TYPES = {
   prompt: {
     id: 'prompt',
@@ -20,6 +25,14 @@ export const ROUND_TYPES = {
     name: 'Flash Frame',
     tagline: 'A picture paints a thousand lies.',
     logoSrc: '/assets/images/round-types/picture-logo.svg',
+    passThePhoneReady: true,
+    onlineOnly: false,
+  },
+  pairs: {
+    id: 'pairs',
+    name: DOUBLE_TAKE_DISPLAY_NAME,
+    tagline: DOUBLE_TAKE_ROUND_TAGLINE,
+    logoSrc: '/assets/images/round-types/pairs-logo.svg',
     passThePhoneReady: true,
     onlineOnly: false,
   },

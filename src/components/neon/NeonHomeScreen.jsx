@@ -314,6 +314,10 @@ const RULES = [
     'Say one related clue out loud without giving away your exact prompt.',
   ],
   [
+    'Double Take',
+    'Everyone gets a picture and the same brief. Liars see a slightly different image — describe yours without over-sharing.',
+  ],
+  [
     'Vote for the liar',
     'Correct votes score points. Uncaught liars score extra.',
   ],

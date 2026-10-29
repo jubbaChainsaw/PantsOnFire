@@ -436,6 +436,7 @@ function toPublicRound(round) {
     imposterPrompt,
     commonPrompt,
     grillData,
+    pairsRevealImages,
     ...publicRound
   } = round;
   // Liar identity and the real/imposter prompt pair stay server-side until the
@@ -449,6 +450,7 @@ function toPublicRound(round) {
       imposterPrompt: imposterPrompt ?? null,
       commonPrompt: commonPrompt ?? null,
       grillData: grillData ?? null,
+      pairsRevealImages: pairsRevealImages ?? null,
     };
   }
   return publicRound;

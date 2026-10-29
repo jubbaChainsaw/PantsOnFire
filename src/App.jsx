@@ -406,7 +406,7 @@ const DESKTOP_LANDSCAPE_SCREENS = new Set([
   "online-lobby-created",
   "online-lobby-waiting",
 ]);
-const NO_CATEGORY_SELECTION_ROUND_TYPE_IDS = new Set(["noise", "nameblame"]);
+const NO_CATEGORY_SELECTION_ROUND_TYPE_IDS = new Set(["noise", "nameblame", "pairs"]);
 const IN_GAME_PERSONA_BIO_MAX = 140;
 const PERSONA_PROFILE_STORAGE_KEY = "imposter-persona-profile-v1";
 const FRIENDS_STORAGE_KEY = "imposter-friends-v1";
@@ -662,6 +662,11 @@ const VOTING_STINGER_BY_ROUND_TYPE = {
     "Picture perfect? Time to expose the fake frame.",
     "Pass the phone and spot the wrong snapshot.",
     "Vote for the player whose details felt staged.",
+  ],
+  pairs: [
+    "Double Take verdict: whose description did not match the room?",
+    "Pass the phone and vote for the odd detail out.",
+    "Same round, different eyes — call the bluff.",
   ],
   nameblame: [
     "Name and Blame is over. Point at the fake accusation.",
@@ -977,7 +982,9 @@ function applyPicturePackSelection(
   enabledPictureReleaseChannels,
   picturePackReleaseChannelsById,
 ) {
-  if (selectedRoundTypeId !== "picture") return promptOptions;
+  if (selectedRoundTypeId !== "picture" && selectedRoundTypeId !== "pairs") {
+    return promptOptions;
+  }
   const enabled = promptOptions.filter((item) => {
     const packId = item.prompt?.picturePackId;
     const releaseChannel =
@@ -1130,7 +1137,9 @@ function buildLocalRound(
     promptOptions = (MEDIA_ROUNDS[selectedRoundType.id] || []).map(
       (prompt, index) => ({
         prompt,
-        key: `${selectedRoundType.id}::global::${index}`,
+        key: prompt.entryId
+          ? `${selectedRoundType.id}::${prompt.entryId}`
+          : `${selectedRoundType.id}::global::${index}`,
       }),
     );
   }
@@ -1154,6 +1163,10 @@ function buildLocalRound(
     filteredOptions.length ? filteredOptions : ageFilteredOptions,
   );
   const isTwoTruthsRound = selectedRoundType.id === "twotruths";
+  const isPairsRound = selectedRoundType.id === "pairs";
+  const neutralPairsPrompt =
+    selected.prompt.previewLabel ||
+    "Describe your picture without giving it away.";
   const liarIds = isTwoTruthsRound
     ? []
     : shuffle(players)
@@ -1162,16 +1175,17 @@ function buildLocalRound(
   const bannedWords = sanitizeBannedWords(
     effectiveCategory.name,
     selected.prompt.hint,
-    selected.prompt.main,
-    isTwoTruthsRound ? "" : selected.prompt.imposter,
+    isPairsRound ? neutralPairsPrompt : selected.prompt.main,
+    isPairsRound || isTwoTruthsRound ? "" : selected.prompt.imposter,
     BANNED_WORD_BANK[selected.key] || [],
   );
   const truthDeck = shuffle(selected.prompt.mainWords || []);
   const liarDeck = shuffle(selected.prompt.imposterWords || []);
   let truthCursor = 0;
   let liarCursor = 0;
-  const mediaByPlayerId =
-    selectedRoundType.id === "picture"
+  const isPictureLikeRound =
+    selectedRoundType.id === "picture" || isPairsRound;
+  const mediaByPlayerId = isPictureLikeRound
       ? Object.fromEntries(
           players.map((player) => [
             player.id,
@@ -1181,6 +1195,16 @@ function buildLocalRound(
           ]),
         )
       : {};
+
+  const pairsRevealImages =
+    isPairsRound &&
+    selected.prompt.mainImageSrc &&
+    selected.prompt.imposterImageSrc
+      ? {
+          truthImageSrc: selected.prompt.mainImageSrc,
+          liarImageSrc: selected.prompt.imposterImageSrc,
+        }
+      : null;
 
   return {
     roundNumber,
@@ -1194,7 +1218,9 @@ function buildLocalRound(
     hint: selected.prompt.hint,
     commonPrompt: selected.prompt.main,
     imposterPrompt:
-      selectedRoundType.id === "opinion" ? null : selected.prompt.imposter,
+      selectedRoundType.id === "opinion" || isPairsRound
+        ? null
+        : selected.prompt.imposter,
     aiPrompt: selected.prompt.aiPrompt || null,
     mediaPreviewLabel: selected.prompt.previewLabel || null,
     mediaPackId: selected.prompt.picturePackId || null,
@@ -1217,10 +1243,12 @@ function buildLocalRound(
       endedByCorrectGuess: false,
     },
     mediaByPlayerId,
+    pairsRevealImages,
     promptsByPlayerId: Object.fromEntries(
       players.map((player) => {
         if (selectedRoundType.id === "opinion")
           return [player.id, selected.prompt.main];
+        if (isPairsRound) return [player.id, neutralPairsPrompt];
         if (selectedRoundType.id === "grill")
           return [
             player.id,
@@ -1897,6 +1925,7 @@ const MASCOT_BY_ROUND_TYPE = {
   prompt: { name: "Ian Poster", face: "🎤", blurb: "Classic chaos host." },
   opinion: { name: "Ian Poster", face: "🎭", blurb: "Debate instigator." },
   picture: { name: "Ian Poster", face: "🖼️", blurb: "Flash-frame ringmaster." },
+  pairs: { name: "Ian Poster", face: "👀", blurb: "Spot-the-difference host." },
   nameblame: {
     name: "Ian Poster",
     face: "👉",
@@ -2342,6 +2371,9 @@ function getRoundRuleText(roundTypeId = "prompt") {
   if (roundTypeId === "twotruths") {
     return "Two Truths, One Fire: everyone lists three related items — two truths and one lie. After the shuffle, spot each player's lie to score.";
   }
+  if (roundTypeId === "pairs") {
+    return "Double Take: everyone sees a picture and describes it. Liars see a slightly different image but get the same instructions — spot who is describing the wrong scene.";
+  }
   return "Give one clue, blend in, and avoid revealing your exact prompt.";
 }
 function getCategoryIconSrc(categoryId = "") {
@@ -2355,6 +2387,56 @@ function getRoundTypeIconSrc(roundTypeId = "") {
   const logoSrc = ROUND_TYPES[normalizedId]?.logoSrc;
   if (logoSrc) return resolveBundledAssetSrc(logoSrc);
   return "";
+}
+
+function getPairsRevealImages(round) {
+  if (!round || round.roundTypeId !== "pairs") return null;
+  const payload = round.pairsRevealImages;
+  if (!payload || typeof payload !== "object") return null;
+  const truthImageSrc = String(payload.truthImageSrc || "").trim();
+  const liarImageSrc = String(payload.liarImageSrc || "").trim();
+  if (!truthImageSrc || !liarImageSrc) return null;
+  return {
+    truthImageSrc: resolveBundledAssetSrc(truthImageSrc),
+    liarImageSrc: resolveBundledAssetSrc(liarImageSrc),
+  };
+}
+
+function DoubleTakePairsRevealPanel({ round, className = "" }) {
+  const images = getPairsRevealImages(round);
+  if (!images) return null;
+  return (
+    <div
+      className={`rounded-[1.2rem] border border-cyan-300/35 bg-black/35 p-3 sm:p-4 ${className}`}
+      data-testid="double-take-pairs-reveal"
+    >
+      <div className="pof-heading text-xs tracking-[0.28em] text-cyan-200/90">
+        Double Take — the two pictures
+      </div>
+      <div className="mt-3 grid gap-3 sm:grid-cols-2">
+        <div className="text-center">
+          <div className="pof-heading text-[0.65rem] text-emerald-200">
+            Everyone saw
+          </div>
+          <img
+            src={images.truthImageSrc}
+            alt=""
+            className="mt-2 w-full rounded-xl border border-emerald-400/40 object-cover"
+          />
+        </div>
+        <div className="text-center">
+          <div className="pof-heading text-[0.65rem] text-orange-200">
+            The liar saw
+          </div>
+          <img
+            src={images.liarImageSrc}
+            alt=""
+            className="mt-2 w-full rounded-xl border border-orange-400/40 object-cover"
+          />
+        </div>
+      </div>
+    </div>
+  );
 }
 
 function getRoundCardBackSrc(themeName = "Default") {
@@ -2583,6 +2665,13 @@ function getInstructionHostLines(roundTypeId = "prompt") {
       "Watch for players forcing random image details that do not fit.",
     ];
   }
+  if (roundTypeId === "pairs") {
+    return [
+      "You will see a private picture card — same instructions for every player.",
+      "Describe what you see without giving away too much detail.",
+      "If someone's story does not line up with the rest of the table, vote accordingly.",
+    ];
+  }
   if (roundTypeId === "nameblame") {
     return [
       "Name and Blame means answering one lobby callout.",
@@ -2629,6 +2718,12 @@ function getHostExamplePrompts(roundTypeId = "prompt") {
     return {
       normal: "Eiffel Tower at sunset",
       liar: "Great Wall at sunrise",
+    };
+  }
+  if (roundTypeId === "pairs") {
+    return {
+      normal: "A busy beach scene",
+      liar: "A busy beach scene",
     };
   }
   if (roundTypeId === "opinion") {
@@ -5261,6 +5356,8 @@ function RevealScreen({
   const isImposter = onlineMode
     ? Boolean(onlinePrivatePrompt?.isImposter)
     : (round.imposterIds || []).includes(player.id);
+  const isPairsRound = round.roundTypeId === "pairs";
+  const showImposterRevealUi = isImposter && !isPairsRound;
   const bannedWords = Array.isArray(round.bannedWords)
     ? round.bannedWords
     : Array.isArray(onlinePrivatePrompt?.bannedWords)
@@ -5282,7 +5379,7 @@ function RevealScreen({
     () => resolveBundledAssetSrc(getRoundCardFrontSrc(theme)),
     [theme],
   );
-  const cardFrontSrc = isImposter
+  const cardFrontSrc = showImposterRevealUi
     ? resolveBundledAssetSrc(getImposterCardFrontSrc())
     : themedCardFrontSrc;
   const roundTypeLogoSrc = getRoundTypeIconSrc(round.roundTypeId);
@@ -5307,7 +5404,7 @@ function RevealScreen({
       } catch {}
       return undefined;
     }
-    if (!isImposter) return undefined;
+    if (!showImposterRevealUi) return undefined;
     try {
       const audio = new Audio(FIRE_CRACKLE_SFX_SRC);
       audio.volume = 0.4;
@@ -5321,7 +5418,7 @@ function RevealScreen({
       } catch {}
       fireAudioRef.current = null;
     };
-  }, [cardFace, isImposter]);
+  }, [cardFace, showImposterRevealUi]);
 
   useLayoutEffect(() => {
     if (cardFace !== "front") {
@@ -5348,7 +5445,7 @@ function RevealScreen({
     }
 
     setPromptFontSize((current) => (current === nextSize ? current : nextSize));
-  }, [prompt, mediaSrc, cardFace, isImposter]);
+  }, [prompt, mediaSrc, cardFace, showImposterRevealUi]);
 
   const imposterEmberParticles = useMemo(
     () =>
@@ -5427,19 +5524,19 @@ function RevealScreen({
               </div>
 
               <div
-                className={`absolute inset-0 overflow-visible rounded-[1.7rem] [backface-visibility:hidden] [transform:rotateY(180deg)] ${isImposter ? "shadow-[0_0_42px_rgba(255,94,0,0.62)]" : ""}`}
+                className={`absolute inset-0 overflow-visible rounded-[1.7rem] [backface-visibility:hidden] [transform:rotateY(180deg)] ${showImposterRevealUi ? "shadow-[0_0_42px_rgba(255,94,0,0.62)]" : ""}`}
               >
                 {cardFrontSrc && (
                   <img
                     src={cardFrontSrc}
                     alt="Prompt card front"
-                    className={`absolute inset-0 h-full w-full object-contain object-center bg-black/30 ${isImposter ? "scale-[1.25]" : ""}`}
+                    className={`absolute inset-0 h-full w-full object-contain object-center bg-black/30 ${showImposterRevealUi ? "scale-[1.25]" : ""}`}
                   />
                 )}
                 <div
-                  className={`absolute inset-0 ${isImposter ? "bg-gradient-to-b from-orange-400/34 via-red-600/26 to-red-950/42" : "bg-black/15"}`}
+                  className={`absolute inset-0 ${showImposterRevealUi ? "bg-gradient-to-b from-orange-400/34 via-red-600/26 to-red-950/42" : "bg-black/15"}`}
                 />
-                {isImposter && (
+                {showImposterRevealUi && (
                   <>
                     <div className="pointer-events-none absolute -inset-2 rounded-[2rem] border-2 border-orange-300/45 shadow-[inset_0_0_30px_rgba(255,97,24,0.45)]" />
                     <div className="pointer-events-none absolute inset-0 rounded-[1.7rem] bg-[radial-gradient(circle_at_50%_90%,rgba(255,150,0,0.38)_0%,rgba(255,70,0,0.24)_35%,rgba(0,0,0,0)_68%)]" />
@@ -5489,11 +5586,11 @@ function RevealScreen({
                     className="mt-1 h-20 w-auto mx-auto sm:h-24"
                   />
                   <div
-                    className={`mt-3 inline-flex items-center justify-center gap-2 rounded-xl border border-fuchsia-200/40 bg-fuchsia-500/35 px-3 py-2 text-xs font-semibold uppercase tracking-[0.2em] ${isImposter ? "text-orange-100" : "text-cyan-100"}`}
+                    className={`mt-3 inline-flex items-center justify-center gap-2 rounded-xl border border-fuchsia-200/40 bg-fuchsia-500/35 px-3 py-2 text-xs font-semibold uppercase tracking-[0.2em] ${showImposterRevealUi ? "text-orange-100" : "text-cyan-100"}`}
                   >
                     <img
                       src={
-                        isImposter
+                        showImposterRevealUi
                           ? UI_ICON_BADGE_LIAR_SRC
                           : UI_ICON_MAGNIFIER_FIRE_SRC
                       }
@@ -5501,7 +5598,13 @@ function RevealScreen({
                       aria-hidden="true"
                       className="h-4 w-4 object-contain"
                     />
-                    <span>{isImposter ? "LIAR CARD" : "YOUR CARD"}</span>
+                    <span>
+                      {isPairsRound
+                        ? "YOUR CARD"
+                        : showImposterRevealUi
+                          ? "LIAR CARD"
+                          : "YOUR CARD"}
+                    </span>
                   </div>
                   {round.mediaPreviewLabel && (
                     <div className="mt-2 text-sm text-white/85">
@@ -5521,7 +5624,7 @@ function RevealScreen({
                   >
                     <div
                       ref={promptTextRef}
-                      className={`font-black ${isImposter ? "text-yellow-300" : "text-white"}`}
+                      className={`font-black ${showImposterRevealUi ? "text-yellow-300" : "text-white"}`}
                       style={{
                         fontSize: `${promptFontSize}px`,
                         wordBreak: "normal",
@@ -5541,9 +5644,13 @@ function RevealScreen({
                     </div>
                   )}
                   <div
-                    className={`mt-2 rounded-xl border border-fuchsia-200/40 bg-fuchsia-500/35 px-3 py-2 text-sm font-semibold ${isImposter ? "text-orange-100" : "text-white/95"}`}
+                    className={`mt-2 rounded-xl border border-fuchsia-200/40 bg-fuchsia-500/35 px-3 py-2 text-sm font-semibold ${showImposterRevealUi ? "text-orange-100" : "text-white/95"}`}
                   >
-                    {isImposter ? `🔥 ${liarLine} 🔥` : normalLine}
+                    {isPairsRound
+                      ? normalLine
+                      : showImposterRevealUi
+                        ? `🔥 ${liarLine} 🔥`
+                        : normalLine}
                   </div>
                   {bannedWords.length > 0 && (
                     <div className="mt-4 rounded-xl border border-fuchsia-200/40 bg-fuchsia-500/35 px-3 py-2">
@@ -7015,6 +7122,9 @@ function LiarRevealScreen({
                   : "Next line"}
               </button>
             </div>
+            {announcementIndex >= announcementLines.length - 1 && (
+              <DoubleTakePairsRevealPanel round={round} className="relative z-10 mt-6" />
+            )}
           </div>
         </GlassPanel>
       </div>
@@ -7090,6 +7200,7 @@ function ResultsScreen({
                   {resultLine}
                 </p>
               </div>
+              <DoubleTakePairsRevealPanel round={round} className="mt-4" />
               <div className="mt-4 grid gap-2 content-start sm:grid-cols-2 lg:grid-cols-3">
                 {players.map((player, index) => {
                   const isLiar = (round.imposterIds || []).includes(player.id);
@@ -9579,7 +9690,9 @@ export default function App() {
       category,
       roundNumber,
       liarCount,
-      recentPromptKeys.slice(-4),
+      selectedTypeForRound === "pairs"
+        ? recentPromptKeys
+        : recentPromptKeys.slice(-4),
       selectedTypeForRound,
       grillSettings,
       adultMode,

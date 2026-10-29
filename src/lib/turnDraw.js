@@ -17,7 +17,7 @@ export function shuffle(arr) {
 export function categoriesAllowedForRoundType(categories, roundTypeId) {
   if (!Array.isArray(categories)) return [];
   const selectedType = String(roundTypeId || '');
-  if (selectedType === 'noise' || selectedType === 'nameblame') return categories;
+  if (selectedType === 'noise' || selectedType === 'nameblame' || selectedType === 'pairs') return categories;
   if (selectedType === 'picture') return categories;
   return categories.filter((category) => category?.id !== 'pic-mix');
 }

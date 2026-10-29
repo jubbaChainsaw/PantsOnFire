@@ -6,6 +6,18 @@ function toMediaSrc(basePath, mediaFile) {
   return `${basePath.replace(/\/+$/, '')}/${String(mediaFile).replace(/^\/+/, '')}`;
 }
 
+export function manifestRoundType(manifest) {
+  return String(manifest?.roundType || 'picture').trim() || 'picture';
+}
+
+export function isPairsGraphicManifest(manifest) {
+  return manifestRoundType(manifest) === 'pairs';
+}
+
+export function isPicturePromptManifest(manifest) {
+  return !isPairsGraphicManifest(manifest);
+}
+
 export function buildPictureRoundsFromManifest(manifest) {
   if (!manifest || !Array.isArray(manifest.entries)) return [];
   return manifest.entries.map((entry, index) => ({
@@ -26,7 +38,15 @@ export function getValidatedPictureDlcManifests() {
 }
 
 export function buildAllPictureDlcRounds() {
-  return getValidatedPictureDlcManifests().flatMap((manifest) => buildPictureRoundsFromManifest(manifest));
+  return getValidatedPictureDlcManifests()
+    .filter(isPicturePromptManifest)
+    .flatMap((manifest) => buildPictureRoundsFromManifest(manifest));
+}
+
+export function buildAllPairsDlcRounds() {
+  return getValidatedPictureDlcManifests()
+    .filter(isPairsGraphicManifest)
+    .flatMap((manifest) => buildPictureRoundsFromManifest(manifest));
 }
 
 export function validatePictureDlcManifest(manifest) {
