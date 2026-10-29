@@ -1,4 +1,5 @@
 import { THEME_META } from './themes.js';
+import { toCanonicalThemeName } from './themeAliases.js';
 import { YE_OLDE_BALONEY_THEME_PACK } from './dlc/themePacks/ye-olde-baloney/themePack.js';
 import { MYTH_TAKEN_IDENTITY_THEME_PACK } from './dlc/themePacks/myth-taken-identity/themePack.js';
 import { LICENCE_TO_FIB_THEME_PACK } from './dlc/themePacks/licence-to-fib/themePack.js';
@@ -60,8 +61,16 @@ export function normalizeUnlockedThemePackIds(rawPackIds) {
   return [...new Set((rawPackIds || []).filter((packId) => validPackIds.has(packId)))];
 }
 
-export function getThemeOptions(unlockedThemePackIds = []) {
+export function getThemeOptions(
+  unlockedThemePackIds = [],
+  achievementUnlockedThemeNames = [],
+) {
   const unlocked = new Set(normalizeUnlockedThemePackIds(unlockedThemePackIds));
+  const achievementThemes = new Set(
+    (achievementUnlockedThemeNames || [])
+      .map((name) => toCanonicalThemeName(name) || name)
+      .filter(Boolean),
+  );
   const options = CORE_THEME_NAMES.map((themeName) => ({
     name: themeName,
     isDlc: false,
@@ -75,7 +84,7 @@ export function getThemeOptions(unlockedThemePackIds = []) {
       options.push({
         name: themeName,
         isDlc: true,
-        isUnlocked: packUnlocked,
+        isUnlocked: packUnlocked || achievementThemes.has(toCanonicalThemeName(themeName) || themeName),
         packId: pack.id,
       });
     });

@@ -115,6 +115,21 @@ import {
   unlockAltCardStyleForTheme,
 } from "./data/themeCardStyles";
 import {
+  readLocalPlayerProfile,
+  writeLocalPlayerProfile,
+  mergeRemotePlayerProfile,
+} from "./data/playerProfile/profileStorage.js";
+import {
+  recordCompletedGame,
+  recordHostedGame,
+  recordRoundOutcome,
+} from "./data/playerProfile/profileProgress.js";
+import {
+  fetchRemotePlayerProfile,
+  pushRemotePlayerProfile,
+} from "./lib/playerProfileApi.js";
+import NeonPlayerProfileScreen from "./components/neon/NeonPlayerProfileScreen.jsx";
+import {
   ADDON_TWIST_TRUTH,
   computeEntitlements,
   DLC_STORE_BLURB,
@@ -2454,11 +2469,17 @@ function DoubleTakePairsRevealPanel({ round, className = "" }) {
   );
 }
 
-function getRoundCardBackSrc(themeName = "Default", { cardStyle = "classic" } = {}) {
-  return getUiCardBackSrc(themeName, { cardStyle });
+function getRoundCardBackSrc(
+  themeName = "Default",
+  { cardStyle = "classic", defaultBackSlug = "classic" } = {},
+) {
+  return getUiCardBackSrc(themeName, { cardStyle, defaultBackSlug });
 }
-function getRoundCardFrontSrc(themeName = "Default", { cardStyle = "classic" } = {}) {
-  return getUiCardFrontSrc(themeName, { cardStyle });
+function getRoundCardFrontSrc(
+  themeName = "Default",
+  { cardStyle = "classic", defaultBackSlug = "classic" } = {},
+) {
+  return getUiCardFrontSrc(themeName, { cardStyle, defaultBackSlug });
 }
 function getImposterCardFrontSrc() {
   return UI_CARD_LIAR_FRONT_SRC;
@@ -5363,6 +5384,7 @@ function RevealScreen({
   privatePromptLoading = false,
   playSfx = () => {},
   cardStyle = THEME_CARD_STYLE_CLASSIC,
+  defaultBackSlug = "classic",
 }) {
   const player = players[currentRevealIndex];
   const personaCalloutLine = getPersonaCalloutLineTextForPlayer(player, theme);
@@ -5411,12 +5433,18 @@ function RevealScreen({
   const promptTextRef = useRef(null);
   const promptFitContainerRef = useRef(null);
   const cardBackSrc = useMemo(
-    () => resolveBundledAssetSrc(getRoundCardBackSrc(theme, { cardStyle })),
-    [theme, cardStyle],
+    () =>
+      resolveBundledAssetSrc(
+        getRoundCardBackSrc(theme, { cardStyle, defaultBackSlug }),
+      ),
+    [theme, cardStyle, defaultBackSlug],
   );
   const themedCardFrontSrc = useMemo(
-    () => resolveBundledAssetSrc(getRoundCardFrontSrc(theme, { cardStyle })),
-    [theme, cardStyle],
+    () =>
+      resolveBundledAssetSrc(
+        getRoundCardFrontSrc(theme, { cardStyle, defaultBackSlug }),
+      ),
+    [theme, cardStyle, defaultBackSlug],
   );
   const cardFrontSrc = showImposterRevealUi
     ? resolveBundledAssetSrc(getImposterCardFrontSrc())
@@ -8267,6 +8295,11 @@ export default function App() {
     THEME_CARD_STYLE_CLASSIC,
   );
   const [cardStyleUnlockToast, setCardStyleUnlockToast] = useState(false);
+  const [playerProfile, setPlayerProfile] = useState(() => readLocalPlayerProfile());
+  const [achievementUnlockToast, setAchievementUnlockToast] = useState(null);
+  const profileSyncTimerRef = useRef(null);
+  const profileGameRecordedRef = useRef("");
+  const profileRoundRecordedRef = useRef("");
   const [customCategories, setCustomCategories] = useState(
     getStored("imposter-custom-categories-v2", []),
   );
@@ -8417,8 +8450,12 @@ export default function App() {
     [accountSession, unlockedThemePackIds],
   );
   const themeOptions = useMemo(
-    () => getThemeOptions(effectiveUnlockedPacks),
-    [effectiveUnlockedPacks],
+    () =>
+      getThemeOptions(
+        effectiveUnlockedPacks,
+        playerProfile?.achievementUnlockedThemeNames || [],
+      ),
+    [effectiveUnlockedPacks, playerProfile?.achievementUnlockedThemeNames],
   );
   const contentPacks = useContentPacks({
     unlockedThemePackIds: effectiveUnlockedPacks,
@@ -8587,6 +8624,31 @@ export default function App() {
       "discussion", "voting", "caught", "escaped", "winner", "onlineLobby",
     ]);
   }, [canonicalThemeName, refreshCopy]);
+  const handleSelectDefaultBackSlug = useCallback((slug) => {
+    setPlayerProfile((current) => {
+      const next = {
+        ...current,
+        selectedDefaultBackSlug: String(slug || "classic").trim() || "classic",
+      };
+      writeLocalPlayerProfile(next);
+      return next;
+    });
+  }, []);
+  const commitPlayerProfileUpdate = useCallback((updater) => {
+    setPlayerProfile((current) => {
+      const next = typeof updater === "function" ? updater(current) : updater;
+      writeLocalPlayerProfile(next);
+      return next;
+    });
+  }, []);
+  const applyNewlyUnlockedAchievements = useCallback((newlyUnlocked = []) => {
+    if (!Array.isArray(newlyUnlocked) || !newlyUnlocked.length) return;
+    const first = newlyUnlocked[0];
+    setAchievementUnlockToast({
+      title: first?.name || "Achievement unlocked!",
+      body: first?.description || "",
+    });
+  }, []);
   const themeMeta = THEME_META[normalizedThemeName] || THEME_META.Default;
   const availablePicturePackManifests = useMemo(
     () => PICTURE_DLC_MANIFESTS || [],
@@ -8682,6 +8744,39 @@ export default function App() {
   );
   useEffect(() => {
     if (screen !== "final") return;
+    const isGameHost = !onlineMode || onlineRole === "host";
+    const recordKey = `${canonicalThemeName}:${onlineMode}:${onlineRole}:${roundNumber}`;
+    if (profileGameRecordedRef.current !== recordKey) {
+      profileGameRecordedRef.current = recordKey;
+      const winner = [...players].sort(
+        (a, b) => Number(b.score || 0) - Number(a.score || 0),
+      )[0];
+      const personaName =
+        normalizePersonaProfile(personaProfile).inGameName || "";
+      const selfWon =
+        onlineMode && onlineJoinedPlayerId
+          ? winner?.id === onlineJoinedPlayerId
+          : winner?.name === personaName ||
+            winner?.name === players[0]?.name;
+      commitPlayerProfileUpdate((current) => {
+        const result = recordCompletedGame(current, {
+          themeName: canonicalThemeName,
+          mode: onlineMode ? "online" : "local",
+          role: onlineMode
+            ? onlineRole === "host"
+              ? "host"
+              : "player"
+            : "host",
+          won: Boolean(selfWon),
+          onlinePlayerId: onlineJoinedPlayerId,
+          personaInGameName: personaName,
+          players,
+        });
+        applyNewlyUnlockedAchievements(result.newlyUnlockedAchievements);
+        return result.profile;
+      });
+    }
+    if (!isGameHost) return;
     setUnlockedAltCardThemeKeys((current) => {
       const result = unlockAltCardStyleForTheme(current, canonicalThemeName);
       if (result.newlyUnlocked) {
@@ -8689,7 +8784,18 @@ export default function App() {
       }
       return result.unlockedKeys;
     });
-  }, [screen, canonicalThemeName]);
+  }, [
+    screen,
+    canonicalThemeName,
+    onlineMode,
+    onlineRole,
+    roundNumber,
+    players,
+    onlineJoinedPlayerId,
+    personaProfile,
+    commitPlayerProfileUpdate,
+    applyNewlyUnlockedAchievements,
+  ]);
   useEffect(() => {
     if (typeof window === "undefined") return undefined;
     const onE2eCompleteGame = (event) => {
@@ -8702,13 +8808,71 @@ export default function App() {
         }
         return result.unlockedKeys;
       });
+      commitPlayerProfileUpdate((current) => {
+        const result = recordCompletedGame(current, {
+          themeName,
+          mode: "local",
+          role: "host",
+          won: true,
+          players,
+        });
+        applyNewlyUnlockedAchievements(result.newlyUnlockedAchievements);
+        return result.profile;
+      });
       refreshCopy(["winner"]);
       setScreen("final");
     };
     window.addEventListener("pof-e2e-complete-game", onE2eCompleteGame);
-    return () =>
+    const onE2eAchievementToast = (event) => {
+      const title = event?.detail?.title || "Achievement unlocked!";
+      const body = event?.detail?.body || "";
+      setAchievementUnlockToast({ title, body });
+    };
+    window.addEventListener("pof-e2e-achievement-toast", onE2eAchievementToast);
+    return () => {
       window.removeEventListener("pof-e2e-complete-game", onE2eCompleteGame);
-  }, [canonicalThemeName, refreshCopy]);
+      window.removeEventListener(
+        "pof-e2e-achievement-toast",
+        onE2eAchievementToast,
+      );
+    };
+  }, [
+    canonicalThemeName,
+    refreshCopy,
+    players,
+    commitPlayerProfileUpdate,
+    applyNewlyUnlockedAchievements,
+  ]);
+  useEffect(() => {
+    writeLocalPlayerProfile(playerProfile);
+  }, [playerProfile]);
+  useEffect(() => {
+    if (!isCloudAuthProvider(accountSession?.authProvider)) return undefined;
+    const token = supabaseSession?.access_token;
+    if (!token) return undefined;
+    if (profileSyncTimerRef.current) {
+      clearTimeout(profileSyncTimerRef.current);
+    }
+    profileSyncTimerRef.current = setTimeout(() => {
+      pushRemotePlayerProfile(token, playerProfile).catch(() => {});
+    }, 1200);
+    return () => {
+      if (profileSyncTimerRef.current) {
+        clearTimeout(profileSyncTimerRef.current);
+      }
+    };
+  }, [playerProfile, accountSession?.authProvider, supabaseSession?.access_token]);
+  useEffect(() => {
+    const token = supabaseSession?.access_token;
+    if (!token || !isCloudAuthProvider(accountSession?.authProvider)) return;
+    fetchRemotePlayerProfile(token)
+      .then((remote) => {
+        if (remote) {
+          setPlayerProfile(mergeRemotePlayerProfile(remote));
+        }
+      })
+      .catch(() => {});
+  }, [supabaseSession?.access_token, accountSession?.authProvider]);
   useEffect(
     () => setStored("imposter-theme-v3", normalizedThemeName),
     [normalizedThemeName],
@@ -9603,6 +9767,27 @@ export default function App() {
     if (normalizedPhase === "liar-reveal") {
       playSfx(IMPOSTER_FOUND_SFX_SRC, { volume: 0.8 });
       refreshCopy([Boolean(resolution?.imposterCaught) ? "caught" : "escaped"]);
+      const roundRecordKey = `${snapshot.code || lobbyCode}:${serverRound.roundNumber || 0}:round`;
+      if (profileRoundRecordedRef.current !== roundRecordKey && resolution) {
+        profileRoundRecordedRef.current = roundRecordKey;
+        const snapshotGamePlayers = toGamePlayers(snapshotPlayers);
+        const selfPlayerId =
+          sessionSnapshot?.playerId || onlineJoinedPlayerId || "";
+        commitPlayerProfileUpdate((current) => {
+          const result = recordRoundOutcome(current, {
+            players: snapshotGamePlayers,
+            round: serverRound,
+            resolution,
+            themeName: canonicalThemeName,
+            attribution: "online",
+            onlinePlayerId: selfPlayerId,
+            personaInGameName:
+              normalizePersonaProfile(personaProfile).inGameName || "",
+          });
+          applyNewlyUnlockedAchievements(result.newlyUnlockedAchievements);
+          return result.profile;
+        });
+      }
       setScreen("liar-reveal");
       return serverRound;
     }
@@ -9871,6 +10056,11 @@ export default function App() {
     setOnlinePrivatePrompt(null);
     setOnlinePrivatePromptError("");
     refreshCopy(["chooser"]);
+    commitPlayerProfileUpdate((current) => {
+      const result = recordHostedGame(current);
+      applyNewlyUnlockedAchievements(result.newlyUnlockedAchievements);
+      return result.profile;
+    });
     setScreen("game-intro");
   }
   useEffect(() => {
@@ -9965,6 +10155,20 @@ export default function App() {
     setRoundGains(resolution.roundGains);
     setRoundBreakdown(resolution.roundBreakdown);
     setImposterCaught(Boolean(resolution.imposterCaught));
+    commitPlayerProfileUpdate((current) => {
+      const result = recordRoundOutcome(current, {
+        players,
+        round,
+        resolution,
+        themeName: canonicalThemeName,
+        attribution: onlineMode ? "online" : "device",
+        onlinePlayerId: onlineJoinedPlayerId,
+        personaInGameName:
+          normalizePersonaProfile(personaProfile).inGameName || "",
+      });
+      applyNewlyUnlockedAchievements(result.newlyUnlockedAchievements);
+      return result.profile;
+    });
     playSfx(IMPOSTER_FOUND_SFX_SRC, { volume: 0.74 });
     setScreen("liar-reveal");
   }
@@ -10175,6 +10379,11 @@ export default function App() {
     onlineSessionRef.current = session;
     setStoredOnlineSession(session);
     setPlayers(toGamePlayers(snapshot.players || []));
+    commitPlayerProfileUpdate((current) => {
+      const result = recordHostedGame(current);
+      applyNewlyUnlockedAchievements(result.newlyUnlockedAchievements);
+      return result.profile;
+    });
     setScreen("online-lobby-created");
   }
   async function runOnlineJoinCodeStep() {
@@ -10573,6 +10782,9 @@ export default function App() {
     setRoundsPerPlayer(1);
     setGrillSettings({ micEnabled: true, ttsEnabled: true });
     setCardStyleUnlockToast(false);
+    setAchievementUnlockToast(null);
+    profileGameRecordedRef.current = "";
+    profileRoundRecordedRef.current = "";
     setRound(null);
     setRoundNumber(1);
     setCurrentRoundOwnerIndex(0);
@@ -10737,12 +10949,24 @@ export default function App() {
               setScreen("online-join");
               return;
             }
+            if (to === "player-profile") {
+              setScreen("player-profile");
+              return;
+            }
             setScreen(to);
           }}
           homeLine={copyState.home}
           joinOnlyMode={isWebJoinOnlyMode()}
           canCreateLocalGame={entitlements.canCreateLocalGame}
           canCreateOnlineLobby={entitlements.canCreateOnlineLobby}
+        />
+      )}
+      {screen === "player-profile" && (
+        <NeonPlayerProfileScreen
+          profile={playerProfile}
+          unlockedAltCardThemeKeys={unlockedAltCardThemeKeys}
+          onSelectDefaultBack={handleSelectDefaultBackSlug}
+          onBack={() => setScreen("home")}
         />
       )}
       {screen === "development-progress" && (
@@ -11215,6 +11439,7 @@ export default function App() {
             onlinePrivatePromptError={onlinePrivatePromptError}
             playSfx={playSfx}
             cardStyle={activeThemeCardStyle}
+            defaultBackSlug={playerProfile?.selectedDefaultBackSlug || "classic"}
           />
         </BrandedScreen>
       )}
@@ -11599,6 +11824,19 @@ export default function App() {
         setCustomCategories={setCustomCategories}
       />
       <StartupPreloadOverlay show={!startupGraphicsReady} />
+      {achievementUnlockToast ? (
+        <div
+          className="fixed bottom-6 left-1/2 z-[135] w-[min(22rem,calc(100%-2rem))] -translate-x-1/2 rounded-2xl border border-fuchsia-300/45 bg-fuchsia-500/20 px-4 py-3 text-center shadow-[0_12px_32px_rgba(0,0,0,0.45)]"
+          data-testid="achievement-unlock-toast"
+        >
+          <div className="pof-heading text-sm text-fuchsia-100">
+            {achievementUnlockToast.title}
+          </div>
+          {achievementUnlockToast.body ? (
+            <p className="mt-1 text-xs text-white/75">{achievementUnlockToast.body}</p>
+          ) : null}
+        </div>
+      ) : null}
     </div>
   );
 }

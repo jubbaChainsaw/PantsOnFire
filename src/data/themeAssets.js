@@ -1,6 +1,7 @@
 import { toCanonicalThemeName } from './themeAliases';
 import { THEME_GENERATED_HOST_MEDIA } from './generatedHostMedia';
 import { resolveBundledAssetSrc } from '../lib/publicAssetUrl.js';
+import unlockableBackManifest from '../../public/assets/themes/default/cards/unlockable/index.json';
 
 export const THEME_ASSETS = {
   Default: {
@@ -226,10 +227,42 @@ export function getThemeCardAssets(themeName = 'Default') {
   return cardAssetsForSlug(slug);
 }
 
-function resolveThemePromptCardPaths(themeName = 'Default', { cardStyle = 'classic' } = {}) {
+const DEFAULT_UNLOCKABLE_BACKS = Array.isArray(unlockableBackManifest)
+  ? unlockableBackManifest
+  : [];
+
+export function resolveDefaultPromptBackSrc(slug = 'classic') {
+  const normalized = String(slug || 'classic').trim();
+  if (!normalized || normalized === 'classic') {
+    return '/assets/themes/default/cards/prompt-back-classic.png';
+  }
+  const entry = DEFAULT_UNLOCKABLE_BACKS.find((item) => item.slug === normalized);
+  if (!entry) {
+    return '/assets/themes/default/cards/prompt-back-classic.png';
+  }
+  return `/assets/themes/default/cards/unlockable/${entry.file || `back-${entry.slug}.png`}`;
+}
+
+function resolveThemePromptCardPaths(
+  themeName = 'Default',
+  { cardStyle = 'classic', defaultBackSlug = 'classic' } = {},
+) {
   const cards = getThemeCardAssets(themeName);
   const useAlt = cardStyle === 'alt';
   const fallback = DEFAULT_THEME_CARD_ASSETS;
+  const canonical = toCanonicalThemeName(themeName) || 'Default';
+  let back = useAlt
+    ? cards.promptCardBackAlt
+      || fallback.promptCardBackAlt
+      || cards.promptCardBackClassic
+      || fallback.promptCardBackClassic
+    : cards.promptCardBackClassic
+      || fallback.promptCardBackClassic
+      || cards.promptCardBackAlt
+      || fallback.promptCardBackAlt;
+  if (canonical === 'Default' && !useAlt) {
+    back = resolveDefaultPromptBackSrc(defaultBackSlug);
+  }
   return {
     front: useAlt
       ? cards.promptCardFrontAlt
@@ -240,15 +273,7 @@ function resolveThemePromptCardPaths(themeName = 'Default', { cardStyle = 'class
         || fallback.promptCardFrontClassic
         || cards.promptCardFrontAlt
         || fallback.promptCardFrontAlt,
-    back: useAlt
-      ? cards.promptCardBackAlt
-        || fallback.promptCardBackAlt
-        || cards.promptCardBackClassic
-        || fallback.promptCardBackClassic
-      : cards.promptCardBackClassic
-        || fallback.promptCardBackClassic
-        || cards.promptCardBackAlt
-        || fallback.promptCardBackAlt,
+    back,
   };
 }
 

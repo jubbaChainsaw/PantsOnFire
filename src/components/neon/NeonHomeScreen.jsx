@@ -124,7 +124,7 @@ export default function NeonHomeScreen({
               label="Leaderboard and stats"
               onClick={() => {
                 tapFx();
-                go('development-progress');
+                go('player-profile');
               }}
             />
             <IconBtn

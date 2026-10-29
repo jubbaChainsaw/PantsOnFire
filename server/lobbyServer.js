@@ -15,6 +15,11 @@ import {
   createPostgresEntitlementsStore,
   ensurePoFEntitlementsSchema,
 } from './pofEntitlementsStore.js';
+import {
+  createPostgresPlayerProfileStore,
+  ensurePoFPlayerProfileSchema,
+} from './pofPlayerProfileStore.js';
+import { mountPlayerProfileRoutes } from './playerProfileRoutes.js';
 
 const PORT = Number(process.env.LOBBY_SERVER_PORT || process.env.PORT || 8787);
 const CLIENT_ORIGINS_RAW = String(
@@ -159,6 +164,7 @@ if (databaseUrl) {
   pgPool = new pg.Pool({ connectionString: databaseUrl, max: 10 });
   await ensurePoFAccountSchema(pgPool);
   await ensurePoFEntitlementsSchema(pgPool);
+  await ensurePoFPlayerProfileSchema(pgPool);
 }
 
 const accountStore = createPoFAccountStore(pgPool);
@@ -185,6 +191,31 @@ if (pgPool) {
   entitlementsStore = new Map();
 }
 
+const profileRedisPrefix =
+  String(process.env.PROFILE_REDIS_KEY_PREFIX || 'pof:profile').trim() || 'pof:profile';
+let playerProfileStore;
+if (pgPool) {
+  playerProfileStore = createPostgresPlayerProfileStore(pgPool);
+} else if (redisClient) {
+  playerProfileStore = {
+    get: async (userId) => {
+      const raw = await redisClient.get(`${profileRedisPrefix}:${userId}`);
+      if (!raw) return undefined;
+      try {
+        return JSON.parse(raw);
+      } catch {
+        return undefined;
+      }
+    },
+    set: async (userId, profile) => {
+      await redisClient.set(`${profileRedisPrefix}:${userId}`, JSON.stringify(profile));
+      return profile;
+    },
+  };
+} else {
+  playerProfileStore = new Map();
+}
+
 const app = express();
 app.set('trust proxy', 1);
 app.use(cors({ origin: corsOriginHandler }));
@@ -192,6 +223,7 @@ mountStripeWebhook(app, { store: entitlementsStore });
 app.use(express.json({ limit: '3mb' }));
 mountPoFAuthRoutes(app, { accountStore });
 mountEntitlementsRoutes(app, { store: entitlementsStore });
+mountPlayerProfileRoutes(app, { store: playerProfileStore });
 mountStripeBillingRoutes(app, { store: entitlementsStore });
 
 const httpServer = createServer(app);
