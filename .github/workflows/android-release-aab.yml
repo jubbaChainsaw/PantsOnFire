@@ -63,7 +63,7 @@ jobs:
         run: npx expo prebuild --platform android --no-install
 
       - name: Patch WebView DLC asset loader
-        run: node scripts/patch-rn-webview-asset-loader.cjs
+        run: node scripts/patch-rn-webview-asset-loader.mjs
 
       - name: Stage web bundle into Android assets
         run: node scripts/stageAndroidBundledWeb.mjs dist-android
