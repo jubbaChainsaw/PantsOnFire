@@ -1,4 +1,4 @@
-/** Android WebViewAssetLoader path for unpacked DLC (see scripts/patch-rn-webview-asset-loader.cjs). */
+/** Android WebViewAssetLoader path for unpacked DLC (see scripts/patch-rn-webview-asset-loader.mjs). */
 export const NATIVE_DLC_ASSET_ORIGIN = 'https://appassets.androidplatform.net/dlc/';
 
 export const CONTENT_PACK_STORAGE_KEYS = {

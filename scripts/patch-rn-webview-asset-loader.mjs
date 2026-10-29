@@ -17,9 +17,20 @@ if (!existsSync(clientPath)) {
 
 let source = readFileSync(clientPath, 'utf8');
 
-if (source.includes('PofDlcAssetLoader')) {
+if (source.includes('tryPofDlcIntercept')) {
   console.log('WebView asset loader patch already applied.');
   process.exit(0);
+}
+
+if (source.includes('PofDlcAssetLoader.shouldInterceptRequest')) {
+  source = source.replace(
+    /private WebResourceResponse tryPofDlcIntercept[\s\S]*?shouldInterceptRequest\(WebView view, String url\) \{[\s\S]*?\}\n/,
+    '',
+  );
+  source = source.replace(
+    /@Override\s+public WebResourceResponse shouldInterceptRequest\(WebView view, WebResourceRequest request\) \{[\s\S]*?return super\.shouldInterceptRequest\(view, request\);\s+\}/,
+    '',
+  );
 }
 
 const importBlock =
@@ -33,9 +44,21 @@ if (!source.includes('WebResourceResponse')) {
 }
 
 const hookMethod = `
+    private WebResourceResponse tryPofDlcIntercept(WebResourceRequest request) {
+        try {
+            Class<?> loader = Class.forName("app.pantsonfire.findtheliar.PofDlcAssetLoader");
+            java.lang.reflect.Method method =
+                loader.getMethod("shouldInterceptRequest", WebResourceRequest.class);
+            Object result = method.invoke(null, request);
+            return result instanceof WebResourceResponse ? (WebResourceResponse) result : null;
+        } catch (Throwable ignored) {
+            return null;
+        }
+    }
+
     @Override
     public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
-        WebResourceResponse dlcResponse = app.pantsonfire.findtheliar.PofDlcAssetLoader.shouldInterceptRequest(request);
+        WebResourceResponse dlcResponse = tryPofDlcIntercept(request);
         if (dlcResponse != null) {
             return dlcResponse;
         }
