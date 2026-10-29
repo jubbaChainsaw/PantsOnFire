@@ -112,7 +112,6 @@ import {
   normalizeThemeCardStyleByTheme,
   normalizeUnlockedAltCardThemeKeys,
   resolveActiveThemeCardStyle,
-  unlockAltCardStyleForTheme,
 } from "./data/themeCardStyles";
 import {
   readLocalPlayerProfile,
@@ -129,12 +128,7 @@ import {
   pushRemotePlayerProfile,
 } from "./lib/playerProfileApi.js";
 import { fetchMyReferral, attributeReferralCode } from "./lib/referralApi.js";
-import {
-  clearPendingReferralCode,
-  parseReferralCodeFromLocation,
-  readPendingReferralCode,
-  storePendingReferralCode,
-} from "./lib/referralAttribution.js";
+import { completeHostedOnlineGameOnServer } from "./lib/altCardUnlockApi.js";
 import NeonPlayerProfileScreen from "./components/neon/NeonPlayerProfileScreen.jsx";
 import {
   ADDON_TWIST_TRUTH,
@@ -8285,14 +8279,18 @@ export default function App() {
     getStored("imposter-persona-only-v1", false),
   );
   const [premiumEnabled, setPremiumEnabled] = useState(false);
-  const [unlockedAltCardThemeKeys, setUnlockedAltCardThemeKeys] = useState(() =>
-    normalizeUnlockedAltCardThemeKeys(
-      getStored(
-        THEME_ALT_CARD_UNLOCKS_STORAGE_KEY,
-        readAccountSession()?.unlockedAltCardThemeKeys || [],
-      ),
-    ),
-  );
+  const [unlockedAltCardThemeKeys, setUnlockedAltCardThemeKeys] = useState(() => {
+    const session = readAccountSession();
+    if (!isCloudAuthProvider(session?.authProvider)) {
+      return [];
+    }
+    const fromProfile = readLocalPlayerProfile()?.unlockedAltCardThemeKeys;
+    return normalizeUnlockedAltCardThemeKeys(
+      fromProfile?.length
+        ? fromProfile
+        : session?.unlockedAltCardThemeKeys || [],
+    );
+  });
   const [themeCardStyleByTheme, setThemeCardStyleByTheme] = useState(() =>
     normalizeThemeCardStyleByTheme(
       getStored(THEME_CARD_STYLE_BY_THEME_STORAGE_KEY, {}),
@@ -8308,6 +8306,7 @@ export default function App() {
   const profileSyncTimerRef = useRef(null);
   const profileGameRecordedRef = useRef("");
   const profileRoundRecordedRef = useRef("");
+  const altUnlockServerRecordedRef = useRef("");
   const [customCategories, setCustomCategories] = useState(
     getStored("imposter-custom-categories-v2", []),
   );
@@ -8581,7 +8580,11 @@ export default function App() {
   useEffect(() => {
     if (authLoading) return;
     if (supabaseSession?.access_token) return;
-    setAccountSession(readAccountSession());
+    const session = readAccountSession();
+    setAccountSession(session);
+    if (!isCloudAuthProvider(session?.authProvider)) {
+      setUnlockedAltCardThemeKeys([]);
+    }
   }, [authLoading, supabaseSession?.access_token]);
   const normalizedThemeName = useMemo(
     () => normalizeThemeSelection(nameTheme, themeOptions),
@@ -8678,6 +8681,9 @@ export default function App() {
       }
       setPlayerProfile(merged);
       writeLocalPlayerProfile(merged);
+      setUnlockedAltCardThemeKeys(
+        normalizeUnlockedAltCardThemeKeys(merged.unlockedAltCardThemeKeys || []),
+      );
       if (accessToken) {
         pushRemotePlayerProfile(accessToken, merged).catch(() => {});
       }
@@ -8811,14 +8817,6 @@ export default function App() {
         return result.profile;
       });
     }
-    if (!isGameHost) return;
-    setUnlockedAltCardThemeKeys((current) => {
-      const result = unlockAltCardStyleForTheme(current, canonicalThemeName);
-      if (result.newlyUnlocked) {
-        setCardStyleUnlockToast(true);
-      }
-      return result.unlockedKeys;
-    });
   }, [
     screen,
     canonicalThemeName,
@@ -8831,18 +8829,62 @@ export default function App() {
     commitPlayerProfileUpdate,
     applyNewlyUnlockedAchievements,
   ]);
+  const recordServerAltUnlockForOnlineHost = useCallback(async () => {
+    if (!onlineMode || onlineRole !== "host") return;
+    const token = supabaseSession?.access_token;
+    if (!token || !isCloudAuthProvider(accountSession?.authProvider)) return;
+    const sessionSnapshot = onlineSessionRef.current;
+    const playerId = sessionSnapshot?.playerId || onlineJoinedPlayerId;
+    const sessionToken = sessionSnapshot?.sessionToken || "";
+    const code = String(lobbyCode || "").trim().toUpperCase();
+    if (!code || !playerId || !sessionToken) return;
+    const recordKey = `${code}:${canonicalThemeName}`;
+    if (altUnlockServerRecordedRef.current === recordKey) return;
+    try {
+      const result = await completeHostedOnlineGameOnServer(code, {
+        playerId,
+        sessionToken,
+        accessToken: token,
+      });
+      altUnlockServerRecordedRef.current = recordKey;
+      if (result?.unlockedThemeKeys) {
+        setUnlockedAltCardThemeKeys(
+          normalizeUnlockedAltCardThemeKeys(result.unlockedThemeKeys),
+        );
+      }
+      if (result?.newlyUnlocked) {
+        setCardStyleUnlockToast(true);
+      }
+      if (result?.unlockedThemeKeys?.length) {
+        commitPlayerProfileUpdate((current) => ({
+          ...current,
+          unlockedAltCardThemeKeys: normalizeUnlockedAltCardThemeKeys(
+            result.unlockedThemeKeys,
+          ),
+        }));
+      }
+    } catch {
+      /* server is source of truth; ignore transient failures */
+    }
+  }, [
+    onlineMode,
+    onlineRole,
+    supabaseSession?.access_token,
+    accountSession?.authProvider,
+    onlineJoinedPlayerId,
+    lobbyCode,
+    canonicalThemeName,
+    commitPlayerProfileUpdate,
+  ]);
+  useEffect(() => {
+    if (screen !== "final") return;
+    void recordServerAltUnlockForOnlineHost();
+  }, [screen, recordServerAltUnlockForOnlineHost]);
   useEffect(() => {
     if (typeof window === "undefined") return undefined;
     const onE2eCompleteGame = (event) => {
       const themeName =
         event?.detail?.themeName || canonicalThemeName || "Default";
-      setUnlockedAltCardThemeKeys((current) => {
-        const result = unlockAltCardStyleForTheme(current, themeName);
-        if (result.newlyUnlocked) {
-          setCardStyleUnlockToast(true);
-        }
-        return result.unlockedKeys;
-      });
       commitPlayerProfileUpdate((current) => {
         const result = recordCompletedGame(current, {
           themeName,
@@ -8864,11 +8906,22 @@ export default function App() {
       setAchievementUnlockToast({ title, body });
     };
     window.addEventListener("pof-e2e-achievement-toast", onE2eAchievementToast);
+    const onE2eCardStyleUnlockToast = () => {
+      setCardStyleUnlockToast(true);
+    };
+    window.addEventListener(
+      "pof-e2e-card-style-unlock-toast",
+      onE2eCardStyleUnlockToast,
+    );
     return () => {
       window.removeEventListener("pof-e2e-complete-game", onE2eCompleteGame);
       window.removeEventListener(
         "pof-e2e-achievement-toast",
         onE2eAchievementToast,
+      );
+      window.removeEventListener(
+        "pof-e2e-card-style-unlock-toast",
+        onE2eCardStyleUnlockToast,
       );
     };
   }, [
@@ -10292,6 +10345,7 @@ export default function App() {
     onlineTransportRef.current?.close();
     onlineTransportRef.current = null;
     onlineStartedRevisionHandledRef.current = "";
+    altUnlockServerRecordedRef.current = "";
     onlineSessionRef.current = null;
     setStoredOnlineSession(null);
     setOnlineMode(false);
@@ -10334,10 +10388,16 @@ export default function App() {
     let resolvedHostPlayer = hostPlayer;
     let sessionToken = "";
     try {
+      const hostAccessToken =
+        isCloudAuthProvider(accountSession?.authProvider) &&
+        supabaseSession?.access_token
+          ? supabaseSession.access_token
+          : "";
       const result = await createLobbyOnServer({
         hostName: host,
         hostPlayer,
         maxPlayers: onlineLobbyMaxPlayers,
+        accessToken: hostAccessToken,
         settings: {
           themeName: canonicalThemeName,
           mode: "classic",

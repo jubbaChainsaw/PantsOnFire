@@ -1,4 +1,4 @@
-import { toCanonicalThemeName } from './themeAliases';
+import { toCanonicalThemeName } from './themeAliases.js';
 
 export const THEME_CARD_STYLE_CLASSIC = 'classic';
 export const THEME_CARD_STYLE_ALT = 'alt';

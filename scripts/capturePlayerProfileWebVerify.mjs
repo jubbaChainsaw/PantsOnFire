@@ -20,7 +20,8 @@ function seedProfile() {
       tierId: 'local_liar',
       addonTwistTruth: false,
       unlockedThemePackIds: [],
-      authProvider: 'local',
+      authProvider: 'supabase',
+      unlockedAltCardThemeKeys: ['Pirates', 'Default'],
     }),
   );
   localStorage.setItem(
@@ -63,9 +64,9 @@ function seedProfile() {
       unlockedDefaultBackSlugs: ['flaming-pants', 'lie-detector'],
       achievementUnlockedThemeNames: ['Cowboys'],
       selectedDefaultBackSlug: 'flaming-pants',
+      unlockedAltCardThemeKeys: ['Pirates', 'Default'],
     }),
   );
-  localStorage.setItem('imposter-theme-alt-card-unlocks-v1', JSON.stringify(['Pirates', 'Default']));
 }
 
 async function openProfile(page) {

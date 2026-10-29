@@ -32,6 +32,7 @@ async function waitForAppShell(page) {
 function baseLocalStorage(themeName, { altUnlocked = false, cardStyleByTheme = {} } = {}) {
   localStorage.setItem('pof-content-packs-prompt-dismissed-v1', 'true');
   localStorage.setItem('imposter-theme-v3', themeName);
+  const authProvider = altUnlocked ? 'supabase' : 'local';
   localStorage.setItem(
     'imposter-account-session-v2',
     JSON.stringify({
@@ -40,9 +41,40 @@ function baseLocalStorage(themeName, { altUnlocked = false, cardStyleByTheme = {
       tierId: 'local_liar',
       addonTwistTruth: false,
       unlockedThemePackIds: [],
-      authProvider: 'local',
+      authProvider,
+      unlockedAltCardThemeKeys: altUnlocked ? [themeName] : [],
     }),
   );
+  if (altUnlocked) {
+    localStorage.setItem(
+      'imposter-player-profile-v1',
+      JSON.stringify({
+        version: 1,
+        stats: {
+          gamesPlayed: 0,
+          gamesHosted: 0,
+          gamesHostedCompleted: 1,
+          gamesWon: 0,
+          timesLiar: 0,
+          timesLiarNotCaught: 0,
+          timesLiarCaught: 0,
+          timesAccusedInnocent: 0,
+          votesCorrect: 0,
+          votesIncorrect: 0,
+          themesPlayed: {},
+          roundTypesPlayed: {},
+        },
+        recentGames: [],
+        achievementProgress: {},
+        unlockedAchievementIds: [],
+        unlockedDefaultBackSlugs: [],
+        achievementUnlockedThemeNames: [],
+        selectedDefaultBackSlug: 'classic',
+        referralUnlockToastPending: false,
+        unlockedAltCardThemeKeys: [themeName],
+      }),
+    );
+  }
   localStorage.setItem(
     'imposter-theme-alt-card-unlocks-v1',
     JSON.stringify(altUnlocked ? [themeName] : []),
@@ -135,14 +167,6 @@ async function main() {
       localStorage.setItem('pof-content-packs-prompt-dismissed-v1', 'true');
       localStorage.setItem('imposter-theme-v3', 'Default');
       localStorage.setItem(
-        'imposter-theme-alt-card-unlocks-v1',
-        JSON.stringify(['Default']),
-      );
-      localStorage.setItem(
-        'imposter-theme-card-style-by-theme-v1',
-        JSON.stringify({ Default: 'alt' }),
-      );
-      localStorage.setItem(
         'imposter-account-session-v2',
         JSON.stringify({
           userId: 'card-style-verify',
@@ -150,8 +174,41 @@ async function main() {
           tierId: 'local_liar',
           addonTwistTruth: false,
           unlockedThemePackIds: [],
-          authProvider: 'local',
+          authProvider: 'supabase',
+          unlockedAltCardThemeKeys: ['Default'],
         }),
+      );
+      localStorage.setItem(
+        'imposter-player-profile-v1',
+        JSON.stringify({
+          version: 1,
+          stats: {
+            gamesPlayed: 0,
+            gamesHosted: 0,
+            gamesHostedCompleted: 1,
+            gamesWon: 0,
+            timesLiar: 0,
+            timesLiarNotCaught: 0,
+            timesLiarCaught: 0,
+            timesAccusedInnocent: 0,
+            votesCorrect: 0,
+            votesIncorrect: 0,
+            themesPlayed: {},
+            roundTypesPlayed: {},
+          },
+          recentGames: [],
+          achievementProgress: {},
+          unlockedAchievementIds: [],
+          unlockedDefaultBackSlugs: [],
+          achievementUnlockedThemeNames: [],
+          selectedDefaultBackSlug: 'classic',
+          referralUnlockToastPending: false,
+          unlockedAltCardThemeKeys: ['Default'],
+        }),
+      );
+      localStorage.setItem(
+        'imposter-theme-card-style-by-theme-v1',
+        JSON.stringify({ Default: 'alt' }),
       );
     });
     await page.goto('/');
@@ -199,11 +256,9 @@ async function main() {
     await page.goto('/');
     await waitForAppShell(page);
     await page.getByRole('button', { name: 'Play', exact: true }).click({ timeout: 30_000 });
-    await page.evaluate(({ themeName }) => {
-      window.dispatchEvent(
-        new CustomEvent('pof-e2e-complete-game', { detail: { themeName } }),
-      );
-    }, { themeName: THEME });
+    await page.evaluate(() => {
+      window.dispatchEvent(new CustomEvent('pof-e2e-card-style-unlock-toast'));
+    });
     await page.getByTestId('card-style-unlock-toast').waitFor({
       state: 'visible',
       timeout: 15_000,

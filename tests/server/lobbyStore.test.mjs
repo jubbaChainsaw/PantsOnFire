@@ -297,3 +297,90 @@ test('expired session tokens are rejected', async () => {
   const resumed = await store.resumePlayer(created.lobby.code, created.sessionToken, 'client-host');
   assert.equal(resumed.error, 'lobby-session-expired');
 });
+
+test('completeHostedOnlineGame requires linked host auth and a finished match', async () => {
+  const store = makeStore();
+  const { code, members } = await makeLobbyWithPlayers(store, 3);
+  const host = members[0];
+  await readyAllAndStart(store, code, members);
+
+  const missingAuth = await store.completeHostedOnlineGame(
+    code,
+    host.player.id,
+    host.sessionToken,
+  );
+  assert.equal(missingAuth.error, 'host-not-linked');
+
+  const created = await store.createLobby({
+    hostName: 'Auth Host',
+    hostPlayer: { name: 'Auth Host', clientId: 'client-auth-host' },
+    hostAuthUserId: 'auth-user-99',
+    settings: { themeName: 'Pirates', winCondition: 'points', pointsToWin: 5 },
+  });
+  const authCode = created.lobby.code;
+  const authHost = {
+    player: created.player,
+    sessionToken: created.sessionToken,
+    clientId: 'client-auth-host',
+  };
+  for (let i = 1; i < 3; i += 1) {
+    const joined = await store.upsertPlayer(authCode, {
+      name: `Guest ${i}`,
+      clientId: `client-guest-${i}`,
+    });
+    assert.equal(joined.error, undefined);
+    const guestReady = await store.setPlayerReady(
+      authCode,
+      joined.player.id,
+      joined.sessionToken,
+      true,
+    );
+    assert.equal(guestReady.error, undefined);
+  }
+  const hostReady = await store.setPlayerReady(
+    authCode,
+    authHost.player.id,
+    authHost.sessionToken,
+    true,
+  );
+  assert.equal(hostReady.error, undefined);
+  authHost.sessionToken = hostReady.sessionToken;
+  const started = await store.startLobby(
+    authCode,
+    authHost.clientId,
+    authHost.sessionToken,
+  );
+  assert.equal(started.error, undefined);
+  authHost.sessionToken = started.sessionToken;
+
+  const notDone = await store.completeHostedOnlineGame(
+    authCode,
+    authHost.player.id,
+    authHost.sessionToken,
+  );
+  assert.equal(notDone.error, 'game-not-complete');
+
+  const lobby = await store.getLobby(authCode);
+  lobby.players = lobby.players.map((player, index) => ({
+    ...player,
+    score: index === 0 ? 5 : 0,
+  }));
+  await store.saveLobby(lobby);
+  const complete = await store.completeHostedOnlineGame(
+    authCode,
+    authHost.player.id,
+    authHost.sessionToken,
+  );
+  assert.equal(complete.error, undefined);
+  assert.equal(complete.hostAuthUserId, 'auth-user-99');
+  assert.equal(complete.themeName, 'Pirates');
+  assert.equal(complete.alreadyRecorded, false);
+
+  const again = await store.completeHostedOnlineGame(
+    authCode,
+    authHost.player.id,
+    authHost.sessionToken,
+  );
+  assert.equal(again.error, undefined);
+  assert.equal(again.alreadyRecorded, true);
+});

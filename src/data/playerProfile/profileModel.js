@@ -25,6 +25,8 @@ export function createEmptyPlayerProfile() {
     unlockedDefaultBackSlugs: [],
     achievementUnlockedThemeNames: [],
     selectedDefaultBackSlug: 'classic',
+    referralUnlockToastPending: false,
+    unlockedAltCardThemeKeys: [],
   };
 }
 
@@ -73,6 +75,9 @@ export function normalizePlayerProfile(raw) {
     selectedDefaultBackSlug:
       String(raw.selectedDefaultBackSlug || 'classic').trim() || 'classic',
     referralUnlockToastPending: Boolean(raw.referralUnlockToastPending),
+    unlockedAltCardThemeKeys: Array.isArray(raw.unlockedAltCardThemeKeys)
+      ? [...new Set(raw.unlockedAltCardThemeKeys.map(String))]
+      : [],
   };
 }
 
@@ -149,6 +154,12 @@ export function mergePlayerProfiles(local, remote) {
     selectedDefaultBackSlug: a.selectedDefaultBackSlug || b.selectedDefaultBackSlug,
     referralUnlockToastPending:
       a.referralUnlockToastPending || b.referralUnlockToastPending,
+    unlockedAltCardThemeKeys: [
+      ...new Set([
+        ...(a.unlockedAltCardThemeKeys || []),
+        ...(b.unlockedAltCardThemeKeys || []),
+      ]),
+    ],
   });
 }
 

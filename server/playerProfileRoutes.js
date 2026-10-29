@@ -1,5 +1,6 @@
 import { resolveAuthUserFromBearer } from './resolveAuthUser.js';
 import { mergePlayerProfiles, normalizePlayerProfile } from '../src/data/playerProfile/profileModel.js';
+import { normalizeUnlockedAltCardThemeKeys } from '../src/data/themeCardStyles.js';
 
 export function mountPlayerProfileRoutes(app, { store } = {}) {
   const profileStore = store || new Map();
@@ -39,6 +40,10 @@ export function mountPlayerProfileRoutes(app, { store } = {}) {
       await Promise.resolve(profileStore.get(userId)),
     );
     const merged = mergePlayerProfiles(existing, incoming);
+    // Alt card unlocks are granted only by the lobby completion endpoint — never via profile PUT.
+    merged.unlockedAltCardThemeKeys = normalizeUnlockedAltCardThemeKeys(
+      existing.unlockedAltCardThemeKeys,
+    );
     await Promise.resolve(profileStore.set(userId, merged));
     res.json({ profile: merged });
   });

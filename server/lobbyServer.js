@@ -27,6 +27,8 @@ import {
 import { mountPlayerProfileRoutes } from './playerProfileRoutes.js';
 import { mountReferralRoutes } from './referralRoutes.js';
 import { createReferralHooks } from './referralService.js';
+import { mountAltCardUnlockRoutes } from './altCardUnlockRoutes.js';
+import { resolveAuthUserFromBearer } from './resolveAuthUser.js';
 
 const PORT = Number(process.env.LOBBY_SERVER_PORT || process.env.PORT || 8787);
 const CLIENT_ORIGINS_RAW = String(
@@ -242,6 +244,7 @@ mountPoFAuthRoutes(app, { accountStore });
 mountEntitlementsRoutes(app, { store: entitlementsStore, referralHooks });
 mountPlayerProfileRoutes(app, { store: playerProfileStore });
 mountReferralRoutes(app, { referralStore });
+mountAltCardUnlockRoutes(app, { store: playerProfileStore, lobbyStore: store });
 mountStripeBillingRoutes(app, { store: entitlementsStore, referralHooks });
 
 const httpServer = createServer(app);
@@ -446,11 +449,17 @@ app.post('/api/lobbies', createLobbyLimiter, async (req, res) => {
   const settings = req.body?.settings && typeof req.body.settings === 'object'
     ? req.body.settings
     : {};
+  let hostAuthUserId = '';
+  const auth = await resolveAuthUserFromBearer(req);
+  if (!auth.error) {
+    hostAuthUserId = auth.userId;
+  }
   const created = await store.createLobby({
     hostPlayer,
     hostName,
     maxPlayers,
     settings,
+    hostAuthUserId,
   });
   broadcastSnapshot(created.lobby.code, created.lobby);
   res.status(201).json({

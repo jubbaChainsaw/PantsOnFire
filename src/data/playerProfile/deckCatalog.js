@@ -43,9 +43,9 @@ function appendThemeClassicAltEntries(entries, themeName, profile, unlockedAltTh
     style: THEME_CARD_STYLE_ALT,
     label: `${canonical} · Alt`,
     src: assets.promptCardBackAlt,
-    unlockHint: altUnlocked
-      ? 'Unlocked — host a full game with this theme'
-      : 'Host a full game with this theme to unlock Alt',
+      unlockHint: altUnlocked
+        ? 'Unlocked — host a full online game with this theme'
+        : 'Host and finish an online game with this theme to unlock Alt',
     isUnlocked: altUnlocked,
   });
 }
