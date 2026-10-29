@@ -29,16 +29,18 @@ if (!bundleLines.length) {
 }
 
 console.log('OK: index.android.bundle entries:');
+let maxBytes = 0;
 for (const line of bundleLines) {
   console.log(line.trim());
+  const parts = line.trim().split(/\s+/);
+  const bytes = Number(parts[0]);
+  if (Number.isFinite(bytes)) maxBytes = Math.max(maxBytes, bytes);
 }
 
-const sizeMatch = bundleLines[0].match(/\s(\d+)\s+\d{2}-\d{2}-\d{4}/);
-const bytes = sizeMatch ? Number(sizeMatch[1]) : 0;
-if (!Number.isFinite(bytes) || bytes < 100_000) {
-  console.error(`FAIL: bundle looks too small (${bytes} bytes)`);
+if (maxBytes < 100_000) {
+  console.error(`FAIL: bundle looks too small (${maxBytes} bytes)`);
   process.exit(1);
 }
 
-console.log(`Bundle size (first entry): ${bytes} bytes`);
+console.log(`Bundle size (largest entry): ${maxBytes} bytes`);
 console.log(`Archive: ${archivePath} (${statSync(archivePath).size} bytes)`);
