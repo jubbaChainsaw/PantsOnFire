@@ -8,6 +8,8 @@ import { BEAST_MODE_DECEIT_THEME_PACK } from './dlc/themePacks/beast-mode-deceit
 import { CTRL_ALT_ELIEVE_THEME_PACK } from './dlc/themePacks/ctrl-alt-elieve/themePack.js';
 import { DARK_ARTS_KRAFTY_LIES_THEME_PACK } from './dlc/themePacks/dark-arts-krafty-lies/themePack.js';
 import { DRAWN_TO_LIE_THEME_PACK } from './dlc/themePacks/drawn-to-lie/themePack.js';
+import { FEVER_DREAM_1_THEME_PACK } from './dlc/themePacks/fever-dream-1/themePack.js';
+import { FEVER_DREAM_2_THEME_PACK } from './dlc/themePacks/fever-dream-2/themePack.js';
 import { GLITTER_AND_SUSPECTS_THEME_PACK } from './dlc/themePacks/glitter-and-suspects/themePack.js';
 
 export const CORE_THEME_NAMES = [
@@ -30,6 +32,18 @@ export const DLC_THEME_PACKS = [
   DRAWN_TO_LIE_THEME_PACK,
   GLITTER_AND_SUSPECTS_THEME_PACK,
 ];
+
+/**
+ * Secret referral-unlock packs. Deliberately NOT in DLC_THEME_PACKS so they are
+ * never purchasable or shown in the store/picker. Unlock UI should reveal them
+ * only once referralsRequired friends have joined via the player's link.
+ */
+export const SECRET_THEME_PACKS = [
+  FEVER_DREAM_1_THEME_PACK,
+  FEVER_DREAM_2_THEME_PACK,
+];
+
+export const SECRET_THEME_NAMES = SECRET_THEME_PACKS.flatMap((pack) => pack.themes || []);
 
 export const DLC_THEME_NAMES = [
   ...new Set(DLC_THEME_PACKS.flatMap((pack) => pack.themes || [])),

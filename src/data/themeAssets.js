@@ -203,6 +203,9 @@ const THEME_CARD_SLUGS = {
   'Under the Sea': 'under-the-sea',
   Vikings: 'vikings',
   'Wizards & Witches': 'wizards-witches',
+  // Secret referral-unlock themes
+  'Fever Dream Vol. 1': 'fever-dream-1',
+  'Fever Dream Vol. 2': 'fever-dream-2',
 };
 
 function cardAssetsForSlug(slug) {
