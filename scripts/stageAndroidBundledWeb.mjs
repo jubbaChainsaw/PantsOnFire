@@ -14,6 +14,9 @@ if (!existsSync(distDir)) {
   process.exit(1);
 }
 if (!existsSync(path.resolve('android/app/src/main/assets'))) {
+  mkdirSync(path.resolve('android/app/src/main/assets'), { recursive: true });
+}
+if (!existsSync(path.resolve('android/app/src/main/assets'))) {
   console.error('Run npx expo prebuild --platform android before staging bundled web assets.');
   process.exit(1);
 }
