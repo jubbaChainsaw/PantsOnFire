@@ -3,7 +3,7 @@ package app.pantsonfire.findtheliar
 import android.content.Context
 import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
-import android.webkit.WebViewAssetLoader
+import androidx.webkit.WebViewAssetLoader
 import java.io.File
 import java.io.FileInputStream
 

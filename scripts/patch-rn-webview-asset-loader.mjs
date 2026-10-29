@@ -90,6 +90,13 @@ if (existsSync(templateLoader)) {
   writeFileSync(destLoader, readFileSync(templateLoader, 'utf8'));
 }
 
+const gradleTemplate = path.resolve('native-android/app.build.gradle');
+const gradleDest = path.resolve('android/app/build.gradle');
+if (existsSync(gradleTemplate) && existsSync(path.dirname(gradleDest))) {
+  writeFileSync(gradleDest, readFileSync(gradleTemplate, 'utf8'));
+  console.log('Applied native-android/app.build.gradle');
+}
+
 const mainApp = path.resolve(
   'android/app/src/main/java/app/pantsonfire/findtheliar/MainApplication.kt',
 );
