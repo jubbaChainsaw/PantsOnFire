@@ -272,6 +272,18 @@ function withE2eRoundTypeDraw(drawn) {
 const LOGO_SRC = "/assets/images/logo.png";
 const LOGO_18PLUS_SRC = "/assets/images/logo-18plus.png";
 const FIRE_FRAME_VIDEO_SRC = "/assets/videos/fire-frame.mp4";
+const FLAME_SRC = "/assets/images/flames/flame-8.png";
+const CARD_FIRE_FLAME_SOURCES = [
+  "/assets/images/flames/flame-4.png",
+  "/assets/images/flames/flame-6.png",
+  "/assets/images/flames/flame-7.png",
+  "/assets/images/flames/flame-9.png",
+];
+const HEARTBEAT_SFX_SRC = "/assets/sfx/heartbeat.mp3";
+const FIRE_CRACKLE_SFX_SRC = "/assets/sfx/fire-crackle.wav";
+const IMPOSTER_FOUND_SFX_SRC = "/assets/sfx/imposter-found.wav";
+const IMPOSTER_ANNOUNCED_SFX_SRC = "/assets/sfx/imposter-announced.wav";
+const CARD_FLIP_SFX_SRC = "/assets/sfx/card-flip.wav";
 const INTRO_THEME_BGM_SCREENS = new Set([
   "home",
   "setup",
@@ -2412,7 +2424,7 @@ function useGlobalGraphicsPreload() {
     const coreUiSources = [
       ...listUiPreloadSources(),
       ...UI_CUSTOM_CATEGORY_META.map((entry) => entry?.iconSrc),
-      ...CARD_FIRE_FLAME_SOURCES,
+      ...CARD_FIRE_FLAME_SOURCES.map((source) => resolveBundledAssetSrc(source)),
       UI_ICON_BOXERS_RED_SRC,
       UI_ICON_BOXERS_GREEN_SRC,
       UI_ICON_FLAME_RED_SRC,
@@ -5412,25 +5424,33 @@ function RevealScreen({
                     <div className="pointer-events-none absolute -inset-2 z-[5] rounded-[2rem] border-2 border-orange-300/45 shadow-[inset_0_0_30px_rgba(255,97,24,0.45)]" />
                     <div className="pointer-events-none absolute inset-0 z-[5] rounded-[1.7rem] bg-[radial-gradient(circle_at_50%_90%,rgba(255,150,0,0.38)_0%,rgba(255,70,0,0.24)_35%,rgba(0,0,0,0)_68%)]" />
                     <img
-                      src={CARD_FIRE_FLAME_SOURCES[0] || FLAME_SRC}
+                      src={resolveBundledAssetSrc(
+                        CARD_FIRE_FLAME_SOURCES[0] || FLAME_SRC,
+                      )}
                       alt=""
                       aria-hidden="true"
                       className="pointer-events-none absolute -top-4 -left-2 z-[6] h-14 w-14 opacity-95 animate-pulse drop-shadow-[0_0_12px_rgba(255,98,0,0.95)]"
                     />
                     <img
-                      src={CARD_FIRE_FLAME_SOURCES[1] || FLAME_SRC}
+                      src={resolveBundledAssetSrc(
+                        CARD_FIRE_FLAME_SOURCES[1] || FLAME_SRC,
+                      )}
                       alt=""
                       aria-hidden="true"
                       className="pointer-events-none absolute -top-4 -right-2 z-[6] h-14 w-14 opacity-95 animate-pulse drop-shadow-[0_0_12px_rgba(255,98,0,0.95)]"
                     />
                     <img
-                      src={CARD_FIRE_FLAME_SOURCES[2] || FLAME_SRC}
+                      src={resolveBundledAssetSrc(
+                        CARD_FIRE_FLAME_SOURCES[2] || FLAME_SRC,
+                      )}
                       alt=""
                       aria-hidden="true"
                       className="pointer-events-none absolute -bottom-3 -right-2 z-[6] h-14 w-14 opacity-90 animate-pulse drop-shadow-[0_0_12px_rgba(255,98,0,0.95)]"
                     />
                     <img
-                      src={CARD_FIRE_FLAME_SOURCES[3] || FLAME_SRC}
+                      src={resolveBundledAssetSrc(
+                        CARD_FIRE_FLAME_SOURCES[3] || FLAME_SRC,
+                      )}
                       alt=""
                       aria-hidden="true"
                       className="pointer-events-none absolute -bottom-3 -left-2 z-[6] h-14 w-14 opacity-90 animate-pulse drop-shadow-[0_0_12px_rgba(255,98,0,0.95)]"

@@ -166,6 +166,17 @@ async function main() {
   }
 
   const afterBytes = dirSizeBytes(distDir);
+  const requiredFlameBasenames = ['flame-4', 'flame-6', 'flame-7', 'flame-8', 'flame-9'];
+  const missingFlames = requiredFlameBasenames.filter((base) => {
+    const png = path.join(distDir, 'assets/images/flames', `${base}.png`);
+    const webp = path.join(distDir, 'assets/images/flames', `${base}.webp`);
+    return !existsSync(png) && !existsSync(webp);
+  });
+  if (missingFlames.length) {
+    console.error(`Missing card flame assets after trim: ${missingFlames.join(', ')}`);
+    process.exit(1);
+  }
+
   const report = {
     distDir,
     beforeBytes,
