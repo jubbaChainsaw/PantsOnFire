@@ -21,6 +21,10 @@ Pants on Fire: Find the Liar — a React + Vite party/social-deduction game with
 - **Lobby server:** `npm run lobby:server`
 - **Preview prod build:** `npm run preview`
 
+### Cursor MCP
+
+Project MCP servers are defined in `.cursor/mcp.json` (GitHub, Playwright, Supabase, Railway). One-time auth and token setup: `docs/cursor-mcp-setup.md`.
+
 ### Caveats
 
 - The Vite proxy config (`vite.config.js`) forwards `/api` and `/socket.io` to `localhost:8787`. Start the lobby server first if testing online multiplayer features.
