@@ -41,6 +41,7 @@ const ROUND_TYPE_FLAVOR_BY_ID = {
   noise: 'sound-off bluffs',
   offtopic: 'off-topic defenses',
   chain: 'chain reaction links',
+  twotruths: 'two-truths-one-fire fibs',
   meme: 'meme chaos',
 };
 

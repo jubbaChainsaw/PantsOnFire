@@ -4478,7 +4478,7 @@ function OnlineLobbyCodeScreen({
             </span>
           </p>
           <div className="mt-6 rounded-[1.8rem] border border-cyan-300/40 bg-cyan-500/10 p-5 flex items-center justify-between gap-4">
-            <div className="font-mono text-4xl font-bold tracking-widest text-cyan-100">
+            <div className="pof-countdown-digit text-4xl tracking-widest text-cyan-100">
               {lobbyCode || "------"}
             </div>
             <Button
