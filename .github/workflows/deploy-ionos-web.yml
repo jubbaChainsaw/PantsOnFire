@@ -116,18 +116,18 @@ jobs:
             printf '%s\n' "$SFTP_KEY" > ~/.ssh/ionos_deploy_key
             chmod 600 ~/.ssh/ionos_deploy_key
             cat > "$WRAPPER" <<EOF
-          #!/bin/sh
-          exec ssh -a -x -o StrictHostKeyChecking=accept-new -p ${PORT} -i "$HOME/.ssh/ionos_deploy_key" "\$@"
-          EOF
-            LFTP_OPEN="open -u ${SFTP_USER} sftp://${SFTP_HOST}"
+#!/bin/sh
+exec ssh -a -x -o StrictHostKeyChecking=accept-new -p ${PORT} -i "\$HOME/.ssh/ionos_deploy_key" "\$@"
+EOF
+            LFTP_OPEN="open sftp://${SFTP_USER}@${SFTP_HOST}"
           elif [ -n "${SFTP_PASS:-}" ]; then
             sudo apt-get install -y sshpass
-            cat > "$WRAPPER" <<EOF
-          #!/bin/sh
-          exec sshpass -e ssh -a -x -o StrictHostKeyChecking=accept-new -p ${PORT} "\$@"
-          EOF
             export SSHPASS="$SFTP_PASS"
-            LFTP_OPEN="open -u ${SFTP_USER} sftp://${SFTP_HOST}"
+            cat > "$WRAPPER" <<EOF
+#!/bin/sh
+exec sshpass -e ssh -a -x -o StrictHostKeyChecking=accept-new -p ${PORT} -o PreferredAuthentications=password -o PubkeyAuthentication=no "\$@"
+EOF
+            LFTP_OPEN="open sftp://${SFTP_USER}@${SFTP_HOST}"
           else
             echo "::error::Missing IONOS_SFTP_PASSWORD or IONOS_SFTP_KEY"
             exit 1
