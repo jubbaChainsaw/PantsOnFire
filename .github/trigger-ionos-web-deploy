@@ -1,2 +1,2 @@
-# Redeploy after lftp -u password SFTP auth fix.
-ionos-lftp-password-auth-5
+# Redeploy after lftp connect-program wrapper fix.
+ionos-lftp-wrapper-6

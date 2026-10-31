@@ -11,24 +11,32 @@ REMOTE="${REMOTE%/}"
 if [ -z "$REMOTE" ]; then REMOTE="/"; fi
 PORT="${SFTP_PORT:-22}"
 
-SSH_BASE="-a -x -o StrictHostKeyChecking=accept-new -p ${PORT}"
+WRAPPER="${RUNNER_TEMP:-/tmp}/sftp-ssh-wrap.sh"
 LFTP_USER=()
 
 if [ -n "${SFTP_PASS:-}" ]; then
-  # lftp must receive the password via -u user,pass; otherwise it calls GetPass() and SFTP auth fails.
   LFTP_USER=(-u "${SFTP_USER},${SFTP_PASS}")
-  CONNECT="ssh ${SSH_BASE}"
+  {
+    echo '#!/bin/sh'
+    echo "exec ssh -a -x -o StrictHostKeyChecking=accept-new -p ${PORT}" '"$@"'
+  } > "$WRAPPER"
 elif [ -n "${SFTP_KEY:-}" ]; then
   mkdir -p ~/.ssh
   umask 077
   printf '%s\n' "$SFTP_KEY" > ~/.ssh/ionos_deploy_key
   chmod 600 ~/.ssh/ionos_deploy_key
   LFTP_USER=(-u "${SFTP_USER}")
-  CONNECT="ssh ${SSH_BASE} -i ${HOME}/.ssh/ionos_deploy_key"
+  {
+    echo '#!/bin/sh'
+    echo "exec ssh -a -x -o StrictHostKeyChecking=accept-new -p ${PORT} -i \"\$HOME/.ssh/ionos_deploy_key\"" '"$@"'
+  } > "$WRAPPER"
 else
   echo "::error::Missing IONOS_SFTP_PASSWORD or IONOS_SFTP_KEY" >&2
   exit 1
 fi
+
+chmod +x "$WRAPPER"
+CONNECT="${WRAPPER}"
 
 if ! command -v lftp >/dev/null 2>&1; then
   sudo apt-get update -qq
