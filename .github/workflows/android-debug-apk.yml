@@ -24,12 +24,12 @@ jobs:
   assemble-debug:
     runs-on: ubuntu-latest
     env:
-      EXPO_PUBLIC_GAME_URL: file:///android_asset/pof-web/index.html
       EXPO_PUBLIC_USE_BUNDLED_WEB: '1'
       EXPO_PUBLIC_SHELL_VERSION: '0.1.0'
       EXPO_PUBLIC_PRODUCTION_GAME_URL: https://www.pantsonfire.app/
       EXPO_PUBLIC_ANDROID_VERSION_CODE: ${{ github.run_number }}
       EXPO_PUBLIC_WEB_BUILD_SHA: ${{ github.sha }}
+      EXPO_PUBLIC_DEBUG_APK_BUILD: '1'
     steps:
       - name: Checkout
         uses: actions/checkout@v4

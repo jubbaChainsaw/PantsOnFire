@@ -26,6 +26,7 @@ const env = {
     (process.env.GITHUB_RUN_NUMBER && process.env.GITHUB_SHA
       ? `${process.env.GITHUB_RUN_NUMBER}-${String(process.env.GITHUB_SHA).slice(0, 7)}`
       : ''),
+  POF_WEB_VERSION: process.env.POF_WEB_VERSION || process.env.VITE_APP_VERSION || '0.1.0',
 };
 
 const vite = spawnSync(
@@ -46,5 +47,11 @@ const verify = spawnSync('node', ['scripts/verifyDistAndroidAssets.mjs', outDir]
   shell: false,
 });
 if (verify.status !== 0) process.exit(verify.status || 1);
+
+const stamp = spawnSync('node', ['scripts/writeWebBuildStamp.mjs', outDir], {
+  stdio: 'inherit',
+  shell: false,
+});
+if (stamp.status !== 0) process.exit(stamp.status || 1);
 
 console.log(`Mobile bundled web ready at ${outDir}`);

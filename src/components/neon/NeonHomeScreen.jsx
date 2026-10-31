@@ -2,7 +2,15 @@ import { useEffect, useState } from 'react';
 import { KeyRound, Lock, Play, Wifi, X } from 'lucide-react';
 import { NEON_ASSETS, neonThemeVars } from '../../data/uiNeonAssets.js';
 import { resolveBundledAssetSrc } from '../../lib/publicAssetUrl.js';
-import { getWebBuildStamp } from '../../lib/buildStamp.js';
+import { getWebBuildStamp, formatHomeBuildStampLine } from '../../lib/buildStamp.js';
+import {
+  canShowGameSourceControls,
+  GAME_SOURCE_OPTIONS,
+  readActiveGameSourceLabel,
+  readGameSourceMode,
+  unlockDevTools,
+  writeGameSourceMode,
+} from '../../lib/gameSourcePreference.js';
 import { loadFx, music, saveFx, tapFx } from '../../lib/pofFx.js';
 import WebPlayerNotice from './WebPlayerNotice.jsx';
 
@@ -47,6 +55,8 @@ export default function NeonHomeScreen({
   const [multiOpen, setMultiOpen] = useState(false);
   const [muted, setMuted] = useState(() => !loadFx().music);
   const [lineIdx, setLineIdx] = useState(0);
+  const [buildStampLine, setBuildStampLine] = useState(() => formatHomeBuildStampLine());
+  const [devTapCount, setDevTapCount] = useState(0);
   const line =
     homeLine || HOME_LINES[lineIdx % HOME_LINES.length];
 
@@ -73,6 +83,25 @@ export default function NeonHomeScreen({
     window.addEventListener('pof-fx', onFx);
     return () => window.removeEventListener('pof-fx', onFx);
   }, []);
+
+  useEffect(() => {
+    const refresh = () => setBuildStampLine(formatHomeBuildStampLine());
+    refresh();
+    window.addEventListener('pof-native-host-ready', refresh);
+    return () => window.removeEventListener('pof-native-host-ready', refresh);
+  }, []);
+
+  const onBuildStampTap = () => {
+    if (import.meta.env.DEV) return;
+    setDevTapCount((count) => {
+      const next = count + 1;
+      if (next >= 7) {
+        unlockDevTools();
+        return 0;
+      }
+      return next;
+    });
+  };
 
   const toggleSound = () => {
     const s = loadFx();
@@ -276,12 +305,14 @@ export default function NeonHomeScreen({
             </button>
           </p>
         )}
-        <p
-          className="pof-body mt-2 shrink-0 text-center text-[0.58rem] uppercase tracking-[0.14em] text-white/35"
+        <button
+          type="button"
+          className="pof-body mt-2 shrink-0 w-full text-center text-[0.58rem] uppercase tracking-[0.14em] text-white/35"
           data-testid="pof-build-stamp"
+          onClick={onBuildStampTap}
         >
-          Build {getWebBuildStamp()}
-        </p>
+          {buildStampLine}
+        </button>
       </main>
 
       {overlay === 'help' && (

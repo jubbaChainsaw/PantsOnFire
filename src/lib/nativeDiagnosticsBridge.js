@@ -19,6 +19,7 @@ export function installNativeDiagnosticsBridge(onUpdate) {
         host.androidVersionCode || latestNativeDiagnostics.androidVersionCode,
       webBuildSha: host.webBuildSha || latestNativeDiagnostics.webBuildSha,
       gameSurface: host.gameSurface || latestNativeDiagnostics.gameSurface,
+      gameSource: host.gameSource || latestNativeDiagnostics.gameSource,
     };
     window.__POF_NATIVE_DIAGNOSTICS = latestNativeDiagnostics;
     onUpdate?.(latestNativeDiagnostics);

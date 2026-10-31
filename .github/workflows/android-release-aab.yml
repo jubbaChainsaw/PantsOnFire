@@ -22,7 +22,6 @@ jobs:
   bundle-release:
     runs-on: ubuntu-latest
     env:
-      EXPO_PUBLIC_GAME_URL: file:///android_asset/pof-web/index.html
       EXPO_PUBLIC_USE_BUNDLED_WEB: '1'
       EXPO_PUBLIC_SHELL_VERSION: '0.1.0'
       EXPO_PUBLIC_PRODUCTION_GAME_URL: https://www.pantsonfire.app/

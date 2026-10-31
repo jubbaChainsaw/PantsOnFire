@@ -5,6 +5,11 @@ name: Deploy web to IONOS (SFTP)
 
 on:
   workflow_dispatch:
+    inputs:
+      ref:
+        description: Git ref to build and deploy (branch, tag, or SHA)
+        required: false
+        default: main
   push:
     branches: [main]
 
@@ -18,6 +23,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.ref || github.ref }}
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -32,7 +39,21 @@ jobs:
         env:
           VITE_LOBBY_SERVER_URL: https://api.pantsonfire.app
           VITE_WEB_JOIN_ONLY: 'true'
+          VITE_APP_BUILD_SHA: ${{ github.sha }}
+          VITE_APP_BUILD_STAMP: ${{ github.run_number }}-${{ github.sha }}
+          POF_WEB_VERSION: 0.1.${{ github.run_number }}
         run: npm run build
+
+      - name: Stamp dist + offline manifest
+        env:
+          GITHUB_SHA: ${{ github.sha }}
+          GITHUB_RUN_NUMBER: ${{ github.run_number }}
+          POF_WEB_VERSION: 0.1.${{ github.run_number }}
+          VITE_APP_BUILD_SHA: ${{ github.sha }}
+          VITE_APP_BUILD_STAMP: ${{ github.run_number }}-${{ github.sha }}
+        run: |
+          node scripts/writeWebBuildStamp.mjs dist
+          node scripts/generateWebOfflineManifest.mjs dist
 
       - name: Verify dist and SPA .htaccess
         run: |

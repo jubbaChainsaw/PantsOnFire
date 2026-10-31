@@ -15,10 +15,21 @@ export function formatNativeShellBuildLabel(host = null) {
   if (!h || typeof h !== 'object') return '';
   const code = String(h.androidVersionCode || '').trim();
   const shell = String(h.shellVersion || '').trim();
-  const surface = String(h.gameSurface || '').trim();
+  const source = String(h.gameSource || h.gameSurface || '').trim();
   const parts = [];
   if (shell) parts.push(`shell ${shell}`);
   if (code) parts.push(`apk ${code}`);
-  if (surface) parts.push(surface);
+  if (source) parts.push(source);
   return parts.join(' · ');
+}
+
+export function formatHomeBuildStampLine(host = null) {
+  const h =
+    host ||
+    (typeof window !== 'undefined' ? window.__POF_NATIVE_HOST__ : null);
+  const stamp =
+    String(h?.activeBuildStamp || '').trim() || getWebBuildStamp();
+  const source = String(h?.gameSource || '').trim();
+  if (source) return `Build ${stamp} · ${source}`;
+  return `Build ${stamp}`;
 }

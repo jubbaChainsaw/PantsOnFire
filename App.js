@@ -14,6 +14,26 @@ import Purchases from 'react-native-purchases';
 import * as FileSystem from 'expo-file-system/legacy';
 import { unzip } from 'fflate';
 import Constants from 'expo-constants';
+import {
+  liveUrlWithCacheBust,
+  mergeShellConfigs,
+  metaFromShellConfig,
+  pickAutoGameSource,
+  shellGateAllowsLiveWeb,
+  normalizeWebBuildMeta,
+  isAtLeastBundled,
+} from './nativeShell/gameSourceSelection.js';
+import {
+  BUNDLED_BUILD_STAMP_URI,
+  cachedGameUri,
+  cachedIndexExists,
+  fetchJson,
+  readBundledBuildMeta,
+  readCachedBuildMeta,
+  readShellPrefs,
+  syncCachedWebFromLive,
+  writeShellPrefs,
+} from './nativeShell/cachedWebSync.js';
 
 const DEFAULT_WEB_URL = Platform.select({
   android: 'http://10.0.2.2:5173',
@@ -62,24 +82,17 @@ const useBundledAndroidWeb =
     !__DEV__);
 
 const configuredGameUrl = process.env.EXPO_PUBLIC_GAME_URL || null;
-const preferLiveWebOnAndroid =
-  String(process.env.EXPO_PUBLIC_PREFER_LIVE_WEB || '').trim() === '1';
+const debugApkDefaultsBundled =
+  String(process.env.EXPO_PUBLIC_DEBUG_APK_BUILD || '').trim() === '1';
 const androidVersionCode = String(
   process.env.EXPO_PUBLIC_ANDROID_VERSION_CODE || '',
 ).trim();
 const webBuildSha = String(process.env.EXPO_PUBLIC_WEB_BUILD_SHA || '').trim();
-
-function compareSemver(a = '', b = '') {
-  const pa = String(a).split('.').map((n) => parseInt(n, 10) || 0);
-  const pb = String(b).split('.').map((n) => parseInt(n, 10) || 0);
-  for (let i = 0; i < Math.max(pa.length, pb.length); i += 1) {
-    const da = pa[i] || 0;
-    const db = pb[i] || 0;
-    if (da > db) return 1;
-    if (da < db) return -1;
-  }
-  return 0;
-}
+const bundledBuildFallback = normalizeWebBuildMeta({
+  webVersion: SHELL_VERSION,
+  webBuildSha,
+  webBuildStamp: webBuildSha ? webBuildSha.slice(0, 7) : '',
+});
 
 const LOBBY_API_ORIGIN =
   String(process.env.EXPO_PUBLIC_LOBBY_SERVER_URL || '').trim().replace(/\/$/, '') ||
@@ -115,7 +128,7 @@ function injectSafeAreaInsets(webViewRef) {
   );
 }
 
-function injectNativeHostCredentials(webViewRef, creds) {
+function injectNativeHostCredentials(webViewRef, creds, hostExtras = {}) {
   const topInset =
     Platform.OS === 'android' ? Math.max(StatusBar.currentHeight || 0, 28) : 0;
   const bottomInset = Platform.OS === 'android' ? 20 : 0;
@@ -127,7 +140,10 @@ function injectNativeHostCredentials(webViewRef, creds) {
     shellVersion: SHELL_VERSION,
     androidVersionCode,
     webBuildSha,
-    gameSurface: 'bundled',
+    gameSource: String(hostExtras.gameSource || 'bundled'),
+    gameSourceMode: String(hostExtras.gameSourceMode || 'auto'),
+    activeBuildStamp: String(hostExtras.activeBuildStamp || '').trim(),
+    bundledBuildStamp: String(hostExtras.bundledBuildStamp || '').trim(),
     safeAreaInsets: {
       top: topInset,
       bottom: bottomInset,
@@ -142,50 +158,118 @@ function injectNativeHostCredentials(webViewRef, creds) {
 }
 
 async function fetchShellGateConfig() {
-  const urls = [
-    `${LOBBY_API_ORIGIN}/api/shell-config`,
-    `${PRODUCTION_GAME_URL.replace(/\/$/, '')}/shell-version.json`,
-  ];
-  for (const url of urls) {
-    try {
-      const controller = new AbortController();
-      const timer = setTimeout(() => controller.abort(), 4500);
-      const res = await fetch(url, { cache: 'no-store', signal: controller.signal });
-      clearTimeout(timer);
-      if (res.ok) return await res.json();
-    } catch {
-      /* try next source */
+  const staticUrl = `${PRODUCTION_GAME_URL.replace(/\/$/, '')}/shell-version.json?pof_build=${Date.now()}`;
+  const [apiCfg, staticCfg] = await Promise.all([
+    fetchJson(`${LOBBY_API_ORIGIN}/api/shell-config?pof_build=${Date.now()}`),
+    fetchJson(staticUrl),
+  ]);
+  return mergeShellConfigs(apiCfg, staticCfg);
+}
+
+async function resolveAndroidGameSelection() {
+  if (configuredGameUrl) {
+    return {
+      uri: configuredGameUrl,
+      source: 'configured',
+      sourceMode: 'configured',
+      activeMeta: bundledBuildFallback,
+      bundledMeta: bundledBuildFallback,
+    };
+  }
+  if (!useBundledAndroidWeb) {
+    return {
+      uri: DEFAULT_WEB_URL,
+      source: 'dev-server',
+      sourceMode: 'auto',
+      activeMeta: null,
+      bundledMeta: bundledBuildFallback,
+    };
+  }
+  if (__DEV__) {
+    return {
+      uri: DEFAULT_WEB_URL,
+      source: 'dev-server',
+      sourceMode: 'auto',
+      activeMeta: null,
+      bundledMeta: bundledBuildFallback,
+    };
+  }
+
+  const prefs = await readShellPrefs();
+  const bundledMeta =
+    normalizeWebBuildMeta(await readBundledBuildMeta()) || bundledBuildFallback;
+  const cachedMeta = normalizeWebBuildMeta(await readCachedBuildMeta());
+  const hasCached = await cachedIndexExists();
+  const shellCfg = await fetchShellGateConfig();
+  const liveMeta = metaFromShellConfig(shellCfg);
+  const liveAllowed = shellGateAllowsLiveWeb(shellCfg, SHELL_VERSION);
+
+  if (prefs.gameSourceMode === 'bundled' || (debugApkDefaultsBundled && prefs.gameSourceMode === 'auto')) {
+    return {
+      uri: BUNDLED_ANDROID_GAME_URI,
+      source: 'bundled',
+      sourceMode: prefs.gameSourceMode === 'auto' ? 'auto' : 'bundled',
+      activeMeta: bundledMeta,
+      bundledMeta,
+    };
+  }
+
+  if (prefs.gameSourceMode === 'live') {
+    if (liveAllowed && isAtLeastBundled(liveMeta, bundledMeta)) {
+      return {
+        uri: liveUrlWithCacheBust(PRODUCTION_GAME_URL, liveMeta),
+        source: 'live',
+        sourceMode: 'live',
+        activeMeta: liveMeta,
+        bundledMeta,
+        syncLiveMeta: liveMeta,
+      };
     }
+    return {
+      uri: hasCached && isAtLeastBundled(cachedMeta, bundledMeta)
+        ? cachedGameUri()
+        : BUNDLED_ANDROID_GAME_URI,
+      source: hasCached ? 'cached' : 'bundled',
+      sourceMode: 'live',
+      activeMeta: hasCached ? cachedMeta : bundledMeta,
+      bundledMeta,
+    };
   }
-  return null;
-}
 
-function shouldUseLiveWeb(cfg) {
-  if (!cfg || typeof cfg !== 'object') return false;
-  if (cfg.webKillSwitch || cfg.webDeployBlocked || cfg.forceBundledWeb || cfg.liveWebAllowed === false) {
-    return false;
+  const pick = pickAutoGameSource({
+    bundledMeta,
+    cachedMeta,
+    liveMeta,
+    liveAllowed,
+    cachedIndexExists: hasCached,
+  });
+
+  if (pick.kind === 'live' && liveAllowed) {
+    return {
+      uri: liveUrlWithCacheBust(PRODUCTION_GAME_URL, pick.meta),
+      source: 'live',
+      sourceMode: 'auto',
+      activeMeta: pick.meta,
+      bundledMeta,
+      syncLiveMeta: pick.meta,
+    };
   }
-  const minShell = String(cfg.minNativeShell || cfg.minShell || '').trim();
-  if (minShell && compareSemver(SHELL_VERSION, minShell) < 0) return false;
-  const requiredWeb = String(cfg.requiredWebVersion || cfg.minNativeShell || '').trim();
-  const webVersion = String(cfg.webVersion || cfg.rollbackWebVersion || '').trim();
-  if (requiredWeb && webVersion && compareSemver(webVersion, requiredWeb) < 0) return false;
-  return true;
-}
-
-async function resolveAndroidGameUrl() {
-  if (configuredGameUrl) return configuredGameUrl;
-  if (!useBundledAndroidWeb) return DEFAULT_WEB_URL;
-  if (__DEV__) return DEFAULT_WEB_URL;
-
-  // Bundled dist in the APK is authoritative for store/debug builds. Live web is
-  // opt-in only (ops flag or EXPO_PUBLIC_PREFER_LIVE_WEB) so CI fixes are visible
-  // before pantsonfire.app is redeployed.
-  if (!preferLiveWebOnAndroid) return BUNDLED_ANDROID_GAME_URI;
-
-  const cfg = await fetchShellGateConfig();
-  if (shouldUseLiveWeb(cfg)) return PRODUCTION_GAME_URL;
-  return BUNDLED_ANDROID_GAME_URI;
+  if (pick.kind === 'cached' && hasCached) {
+    return {
+      uri: cachedGameUri(),
+      source: 'cached',
+      sourceMode: 'auto',
+      activeMeta: pick.meta,
+      bundledMeta,
+    };
+  }
+  return {
+    uri: BUNDLED_ANDROID_GAME_URI,
+    source: 'bundled',
+    sourceMode: 'auto',
+    activeMeta: bundledMeta,
+    bundledMeta,
+  };
 }
 
 async function ensureMicPermission() {
@@ -405,15 +489,16 @@ const ANDROID_KEY = process.env.EXPO_PUBLIC_REVENUECAT_ANDROID_KEY || '';
 export default function App() {
   const webViewRef = useRef(null);
   const appInstallRef = useRef(null);
+  const hostExtrasRef = useRef({
+    gameSource: 'bundled',
+    gameSourceMode: 'auto',
+    activeBuildStamp: '',
+    bundledBuildStamp: '',
+  });
   const [gameUrl, setGameUrl] = useState(
     () => configuredGameUrl || (useBundledAndroidWeb ? BUNDLED_ANDROID_GAME_URI : DEFAULT_WEB_URL),
   );
-  const [urlReady, setUrlReady] = useState(
-    () =>
-      Boolean(configuredGameUrl) ||
-      (useBundledAndroidWeb && !preferLiveWebOnAndroid) ||
-      !useBundledAndroidWeb,
-  );
+  const [urlReady, setUrlReady] = useState(() => Boolean(configuredGameUrl) || !useBundledAndroidWeb);
 
   useEffect(() => {
     const apiKey = Platform.OS === 'ios' ? IOS_KEY : ANDROID_KEY;
@@ -435,7 +520,7 @@ export default function App() {
       if (!mounted) return;
       appInstallRef.current = creds;
       if (creds?.installToken) {
-        injectNativeHostCredentials(webViewRef, creds);
+        injectNativeHostCredentials(webViewRef, creds, hostExtrasRef.current);
       }
     })();
     return () => {
@@ -444,16 +529,28 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    if (configuredGameUrl || (useBundledAndroidWeb && !preferLiveWebOnAndroid)) {
+    if (configuredGameUrl || !useBundledAndroidWeb || __DEV__) {
       return undefined;
     }
     let mounted = true;
     (async () => {
       await ensureMicPermission();
-      const resolved = await resolveAndroidGameUrl();
+      const selection = await resolveAndroidGameSelection();
       if (!mounted) return;
-      setGameUrl(resolved);
+      hostExtrasRef.current = {
+        gameSource: selection.source,
+        gameSourceMode: selection.sourceMode,
+        activeBuildStamp: selection.activeMeta?.webBuildStamp || '',
+        bundledBuildStamp: selection.bundledMeta?.webBuildStamp || '',
+      };
+      setGameUrl(selection.uri);
       setUrlReady(true);
+      if (selection.syncLiveMeta) {
+        void syncCachedWebFromLive({
+          productionBaseUrl: PRODUCTION_GAME_URL,
+          liveMeta: selection.syncLiveMeta,
+        });
+      }
     })();
     return () => {
       mounted = false;
@@ -472,12 +569,33 @@ export default function App() {
       if (String(msg.type || '').startsWith('POF_CONTENT_PACK_')) {
         void handleContentPackMessage(webViewRef, msg);
       }
+      if (msg.type === 'POF_SET_GAME_SOURCE' && msg.mode) {
+        void (async () => {
+          await writeShellPrefs({
+            gameSourceMode: String(msg.mode).trim().toLowerCase(),
+          });
+          const selection = await resolveAndroidGameSelection();
+          hostExtrasRef.current = {
+            gameSource: selection.source,
+            gameSourceMode: selection.sourceMode,
+            activeBuildStamp: selection.activeMeta?.webBuildStamp || '',
+            bundledBuildStamp: selection.bundledMeta?.webBuildStamp || '',
+          };
+          setGameUrl(selection.uri);
+          setUrlReady(true);
+          injectNativeHostCredentials(
+            webViewRef,
+            appInstallRef.current,
+            hostExtrasRef.current,
+          );
+        })();
+      }
       if (msg.type === 'POF_REQUEST_APP_INSTALL_TOKEN') {
         void (async () => {
           const creds = (await fetchAppInstallToken()) || appInstallRef.current;
           if (creds?.installToken) {
             appInstallRef.current = creds;
-            injectNativeHostCredentials(webViewRef, creds);
+            injectNativeHostCredentials(webViewRef, creds, hostExtrasRef.current);
           }
         })();
       }
@@ -530,15 +648,16 @@ export default function App() {
           startInLoadingState
           javaScriptEnabled
           domStorageEnabled
-          cacheEnabled={false}
-          incognito
+          cacheEnabled={gameUrl.startsWith('http')}
           mediaPlaybackRequiresUserAction={false}
           onMessage={onWebMessage}
           onLoadEnd={() => {
             injectSafeAreaInsets(webViewRef);
-            if (appInstallRef.current?.installToken) {
-              injectNativeHostCredentials(webViewRef, appInstallRef.current);
-            }
+            injectNativeHostCredentials(
+              webViewRef,
+              appInstallRef.current,
+              hostExtrasRef.current,
+            );
           }}
           {...webViewProps}
         />

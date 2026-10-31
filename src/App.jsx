@@ -256,7 +256,13 @@ import {
 import { BugReportScreen } from "./components/BugReportScreen.jsx";
 import { anonymizeLobbyId } from "./lib/bugReportClient.js";
 import { installNativeDiagnosticsBridge } from "./lib/nativeDiagnosticsBridge.js";
-import { formatNativeShellBuildLabel, getWebBuildStamp } from "./lib/buildStamp.js";
+import { formatNativeShellBuildLabel, getWebBuildStamp, formatHomeBuildStampLine } from "./lib/buildStamp.js";
+import {
+  canShowGameSourceControls,
+  GAME_SOURCE_OPTIONS,
+  readGameSourceMode,
+  writeGameSourceMode,
+} from "./lib/gameSourcePreference.js";
 
 const E2E_FORCE_ROUND_TYPE = String(
   import.meta.env.VITE_E2E_FORCE_ROUND_TYPE || "",
@@ -6787,6 +6793,10 @@ function SettingsScreen({
 }) {
   const [effectsEnabled, setEffectsEnabled] = useState(true);
   const [largeText, setLargeText] = useState(false);
+  const [gameSourceMode, setGameSourceMode] = useState(() => readGameSourceMode());
+  const [showGameSourceControls, setShowGameSourceControls] = useState(() =>
+    canShowGameSourceControls(),
+  );
   const [activeTab, setActiveTab] = useState(
     defaultTab === "downloads"
       ? "downloads"
@@ -6803,6 +6813,16 @@ function SettingsScreen({
           : "general",
     );
   }, [defaultTab]);
+  useEffect(() => {
+    const refreshDevTools = () => setShowGameSourceControls(canShowGameSourceControls());
+    refreshDevTools();
+    window.addEventListener('pof-native-host-ready', refreshDevTools);
+    window.addEventListener('storage', refreshDevTools);
+    return () => {
+      window.removeEventListener('pof-native-host-ready', refreshDevTools);
+      window.removeEventListener('storage', refreshDevTools);
+    };
+  }, []);
   const categoryRows = useMemo(
     () =>
       (Array.isArray(allCategories) ? allCategories : []).map((category) => ({
@@ -6932,12 +6952,41 @@ function SettingsScreen({
                 Build info
               </div>
               <p className="pof-body mt-1 text-sm text-white/85">
-                Web {getWebBuildStamp()}
+                {formatHomeBuildStampLine()}
               </p>
               {formatNativeShellBuildLabel() ? (
                 <p className="pof-body mt-1 text-xs text-white/60">
                   {formatNativeShellBuildLabel()}
                 </p>
+              ) : null}
+              {showGameSourceControls ? (
+                <div className="mt-3 text-left">
+                  <label
+                    htmlFor="pof-game-source-mode"
+                    className="pof-label block text-xs uppercase tracking-[0.14em] text-cyan-200/80"
+                  >
+                    Game source
+                  </label>
+                  <select
+                    id="pof-game-source-mode"
+                    value={gameSourceMode}
+                    onChange={(event) => {
+                      const next = writeGameSourceMode(event.target.value);
+                      setGameSourceMode(next);
+                    }}
+                    className="mt-2 w-full rounded-xl border border-white/15 bg-black/40 px-3 py-2 text-sm text-white"
+                  >
+                    {GAME_SOURCE_OPTIONS.map((option) => (
+                      <option key={option.value} value={option.value} className="text-black">
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                  <p className="pof-body mt-2 text-xs text-white/55">
+                    Auto picks the newest compatible copy (live, cached offline, or APK bundled).
+                    Debug APK builds default to bundled when set to Auto.
+                  </p>
+                </div>
               ) : null}
             </div>
             <SettingsToggleRow

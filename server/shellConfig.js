@@ -19,12 +19,16 @@ export function getShellConfig() {
   const forceBundledWeb = ['1', 'true', 'yes'].includes(
     String(process.env.POF_FORCE_BUNDLED_WEB || '').trim().toLowerCase(),
   );
+  const webBuildSha = String(process.env.POF_WEB_BUILD_SHA || '').trim();
+  const webBuildStamp = String(process.env.POF_WEB_BUILD_STAMP || webBuildSha || '').trim();
 
   return {
     minNativeShell,
     requiredWebVersion,
     webVersion: rollbackWebVersion || webVersion,
     rollbackWebVersion,
+    webBuildSha,
+    webBuildStamp,
     webKillSwitch,
     webDeployBlocked,
     forceBundledWeb,

@@ -2,6 +2,8 @@
   "minNativeShell": "0.1.0",
   "requiredWebVersion": "0.1.0",
   "webVersion": "0.1.0",
+  "webBuildSha": "",
+  "webBuildStamp": "",
   "rollbackWebVersion": null,
   "webKillSwitch": false,
   "webDeployBlocked": false,
