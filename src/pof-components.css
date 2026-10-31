@@ -1,4 +1,29 @@
 /* Neon UI component classes (MagicPath); fonts loaded in styles.css */
+:root {
+  --pof-safe-top: max(env(safe-area-inset-top, 0px), var(--pof-native-safe-top, 0px));
+  --pof-safe-bottom: max(env(safe-area-inset-bottom, 0px), var(--pof-native-safe-bottom, 0px));
+  --pof-safe-left: max(env(safe-area-inset-left, 0px), var(--pof-native-safe-left, 0px));
+  --pof-safe-right: max(env(safe-area-inset-right, 0px), var(--pof-native-safe-right, 0px));
+}
+.pof-safe-frame {
+  padding-top: max(0.65rem, var(--pof-safe-top));
+  padding-bottom: max(0.65rem, var(--pof-safe-bottom));
+  padding-left: max(0.75rem, var(--pof-safe-left));
+  padding-right: max(0.75rem, var(--pof-safe-right));
+  box-sizing: border-box;
+}
+.pof-fixed-safe-tl {
+  position: fixed;
+  left: max(0.65rem, var(--pof-safe-left));
+  top: max(0.65rem, var(--pof-safe-top));
+  z-index: 120;
+}
+.pof-fixed-safe-tr {
+  position: fixed;
+  right: max(0.65rem, var(--pof-safe-right));
+  top: max(0.65rem, var(--pof-safe-top));
+  z-index: 120;
+}
 .pof-root { font-family: 'PoF Display', Inter, system-ui, sans-serif; text-align: center; }
 :where(.pof-root) :where(button,input,select) { font: inherit; }
 .pof-body { font-family: Inter, system-ui, sans-serif; letter-spacing: normal; }

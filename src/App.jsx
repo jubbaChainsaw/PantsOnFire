@@ -593,7 +593,7 @@ function buildRandomizedPlayerIdentity(
         name: persona.name,
         personaId: persona.id,
         personaBio: persona.bio,
-        personaImageSrc: persona.imageSrc,
+        personaImageSrc: resolveBundledAssetSrc(persona.imageSrc || ""),
       };
     }
   }
@@ -782,7 +782,9 @@ function applyPersonaProfileToPlayer(
     ...player,
     name: normalizedProfile.inGameName || existingName || "Player 1",
     personaBio: normalizedProfile.inGameBio || existingBio || "",
-    personaImageSrc: normalizedProfile.avatarSrc || existingAvatar || "",
+    personaImageSrc: resolveBundledAssetSrc(
+      normalizedProfile.avatarSrc || existingAvatar || "",
+    ),
   };
 }
 function mapLobbyErrorToMessage(
@@ -1354,19 +1356,21 @@ function TopFrame({ children, theme = "Default", allowScroll = false }) {
         }}
       />
       <div className="fixed inset-0 bg-gradient-to-b from-black/40 via-black/25 to-black/55" />
-      <div
-        className="relative z-10 md:p-8"
-        style={{
-          paddingLeft: "1rem",
-          paddingRight: "1rem",
-          paddingTop: "max(1rem, env(safe-area-inset-top))",
-          paddingBottom: "max(1rem, env(safe-area-inset-bottom))",
-        }}
-      >
+      <div className="relative z-10 pof-safe-frame md:p-8">
         {children}
       </div>
     </div>
   );
+}
+function resolvePlayerPersonaImageSrc(player = {}, themeName = "Default") {
+  const raw = String(player?.personaImageSrc || "").trim();
+  if (raw) return resolveBundledAssetSrc(raw);
+  const personaId = String(player?.personaId || "").trim();
+  if (!personaId) return "";
+  const canonical = toCanonicalThemeName(themeName);
+  const match = getThemePersonas(canonical).find((entry) => entry.id === personaId);
+  if (match?.imageSrc) return resolveBundledAssetSrc(match.imageSrc);
+  return "";
 }
 function PlayerPersonaAvatar({
   player,
@@ -1378,7 +1382,8 @@ function PlayerPersonaAvatar({
   themeName = "Default",
 }) {
   const [failed, setFailed] = useState(false);
-  const imageSrc = !failed ? String(player?.personaImageSrc || "").trim() : "";
+  const resolvedTheme = toCanonicalThemeName(themeName);
+  const imageSrc = !failed ? resolvePlayerPersonaImageSrc(player, resolvedTheme) : "";
   const initials = getPlayerInitials(player?.name);
   const color = getPlayerColor(player, fallbackIndex, themeName);
   return (
@@ -1444,38 +1449,24 @@ function CustomFireScoreIcon({
   themeName = "Default",
 }) {
   const score = Math.max(0, Number(player?.score || 0));
-  const color = getPlayerColor(player, fallbackIndex, themeName);
   return (
-    <div className="flex min-w-[2.8rem] items-center justify-center">
-      <div
-        className={`relative h-11 w-11 rounded-full border border-white/30 ${isLeader ? "drop-shadow-[0_0_10px_rgba(250,204,21,0.55)]" : ""}`}
-        style={{ backgroundColor: color }}
-      >
-        <div className="absolute inset-0 flex items-center justify-center">
-          <img
-            src={
-              color.toLowerCase().includes("22c55e") ||
-              color.toLowerCase().includes("16a34a")
-                ? UI_ICON_FLAME_GREEN_SRC
-                : UI_ICON_FLAME_RED_SRC
-            }
-            alt=""
-            aria-hidden="true"
-            className="h-6 w-6 object-contain opacity-90"
-          />
-        </div>
-        <div className="absolute inset-0 flex items-center justify-center text-sm font-black text-white [text-shadow:0_2px_6px_rgba(0,0,0,0.55)]">
-          {score}
-        </div>
-        {isLeader && (
-          <img
-            src={UI_ICON_CROWN_GOLD_SRC}
-            alt=""
-            aria-hidden="true"
-            className="absolute -top-2 -right-1 h-4 w-4 object-contain"
-          />
-        )}
-      </div>
+    <div className="flex min-w-[2.8rem] flex-col items-center gap-0.5">
+      <PlayerPersonaAvatar
+        player={player}
+        fallbackIndex={fallbackIndex}
+        sizeClass="h-9 w-9"
+        initialsClass="text-[0.55rem]"
+        themeName={themeName}
+      />
+      <div className="text-sm font-black text-white leading-none">{score}</div>
+      {isLeader && (
+        <img
+          src={UI_ICON_CROWN_GOLD_SRC}
+          alt=""
+          aria-hidden="true"
+          className="h-3.5 w-3.5 object-contain"
+        />
+      )}
     </div>
   );
 }
@@ -2729,25 +2720,23 @@ function HostIntroScreen({ round, stingerLine, onContinue, theme }) {
       lockViewport
       contentClassName="!min-h-0 !py-2 !px-3 flex flex-col"
     >
-      <div className="relative mx-auto flex h-full min-h-0 w-full max-w-[28rem] flex-col gap-2 overflow-hidden">
-        <div className="relative z-10 flex min-h-0 flex-[1.15] w-full flex-col rounded-[1.65rem] bg-[#e60096] p-2 shadow-[0_20px_45px_rgba(0,0,0,0.7)]">
-          <div className="min-h-0 flex-1 overflow-hidden rounded-[1.15rem] bg-black">
+      <div className="relative mx-auto flex h-full min-h-0 w-full max-w-[28rem] flex-col overflow-hidden">
+        <div className="relative z-10 flex min-h-0 flex-1 w-full flex-col rounded-[1.65rem] bg-[#e60096] p-2 shadow-[0_20px_45px_rgba(0,0,0,0.7)]">
+          <div className="min-h-0 flex-[1.05] overflow-hidden rounded-t-[1.15rem] bg-black">
             <ThemeHostVisual
               themeName={theme}
               isTalking={isTalking}
               preferVideo
               testId="host-intro-visual"
               alt="host"
-              className="h-full w-full"
+              className="h-full w-full object-cover"
             />
           </div>
-        </div>
-        <div className="relative z-10 flex min-h-0 flex-[0.85] flex-col justify-end gap-2">
           <div
             role={canContinue ? undefined : "button"}
             tabIndex={canContinue ? undefined : 0}
             data-testid="host-intro-caption"
-            className={`pof-host-intro-caption-panel relative z-20 flex min-h-[4.5rem] flex-1 cursor-pointer items-center justify-center rounded-[1.5rem] border border-fuchsia-200/35 px-4 py-3 text-center ${canContinue ? "" : "pof-focus"}`}
+            className={`pof-host-intro-caption-panel relative z-20 flex min-h-[4.25rem] flex-shrink-0 cursor-pointer items-center justify-center rounded-b-[1.15rem] border-0 border-t border-fuchsia-200/35 px-4 py-3 text-center ${canContinue ? "" : "pof-focus"}`}
             style={{
               backgroundColor: "#b8007a",
               backgroundImage: "none",
@@ -2765,7 +2754,7 @@ function HostIntroScreen({ round, stingerLine, onContinue, theme }) {
           >
             <div
               ref={speechBubbleFitRef}
-              className="flex h-full max-h-[26dvh] w-full items-center justify-center overflow-hidden"
+              className="flex h-full max-h-[22dvh] w-full items-center justify-center overflow-hidden"
             >
               <motion.p
                 key={`${round.id || round.roundNumber}-${speechIndex}`}
@@ -2789,7 +2778,7 @@ function HostIntroScreen({ round, stingerLine, onContinue, theme }) {
               </motion.p>
             </div>
           </div>
-          <div className="flex gap-3">
+          <div className="mt-2 flex shrink-0 gap-3 pb-0.5">
             <Button className={HOST_DIALOGUE_BUTTON_CLASS} onClick={handleNextSpeechAction}>
               Next
             </Button>
@@ -4061,11 +4050,7 @@ function BrandedScreen({
       />
       <div className={`fixed inset-0 ${overlayClassName}`} />
       <div
-        className={`relative z-10 mx-auto flex w-full max-w-[460px] flex-col px-5 py-6 ${viewportClass} ${allowScroll ? "overflow-y-auto pof-scroll" : "overflow-hidden"} ${contentClassName}`}
-        style={{
-          paddingTop: "max(1.25rem, env(safe-area-inset-top))",
-          paddingBottom: "max(1.25rem, env(safe-area-inset-bottom))",
-        }}
+        className={`relative z-10 mx-auto flex w-full max-w-[460px] flex-col px-3 py-3 pof-safe-frame sm:px-5 sm:py-4 ${viewportClass} ${allowScroll ? "overflow-y-auto pof-scroll" : "overflow-hidden"} ${contentClassName}`}
       >
         {children}
       </div>
@@ -4109,7 +4094,7 @@ function RoundTypeChoiceGrid({
           <button
             key={type.id}
             type="button"
-            className={`flex min-h-0 flex-1 flex-col items-stretch overflow-hidden rounded-[1.75rem] border-2 border-white/25 bg-black/40 px-3 py-3 text-left shadow-[0_16px_34px_rgba(0,0,0,0.55)] transition-transform duration-200 hover:scale-[1.01] ${highlighted ? "pof-choice-flash" : ""}`}
+            className={`flex min-h-0 flex-1 flex-col items-stretch overflow-hidden rounded-[1.75rem] border-2 border-white/25 bg-black/40 p-1.5 text-left shadow-[0_16px_34px_rgba(0,0,0,0.55)] transition-transform duration-200 hover:scale-[1.01] ${highlighted ? "pof-choice-flash" : ""}`}
             onClick={() => {
               if (onlineMode) timed.pick(type.id);
               else onSelectRoundType(type.id);
@@ -4119,15 +4104,15 @@ function RoundTypeChoiceGrid({
             data-round-type-id={type.id}
             data-round-type-name={type.name}
           >
-            <div className="flex min-h-0 flex-1 items-center justify-center">
+            <div className="relative min-h-0 flex-1 overflow-hidden rounded-[1.35rem] bg-black/50">
               <ThemeArt
                 src={roundTypeLogoSrc}
                 alt={`${type.name} mode icon`}
                 data-testid={`round-type-icon-${type.id}`}
-                className="max-h-full max-w-full object-contain drop-shadow-[0_12px_22px_rgba(0,0,0,0.72)]"
+                className="h-full w-full object-cover object-center scale-[1.03]"
               />
             </div>
-            <div className="shrink-0 pt-2 text-center text-lg font-black uppercase tracking-wide text-yellow-300 [text-shadow:0_2px_10px_rgba(0,0,0,0.75)] sm:text-xl">
+            <div className="shrink-0 px-1 pb-1 pt-1.5 text-center text-base font-black uppercase tracking-wide text-yellow-300 [text-shadow:0_2px_10px_rgba(0,0,0,0.75)] sm:text-lg">
               {type.name}
             </div>
           </button>
@@ -4941,7 +4926,7 @@ function SetupScreen(props) {
                       <div className="flex items-start gap-3">
                         {player.personaImageSrc && (
                           <ThemeArt
-                            src={player.personaImageSrc}
+                            src={resolvePlayerPersonaImageSrc(player, theme)}
                             alt={`${player.name} persona portrait`}
                             className="h-16 w-16 shrink-0 rounded-xl border border-white/20 bg-black/30 object-cover"
                           />
@@ -5800,7 +5785,7 @@ function PartySpeakerOverlay({
     .slice(0, 3);
   if (!activeTalkers.length) return null;
   return (
-    <div className="pointer-events-none fixed left-3 top-3 z-50 flex flex-col gap-2">
+    <div className="pointer-events-none fixed z-50 flex flex-col gap-2 pof-fixed-safe-tl">
       {activeTalkers.map((player, index) => (
         <div
           key={player.id}
@@ -6118,7 +6103,6 @@ function LiarRevealScreen({
     audioSrcCandidates: liarPersonaCalloutSrcCandidates,
     fallbackDurationMs: 2200,
   });
-  const hostSizeConfig = getHostSizeConfig(theme);
   const audioRef = useRef(null);
   const hasCompletedRef = useRef(false);
   const announcementBubbleTextRef = useRef(null);
@@ -6197,38 +6181,37 @@ function LiarRevealScreen({
   }
   return (
     <TopFrame theme={theme} allowScroll>
-      <div className="mx-auto flex min-h-[calc(100dvh-2rem)] w-full max-w-4xl flex-col justify-center py-2">
-        <GlassPanel className="relative overflow-visible rounded-[2.5rem] border-red-400/25 bg-black/35 p-6 sm:p-8 text-center">
+      <div className="mx-auto flex w-full max-w-3xl flex-col py-2">
+        <GlassPanel className="relative overflow-visible rounded-[2.5rem] border-red-400/25 bg-black/35 p-5 sm:p-7 text-center">
           <div className="absolute inset-0 animate-pulse bg-[radial-gradient(circle,_rgba(255,0,80,0.16)_0%,_rgba(255,0,80,0.08)_35%,_transparent_70%)]" />
           <div className="relative z-10">
             <div className="text-xs uppercase tracking-[0.35em] text-white/50">
               Final accusation
             </div>
-            <div className="relative mx-auto mt-4 w-full max-w-3xl min-h-[200px] sm:min-h-[240px]">
+            <div className="relative mx-auto mt-3 w-full max-w-xl">
               <ThemeHostVisual
                 themeName={theme}
                 isTalking={isTalking}
                 alt="host"
-                className={`pointer-events-none absolute bottom-0 left-0 ${hostSizeConfig.liarReveal}`}
+                className="pointer-events-none mx-auto mb-3 h-28 w-24 object-contain sm:h-32 sm:w-28"
               />
               <motion.div
                 key={`liar-announce-${announcementIndex}`}
                 initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3, ease: "easeOut" }}
-                className={`${hostSizeConfig.liarBubbleMargin} min-h-[11rem] sm:min-h-[12rem] p-1 text-white`}
+                className="text-white"
               >
                 <div
                   ref={announcementBubbleFitRef}
-                  className="relative mx-auto flex max-h-[14rem] min-h-[10rem] w-full max-w-2xl flex-col items-center justify-center overflow-y-auto overflow-x-hidden rounded-[2rem] border-2 border-red-300/70 bg-[#2a0f2e] px-4 py-4 shadow-[0_12px_24px_rgba(0,0,0,0.42)] pof-scroll"
+                  className="relative mx-auto flex w-full max-w-lg flex-col items-center justify-center overflow-hidden rounded-[2rem] border-2 border-red-300/70 bg-[#2a0f2e] px-4 py-4 shadow-[0_12px_24px_rgba(0,0,0,0.42)]"
                 >
-                  <div className="absolute -left-3 top-[58%] h-6 w-6 -translate-y-1/2 rotate-45 border-b-2 border-l-2 border-red-300/70 bg-[#2a0f2e]" />
                   <p
                     ref={announcementBubbleTextRef}
-                    className="pof-ui-copy font-bold text-red-100"
+                    className="pof-host-dialogue w-full text-center text-red-100"
                     style={{
                       fontSize: `${announcementBubbleFontSize}px`,
-                      lineHeight: 1.1,
+                      lineHeight: 1.12,
                       whiteSpace: "normal",
                       wordBreak: "normal",
                       overflowWrap: "break-word",
@@ -6246,27 +6229,36 @@ function LiarRevealScreen({
                     }
                   </p>
                   {announcementIndex >= 1 && liars.length > 0 && (
-                    <div className="mt-3 inline-flex flex-wrap justify-center gap-2">
-                      {liars.map((player) => (
-                        <span
+                    <div className="mt-3 flex w-full flex-col items-center gap-2">
+                      {liars.map((player, liarIndex) => (
+                        <div
                           key={player.id}
-                          className="rounded-full border border-red-300/35 bg-red-500/15 px-4 py-1.5 text-sm sm:text-base font-black text-yellow-200"
+                          className="inline-flex max-w-full items-center gap-2 rounded-full border border-red-300/35 bg-red-500/15 px-3 py-1.5"
                         >
+                          <PlayerPersonaAvatar
+                            player={player}
+                            fallbackIndex={liarIndex}
+                            sizeClass="h-8 w-8"
+                            initialsClass="text-[0.55rem]"
+                            themeName={theme}
+                          />
+                          <span className="pof-heading truncate text-sm text-yellow-200 sm:text-base">
+                            {player.name}
+                          </span>
                           <img
-                            src={UI_ICON_BADGE_LIAR_SRC}
+                            src={resolveBundledAssetSrc(UI_ICON_BADGE_LIAR_SRC)}
                             alt=""
                             aria-hidden="true"
-                            className="mr-1 inline h-4 w-4 object-contain align-[-2px]"
+                            className="h-4 w-4 shrink-0 object-contain"
                           />
-                          {player.name}
-                        </span>
+                        </div>
                       ))}
                     </div>
                   )}
                 </div>
               </motion.div>
             </div>
-            <div className="mt-6 flex justify-center">
+            <div className="mt-4 flex justify-center">
               <button
                 type="button"
                 className="pof-btn pof-btn-pink pof-btn-sm pof-btn-wrap pof-focus max-w-full px-5"
@@ -6278,7 +6270,7 @@ function LiarRevealScreen({
               </button>
             </div>
             {announcementIndex >= announcementLines.length - 1 && (
-              <DoubleTakePairsRevealPanel round={round} className="relative z-10 mt-6" />
+              <DoubleTakePairsRevealPanel round={round} className="relative z-10 mt-4" />
             )}
           </div>
         </GlassPanel>
@@ -6335,11 +6327,11 @@ function ResultsScreen({
   }
 
   return (
-    <TopFrame theme={theme} allowScroll={false}>
-      <div className="mx-auto flex h-[calc(100dvh-2rem)] w-full max-w-5xl flex-col">
-        <GlassPanel className="flex-1 rounded-[2.3rem] border-white/15 bg-black/25 p-4 sm:p-6">
+    <TopFrame theme={theme} allowScroll={resultsStage !== "details"}>
+      <div className="mx-auto flex w-full max-w-5xl flex-col">
+        <GlassPanel className="rounded-[2.3rem] border-white/15 bg-black/25 p-4 sm:p-6">
           {resultsStage === "summary" ? (
-            <div className="flex h-full flex-col">
+            <div className="flex flex-col">
               <div className="text-center">
                 <h2 className="text-3xl leading-tight sm:text-4xl font-black text-[#ff7d87] [text-shadow:0_4px_16px_rgba(0,0,0,0.45)]">
                   🔥 WHO WAS THE LIAR? 🔥
@@ -6388,6 +6380,7 @@ function ResultsScreen({
                           fallbackIndex={index}
                           sizeClass="h-8 w-8"
                           initialsClass="text-[0.58rem]"
+                          themeName={theme}
                         />
                         <div
                           className={`text-lg sm:text-xl font-black leading-tight ${isLiar ? "text-[#ffc0ab]" : "text-white"}`}
@@ -6407,7 +6400,7 @@ function ResultsScreen({
               </div>
             </div>
           ) : resultsStage === "details" ? (
-            <div className="grid h-full content-start grid-cols-1 gap-2">
+            <div className="grid content-start grid-cols-1 gap-2">
               <GlassPanel className="rounded-[1.2rem] border border-white/10 bg-black/25 p-2.5 text-center">
                 <div className="text-xs font-black uppercase tracking-[0.14em] text-white/55">
                   Scoring Rules
@@ -6439,6 +6432,7 @@ function ResultsScreen({
                             )}
                             sizeClass="h-7 w-7"
                             initialsClass="text-[0.5rem]"
+                            themeName={theme}
                           />
                           <div className="text-sm font-black uppercase text-white">
                             {player.name}
@@ -6454,7 +6448,7 @@ function ResultsScreen({
               </GlassPanel>
             </div>
           ) : (
-            <GlassPanel className="h-full rounded-[1.2rem] border border-yellow-300/20 bg-black/25 p-3 sm:p-4">
+            <GlassPanel className="rounded-[1.2rem] border border-yellow-300/20 bg-black/25 p-3 sm:p-4">
               <div className="flex items-center gap-3 text-yellow-200">
                 <Trophy className="h-5 w-5" />
                 <div className="text-xl font-black uppercase tracking-[0.06em]">
@@ -6474,6 +6468,7 @@ function ResultsScreen({
                           fallbackIndex={index}
                           sizeClass="h-10 w-10"
                           initialsClass="text-[0.65rem]"
+                          themeName={theme}
                         />
                         <div>
                           <div className="text-[0.7rem] sm:text-xs font-black uppercase tracking-[0.08em] text-white/55">{`Place ${index + 1}`}</div>
@@ -10507,7 +10502,7 @@ export default function App() {
         >
           <div className="mx-auto flex min-h-0 w-full max-w-4xl flex-1 flex-col overflow-hidden">
             <div
-              className="shrink-0 px-2 pb-1 pt-11 text-center sm:pt-10"
+              className="shrink-0 px-2 pb-1 pt-[calc(var(--pof-safe-top)+2.75rem)] text-center sm:pt-[calc(var(--pof-safe-top)+2.25rem)]"
               data-testid="category-choice-header"
             >
               <div className="pof-ui-muted text-xs font-semibold uppercase tracking-[0.3em] pl-14 sm:pl-0">
@@ -10755,7 +10750,7 @@ export default function App() {
             <button
               type="button"
               data-testid="game-pause-fab"
-              className="fixed left-3 top-3 z-[120] rounded-full border border-cyan-300/40 bg-black/55 px-3 py-2 text-xs font-black uppercase tracking-[0.12em] text-cyan-100"
+              className="pof-fixed-safe-tl rounded-full border border-cyan-300/40 bg-black/55 px-3 py-2 text-xs font-black uppercase tracking-[0.12em] text-cyan-100"
               onClick={() => setGamePauseOpen(true)}
               aria-label="Pause game"
             >
@@ -10800,7 +10795,7 @@ export default function App() {
       {onlineMode && ONLINE_IN_SESSION_LEAVE_SCREENS.has(screen) && (
         <button
           type="button"
-          className="fixed right-3 top-3 z-[120] rounded-full border border-red-300/40 bg-black/55 px-3 py-2 text-xs font-black uppercase tracking-[0.12em] text-red-100"
+          className="pof-fixed-safe-tr rounded-full border border-red-300/40 bg-black/55 px-3 py-2 text-xs font-black uppercase tracking-[0.12em] text-red-100"
           onClick={() => {
             void leaveOnlineLobby({ nextScreen: "online-join" });
           }}

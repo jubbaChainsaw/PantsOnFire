@@ -100,16 +100,34 @@ async function fetchAppInstallToken() {
   }
 }
 
+function injectSafeAreaInsets(webViewRef) {
+  const topInset =
+    Platform.OS === 'android' ? Math.max(StatusBar.currentHeight || 0, 28) : 0;
+  const bottomInset = Platform.OS === 'android' ? 20 : 0;
+  webViewRef.current?.injectJavaScript(
+    `(function(){var d=document.documentElement;d.style.setProperty('--pof-native-safe-top','${topInset}px');d.style.setProperty('--pof-native-safe-bottom','${bottomInset}px');})();true;`,
+  );
+}
+
 function injectNativeHostCredentials(webViewRef, creds) {
+  const topInset =
+    Platform.OS === 'android' ? Math.max(StatusBar.currentHeight || 0, 28) : 0;
+  const bottomInset = Platform.OS === 'android' ? 20 : 0;
   const detail = {
     surface: NATIVE_CLIENT_SURFACE,
     platform: Platform.OS,
     installToken: String(creds?.installToken || '').trim(),
     expiresAt: Number(creds?.expiresAt) || 0,
+    safeAreaInsets: {
+      top: topInset,
+      bottom: bottomInset,
+      left: 0,
+      right: 0,
+    },
   };
   const payload = JSON.stringify(detail);
   webViewRef.current?.injectJavaScript(
-    `(function(){try{window.__POF_NATIVE_HOST__=${payload};window.dispatchEvent(new CustomEvent('pof-native-host-ready',{detail:window.__POF_NATIVE_HOST__}));}catch(e){}})();true;`,
+    `(function(){try{window.__POF_NATIVE_HOST__=${payload};var d=document.documentElement;d.style.setProperty('--pof-native-safe-top','${topInset}px');d.style.setProperty('--pof-native-safe-bottom','${bottomInset}px');window.dispatchEvent(new CustomEvent('pof-native-host-ready',{detail:window.__POF_NATIVE_HOST__}));}catch(e){}})();true;`,
   );
 }
 
@@ -493,6 +511,7 @@ export default function App() {
           mediaPlaybackRequiresUserAction={false}
           onMessage={onWebMessage}
           onLoadEnd={() => {
+            injectSafeAreaInsets(webViewRef);
             if (appInstallRef.current?.installToken) {
               injectNativeHostCredentials(webViewRef, appInstallRef.current);
             }

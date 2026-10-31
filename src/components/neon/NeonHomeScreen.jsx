@@ -112,8 +112,8 @@ export default function NeonHomeScreen({
       <main
         className="relative z-10 mx-auto flex min-h-[100dvh] w-full max-w-[28rem] flex-col px-4"
         style={{
-          paddingTop: 'max(0.75rem, env(safe-area-inset-top, 0px))',
-          paddingBottom: 'max(0.75rem, env(safe-area-inset-bottom, 0px))',
+          paddingTop: 'max(0.75rem, var(--pof-safe-top, env(safe-area-inset-top, 0px)))',
+          paddingBottom: 'max(0.75rem, var(--pof-safe-bottom, env(safe-area-inset-bottom, 0px)))',
         }}
       >
         <div className="relative shrink-0 flex items-start justify-between pt-1">

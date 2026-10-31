@@ -58,6 +58,11 @@ class RootErrorBoundary extends React.Component {
 
 async function bootstrap() {
   try {
+    const { installSafeAreaInsets, bindNativeSafeAreaInsetListener } = await import(
+      './lib/safeAreaInsets.js'
+    );
+    installSafeAreaInsets();
+    bindNativeSafeAreaInsetListener();
     const { installDiagnosticsLogCapture } = await import('./lib/diagnosticsLog.js');
     installDiagnosticsLogCapture();
     const { AuthProvider } = await import('./auth/AuthProvider.jsx');
