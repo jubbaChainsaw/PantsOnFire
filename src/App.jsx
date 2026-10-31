@@ -4927,7 +4927,7 @@ function SetupScreen(props) {
                       <div className="flex items-start gap-3">
                         {player.personaImageSrc && (
                           <ThemeArt
-                            src={resolvePlayerPersonaImageSrc(player, theme)}
+                            src={resolvePlayerPersonaImageSrc(player, nameTheme)}
                             alt={`${player.name} persona portrait`}
                             className="h-16 w-16 shrink-0 rounded-xl border border-white/20 bg-black/30 object-cover"
                           />
