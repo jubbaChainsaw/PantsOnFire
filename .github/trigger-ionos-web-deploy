@@ -1,3 +1,2 @@
-# Redeploy after lftp SFTP upload fix (ec6357b web + stamps).
-
-ionos-upload-script-yaml-fix-4
+# Redeploy after lftp -u password SFTP auth fix.
+ionos-lftp-password-auth-5

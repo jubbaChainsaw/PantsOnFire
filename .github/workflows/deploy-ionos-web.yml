@@ -63,7 +63,14 @@ jobs:
         run: |
           test -f dist/index.html
           test -f dist/.htaccess
+          test -f dist/build-stamp.json
+          test -f dist/shell-version.json
           echo "dist size:" && du -sh dist
+          echo "build-stamp.json:" && cat dist/build-stamp.json
+          echo "shell-version.json (excerpt):" && head -c 500 dist/shell-version.json && echo
+
+      - name: Install SFTP upload tools
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq lftp openssh-client
 
       - name: Require IONOS SFTP secrets
         env:
@@ -101,41 +108,34 @@ jobs:
           SFTP_KEY: ${{ secrets.IONOS_SFTP_KEY }}
           SFTP_PORT: ${{ steps.sftp.outputs.port }}
           REMOTE_DIR: ${{ secrets.IONOS_SFTP_REMOTE_DIR }}
+        run: bash scripts/ionosUploadDist.sh
+
+      - name: Verify live www.pantsonfire.app build stamps
+        env:
+          EXPECT_SHA: ${{ github.sha }}
+          EXPECT_VERSION: 0.1.${{ github.run_number }}
         run: |
           set -euo pipefail
-          sudo apt-get update
-          sudo apt-get install -y lftp openssh-client
-          REMOTE="${REMOTE_DIR:-/}"
-          REMOTE="${REMOTE%/}"
-          if [ -z "$REMOTE" ]; then REMOTE="/"; fi
-          PORT="${SFTP_PORT:-22}"
-          WRAPPER="${RUNNER_TEMP}/sftp-ssh-wrap.sh"
-          if [ -n "${SFTP_KEY:-}" ]; then
-            mkdir -p ~/.ssh
-            umask 077
-            printf '%s\n' "$SFTP_KEY" > ~/.ssh/ionos_deploy_key
-            chmod 600 ~/.ssh/ionos_deploy_key
-            printf '%s\n' '#!/bin/sh' "exec ssh -a -x -o StrictHostKeyChecking=accept-new -p ${PORT} -i \"\$HOME/.ssh/ionos_deploy_key\" \"\$@\"" > "$WRAPPER"
-            LFTP_OPEN="open sftp://${SFTP_USER}@${SFTP_HOST}"
-          elif [ -n "${SFTP_PASS:-}" ]; then
-            sudo apt-get install -y sshpass
-            export SSHPASS="$SFTP_PASS"
-            printf '%s\n' '#!/bin/sh' "exec sshpass -e ssh -a -x -o StrictHostKeyChecking=accept-new -p ${PORT} -o PreferredAuthentications=password -o PubkeyAuthentication=no \"\$@\"" > "$WRAPPER"
-            LFTP_OPEN="open sftp://${SFTP_USER}@${SFTP_HOST}"
-          else
-            echo "::error::Missing IONOS_SFTP_PASSWORD or IONOS_SFTP_KEY"
-            exit 1
-          fi
-          chmod +x "$WRAPPER"
-          lftp -e "
-            set cmd:fail-exit yes;
-            set sftp:connect-program \"${WRAPPER}\";
-            set net:max-retries 2;
-            set net:timeout 120;
-            ${LFTP_OPEN};
-            lcd dist;
-            cd \"${REMOTE}\";
-            mirror --reverse --verbose --parallel=4;
-            bye
-          "
-          echo "Upload complete (SFTP mirror to ${REMOTE})"
+          base="https://www.pantsonfire.app"
+          for path in build-stamp.json shell-version.json; do
+            echo "Fetching ${base}/${path}"
+            curl -fsS "${base}/${path}" -o "/tmp/${path}"
+            cat "/tmp/${path}"
+          done
+          node <<'NODE'
+          const fs = require('fs');
+          const expectSha = process.env.EXPECT_SHA;
+          const expectVersion = process.env.EXPECT_VERSION;
+          for (const file of ['build-stamp.json', 'shell-version.json']) {
+            const doc = JSON.parse(fs.readFileSync(`/tmp/${file}`, 'utf8'));
+            if (doc.webBuildSha !== expectSha) {
+              console.error(`${file}: webBuildSha ${doc.webBuildSha} !== ${expectSha}`);
+              process.exit(1);
+            }
+            if (doc.webVersion !== expectVersion) {
+              console.error(`${file}: webVersion ${doc.webVersion} !== ${expectVersion}`);
+              process.exit(1);
+            }
+          }
+          console.log('Live build stamps match this deploy run.');
+          NODE
