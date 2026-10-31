@@ -16,9 +16,14 @@ LFTP_USER=()
 
 if [ -n "${SFTP_PASS:-}" ]; then
   LFTP_USER=(-u "${SFTP_USER},${SFTP_PASS}")
+  if ! command -v sshpass >/dev/null 2>&1; then
+    sudo apt-get update -qq
+    sudo apt-get install -y -qq sshpass
+  fi
+  export SSHPASS="$SFTP_PASS"
   {
     echo '#!/bin/sh'
-    echo "exec ssh -a -x -o StrictHostKeyChecking=accept-new -p ${PORT}" '"$@"'
+    echo "exec sshpass -e ssh -a -x -o StrictHostKeyChecking=accept-new -p ${PORT} -o PreferredAuthentications=password -o PubkeyAuthentication=no \"\$@\""
   } > "$WRAPPER"
 elif [ -n "${SFTP_KEY:-}" ]; then
   mkdir -p ~/.ssh

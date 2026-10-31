@@ -1,2 +1,2 @@
-# Redeploy after lftp connect-program wrapper fix.
-ionos-lftp-wrapper-6
+# Redeploy: lftp -u plus sshpass connect-program.
+ionos-lftp-sshpass-7

@@ -70,7 +70,7 @@ jobs:
           echo "shell-version.json (excerpt):" && head -c 500 dist/shell-version.json && echo
 
       - name: Install SFTP upload tools
-        run: sudo apt-get update -qq && sudo apt-get install -y -qq lftp openssh-client
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq lftp openssh-client sshpass
 
       - name: Require IONOS SFTP secrets
         env:
