@@ -78,6 +78,22 @@ jobs:
       - name: Stage web bundle into Android assets
         run: node scripts/stageAndroidBundledWeb.mjs dist-android
 
+      - name: Require Play upload signing secrets
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          missing=0
+          for name in ANDROID_KEYSTORE_BASE64 ANDROID_KEYSTORE_PASSWORD ANDROID_KEY_ALIAS ANDROID_KEY_PASSWORD; do
+            if [ -z "${!name}" ]; then
+              echo "::error::Missing GitHub secret: $name (release AAB must use Play upload key, not debug)"
+              missing=1
+            fi
+          done
+          exit "$missing"
+
       - name: Bundle release AAB
         working-directory: android
         env:
@@ -88,7 +104,7 @@ jobs:
         run: |
           ./gradlew bundleRelease --no-daemon \
             -PandroidVersionCode=${{ github.run_number }} \
-            -PandroidVersionName=0.1.${{ github.run_number }}
+            -PandroidVersionName=1.0.1
 
       - name: Collect AAB + size report
         run: |
@@ -102,6 +118,24 @@ jobs:
 
       - name: Verify embedded JS bundle in release AAB
         run: node scripts/verifyAndroidEmbeddedBundle.mjs artifacts/pants-on-fire-release.aab
+
+      - name: Verify Play upload certificate on AAB
+        env:
+          EXPECTED_UPLOAD_CERT_SHA256: '4A:8F:52:75:8A:C5:26:6A:31:6E:3F:5B:41:64:76:A2:6E:3C:3A:B6:3F:47:84:C8:A8:CA:19:41:4A:6D:A3:C5'
+        run: |
+          set -euo pipefail
+          normalize() { echo "$1" | tr '[:lower:]' '[:upper:]' | tr -d ':' | tr -d ' '; }
+          ACTUAL=$(keytool -printcert -jarfile artifacts/pants-on-fire-release.aab 2>/dev/null | awk -F': ' '/SHA256:/ {print $2; exit}')
+          if [ -z "$ACTUAL" ]; then
+            echo "::error::Could not read signing certificate from release AAB (is it debug-signed or unsigned?)"
+            exit 1
+          fi
+          if [ "$(normalize "$ACTUAL")" != "$(normalize "$EXPECTED_UPLOAD_CERT_SHA256")" ]; then
+            echo "::error::Release AAB upload cert SHA-256 does not match the Play upload key"
+            echo "Certificate SHA-256 from AAB: $ACTUAL"
+            exit 1
+          fi
+          echo "Release AAB signed with Play upload key (SHA-256 verified)."
 
       - name: Upload release AAB
         uses: actions/upload-artifact@v4

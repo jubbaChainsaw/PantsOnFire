@@ -118,6 +118,7 @@ android {
                     keystoreFile.withOutputStream { stream -> stream.write(decoded) }
                 }
                 storeFile keystoreFile
+                storeType 'PKCS12'
                 storePassword System.getenv('ANDROID_KEYSTORE_PASSWORD') ?: ''
                 keyAlias System.getenv('ANDROID_KEY_ALIAS') ?: ''
                 keyPassword System.getenv('ANDROID_KEY_PASSWORD') ?: ''
