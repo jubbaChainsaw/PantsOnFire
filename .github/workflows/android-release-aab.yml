@@ -78,6 +78,9 @@ jobs:
       - name: Stage web bundle into Android assets
         run: node scripts/stageAndroidBundledWeb.mjs dist-android
 
+      - name: Verify Play Billing Library (>= 8.0.0)
+        run: bash scripts/verifyPlayBillingLibrary.sh
+
       - name: Require Play upload signing secrets
         env:
           ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
@@ -104,7 +107,7 @@ jobs:
         run: |
           ./gradlew bundleRelease --no-daemon \
             -PandroidVersionCode=${{ github.run_number }} \
-            -PandroidVersionName=1.0.1
+            -PandroidVersionName=1.0.2
 
       - name: Collect AAB + size report
         run: |

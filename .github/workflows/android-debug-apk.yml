@@ -81,6 +81,9 @@ jobs:
       - name: Stage web bundle into Android assets
         run: node scripts/stageAndroidBundledWeb.mjs dist-android
 
+      - name: Verify Play Billing Library (>= 8.0.0)
+        run: bash scripts/verifyPlayBillingLibrary.sh
+
       - name: Report bundled web size
         run: |
           du -sh dist-android
@@ -88,7 +91,7 @@ jobs:
 
       - name: Assemble debug APK
         working-directory: android
-        run: ./gradlew assembleDebug --no-daemon -PandroidVersionCode=${{ github.run_number }} -PandroidVersionName=0.1.${{ github.run_number }}
+        run: ./gradlew assembleDebug --no-daemon -PandroidVersionCode=${{ github.run_number }} -PandroidVersionName=1.0.2
 
       - name: Collect APK for artifact
         run: |

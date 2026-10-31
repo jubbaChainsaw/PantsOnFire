@@ -69,7 +69,7 @@
     "react": "^19.2.5",
     "react-dom": "^19.2.5",
     "react-native": "0.83.6",
-    "react-native-purchases": "^8.6.2",
+    "react-native-purchases": "^11.0.0",
     "react-native-webview": "^13.16.1",
     "redis": "^5.12.1",
     "sharp": "^0.34.5",
