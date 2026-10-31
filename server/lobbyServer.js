@@ -32,6 +32,14 @@ import { mountContentPackRoutes } from './contentPackRoutes.js';
 import { mountAppInstallRoutes } from './appInstallRoutes.js';
 import { assertMayHostLobby } from './hostingGate.js';
 import { resolveAuthUserFromBearer } from './resolveAuthUser.js';
+import { filterProfanity, sanitizeDisplayName } from '../src/lib/profanityFilter.js';
+import { appendLobbyChatMessage } from './lobbyChatContext.js';
+import {
+  createModerationStore,
+  ensureModerationSchema,
+} from './moderationStore.js';
+import { mountModerationRoutes } from './moderationRoutes.js';
+import { mountAccountDeletionRoutes } from './accountDeletionRoutes.js';
 
 const PORT = Number(process.env.LOBBY_SERVER_PORT || process.env.PORT || 8787);
 const CLIENT_ORIGINS_RAW = String(
@@ -181,6 +189,11 @@ if (databaseUrl) {
   await ensurePoFReferralSchema(pgPool);
 }
 
+let moderationStore = createModerationStore(pgPool);
+if (pgPool) {
+  await ensureModerationSchema(pgPool);
+}
+
 const accountStore = createPoFAccountStore(pgPool);
 
 let entitlementsStore;
@@ -256,10 +269,24 @@ mountContentPackRoutes(app, {
 });
 mountAppInstallRoutes(app, { rateLimiter: appInstallTokenLimiter });
 mountStripeBillingRoutes(app, { store: entitlementsStore, referralHooks });
+mountAccountDeletionRoutes(app, {
+  accountStore,
+  profileStore: playerProfileStore,
+  entitlementsStore,
+  moderationStore,
+  pgPool,
+});
 
 const httpServer = createServer(app);
 const io = new Server(httpServer, {
   cors: { origin: corsOriginHandler, methods: ['GET', 'POST'] },
+});
+
+mountModerationRoutes(app, {
+  moderationStore,
+  lobbyStore: store,
+  io,
+  broadcastSnapshot,
 });
 
 function roomName(code) {
@@ -466,8 +493,11 @@ app.post('/api/lobbies', createLobbyLimiter, async (req, res) => {
     hostAuthUserId = auth.userId;
   }
   const created = await store.createLobby({
-    hostPlayer,
-    hostName,
+    hostPlayer: {
+      ...hostPlayer,
+      name: sanitizeDisplayName(hostPlayer?.name || hostName),
+    },
+    hostName: sanitizeDisplayName(hostName),
     maxPlayers,
     settings,
     hostAuthUserId,
@@ -493,6 +523,9 @@ app.get('/api/lobbies/:code', lookupLimiter, async (req, res) => {
 app.post('/api/lobbies/:code/join', joinLobbyLimiter, async (req, res) => {
   const code = normalizeCode(req.params.code);
   const incoming = req.body?.player || {};
+  if (incoming?.name) {
+    incoming.name = sanitizeDisplayName(incoming.name);
+  }
   const sessionToken = String(req.body?.sessionToken || '');
   const joined = await store.upsertPlayer(code, incoming, sessionToken);
   if (joined.error === 'not-found') {
@@ -1004,7 +1037,7 @@ io.on('connection', (socket) => {
     const normalizedCode = normalizeCode(code);
     const normalizedPlayerId = String(playerId || '').trim();
     const normalizedToken = String(sessionToken || '').trim();
-    const normalizedText = String(text || '').trim().slice(0, 280);
+    const normalizedText = filterProfanity(String(text || '').trim().slice(0, 280));
     if (!normalizedCode || !normalizedPlayerId || !normalizedToken || !normalizedText) return;
     const lobby = await store.getLobby(normalizedCode);
     if (!lobby) return;
@@ -1015,14 +1048,16 @@ io.on('connection', (socket) => {
       ? lobby.players.find((entry) => String(entry?.id || '') === normalizedPlayerId)
       : null;
     if (!player) return;
-    io.to(roomName(normalizedCode)).emit('party-chat:message', {
+    const outbound = {
       id: `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
       lobbyCode: normalizedCode,
       playerId: normalizedPlayerId,
       playerName: String(player.name || 'Player'),
       text: normalizedText,
       createdAt: nowIso(),
-    });
+    };
+    appendLobbyChatMessage(normalizedCode, outbound);
+    io.to(roomName(normalizedCode)).emit('party-chat:message', outbound);
   });
 
   socket.on('party-voice:activity', async ({ code, playerId, sessionToken, isTalking }) => {

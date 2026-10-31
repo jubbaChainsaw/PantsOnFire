@@ -23,6 +23,7 @@ import { readStoreSectionPrefs, writeStoreSectionPrefs } from '../../lib/storeSe
 import { fetchBillingCatalog } from '../../billing/fetchBillingCatalog.js';
 import { requestNativeEntitlementsRefresh } from '../../billing/nativePurchasesBridge.js';
 import { tapFx } from '../../lib/pofFx.js';
+import { SiteLegalLinks } from '../SiteLegalLinks.jsx';
 import NeonStoreThemesPanel from './NeonStoreThemesPanel.jsx';
 import WebPlayerNotice from './WebPlayerNotice.jsx';
 
@@ -457,6 +458,7 @@ export default function NeonStoreScreen({
               <span className="text-center leading-snug">Account & sign-in</span>
             </button>
           </div>
+          <SiteLegalLinks className="mt-4" />
         </div>
       </div>
     </div>

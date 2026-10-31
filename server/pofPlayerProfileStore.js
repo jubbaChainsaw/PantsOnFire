@@ -50,5 +50,10 @@ export function createPostgresPlayerProfileStore(pool) {
       );
       return normalized;
     },
+    async delete(userId) {
+      const id = String(userId || '').trim();
+      if (!id) return;
+      await pool.query(`DELETE FROM pof_player_profiles WHERE user_id = $1`, [id]);
+    },
   };
 }

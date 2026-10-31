@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Delete account – Pants on Fire!</title>
+    <style>
+      :root { color-scheme: dark; font-family: system-ui, sans-serif; line-height: 1.55; }
+      body { margin: 0; background: #120038; color: #f5f0ff; }
+      main { max-width: 42rem; margin: 0 auto; padding: 2rem 1.25rem 3rem; }
+      h1 { font-size: 1.75rem; color: #fde047; }
+      h2 { font-size: 1.05rem; margin-top: 1.5rem; color: #a5f3fc; }
+      label { display: block; font-size: 0.8rem; margin-top: 0.75rem; }
+      input, textarea, button {
+        width: 100%; box-sizing: border-box; margin-top: 0.35rem;
+        border-radius: 0.65rem; border: 1px solid rgba(255,255,255,0.15);
+        background: rgba(0,0,0,0.35); color: #fff; padding: 0.65rem 0.75rem;
+      }
+      button { cursor: pointer; font-weight: 700; background: rgba(244,63,94,0.25); margin-top: 1rem; }
+      .ok { color: #6ee7b7; } .err { color: #fca5a5; }
+      a { color: #67e8f9; }
+      footer { margin-top: 2rem; font-size: 0.85rem; opacity: 0.85; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Delete your account</h1>
+      <p>
+        Controller: <strong>Martin Richardson</strong>, trading as <strong>Hikaru Tech</strong>.
+        Contact: <a href="mailto:jubbamhc@gmail.com">jubbamhc@gmail.com</a>.
+      </p>
+
+      <h2>In the app</h2>
+      <p>
+        Open <strong>Settings → Delete account</strong>, confirm, and re-enter your password if
+        prompted. You will be signed out when deletion completes.
+      </p>
+
+      <h2>On the web (signed in)</h2>
+      <p>
+        If you use the same email/password on the website, sign in on
+        <a href="/">pantsonfire.app</a>, then use Settings → Delete account, or use this form
+        (calls our API at api.pantsonfire.app):
+      </p>
+      <form id="delete-form">
+        <label>Email<input name="email" type="email" autocomplete="username" required /></label>
+        <label>Password<input name="password" type="password" autocomplete="current-password" required /></label>
+        <label>Type DELETE to confirm<input name="confirm" type="text" required /></label>
+        <button type="submit">Delete my account</button>
+        <p id="delete-status" role="status"></p>
+      </form>
+
+      <h2>Without signing in</h2>
+      <p>
+        Email <a href="mailto:jubbamhc@gmail.com?subject=Delete%20my%20Pants%20on%20Fire%20account">jubbamhc@gmail.com</a>
+        from the address on your account and ask us to delete it, or submit a request below:
+      </p>
+      <form id="request-form">
+        <label>Account email<input name="email" type="email" required /></label>
+        <label>Optional note<textarea name="note" rows="3"></textarea></label>
+        <button type="submit">Request deletion by email</button>
+        <p id="request-status" role="status"></p>
+      </form>
+
+      <h2>What is deleted vs kept</h2>
+      <ul>
+        <li><strong>Deleted:</strong> account email, display name, password hash, player profile/stats, server-side entitlements, referral data, and block lists tied to your account.</li>
+        <li><strong>Kept:</strong> purchase records held by Google Play, Stripe, or RevenueCat; minimal logs we must keep for tax/fraud law (typically up to 7 years); anonymised moderation reports after investigation.</li>
+        <li><strong>Lobby chat:</strong> not stored long-term; recent lines may appear only inside an abuse report you or others file.</li>
+      </ul>
+
+      <footer>
+        <a href="/privacy">Privacy policy</a> · <a href="/">Back to game</a>
+      </footer>
+    </main>
+    <script>
+      const API = 'https://api.pantsonfire.app/api';
+      async function login(email, password) {
+        const res = await fetch(`${API}/auth/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+          body: JSON.stringify({ email, password }),
+        });
+        const body = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(body.error || 'Login failed');
+        return body.access_token;
+      }
+      document.getElementById('delete-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const status = document.getElementById('delete-status');
+        status.className = '';
+        status.textContent = 'Working…';
+        const fd = new FormData(e.target);
+        if (String(fd.get('confirm') || '').trim().toUpperCase() !== 'DELETE') {
+          status.textContent = 'Type DELETE to confirm.';
+          status.className = 'err';
+          return;
+        }
+        try {
+          const token = await login(fd.get('email'), fd.get('password'));
+          const del = await fetch(`${API}/me/delete-account`, {
+            method: 'POST',
+            headers: {
+              Authorization: `Bearer ${token}`,
+              'Content-Type': 'application/json',
+              Accept: 'application/json',
+            },
+            body: JSON.stringify({ password: fd.get('password') }),
+          });
+          const body = await del.json().catch(() => ({}));
+          if (!del.ok) throw new Error(body.error || 'Delete failed');
+          status.textContent = 'Account deleted. You can close this page.';
+          status.className = 'ok';
+          e.target.reset();
+        } catch (err) {
+          status.textContent = String(err.message || err);
+          status.className = 'err';
+        }
+      });
+      document.getElementById('request-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const status = document.getElementById('request-status');
+        status.textContent = 'Sending…';
+        const fd = new FormData(e.target);
+        try {
+          const res = await fetch(`${API}/public/account-deletion-request`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+            body: JSON.stringify({ email: fd.get('email'), note: fd.get('note') }),
+          });
+          const body = await res.json().catch(() => ({}));
+          if (!res.ok) throw new Error(body.error || 'Request failed');
+          status.textContent = body.message || 'Request received.';
+          status.className = 'ok';
+          e.target.reset();
+        } catch (err) {
+          status.textContent = String(err.message || err);
+          status.className = 'err';
+        }
+      });
+    </script>
+  </body>
+</html>

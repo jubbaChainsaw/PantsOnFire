@@ -160,5 +160,21 @@ export function createPoFAccountStore(pool) {
         displayName: row.displayName,
       };
     },
+
+    async deleteAccount(userId) {
+      const id = String(userId || '').trim();
+      if (!id) return;
+      if (usePg) {
+        await pool.query(`DELETE FROM pof_accounts WHERE id = $1`, [id]);
+        return;
+      }
+      for (const [email, row] of memoryUsersByEmail.entries()) {
+        if (row.id === id) {
+          memoryUsersByEmail.delete(email);
+          break;
+        }
+      }
+      memoryUsersById.delete(id);
+    },
   };
 }

@@ -13,7 +13,7 @@ const DEFAULTS = {
   mic: true,
   musicVol: 60,
   sfxVol: 80,
-  voiceChat: true,
+  voiceChat: false,
 };
 
 export function loadFx() {

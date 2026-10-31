@@ -1,0 +1,244 @@
+{
+  "scannedAt": "2026-10-31T22:58:57.911Z",
+  "scannedFileCount": 157,
+  "summary": {
+    "alcohol": {
+      "total": 58,
+      "releaseReachable": 48
+    },
+    "drugs": {
+      "total": 0,
+      "releaseReachable": 0
+    },
+    "gambling": {
+      "total": 23,
+      "releaseReachable": 18
+    },
+    "sexual": {
+      "total": 1,
+      "releaseReachable": 1
+    },
+    "strongSwearing": {
+      "total": 0,
+      "releaseReachable": 0
+    },
+    "adultReachability": {
+      "total": 1,
+      "releaseReachable": 1
+    }
+  },
+  "examples": {
+    "alcohol": [
+      {
+        "category": "alcohol",
+        "file": "src/data/categories.js",
+        "line": 315,
+        "excerpt": "'Cocktail glasses clinking',",
+        "adultOnlyContext": false
+      },
+      {
+        "category": "alcohol",
+        "file": "src/data/categories.js",
+        "line": 327,
+        "excerpt": "'Wine bottle cork pop',",
+        "adultOnlyContext": false
+      },
+      {
+        "category": "alcohol",
+        "file": "src/data/categories.js",
+        "line": 402,
+        "excerpt": "'Nightclub and cocktail bar',",
+        "adultOnlyContext": false
+      },
+      {
+        "category": "alcohol",
+        "file": "src/data/categories.js",
+        "line": 410,
+        "excerpt": "'Speakeasy and whisky lounge',",
+        "adultOnlyContext": false
+      },
+      {
+        "category": "alcohol",
+        "file": "src/data/categories.js",
+        "line": 484,
+        "excerpt": "'Cocktail bar',",
+        "adultOnlyContext": false
+      },
+      {
+        "category": "alcohol",
+        "file": "src/data/categories.js",
+        "line": 496,
+        "excerpt": "'Wine bar',",
+        "adultOnlyContext": false
+      },
+      {
+        "category": "alcohol",
+        "file": "src/data/categories.js",
+        "line": 625,
+        "excerpt": "'cocktail-glasses-clink',",
+        "adultOnlyContext": false
+      },
+      {
+        "category": "alcohol",
+        "file": "src/data/categories.js",
+        "line": 637,
+        "excerpt": "'wine-bar-cork-pop',",
+        "adultOnlyContext": false
+      }
+    ],
+    "drugs": [],
+    "gambling": [
+      {
+        "category": "gambling",
+        "file": "src/data/categories.js",
+        "line": 226,
+        "excerpt": "'Casino night meme',",
+        "adultOnlyContext": false
+      },
+      {
+        "category": "gambling",
+        "file": "src/data/categories.js",
+        "line": 308,
+        "excerpt": "'Casino slot machine jingle',",
+        "adultOnlyContext": false
+      },
+      {
+        "category": "gambling",
+        "file": "src/data/categories.js",
+        "line": 314,
+        "excerpt": "'Casino roulette spin',",
+        "adultOnlyContext": false
+      },
+      {
+        "category": "gambling",
+        "file": "src/data/categories.js",
+        "line": 403,
+        "excerpt": "'Casino and poker table',",
+        "adultOnlyContext": false
+      },
+      {
+        "category": "gambling",
+        "file": "src/data/categories.js",
+        "line": 485,
+        "excerpt": "'Casino',",
+        "adultOnlyContext": false
+      },
+      {
+        "category": "gambling",
+        "file": "src/data/categories.js",
+        "line": 624,
+        "excerpt": "'casino-roulette-wheel',",
+        "adultOnlyContext": false
+      },
+      {
+        "category": "gambling",
+        "file": "src/data/categories.js",
+        "line": 653,
+        "excerpt": "'casino-poker-table',",
+        "adultOnlyContext": false
+      },
+      {
+        "category": "gambling",
+        "file": "src/data/generatedPictureDlcManifests.js",
+        "line": 2134,
+        "excerpt": "\"entryId\": \"pair-06-library-casino\",",
+        "adultOnlyContext": false
+      }
+    ],
+    "sexual": [
+      {
+        "category": "sexual",
+        "file": "src/components/online/LobbyPlayerModerationMenu.jsx",
+        "line": 7,
+        "excerpt": "{ id: 'sexual', label: 'Sexual content' },",
+        "adultOnlyContext": false
+      }
+    ],
+    "strongSwearing": [],
+    "adultReachability": [
+      {
+        "category": "adultReachability",
+        "file": "src/data/uiAssets.js",
+        "line": 28,
+        "excerpt": "export const UI_LOGO_18PLUS_SRC = `${UI_ASSET_BASE}/logos/logo-18plus.png`;",
+        "adultOnlyContext": false
+      }
+    ]
+  },
+  "adultOnlyExamples": [
+    {
+      "category": "alcohol",
+      "file": "src/data/categories.js",
+      "line": 526,
+      "excerpt": "{ hint: 'Party Chaos (18+)', main: 'Drunk karaoke is always a good idea.', imposter: 'Drunk karaoke is always a bad idea.', adultOnly: true },",
+      "adultOnlyContext": true
+    },
+    {
+      "category": "gambling",
+      "file": "src/data/guessableEntityPools.js",
+      "line": 26,
+      "excerpt": "adultImposter: ['Airport sports lounge', 'Casino sports lounge', 'Hotel afterparty', 'Private karaoke room', 'Taxi rank outside arena'],",
+      "adultOnlyContext": true
+    },
+    {
+      "category": "alcohol",
+      "file": "src/data/guessableEntityPools.js",
+      "line": 31,
+      "excerpt": "adultMain: ['Wine bar', 'Cocktail brunch', 'Steakhouse date night', 'Dessert bar', 'Late-night taco stand'],",
+      "adultOnlyContext": true
+    },
+    {
+      "category": "alcohol",
+      "file": "src/data/guessableEntityPools.js",
+      "line": 44,
+      "excerpt": "adultImposter: ['Piano cocktail bar', 'Nightclub DJ booth', 'Backstage bar', 'Hotel lobby piano bar', 'Rooftop DJ set'],",
+      "adultOnlyContext": true
+    },
+    {
+      "category": "gambling",
+      "file": "src/data/guessableEntityPools.js",
+      "line": 49,
+      "excerpt": "adultMain: ['Ibiza beach club', 'Las Vegas strip', 'Monaco casino', 'Mykonos beach bar', 'Rio rooftop party'],",
+      "adultOnlyContext": true
+    },
+    {
+      "category": "gambling",
+      "file": "src/data/guessableEntityPools.js",
+      "line": 55,
+      "excerpt": "adultMain: ['Arcade bar', 'Casino poker room', 'VR gaming lounge', 'Board game pub', 'Late-night LAN cafe'],",
+      "adultOnlyContext": true
+    },
+    {
+      "category": "gambling",
+      "file": "src/data/guessableEntityPools.js",
+      "line": 73,
+      "excerpt": "adultMain: ['Hotel concierge desk', 'Casino dealer table', 'Nightclub bartender shift', 'Event photographer booth', 'Luxury cruise host desk'],",
+      "adultOnlyContext": true
+    },
+    {
+      "category": "alcohol",
+      "file": "src/data/guessableEntityPools.js",
+      "line": 80,
+      "excerpt": "adultImposter: ['Red carpet cocktail bar', 'Film festival rooftop lounge', 'Music awards green room', 'Celebrity beach club', 'Private penthouse event'],",
+      "adultOnlyContext": true
+    },
+    {
+      "category": "alcohol",
+      "file": "src/data/guessableEntityPools.js",
+      "line": 86,
+      "excerpt": "adultImposter: ['Hackathon overnight venue', 'Silicon Valley cocktail event', 'Esports afterparty suite', 'Developer meetup pub', 'Late-night arcade lounge'],",
+      "adultOnlyContext": true
+    },
+    {
+      "category": "alcohol",
+      "file": "src/data/guessableEntityPools.js",
+      "line": 92,
+      "excerpt": "adultImposter: ['Film studio rooftop', 'Press junket cocktail room', 'Aftershow podcast studio', 'Awards ceremony lounge', 'Luxury screening suite'],",
+      "adultOnlyContext": true
+    }
+  ],
+  "releaseBehaviour": {
+    "adultOnlyPromptsExcluded": "buildLocalRound filters prompt.adultOnly (App.jsx).",
+    "logo18Plus": "logo-18plus asset exists; no release UI route sets adultMode."
+  }
+}

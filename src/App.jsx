@@ -136,6 +136,25 @@ import {
 } from "./lib/referralAttribution.js";
 import { completeHostedOnlineGameOnServer } from "./lib/altCardUnlockApi.js";
 import NeonPlayerProfileScreen from "./components/neon/NeonPlayerProfileScreen.jsx";
+import LobbyPlayerModerationMenu from "./components/online/LobbyPlayerModerationMenu.jsx";
+import { DeleteAccountSettingsPanel } from "./components/DeleteAccountSettingsPanel.jsx";
+import { SiteLegalLinks } from "./components/SiteLegalLinks.jsx";
+import {
+  blockPlayerKeyLocally,
+  isPlayerBlocked,
+  moderationKeyForPlayer,
+  readLocalBlockedPlayerKeys,
+  unblockPlayerKeyLocally,
+  writeLocalBlockedPlayerKeys,
+} from "./lib/playerModeration.js";
+import {
+  kickLobbyPlayer,
+  reportLobbyPlayer,
+  fetchAccountBlocks,
+  syncAccountBlock,
+} from "./lib/lobbyModerationApi.js";
+import { deletePoFCloudAccount } from "./lib/pofCloudAuthClient.js";
+import { filterProfanity } from "./lib/profanityFilter.js";
 import {
   ADDON_TWIST_TRUTH,
   computeEntitlements,
@@ -4352,6 +4371,11 @@ function OnlineLobbyCodeScreen({
   selectedInviteUsernames = [],
   friends = [],
   onToggleInviteFriend = () => {},
+  blockedPlayerKeys = null,
+  onReportPlayer = () => {},
+  onBlockPlayer = () => {},
+  onKickPlayer = () => {},
+  localPlayerIsHost = false,
 }) {
   const readyCount = players.filter((player) =>
     Boolean(player?.isReady),
@@ -4396,8 +4420,8 @@ function OnlineLobbyCodeScreen({
             </Button>
           </div>
           <div className="mt-6 rounded-2xl border border-emerald-400/25 bg-emerald-500/10 p-4 text-sm text-emerald-100">
-            Voice party chat is active during clue/discussion phases, and
-            auto-pauses during instructions + private prompt phases.
+            Voice chat is available when enabled in Settings and during clue/discussion
+            phases. It auto-pauses during instructions and private prompt phases.
           </div>
           <div className="mt-6">
             <div className="text-xs uppercase tracking-[0.25em] text-white/60">
@@ -4416,17 +4440,28 @@ function OnlineLobbyCodeScreen({
                     sizeClass="h-8 w-8"
                     initialsClass="text-xs"
                   />
-                  <div className="text-white text-sm">{player.name}</div>
+                  <div className="text-white text-sm min-w-0 truncate flex-1">
+                    {player.name}
+                  </div>
                   {player?.isReady ? (
-                    <span className="ml-auto inline-flex items-center gap-1 rounded-full border border-emerald-300/35 bg-emerald-500/20 px-2 py-0.5 text-[0.62rem] font-black uppercase tracking-[0.08em] text-emerald-100">
+                    <span className="inline-flex items-center gap-1 rounded-full border border-emerald-300/35 bg-emerald-500/20 px-2 py-0.5 text-[0.62rem] font-black uppercase tracking-[0.08em] text-emerald-100">
                       <CheckCircle2 className="h-3.5 w-3.5" />
                       Ready
                     </span>
                   ) : (
-                    <span className="ml-auto inline-flex items-center gap-1 rounded-full border border-white/20 bg-white/10 px-2 py-0.5 text-[0.62rem] font-black uppercase tracking-[0.08em] text-white/70">
+                    <span className="inline-flex items-center gap-1 rounded-full border border-white/20 bg-white/10 px-2 py-0.5 text-[0.62rem] font-black uppercase tracking-[0.08em] text-white/70">
                       Pending
                     </span>
                   )}
+                  <LobbyPlayerModerationMenu
+                    player={player}
+                    isSelf={player.id === onlineJoinedPlayerId}
+                    isHost={localPlayerIsHost}
+                    blocked={isPlayerBlocked(player, blockedPlayerKeys)}
+                    onReport={(payload) => onReportPlayer(player, payload)}
+                    onBlock={() => onBlockPlayer(player)}
+                    onKick={() => onKickPlayer(player)}
+                  />
                 </div>
               ))}
             </div>
@@ -6706,6 +6741,8 @@ function SettingsScreen({
   defaultTab = "general",
   contentPacks = null,
   onReportBug = () => {},
+  cloudSignedIn = false,
+  onDeleteAccount = () => {},
 }) {
   const [effectsEnabled, setEffectsEnabled] = useState(true);
   const [largeText, setLargeText] = useState(false);
@@ -6960,9 +6997,9 @@ function SettingsScreen({
               }
             />
             <SettingsToggleRow
-              title="Voice Chat"
-              description="Online party voice preference."
-              checked={audioSettings.voiceChatEnabled !== false}
+              title="Voice chat (online)"
+              description="When off, you won't join live voice in online lobbies (text chat still works)."
+              checked={audioSettings.voiceChatEnabled === true}
               onCheckedChange={(next) =>
                 setAudioSettings((cur) => ({ ...cur, voiceChatEnabled: next }))
               }
@@ -7097,6 +7134,12 @@ function SettingsScreen({
                   );
                 })}
               </div>
+            </div>
+            <div className="rounded-[1.75rem] border border-rose-400/25 bg-rose-500/10 p-5">
+              <DeleteAccountSettingsPanel
+                cloudSignedIn={cloudSignedIn}
+                onDeleteAccount={onDeleteAccount}
+              />
             </div>
             <div className="rounded-[1.75rem] border border-emerald-400/25 bg-emerald-500/10 p-5">
               <div className="font-black text-lg text-emerald-100">
@@ -7425,6 +7468,9 @@ export default function App() {
   const [partyChatInput, setPartyChatInput] = useState("");
   const [partyChatMessages, setPartyChatMessages] = useState([]);
   const [partyTalkingPlayers, setPartyTalkingPlayers] = useState({});
+  const [blockedPlayerKeys, setBlockedPlayerKeys] = useState(() =>
+    readLocalBlockedPlayerKeys(),
+  );
   const [onlinePrivatePrompt, setOnlinePrivatePrompt] = useState(null);
   const [onlinePrivatePromptError, setOnlinePrivatePromptError] = useState("");
   const [onlinePhasePending, setOnlinePhasePending] = useState(false);
@@ -7461,7 +7507,7 @@ export default function App() {
       musicEnabled: Boolean(fxSettings.music),
       sfxEnabled: Boolean(fxSettings.sfx),
       hapticsEnabled: Boolean(fxSettings.haptics),
-      voiceChatEnabled: Boolean(fxSettings.voiceChat),
+      voiceChatEnabled: fxSettings.voiceChat === true,
       musicVol: Number(fxSettings.musicVol) || 60,
       sfxVol: Number(fxSettings.sfxVol) || 80,
     };
@@ -7594,6 +7640,126 @@ export default function App() {
       applyRemotePlayerProfile,
     ],
   );
+  const cloudAccessToken = useMemo(() => {
+    const token = String(supabaseSession?.access_token || "").trim();
+    if (token) return token;
+    try {
+      const raw = window.localStorage.getItem("pof-cloud-auth-v1");
+      if (!raw) return "";
+      const parsed = JSON.parse(raw);
+      return String(parsed?.access_token || "").trim();
+    } catch {
+      return "";
+    }
+  }, [supabaseSession?.access_token]);
+
+  useEffect(() => {
+    if (!cloudAccessToken || !isCloudAuthProvider(accountSession?.authProvider)) {
+      return undefined;
+    }
+    let cancelled = false;
+    (async () => {
+      try {
+        const serverKeys = await fetchAccountBlocks(cloudAccessToken);
+        if (cancelled) return;
+        const merged = new Set([
+          ...readLocalBlockedPlayerKeys(),
+          ...serverKeys.map((key) => String(key || "").toLowerCase()).filter(Boolean),
+        ]);
+        writeLocalBlockedPlayerKeys([...merged]);
+        setBlockedPlayerKeys(merged);
+      } catch {
+        /* keep local blocks */
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [cloudAccessToken, accountSession?.authProvider]);
+
+  const handleReportLobbyPlayer = useCallback(
+    async (reportedPlayer, { reason, note }) => {
+      const session = onlineSessionRef.current;
+      if (!session?.playerId || !lobbyCode) {
+        throw new Error("Not in a lobby");
+      }
+      await reportLobbyPlayer({
+        lobbyCode,
+        playerId: session.playerId,
+        sessionToken: session.sessionToken,
+        reportedPlayerId: reportedPlayer.id,
+        reason,
+        note,
+        accessToken: cloudAccessToken,
+      });
+    },
+    [lobbyCode, cloudAccessToken],
+  );
+
+  const handleBlockLobbyPlayer = useCallback(
+    async (targetPlayer) => {
+      const key = moderationKeyForPlayer(targetPlayer);
+      if (!key) return;
+      const wasBlocked = blockedPlayerKeys.has(key);
+      const nextLocal = wasBlocked
+        ? unblockPlayerKeyLocally(key)
+        : blockPlayerKeyLocally(key);
+      setBlockedPlayerKeys(new Set(nextLocal));
+      if (cloudAccessToken && isCloudAuthProvider(accountSession?.authProvider)) {
+        try {
+          const serverKeys = await syncAccountBlock({
+            accessToken: cloudAccessToken,
+            blockedPlayerKey: key,
+            action: wasBlocked ? "unblock" : "block",
+          });
+          const merged = new Set(
+            serverKeys.map((entry) => String(entry || "").toLowerCase()).filter(Boolean),
+          );
+          writeLocalBlockedPlayerKeys([...merged]);
+          setBlockedPlayerKeys(merged);
+        } catch {
+          /* local block still applies */
+        }
+      }
+    },
+    [blockedPlayerKeys, cloudAccessToken, accountSession?.authProvider],
+  );
+
+  const handleKickLobbyPlayer = useCallback(
+    async (targetPlayer) => {
+      const session = onlineSessionRef.current;
+      if (!session?.playerId || !lobbyCode) {
+        throw new Error("Not in a lobby");
+      }
+      await kickLobbyPlayer({
+        lobbyCode,
+        hostPlayerId: session.playerId,
+        sessionToken: session.sessionToken,
+        targetPlayerId: targetPlayer.id,
+      });
+    },
+    [lobbyCode],
+  );
+
+  const handleDeleteCloudAccount = useCallback(
+    async ({ password }) => {
+      if (!cloudAccessToken) {
+        throw new Error("Sign in with your cloud account first.");
+      }
+      const { error } = await deletePoFCloudAccount({
+        password,
+        accessToken: cloudAccessToken,
+      });
+      if (error) throw error;
+      clearAccountSession();
+      setAccountSession(null);
+      setUnlockedThemePackIds([]);
+      await signOutCloud();
+      setScreen("account-gate");
+    },
+    [cloudAccessToken, signOutCloud],
+  );
+
   useEffect(() => {
     if (!webShopMode || typeof window === "undefined") return;
     const code = parseJoinCodeFromLocation(window.location);
@@ -8162,12 +8328,13 @@ export default function App() {
   useEffect(() => {
     const phaseAllowsVoice =
       onlineMode && ONLINE_VOICE_ACTIVE_SCREENS.has(screen);
-    setOnlineVoiceEnabled(phaseAllowsVoice);
-    if (!phaseAllowsVoice) {
+    const userWantsVoice = audioSettings.voiceChatEnabled === true;
+    setOnlineVoiceEnabled(phaseAllowsVoice && userWantsVoice);
+    if (!phaseAllowsVoice || !userWantsVoice) {
       setOnlineVoiceMuted(false);
       setPartyTalkingPlayers({});
     }
-  }, [onlineMode, screen]);
+  }, [onlineMode, screen, audioSettings.voiceChatEnabled]);
   useEffect(() => {
     if (screen !== "home") setHomeProfileMenuOpen(false);
   }, [screen]);
@@ -8771,10 +8938,23 @@ export default function App() {
           setOnlineLobbyError("Connection lost. Reconnecting for up to 60s...");
         }
         if (event?.type === "party-chat-message" && event?.message) {
+          const msg = event.message;
+          if (
+            isPlayerBlocked({ id: msg.playerId, name: msg.playerName }, blockedPlayerKeys)
+          ) {
+            return;
+          }
           setPartyChatMessages((current) => {
-            const next = [...current, event.message];
+            const next = [...current, msg];
             return next.slice(-120);
           });
+        }
+        if (event?.type === "player-kicked" && event?.payload) {
+          const kickedId = String(event.payload.playerId || "").trim();
+          if (kickedId && kickedId === onlineSessionRef.current?.playerId) {
+            setOnlineLobbyError("You were removed from this lobby by the host.");
+            void leaveOnlineLobby({ nextScreen: "online-join" });
+          }
         }
         if (event?.type === "party-voice-activity" && event?.payload) {
           const payload = event.payload;
@@ -8795,7 +8975,7 @@ export default function App() {
         onlineTransportRef.current = null;
       }
     };
-  }, [onlineMode, lobbyCode, onlineClientId, screen, onlineRole]);
+  }, [onlineMode, lobbyCode, onlineClientId, screen, onlineRole, blockedPlayerKeys]);
   useEffect(
     () =>
       setLiarCount((cur) =>
@@ -10017,7 +10197,7 @@ export default function App() {
     setScreen("home");
   }
   const sendPartyChatMessage = () => {
-    const messageText = String(partyChatInput || "").trim();
+    const messageText = filterProfanity(String(partyChatInput || "").trim());
     if (!messageText) return;
     const currentSession = onlineSessionRef.current;
     if (
@@ -10036,6 +10216,17 @@ export default function App() {
   const categoryChoiceGridClass = isDesktopLandscapeWeb
     ? "grid grid-cols-3 grid-rows-2 gap-3 auto-rows-min w-full max-w-3xl mx-auto"
     : "grid grid-cols-2 grid-rows-3 gap-x-2.5 gap-y-2 w-full flex-1 min-h-0 content-center";
+  const visiblePartyChatMessages = useMemo(
+    () =>
+      partyChatMessages.filter(
+        (msg) =>
+          !isPlayerBlocked(
+            { id: msg?.playerId, name: msg?.playerName },
+            blockedPlayerKeys,
+          ),
+      ),
+    [partyChatMessages, blockedPlayerKeys],
+  );
   const bugReportAppContext = useMemo(
     () => ({
       screen,
@@ -10323,6 +10514,11 @@ export default function App() {
           selectedInviteUsernames={selectedFriendInviteUsernames}
           friends={acceptedFriendsSorted}
           onToggleInviteFriend={toggleInviteFriendSelection}
+          blockedPlayerKeys={blockedPlayerKeys}
+          onReportPlayer={handleReportLobbyPlayer}
+          onBlockPlayer={handleBlockLobbyPlayer}
+          onKickPlayer={handleKickLobbyPlayer}
+          localPlayerIsHost={onlineRole === "host"}
         />
       )}
       {screen === "persona" && (
@@ -10379,16 +10575,25 @@ export default function App() {
                 Connected players ({onlineLobbyPlayers.length})
               </div>
               <div className="mt-3 flex flex-wrap justify-center gap-2">
-                {onlineLobbyPlayers.map((player) => (
-                  <Badge
+                {onlineLobbyPlayers.map((player, index) => (
+                  <div
                     key={player.id}
-                    className="rounded-full bg-white/10 border border-white/10 text-white"
+                    className="flex items-center gap-1 rounded-full border border-white/10 bg-white/10 pl-2 pr-1 py-1 text-white"
                   >
-                    <span>{player.name}</span>
+                    <span className="text-sm">{player.name}</span>
                     {player?.isReady && (
-                      <CheckCircle2 className="ml-1 h-3.5 w-3.5 text-emerald-300" />
+                      <CheckCircle2 className="h-3.5 w-3.5 text-emerald-300" />
                     )}
-                  </Badge>
+                    <LobbyPlayerModerationMenu
+                      player={player}
+                      isSelf={player.id === onlineJoinedPlayerId}
+                      isHost={onlineRole === "host"}
+                      blocked={isPlayerBlocked(player, blockedPlayerKeys)}
+                      onReport={(payload) => handleReportLobbyPlayer(player, payload)}
+                      onBlock={() => handleBlockLobbyPlayer(player)}
+                      onKick={() => handleKickLobbyPlayer(player)}
+                    />
+                  </div>
                 ))}
               </div>
               <div className="mt-2 text-xs text-cyan-100/80">
@@ -10914,6 +11119,8 @@ export default function App() {
           }
           defaultTab={activeSettingsTab}
           contentPacks={contentPacks}
+          cloudSignedIn={isCloudAuthProvider(accountSession?.authProvider)}
+          onDeleteAccount={handleDeleteCloudAccount}
         />
       )}
       <ContentPackPromptModal
@@ -10930,7 +11137,7 @@ export default function App() {
       <PartyChatDrawer
         open={onlineMode && partyChatOpen}
         onClose={() => setPartyChatOpen(false)}
-        messages={partyChatMessages}
+        messages={visiblePartyChatMessages}
         inputValue={partyChatInput}
         onInputChange={setPartyChatInput}
         onSend={sendPartyChatMessage}

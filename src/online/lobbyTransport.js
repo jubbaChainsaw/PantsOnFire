@@ -321,6 +321,10 @@ export function createLobbyTransport({
     if (closed || !payload) return;
     onEvent({ type: 'party-voice-activity', payload }, 'socket');
   });
+  socket.on('lobby:player-kicked', (payload) => {
+    if (closed || !payload) return;
+    onEvent({ type: 'player-kicked', payload }, 'socket');
+  });
   socket.emit('lobby:subscribe', {
     code: normalizedCode,
     playerId: normalizedPlayerId,
@@ -361,6 +365,7 @@ export function createLobbyTransport({
       socket.off('lobby:snapshot');
       socket.off('party-chat:message');
       socket.off('party-voice:activity');
+      socket.off('lobby:player-kicked');
       socket.disconnect();
     },
   };

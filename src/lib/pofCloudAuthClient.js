@@ -109,3 +109,25 @@ export async function validatePoFCloudSession(session) {
   const user = await res.json();
   return toSessionShape({ access_token: token, user });
 }
+
+export async function deletePoFCloudAccount({ password, accessToken }) {
+  const token = String(accessToken || '').trim();
+  if (!token) {
+    return { error: new Error('missing-token') };
+  }
+  const res = await fetch(`${getLobbyApiBase()}/me/delete-account`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
+      Accept: 'application/json',
+    },
+    body: JSON.stringify({ password: String(password || '') }),
+  });
+  const body = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    return { error: new Error(body.error || `delete-http-${res.status}`) };
+  }
+  clearPoFCloudAuth();
+  return { data: body, error: null };
+}
