@@ -27,6 +27,7 @@ import {
   ChevronDown,
   CheckCircle2,
   XCircle,
+  X,
   Wifi,
   KeyRound,
   LogOut,
@@ -188,7 +189,7 @@ import NeonTwoTruthsVotingScreen from "./components/neon/NeonTwoTruthsVotingScre
 import NeonTwoTruthsRevealScreen from "./components/neon/NeonTwoTruthsRevealScreen.jsx";
 import DoubleTakeSquareRevealCard from "./components/neon/DoubleTakeSquareRevealCard.jsx";
 import { PICTURE_DLC_MANIFESTS } from "./data/pictureDlcManifests";
-import { getHostVoiceSrcCandidatesForLine } from "./data/hostVoiceLineMap";
+import { getHostVoiceSrcCandidatesForLine, buildHostIntroSpeechSteps } from "./data/hostVoiceLineMap";
 import {
   buildIanPosterGreetingLine,
   buildIanPosterRoundsLine,
@@ -1936,7 +1937,10 @@ function useIanPosterHostVoicePlayback({
       Array.isArray(audioSrcCandidates) && audioSrcCandidates.length
         ? audioSrcCandidates.filter(Boolean)
         : getHostVoiceSrcCandidatesForLine(normalized, themeName);
-    if (!mappedSrcCandidates.length) {
+    const resolvedSrcCandidates = mappedSrcCandidates
+      .map((src) => resolveBundledAssetSrc(src))
+      .filter(Boolean);
+    if (!resolvedSrcCandidates.length) {
       setIsPlaying(true);
       clearFallbackTimer();
       fallbackTimerRef.current = setTimeout(() => {
@@ -1947,7 +1951,7 @@ function useIanPosterHostVoicePlayback({
         clearFallbackTimer();
       };
     }
-    const audio = new Audio(mappedSrcCandidates[0]);
+    const audio = new Audio(resolvedSrcCandidates[0]);
     audio.preload = "auto";
     audioRef.current = audio;
     setIsPlaying(true);
@@ -1965,13 +1969,13 @@ function useIanPosterHostVoicePlayback({
     let activeCandidateIndex = 0;
     const tryPlayAtIndex = (index) => {
       activeCandidateIndex = index;
-      audio.src = mappedSrcCandidates[index];
+      audio.src = resolvedSrcCandidates[index];
       audio.load();
       return audio.play();
     };
     const tryNextCandidateOrFallback = () => {
       const nextIndex = activeCandidateIndex + 1;
-      if (nextIndex < mappedSrcCandidates.length) {
+      if (nextIndex < resolvedSrcCandidates.length) {
         tryPlayAtIndex(nextIndex).catch(() => tryNextCandidateOrFallback());
         return;
       }
@@ -2065,7 +2069,7 @@ const HOST_DIALOGUE_TIMINGS = {
 const POF_VIEWPORT_HEIGHT_CLASS =
   "h-[calc(var(--pof-vh,1vh)*100)] max-h-[calc(var(--pof-vh,1vh)*100)]";
 const HOST_DIALOGUE_PANEL_CLASS =
-  "pof-ui-copy rounded-[1.5rem] border border-fuchsia-200/35 bg-[#b8007a] text-white shadow-[0_18px_38px_rgba(0,0,0,0.55)] text-base sm:text-lg leading-relaxed [background-color:#b8007a]";
+  "pof-host-dialogue rounded-[1.5rem] border border-fuchsia-200/35 bg-[#b8007a] text-white shadow-[0_18px_38px_rgba(0,0,0,0.55)] text-base sm:text-lg leading-relaxed [background-color:#b8007a]";
 const HOST_DIALOGUE_BUTTON_CLASS =
   "h-16 flex-1 rounded-[1.25rem] bg-[#e60096] px-4 text-xl font-black uppercase tracking-[0.04em] text-white shadow-[0_12px_24px_rgba(0,0,0,0.5)] hover:bg-[#ff16ac]";
 
@@ -2191,7 +2195,7 @@ function GameIntroScreen({
             >
               <p
                 ref={introSpeechTextRef}
-                className="font-black uppercase tracking-[0.03em] text-white [text-shadow:0_3px_10px_rgba(0,0,0,0.35)]"
+                className="pof-host-dialogue w-full uppercase tracking-[0.03em] text-white [text-shadow:0_3px_10px_rgba(0,0,0,0.35)]"
                 style={{
                   fontSize: `${introLineFontSize}px`,
                   lineHeight: 1.12,
@@ -2646,45 +2650,52 @@ function resolveCategoryChoiceCardArt(category, themeName = "Default") {
   return getRoundCardBackSrc(themeName);
 }
 function HostIntroScreen({ round, stingerLine, onContinue, theme }) {
-  const hostSizeConfig = useMemo(() => getHostSizeConfig(theme), [theme]);
   const themedHostPersona = useMemo(() => getIanPosterHostDisplayPersona(theme), [theme]);
-  const examplePrompts = getHostExamplePrompts(round.roundTypeId);
-  const normalExamplePrompt = examplePrompts.normal;
-  const liarExamplePrompt = examplePrompts.liar;
-  const speechSentences = [
-    `${round.roundTypeName} round selected.`,
-    getRoundRuleText(round.roundTypeId),
-    stingerLine ||
-      `${themedHostPersona.name} is in the building. Let the chaos begin.`,
-    "Get ready. Cards are about to flip after the countdown.",
-  ].filter(Boolean);
+  const speechSteps = useMemo(
+    () =>
+      buildHostIntroSpeechSteps({
+        themeName: theme,
+        roundTypeId: round.roundTypeId,
+        roundTypeName: round.roundTypeName,
+        ruleText: getRoundRuleText(round.roundTypeId),
+        stingerLine,
+        hostPersonaName: themedHostPersona.name,
+      }),
+    [
+      theme,
+      round.roundTypeId,
+      round.roundTypeName,
+      stingerLine,
+      themedHostPersona.name,
+    ],
+  );
   const [speechIndex, setSpeechIndex] = useState(0);
   const speechBubbleTextRef = useRef(null);
   const speechBubbleFitRef = useRef(null);
   const [speechBubbleFontSize, setSpeechBubbleFontSize] = useState(28);
-  const currentSpeechLine = speechSentences[speechIndex] || "";
+  const currentStep = speechSteps[speechIndex] || { display: "", voice: "" };
   const voicePlaybackEnabled = isIanPosterVoiceTheme(theme);
   const isVoicePlayingLine = useIanPosterHostVoicePlayback({
-    enabled: voicePlaybackEnabled,
-    line: currentSpeechLine,
+    enabled: voicePlaybackEnabled && Boolean(currentStep.voice),
+    line: currentStep.voice,
     themeName: theme,
     fallbackDurationMs: HOST_DIALOGUE_TIMINGS.roundIntroAdvanceMs,
   });
-  const canContinue = speechIndex >= speechSentences.length - 1;
-  const isTalking = speechIndex < speechSentences.length - 1;
+  const canContinue = speechIndex >= speechSteps.length - 1;
+  const isTalking = speechIndex < speechSteps.length - 1 || isVoicePlayingLine;
   useEffect(() => {
     setSpeechIndex(0);
-  }, [round.id, round.roundNumber, round.roundTypeId]);
+  }, [round.id, round.roundNumber, round.roundTypeId, speechSteps.length]);
   useEffect(() => {
-    if (speechIndex >= speechSentences.length - 1) return undefined;
+    if (speechIndex >= speechSteps.length - 1) return undefined;
     if (isVoicePlayingLine) return undefined;
     const timer = setTimeout(() => {
       setSpeechIndex((current) =>
-        Math.min(current + 1, speechSentences.length - 1),
+        Math.min(current + 1, speechSteps.length - 1),
       );
     }, HOST_DIALOGUE_TIMINGS.roundIntroAdvanceMs);
     return () => clearTimeout(timer);
-  }, [speechIndex, speechSentences.length, isVoicePlayingLine]);
+  }, [speechIndex, speechSteps.length, isVoicePlayingLine]);
   useLayoutEffect(() => {
     const nextSize = fitTextToBubble(
       speechBubbleTextRef.current,
@@ -2698,10 +2709,10 @@ function HostIntroScreen({ round, stingerLine, onContinue, theme }) {
     setSpeechBubbleFontSize((current) =>
       current === nextSize ? current : nextSize,
     );
-  }, [speechIndex, speechSentences]);
+  }, [speechIndex, speechSteps]);
   function advanceSpeechLine() {
     setSpeechIndex((current) =>
-      Math.min(current + 1, speechSentences.length - 1),
+      Math.min(current + 1, speechSteps.length - 1),
     );
   }
   function handleNextSpeechAction() {
@@ -2765,7 +2776,6 @@ function HostIntroScreen({ round, stingerLine, onContinue, theme }) {
                 className="pof-host-intro-caption-text w-full"
                 style={{
                   color: "#ffffff",
-                  fontFamily: "Inter, system-ui, sans-serif",
                   fontSize: `${speechBubbleFontSize}px`,
                   lineHeight: 1.12,
                   wordBreak: "normal",
@@ -2775,7 +2785,7 @@ function HostIntroScreen({ round, stingerLine, onContinue, theme }) {
                   WebkitHyphens: "manual",
                 }}
               >
-                {speechSentences[speechIndex]}
+                {currentStep.display}
               </motion.p>
             </div>
           </div>
@@ -4132,6 +4142,7 @@ function CategoryChoiceGrid({
   onlineMode,
   canonicalThemeName,
   onChooseCategory,
+  rouletteHighlightId = null,
 }) {
   const optionIds = useMemo(
     () => categoryOptions.map((category) => category.id),
@@ -4171,15 +4182,17 @@ function CategoryChoiceGrid({
             getCategoryIconSrc(category.id) ||
             resolveCategoryChoiceCardArt(category, canonicalThemeName);
           const highlighted =
-            onlineMode &&
-            timed.highlightedId === category.id &&
-            (timed.isFlashing || timed.secondsLeft <= 3);
+            rouletteHighlightId === category.id ||
+            (onlineMode &&
+              timed.highlightedId === category.id &&
+              (timed.isFlashing || timed.secondsLeft <= 3));
           return (
             <button
               key={category.id}
               type="button"
-              className={`block w-full transition-transform duration-200 hover:scale-[1.02] ${highlighted ? "pof-choice-flash rounded-2xl" : ""}`}
+              className={`block w-full transition-transform duration-200 hover:scale-[1.02] ${highlighted ? "pof-choice-flash rounded-2xl scale-[1.06]" : ""}`}
               onClick={() => {
+                if (rouletteHighlightId) return;
                 if (onlineMode) timed.pick(category.id);
                 else onChooseCategory(category.id);
               }}
@@ -5414,7 +5427,7 @@ function RevealScreen({
                   typeof countdownValue === "number" &&
                   countdownValue > 0 && (
                     <div className="absolute inset-0 z-20 grid place-items-center">
-                      <div className="text-8xl font-black text-yellow-300 [text-shadow:0_4px_18px_rgba(0,0,0,0.95)]">
+                      <div className="pof-countdown-digit text-7xl sm:text-8xl text-yellow-300">
                         {countdownValue}
                       </div>
                     </div>
@@ -7348,6 +7361,9 @@ export default function App() {
   const [cardStyleUnlockToast, setCardStyleUnlockToast] = useState(false);
   const [playerProfile, setPlayerProfile] = useState(() => readLocalPlayerProfile());
   const [achievementUnlockToast, setAchievementUnlockToast] = useState(null);
+  const [categoryRouletteHighlightId, setCategoryRouletteHighlightId] =
+    useState(null);
+  const categoryRouletteRunningRef = useRef(false);
   const [referralSummary, setReferralSummary] = useState(null);
   const profileSyncTimerRef = useRef(null);
   const profileGameRecordedRef = useRef("");
@@ -8011,6 +8027,13 @@ export default function App() {
       })
       .catch(() => {});
   }, [supabaseSession?.access_token, accountSession?.authProvider]);
+  useEffect(() => {
+    if (!achievementUnlockToast) return undefined;
+    const timer = window.setTimeout(() => {
+      setAchievementUnlockToast(null);
+    }, 4000);
+    return () => window.clearTimeout(timer);
+  }, [achievementUnlockToast]);
   useEffect(() => {
     const token = supabaseSession?.access_token;
     if (!token || !isCloudAuthProvider(accountSession?.authProvider)) return;
@@ -9295,6 +9318,35 @@ export default function App() {
     }));
     setScreen("host-intro");
   }
+  async function handleChooseCategoryRandom() {
+    if (categoryRouletteRunningRef.current) return;
+    tapFx();
+    const picked = pickRandomFromShown(categoryOptions);
+    if (!picked?.id) return;
+    const ids = categoryOptions.map((category) => category.id).filter(Boolean);
+    if (ids.length <= 1) {
+      chooseCategory(picked.id);
+      return;
+    }
+    categoryRouletteRunningRef.current = true;
+    try {
+      const totalSteps = 16 + Math.floor(Math.random() * 10);
+      for (let step = 0; step < totalSteps; step += 1) {
+        const isFinal = step === totalSteps - 1;
+        const highlightId = isFinal
+          ? picked.id
+          : ids[Math.floor(Math.random() * ids.length)];
+        setCategoryRouletteHighlightId(highlightId);
+        const delayMs = isFinal ? 850 : Math.min(160, 48 + step * 7);
+        await new Promise((resolve) => setTimeout(resolve, delayMs));
+      }
+      await new Promise((resolve) => setTimeout(resolve, 650));
+      chooseCategory(picked.id);
+    } finally {
+      setCategoryRouletteHighlightId(null);
+      categoryRouletteRunningRef.current = false;
+    }
+  }
   async function revealResults() {
     if (round?.roundTypeId === "twotruths") {
       const resolution = calculateRoundResolutionLocal(
@@ -10491,10 +10543,9 @@ export default function App() {
                     type="button"
                     className="pof-btn pof-btn-blue pof-btn-sm pof-focus mx-auto max-w-xs px-6"
                     data-testid="choose-category-random"
+                    disabled={Boolean(categoryRouletteHighlightId)}
                     onClick={() => {
-                      tapFx();
-                      const picked = pickRandomFromShown(categoryOptions);
-                      if (picked?.id) chooseCategory(picked.id);
+                      void handleChooseCategoryRandom();
                     }}
                   >
                     <Dice6 className="h-5 w-5" />
@@ -10508,6 +10559,7 @@ export default function App() {
                     onlineMode={onlineMode}
                     canonicalThemeName={canonicalThemeName}
                     onChooseCategory={chooseCategory}
+                    rouletteHighlightId={categoryRouletteHighlightId}
                   />
                 </div>
               </>
@@ -10961,9 +11013,21 @@ export default function App() {
       <StartupPreloadOverlay show={!startupGraphicsReady} />
       {achievementUnlockToast ? (
         <div
-          className="fixed bottom-6 left-1/2 z-[135] w-[min(22rem,calc(100%-2rem))] -translate-x-1/2 rounded-2xl border border-fuchsia-300/45 bg-fuchsia-500/20 px-4 py-3 text-center shadow-[0_12px_32px_rgba(0,0,0,0.45)]"
+          className="fixed bottom-6 left-1/2 z-[135] w-[min(22rem,calc(100%-2rem))] -translate-x-1/2 rounded-2xl border border-fuchsia-300/45 bg-fuchsia-500/20 px-4 py-3 pr-10 text-center shadow-[0_12px_32px_rgba(0,0,0,0.45)]"
+          style={{
+            marginBottom: "max(0px, env(safe-area-inset-bottom, 0px))",
+          }}
           data-testid="achievement-unlock-toast"
+          role="status"
         >
+          <button
+            type="button"
+            aria-label="Dismiss notification"
+            className="pof-focus absolute right-2 top-2 rounded-lg p-1 text-white/80 hover:text-white"
+            onClick={() => setAchievementUnlockToast(null)}
+          >
+            <X className="h-4 w-4" />
+          </button>
           <div className="pof-heading text-sm text-fuchsia-100">
             {achievementUnlockToast.title}
           </div>

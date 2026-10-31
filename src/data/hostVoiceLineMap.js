@@ -194,6 +194,71 @@ export function getHostVoiceSrcCandidatesForLine(line = '', themeName = 'Default
   return getHostVoiceBasePathsForTheme(themeName).map((base) => `${base}/${filename}`);
 }
 
+/** Spoken stinger lines (v1–v3) for a pass-the-phone round type — matches bundled MP3s. */
+export function getRoundStingerVoiceLines(themeName = 'Default', roundTypeId = '') {
+  const canonical = toCanonicalThemeName(themeName);
+  const voice = getIanPosterThemeVoice(canonical);
+  const roundType = ROUND_TYPES[roundTypeId] || {};
+  const typeName = roundType.name || roundTypeId || 'Round';
+  const typeFlavor = ROUND_TYPE_FLAVOR_BY_ID[roundTypeId] || 'suspicious gameplay';
+  const templates = Array.isArray(voice.roundStingers) ? voice.roundStingers : [];
+  return templates
+    .map((template) =>
+      String(template || '')
+        .replace('{roundTypeName}', typeName)
+        .replace('{roundTypeFlavor}', typeFlavor)
+        .trim(),
+    )
+    .filter(Boolean);
+}
+
+/**
+ * Host intro caption steps: on-screen copy plus voice line keyed for TTS lookup.
+ */
+export function buildHostIntroSpeechSteps({
+  themeName = 'Default',
+  roundTypeId = 'prompt',
+  roundTypeName = 'Round',
+  ruleText = '',
+  stingerLine = '',
+  hostPersonaName = 'Host',
+} = {}) {
+  const canonical = toCanonicalThemeName(themeName);
+  const voice = getIanPosterThemeVoice(canonical);
+  const stingers = getRoundStingerVoiceLines(canonical, roundTypeId);
+  const revealLines = voice.flowCopy?.revealNormal || [];
+  const countdownVoice =
+    revealLines[0] ||
+    'Check your card when the countdown hits zero.';
+
+  const hostLine = String(stingerLine || '').trim();
+  const hostVoice =
+    hostLine && getHostVoiceFilenameForLine(hostLine, canonical)
+      ? hostLine
+      : stingers[1] || stingers[0] || '';
+
+  return [
+    {
+      display: `${roundTypeName} round.`,
+      voice: stingers[0] || `${roundTypeName} round selected.`,
+    },
+    {
+      display: ruleText || `${roundTypeName} rules incoming.`,
+      voice: stingers[2] || stingers[1] || stingers[0] || '',
+    },
+    {
+      display:
+        hostLine ||
+        `${hostPersonaName} is in the building. Let the chaos begin.`,
+      voice: hostVoice,
+    },
+    {
+      display: 'Get ready — cards flip after the countdown.',
+      voice: countdownVoice,
+    },
+  ].filter((step) => step.display);
+}
+
 /** @deprecated Use getHostVoiceSrcCandidatesForLine */
 export function getDefaultHostVoiceSrcCandidatesForLine(line = '') {
   return getHostVoiceSrcCandidatesForLine(line, 'Default');

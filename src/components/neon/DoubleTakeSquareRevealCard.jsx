@@ -61,7 +61,7 @@ export default function DoubleTakeSquareRevealCard({
               typeof countdownValue === 'number' &&
               countdownValue > 0 && (
                 <div className="absolute inset-0 z-20 grid place-items-center">
-                  <div className="text-8xl font-black text-yellow-300 [text-shadow:0_4px_18px_rgba(0,0,0,0.95)]">
+                  <div className="pof-countdown-digit text-7xl sm:text-8xl text-yellow-300">
                     {countdownValue}
                   </div>
                 </div>

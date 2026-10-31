@@ -109,8 +109,14 @@ export default function NeonHomeScreen({
         />
       ))}
 
-      <main className="relative z-10 mx-auto flex min-h-screen w-full max-w-[28rem] flex-col px-4 pb-10 pt-4">
-        <div className="relative flex items-start justify-between">
+      <main
+        className="relative z-10 mx-auto flex min-h-[100dvh] w-full max-w-[28rem] flex-col px-4"
+        style={{
+          paddingTop: 'max(0.75rem, env(safe-area-inset-top, 0px))',
+          paddingBottom: 'max(0.75rem, env(safe-area-inset-bottom, 0px))',
+        }}
+      >
+        <div className="relative shrink-0 flex items-start justify-between pt-1">
           <div className="flex flex-col gap-3">
             <IconBtn
               src={icons.settings}
@@ -160,17 +166,17 @@ export default function NeonHomeScreen({
           />
         </div>
 
-        <div className="mt-[11.5rem] flex flex-col items-center">
+        <div className="flex min-h-0 flex-1 flex-col justify-center">
           <p className="pof-pop pof-body min-h-[1rem] text-center text-xs text-white/85 [text-shadow:0_2px_6px_#000]">
             {line}
           </p>
         </div>
 
         {joinOnlyMode ? (
-          <WebPlayerNotice className="mt-3 w-full" dataTestId="web-player-notice-home" />
+          <WebPlayerNotice className="mb-2 w-full shrink-0" dataTestId="web-player-notice-home" />
         ) : null}
 
-        <nav className="mt-4 flex w-full flex-col gap-2" aria-label="Main menu">
+        <nav className="mt-auto flex w-full shrink-0 flex-col gap-2 pt-3" aria-label="Main menu">
           {!joinOnlyMode && (
             <button
               type="button"

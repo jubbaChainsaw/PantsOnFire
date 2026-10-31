@@ -9,11 +9,11 @@
 }
 [data-testid='host-intro-caption'] p {
   color: #ffffff !important;
-  font-family: Inter, system-ui, sans-serif !important;
-  font-style: normal !important;
-  font-weight: 600 !important;
+  font-family: 'PoF Display', Inter, system-ui, sans-serif !important;
+  font-style: italic !important;
+  font-weight: 400 !important;
   text-transform: none !important;
-  letter-spacing: normal !important;
+  letter-spacing: 0.03em !important;
   opacity: 1 !important;
 }
 
