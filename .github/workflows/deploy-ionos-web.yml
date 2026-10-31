@@ -11,7 +11,11 @@ on:
         required: false
         default: main
   push:
-    branches: [main]
+    branches:
+      - main
+      - cursor/ionos-web-deploy-6e4c
+    paths:
+      - .github/trigger-ionos-web-deploy
 
 concurrency:
   group: deploy-ionos-web
