@@ -1,2 +1,2 @@
-# Redeploy: lftp -u plus sshpass connect-program.
-ionos-lftp-sshpass-7
+# Redeploy: native OpenSSH sftp batch upload.
+ionos-openssh-sftp-8
