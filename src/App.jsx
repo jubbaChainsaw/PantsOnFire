@@ -191,6 +191,10 @@ import DoubleTakeSquareRevealCard from "./components/neon/DoubleTakeSquareReveal
 import { PICTURE_DLC_MANIFESTS } from "./data/pictureDlcManifests";
 import { getHostVoiceSrcCandidatesForLine, buildHostIntroSpeechSteps } from "./data/hostVoiceLineMap";
 import {
+  useIanPosterHostVoicePlayback,
+  useHostSpeechAutoAdvance,
+} from "./lib/hostSpeechPlayback.js";
+import {
   buildIanPosterGreetingLine,
   buildIanPosterRoundsLine,
   buildIanPosterThemeCopyBank,
@@ -1892,143 +1896,22 @@ function useTalkingAnimation({ enabled = false, themeName = "Default" } = {}) {
   }
   return idleFrames[0] || "";
 }
-function normalizeHostVoiceLine(line = "") {
-  return String(line || "")
-    .replace(/\s+/g, " ")
-    .trim()
-    .toLowerCase();
-}
 function isIanPosterVoiceTheme(themeName = "Default") {
   return IAN_POSTER_VOICE_THEME_NAMES.includes(toCanonicalThemeName(themeName));
 }
 
-function useIanPosterHostVoicePlayback({
-  enabled = false,
-  line = "",
-  themeName = "Default",
-  fallbackDurationMs = 6000,
-  audioSrcCandidates = null,
-} = {}) {
-  const [isPlaying, setIsPlaying] = useState(false);
-  const audioRef = useRef(null);
-  const fallbackTimerRef = useRef(null);
-  useEffect(() => {
-    const clearFallbackTimer = () => {
-      if (!fallbackTimerRef.current) return;
-      clearTimeout(fallbackTimerRef.current);
-      fallbackTimerRef.current = null;
-    };
-    const fallbackMs = Math.max(600, Number(fallbackDurationMs) || 6000);
-    const normalized = normalizeHostVoiceLine(line);
-    if (!enabled || !normalized) {
-      clearFallbackTimer();
-      setIsPlaying(false);
-      if (audioRef.current) {
-        try {
-          audioRef.current.pause();
-        } catch {}
-        audioRef.current = null;
-      }
-      return undefined;
-    }
-    const mappedSrcCandidates =
-      Array.isArray(audioSrcCandidates) && audioSrcCandidates.length
-        ? audioSrcCandidates.filter(Boolean)
-        : getHostVoiceSrcCandidatesForLine(normalized, themeName);
-    const resolvedSrcCandidates = mappedSrcCandidates
-      .map((src) => resolveBundledAssetSrc(src))
-      .filter(Boolean);
-    if (!resolvedSrcCandidates.length) {
-      setIsPlaying(true);
-      clearFallbackTimer();
-      fallbackTimerRef.current = setTimeout(() => {
-        fallbackTimerRef.current = null;
-        setIsPlaying(false);
-      }, fallbackMs);
-      return () => {
-        clearFallbackTimer();
-      };
-    }
-    const audio = new Audio(resolvedSrcCandidates[0]);
-    audio.preload = "auto";
-    audioRef.current = audio;
-    setIsPlaying(true);
-    const stopPlayback = () => {
-      clearFallbackTimer();
-      setIsPlaying(false);
-    };
-    const fallbackStopPlayback = () => {
-      clearFallbackTimer();
-      fallbackTimerRef.current = setTimeout(() => {
-        fallbackTimerRef.current = null;
-        setIsPlaying(false);
-      }, fallbackMs);
-    };
-    let activeCandidateIndex = 0;
-    const tryPlayAtIndex = (index) => {
-      activeCandidateIndex = index;
-      audio.src = resolvedSrcCandidates[index];
-      audio.load();
-      return audio.play();
-    };
-    const tryNextCandidateOrFallback = () => {
-      const nextIndex = activeCandidateIndex + 1;
-      if (nextIndex < resolvedSrcCandidates.length) {
-        tryPlayAtIndex(nextIndex).catch(() => tryNextCandidateOrFallback());
-        return;
-      }
-      fallbackStopPlayback();
-    };
-    audio.addEventListener("ended", stopPlayback);
-    audio.addEventListener("error", tryNextCandidateOrFallback);
-    tryPlayAtIndex(0).catch(() => tryNextCandidateOrFallback());
-    return () => {
-      audio.removeEventListener("ended", stopPlayback);
-      audio.removeEventListener("error", tryNextCandidateOrFallback);
-      clearFallbackTimer();
-      try {
-        audio.pause();
-        audio.currentTime = 0;
-      } catch {}
-      if (audioRef.current === audio) {
-        audioRef.current = null;
-      }
-    };
-  }, [enabled, line, themeName, fallbackDurationMs, audioSrcCandidates]);
-  return isPlaying;
+function HostDialogueScreenLayout({ hostSlot, dialogueSlot, footerSlot }) {
+  return (
+    <div className="pof-host-dialogue-screen mx-auto h-full min-h-0 w-full max-w-[28rem] pb-[max(0.35rem,var(--pof-safe-bottom))]">
+      <div className="pof-host-dialogue-host-slot">{hostSlot}</div>
+      <div className="pof-host-dialogue-lower-slot">
+        {dialogueSlot}
+        {footerSlot}
+      </div>
+    </div>
+  );
 }
-function getIanPosterVoiceLineForGameIntroLine({
-  themeName = "Default",
-  line = "",
-  lineIndex = 0,
-  total = 0,
-  isOnlineMode = false,
-  totalRounds = 1,
-  playerCount = 1,
-} = {}) {
-  const canonical = toCanonicalThemeName(themeName);
-  const voice = getIanPosterThemeVoice(canonical);
-  const currentLine = String(line || "").trim();
-  if (!currentLine) return "";
-  if (lineIndex === 0) {
-    const hour = new Date().getHours();
-    const greetingKey = hour < 12 ? "morning" : hour < 18 ? "afternoon" : "evening";
-    return buildIanPosterGreetingLine(canonical, greetingKey);
-  }
-  if (lineIndex === 1) return getIanPosterHostNameLine(canonical);
-  if (lineIndex === 2) {
-    return Number(isOnlineMode)
-      ? (voice.onlinePrompt || currentLine)
-      : (voice.passPrompt || currentLine);
-  }
-  if (lineIndex === total - 2) {
-    const safeRounds = Math.max(1, Number(totalRounds) || 1);
-    const safePlayers = Math.max(1, Number(playerCount) || 1);
-    return buildIanPosterRoundsLine(canonical, safeRounds, safePlayers);
-  }
-  if (lineIndex >= total - 1) return voice.closingLine || currentLine;
-  return currentLine;
-}
+
 function fitTextToBubble(
   textElement,
   containerElement,
@@ -2098,39 +1981,44 @@ function GameIntroScreen({
       }),
     [theme, greeting, resolvedRoundCount, resolvedPlayerCount, isOnlineMode],
   );
+  const introSteps = useMemo(
+    () =>
+      introLines.map((line, index) => ({
+        id: `game-intro-${index}`,
+        display: line,
+        voice: line,
+      })),
+    [introLines],
+  );
   const [lineIndex, setLineIndex] = useState(0);
   const introSpeechTextRef = useRef(null);
   const introSpeechBubbleRef = useRef(null);
   const [introLineFontSize, setIntroLineFontSize] = useState(30);
-  const currentLine = introLines[lineIndex] || "";
+  const currentStep = introSteps[lineIndex] || {
+    id: "game-intro-empty",
+    display: "",
+    voice: "",
+  };
+  const nextStep = introSteps[lineIndex + 1];
   const voicePlaybackEnabled = isIanPosterVoiceTheme(theme);
-  const voiceLineForPlayback = getIanPosterVoiceLineForGameIntroLine({
-    themeName: theme,
-    line: currentLine,
-    lineIndex,
-    total: introLines.length,
-    isOnlineMode,
-    totalRounds: resolvedRoundCount,
-    playerCount: resolvedPlayerCount,
-  });
-  const isVoicePlayingLine = useIanPosterHostVoicePlayback({
-    enabled: voicePlaybackEnabled,
-    line: voiceLineForPlayback,
+  const advanceIntroLine = useCallback(() => {
+    setLineIndex((current) => Math.min(current + 1, introSteps.length - 1));
+  }, [introSteps.length]);
+  const { isPlaying, bumpSession, clearAdvanceTimer } = useHostSpeechAutoAdvance({
+    stepIndex: lineIndex,
+    stepCount: introSteps.length,
+    lineKey: currentStep.id,
+    voiceEnabled: voicePlaybackEnabled,
+    voiceLine: currentStep.voice,
+    nextVoiceLine: nextStep?.voice || "",
     themeName: theme,
     fallbackDurationMs: HOST_DIALOGUE_TIMINGS.gameIntroAdvanceMs,
+    onAdvanceStep: advanceIntroLine,
   });
-  const isTalking = lineIndex < introLines.length - 1;
+  const isTalking = lineIndex < introLines.length - 1 || isPlaying;
   useEffect(() => {
     setLineIndex(0);
-  }, [theme, isOnlineMode]);
-  useEffect(() => {
-    if (lineIndex >= introLines.length - 1) return undefined;
-    if (isVoicePlayingLine) return undefined;
-    const timer = setTimeout(() => {
-      setLineIndex((current) => Math.min(current + 1, introLines.length - 1));
-    }, HOST_DIALOGUE_TIMINGS.gameIntroAdvanceMs);
-    return () => clearTimeout(timer);
-  }, [lineIndex, introLines.length, isVoicePlayingLine]);
+  }, [theme, isOnlineMode, introSteps.length]);
   useLayoutEffect(() => {
     const nextSize = fitTextToBubble(
       introSpeechTextRef.current,
@@ -2146,54 +2034,55 @@ function GameIntroScreen({
     );
   }, [lineIndex, introLines]);
   const canContinue = lineIndex >= introLines.length - 1;
-  function advanceIntroLine() {
-    setLineIndex((current) => Math.min(current + 1, introLines.length - 1));
-  }
   function handleNextIntroAction() {
+    bumpSession();
+    clearAdvanceTimer();
     if (canContinue) {
       onContinue();
       return;
     }
     advanceIntroLine();
   }
+  function handleSkipIntro() {
+    bumpSession();
+    clearAdvanceTimer();
+    onContinue();
+  }
   return (
     <BrandedScreen
       wallpaperSrc={UI_WALLPAPER_IN_GAME_SRC}
       overlayClassName="bg-black/65"
+      lockViewport
+      contentClassName="!min-h-0 !py-2 !px-3 flex flex-col"
     >
-      <div className="relative mx-auto flex h-[calc(100dvh-1.25rem)] w-full max-w-[28rem] flex-col items-center justify-between gap-3 overflow-hidden py-1">
-        <div
-          className="pointer-events-none absolute inset-x-[-30%] bottom-[8.25rem] h-32 opacity-80 blur-[0.3px]"
-          style={{
-            background:
-              "radial-gradient(circle at 50% 100%, rgba(255,130,0,0.95), rgba(255,0,160,0.55) 18%, rgba(0,180,255,0.28) 33%, transparent 62%)",
-          }}
-        />
-        <div className="relative z-10 w-full max-w-[18rem] rounded-[1.65rem] bg-[#e60096] p-2.5 shadow-[0_20px_45px_rgba(0,0,0,0.7)] sm:max-w-[20rem]">
-          <div className="aspect-[2/3] overflow-hidden rounded-[1.15rem] bg-black">
-            <ThemeHostVisual
-              themeName={theme}
-              isTalking={isTalking}
-              alt="host"
-              className="h-full w-full"
-            />
+      <HostDialogueScreenLayout
+        hostSlot={
+          <div className="flex h-full min-h-0 w-full flex-col rounded-[1.65rem] bg-[#e60096] p-2.5 shadow-[0_20px_45px_rgba(0,0,0,0.7)]">
+            <div className="min-h-0 flex-1 overflow-hidden rounded-[1.15rem] bg-black">
+              <ThemeHostVisual
+                themeName={theme}
+                isTalking={isTalking}
+                alt="host"
+                className="h-full w-full object-cover object-top"
+              />
+            </div>
           </div>
-        </div>
-        <div className="relative z-10 flex w-full flex-1 flex-col justify-end gap-3">
+        }
+        dialogueSlot={
           <motion.div
             key={`intro-line-${lineIndex}`}
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.25, ease: "easeOut" }}
-            className={`${HOST_DIALOGUE_PANEL_CLASS} flex min-h-[7.5rem] items-center justify-center px-5 py-4 text-center sm:min-h-[9rem]`}
+            className={`${HOST_DIALOGUE_PANEL_CLASS} flex min-h-[5.5rem] flex-1 items-center justify-center px-5 py-4 text-center sm:min-h-[6.5rem]`}
           >
             <div
               ref={introSpeechBubbleRef}
-              className="flex h-full max-h-[8.5rem] w-full items-center justify-center overflow-hidden sm:max-h-[9.5rem]"
+              className="flex h-full max-h-[30dvh] w-full items-center justify-center overflow-hidden"
             >
               <p
                 ref={introSpeechTextRef}
-                className="pof-host-dialogue w-full uppercase tracking-[0.03em] text-white [text-shadow:0_3px_10px_rgba(0,0,0,0.35)]"
+                className="pof-host-dialogue w-full uppercase tracking-[0.03em] text-white"
                 style={{
                   fontSize: `${introLineFontSize}px`,
                   lineHeight: 1.12,
@@ -2204,24 +2093,29 @@ function GameIntroScreen({
                   WebkitHyphens: "manual",
                 }}
               >
-                {introLines[lineIndex]}
+                {currentStep.display}
               </p>
             </div>
           </motion.div>
-          <div className="flex gap-3">
-            <Button className={HOST_DIALOGUE_BUTTON_CLASS} onClick={handleNextIntroAction}>
+        }
+        footerSlot={
+          <div className="flex shrink-0 gap-3">
+            <Button
+              className={HOST_DIALOGUE_BUTTON_CLASS}
+              onClick={handleNextIntroAction}
+            >
               Next
             </Button>
             <Button
               className={HOST_DIALOGUE_BUTTON_CLASS}
               data-testid="intro-skip"
-              onClick={onContinue}
+              onClick={handleSkipIntro}
             >
               Skip
             </Button>
           </div>
-        </div>
-      </div>
+        }
+      />
     </BrandedScreen>
   );
 }
@@ -2671,29 +2565,34 @@ function HostIntroScreen({ round, stingerLine, onContinue, theme }) {
   const speechBubbleTextRef = useRef(null);
   const speechBubbleFitRef = useRef(null);
   const [speechBubbleFontSize, setSpeechBubbleFontSize] = useState(28);
-  const currentStep = speechSteps[speechIndex] || { display: "", voice: "" };
+  const currentStep = speechSteps[speechIndex] || {
+    id: "host-intro-empty",
+    display: "",
+    voice: "",
+  };
+  const nextStep = speechSteps[speechIndex + 1];
   const voicePlaybackEnabled = isIanPosterVoiceTheme(theme);
-  const isVoicePlayingLine = useIanPosterHostVoicePlayback({
-    enabled: voicePlaybackEnabled && Boolean(currentStep.voice),
-    line: currentStep.voice,
+  const advanceSpeechLine = useCallback(() => {
+    setSpeechIndex((current) =>
+      Math.min(current + 1, speechSteps.length - 1),
+    );
+  }, [speechSteps.length]);
+  const { isPlaying, bumpSession, clearAdvanceTimer } = useHostSpeechAutoAdvance({
+    stepIndex: speechIndex,
+    stepCount: speechSteps.length,
+    lineKey: `${round.id || round.roundNumber}-${currentStep.id}`,
+    voiceEnabled: voicePlaybackEnabled && Boolean(currentStep.voice),
+    voiceLine: currentStep.voice,
+    nextVoiceLine: nextStep?.voice || "",
     themeName: theme,
     fallbackDurationMs: HOST_DIALOGUE_TIMINGS.roundIntroAdvanceMs,
+    onAdvanceStep: advanceSpeechLine,
   });
   const canContinue = speechIndex >= speechSteps.length - 1;
-  const isTalking = speechIndex < speechSteps.length - 1 || isVoicePlayingLine;
+  const isTalking = speechIndex < speechSteps.length - 1 || isPlaying;
   useEffect(() => {
     setSpeechIndex(0);
   }, [round.id, round.roundNumber, round.roundTypeId, speechSteps.length]);
-  useEffect(() => {
-    if (speechIndex >= speechSteps.length - 1) return undefined;
-    if (isVoicePlayingLine) return undefined;
-    const timer = setTimeout(() => {
-      setSpeechIndex((current) =>
-        Math.min(current + 1, speechSteps.length - 1),
-      );
-    }, HOST_DIALOGUE_TIMINGS.roundIntroAdvanceMs);
-    return () => clearTimeout(timer);
-  }, [speechIndex, speechSteps.length, isVoicePlayingLine]);
   useLayoutEffect(() => {
     const nextSize = fitTextToBubble(
       speechBubbleTextRef.current,
@@ -2708,16 +2607,24 @@ function HostIntroScreen({ round, stingerLine, onContinue, theme }) {
       current === nextSize ? current : nextSize,
     );
   }, [speechIndex, speechSteps]);
-  function advanceSpeechLine() {
-    setSpeechIndex((current) =>
-      Math.min(current + 1, speechSteps.length - 1),
-    );
-  }
   function handleNextSpeechAction() {
+    bumpSession();
+    clearAdvanceTimer();
     if (canContinue) {
       onContinue();
       return;
     }
+    advanceSpeechLine();
+  }
+  function handleSkipSpeech() {
+    bumpSession();
+    clearAdvanceTimer();
+    onContinue();
+  }
+  function handleCaptionTap() {
+    if (canContinue) return;
+    bumpSession();
+    clearAdvanceTimer();
     advanceSpeechLine();
   }
   return (
@@ -2727,41 +2634,43 @@ function HostIntroScreen({ round, stingerLine, onContinue, theme }) {
       lockViewport
       contentClassName="!min-h-0 !py-2 !px-3 flex flex-col"
     >
-      <div className="relative mx-auto flex h-full min-h-0 w-full max-w-[28rem] flex-col overflow-hidden">
-        <div className="relative z-10 flex min-h-0 flex-1 w-full flex-col rounded-[1.65rem] bg-[#e60096] p-2 shadow-[0_20px_45px_rgba(0,0,0,0.7)]">
-          <div className="min-h-0 flex-[1.05] overflow-hidden rounded-t-[1.15rem] bg-black">
-            <ThemeHostVisual
-              themeName={theme}
-              isTalking={isTalking}
-              preferVideo
-              testId="host-intro-visual"
-              alt="host"
-              className="h-full w-full object-cover"
-            />
+      <HostDialogueScreenLayout
+        hostSlot={
+          <div className="flex h-full min-h-0 w-full flex-col rounded-[1.65rem] bg-[#e60096] p-2 shadow-[0_20px_45px_rgba(0,0,0,0.7)]">
+            <div className="min-h-0 flex-1 overflow-hidden rounded-[1.15rem] bg-black">
+              <ThemeHostVisual
+                themeName={theme}
+                isTalking={isTalking}
+                preferVideo
+                testId="host-intro-visual"
+                alt="host"
+                className="h-full w-full object-cover object-top"
+              />
+            </div>
           </div>
+        }
+        dialogueSlot={
           <div
             role={canContinue ? undefined : "button"}
             tabIndex={canContinue ? undefined : 0}
             data-testid="host-intro-caption"
-            className={`pof-host-intro-caption-panel relative z-20 flex min-h-[4.25rem] flex-shrink-0 cursor-pointer items-center justify-center rounded-b-[1.15rem] border-0 border-t border-fuchsia-200/35 px-4 py-3 text-center ${canContinue ? "" : "pof-focus"}`}
+            className={`pof-host-intro-caption-panel ${HOST_DIALOGUE_PANEL_CLASS} relative z-20 flex min-h-[5rem] flex-1 cursor-pointer items-center justify-center rounded-[1.15rem] border-t border-fuchsia-200/35 px-4 py-3 text-center sm:min-h-[5.5rem] ${canContinue ? "" : "pof-focus"}`}
             style={{
               backgroundColor: "#b8007a",
               backgroundImage: "none",
             }}
-            onClick={() => {
-              if (!canContinue) advanceSpeechLine();
-            }}
+            onClick={handleCaptionTap}
             onKeyDown={(event) => {
               if (canContinue) return;
               if (event.key === "Enter" || event.key === " ") {
                 event.preventDefault();
-                advanceSpeechLine();
+                handleCaptionTap();
               }
             }}
           >
             <div
               ref={speechBubbleFitRef}
-              className="flex h-full max-h-[22dvh] w-full items-center justify-center overflow-hidden"
+              className="flex h-full max-h-[30dvh] w-full items-center justify-center overflow-hidden"
             >
               <motion.p
                 key={`${round.id || round.roundNumber}-${speechIndex}`}
@@ -2785,20 +2694,25 @@ function HostIntroScreen({ round, stingerLine, onContinue, theme }) {
               </motion.p>
             </div>
           </div>
-          <div className="mt-2 flex shrink-0 gap-3 pb-0.5">
-            <Button className={HOST_DIALOGUE_BUTTON_CLASS} onClick={handleNextSpeechAction}>
+        }
+        footerSlot={
+          <div className="flex shrink-0 gap-3">
+            <Button
+              className={HOST_DIALOGUE_BUTTON_CLASS}
+              onClick={handleNextSpeechAction}
+            >
               Next
             </Button>
             <Button
               className={HOST_DIALOGUE_BUTTON_CLASS}
               data-testid="host-intro-skip"
-              onClick={onContinue}
+              onClick={handleSkipSpeech}
             >
               Skip
             </Button>
           </div>
-        </div>
-      </div>
+        }
+      />
     </BrandedScreen>
   );
 }
@@ -5221,6 +5135,7 @@ function RevealScreen({
       isIanPosterVoiceTheme(theme) &&
       Boolean(personaCalloutLine),
     line: personaCalloutLine,
+    lineKey: `reveal-persona-${player?.id || currentRevealIndex}`,
     themeName: theme,
     audioSrcCandidates: personaCalloutSrcCandidates,
     fallbackDurationMs: 2200,
@@ -6106,6 +6021,7 @@ function LiarRevealScreen({
       isIanPosterVoiceTheme(theme) &&
       Boolean(liarPersonaCalloutLine),
     line: liarPersonaCalloutLine,
+    lineKey: `liar-callout-${primaryLiar?.id || "none"}-${announcementIndex}`,
     themeName: theme,
     audioSrcCandidates: liarPersonaCalloutSrcCandidates,
     fallbackDurationMs: 2200,
@@ -6273,7 +6189,7 @@ function LiarRevealScreen({
               >
                 {announcementIndex >= announcementLines.length - 1
                   ? "Continue"
-                  : "Next line"}
+                  : "Next"}
               </button>
             </div>
             {announcementIndex >= announcementLines.length - 1 && (

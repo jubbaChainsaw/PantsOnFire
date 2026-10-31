@@ -9,12 +9,15 @@
 }
 [data-testid='host-intro-caption'] p {
   color: #ffffff !important;
-  font-family: 'PoF Display', Inter, system-ui, sans-serif !important;
-  font-style: italic !important;
-  font-weight: 400 !important;
+  font-family: var(--pof-dialogue-font-family) !important;
+  font-style: var(--pof-dialogue-font-style) !important;
+  font-weight: var(--pof-dialogue-font-weight) !important;
   text-transform: none !important;
-  letter-spacing: 0.03em !important;
+  letter-spacing: var(--pof-dialogue-letter-spacing) !important;
   opacity: 1 !important;
+  -webkit-text-stroke: var(--pof-dialogue-text-stroke);
+  paint-order: stroke fill;
+  text-shadow: var(--pof-dialogue-text-shadow) !important;
 }
 
 @tailwind base;
@@ -73,6 +76,16 @@
     url('/assets/fonts/pants-on-fire/PantsOnFireNarrow-Regular-otf.woff2') format('woff2'),
     url('/assets/fonts/pants-on-fire/PantsOnFireNarrow-Regular.ttf') format('truetype'),
     url('/assets/fonts/pants-on-fire/PantsOnFireNarrow-Regular.otf') format('opentype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Chewy';
+  src:
+    url('/assets/fonts/chewy/Chewy-Regular.woff2') format('woff2'),
+    url('/assets/fonts/chewy/Chewy-Regular.woff') format('woff');
   font-weight: 400;
   font-style: normal;
   font-display: swap;

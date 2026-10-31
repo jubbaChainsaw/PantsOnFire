@@ -184,7 +184,7 @@ async function advanceLiarRevealToPairsPanel(page) {
     if (await page.getByTestId('double-take-pairs-reveal').isVisible().catch(() => false)) {
       return;
     }
-    const next = page.getByRole('button', { name: /Next line/i });
+    const next = page.getByRole('button', { name: /^Next$/i });
     if (await next.isVisible().catch(() => false)) {
       await next.click();
       await page.waitForTimeout(800);

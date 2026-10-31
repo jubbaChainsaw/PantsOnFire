@@ -240,20 +240,24 @@ export function buildHostIntroSpeechSteps({
 
   return [
     {
+      id: `host-intro-${roundTypeId}-0`,
       display: `${roundTypeName} round.`,
       voice: stingers[0] || `${roundTypeName} round selected.`,
     },
     {
+      id: `host-intro-${roundTypeId}-1`,
       display: ruleText || `${roundTypeName} rules incoming.`,
       voice: stingers[2] || stingers[1] || stingers[0] || '',
     },
     {
+      id: `host-intro-${roundTypeId}-2`,
       display:
         hostLine ||
         `${hostPersonaName} is in the building. Let the chaos begin.`,
       voice: hostVoice,
     },
     {
+      id: `host-intro-${roundTypeId}-3`,
       display: 'Get ready — cards flip after the countdown.',
       voice: countdownVoice,
     },

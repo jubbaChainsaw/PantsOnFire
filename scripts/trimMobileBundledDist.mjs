@@ -31,6 +31,8 @@ const REQUIRED_POF_FONT_FILES = [
   'PantsOnFireNarrow-Regular.ttf',
 ];
 
+const REQUIRED_DIALOGUE_FONT_FILES = ['Chewy-Regular.woff2'];
+
 function rewriteCssRootAbsoluteAssetUrls(distDir) {
   const assetsCssDir = path.join(distDir, 'assets');
   for (const file of walkFiles(distDir)) {
@@ -53,6 +55,16 @@ function assertRequiredBundledFonts(distDir) {
   if (missing.length) {
     console.error(
       `Missing PoF font files in dist (add under public/assets/fonts/pants-on-fire): ${missing.join(', ')}`,
+    );
+    process.exit(1);
+  }
+  const dialogueFontDir = path.join(distDir, 'assets/fonts/chewy');
+  const missingDialogue = REQUIRED_DIALOGUE_FONT_FILES.filter(
+    (name) => !existsSync(path.join(dialogueFontDir, name)),
+  );
+  if (missingDialogue.length) {
+    console.error(
+      `Missing dialogue font files in dist (add under public/assets/fonts/chewy): ${missingDialogue.join(', ')}`,
     );
     process.exit(1);
   }
