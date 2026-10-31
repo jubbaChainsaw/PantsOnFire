@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { KeyRound, Lock, Play, Wifi, X } from 'lucide-react';
 import { NEON_ASSETS, neonThemeVars } from '../../data/uiNeonAssets.js';
+import { resolveBundledAssetSrc } from '../../lib/publicAssetUrl.js';
 import { loadFx, music, saveFx, tapFx } from '../../lib/pofFx.js';
 import WebPlayerNotice from './WebPlayerNotice.jsx';
 
@@ -29,7 +30,7 @@ function IconBtn({ src, label, onClick, pressed }) {
       onClick={onClick}
       className={`pof-iconbtn pof-focus ${pressed ? 'opacity-50' : ''}`}
     >
-      <img src={src} alt="" />
+      <img src={resolveBundledAssetSrc(src)} alt="" />
     </button>
   );
 }
@@ -153,7 +154,7 @@ export default function NeonHomeScreen({
             />
           </div>
           <img
-            src={NEON_ASSETS.logo}
+            src={resolveBundledAssetSrc(NEON_ASSETS.logo)}
             alt="Pants On Fire! Find the Liar"
             className="pointer-events-none absolute left-1/2 top-[-0.5rem] w-[19rem] -translate-x-1/2 drop-shadow-[0_0_24px_rgba(255,90,0,0.55)]"
           />

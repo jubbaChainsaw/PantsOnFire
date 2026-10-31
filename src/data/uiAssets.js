@@ -1,6 +1,6 @@
 import { DEFAULT_CATEGORIES } from './categories.js';
 import { getIanPosterThemeSlug } from './ianPosterThemeVoice.js';
-import { publicAssetUrl } from '../lib/publicAssetUrl.js';
+import { publicAssetUrl, resolveBundledAssetSrcCore } from '../lib/publicAssetUrl.js';
 import {
   getThemePromptCardBackSrc,
   getThemePromptCardFrontSrc,
@@ -21,7 +21,10 @@ export const UI_ASSET_BASE = publicAssetUrl(UI_PACK_SLUG);
 export const UI_WALLPAPER_HOME_SRC = `${UI_ASSET_BASE}/wallpapers/home-page.png`;
 export const UI_WALLPAPER_IN_GAME_SRC = `${UI_ASSET_BASE}/wallpapers/in-game.png`;
 
-export const UI_LOGO_MAIN_SRC = `${UI_ASSET_BASE}/logos/main-logo.png`;
+/** Main brand mark without the legacy 18+ badge (see `images/logo.png`). */
+export const UI_LOGO_MAIN_SRC = resolveBundledAssetSrcCore(
+  publicAssetUrl('images/logo.png'),
+);
 export const UI_LOGO_18PLUS_SRC = `${UI_ASSET_BASE}/logos/logo-18plus.png`;
 
 export const UI_CARD_BASE = `${UI_ASSET_BASE}/cards`;
@@ -118,7 +121,6 @@ export function getUiGameModeIconSrc(roundTypeId = 'prompt') {
 export function listUiPreloadSources() {
   return [
     UI_LOGO_MAIN_SRC,
-    UI_LOGO_18PLUS_SRC,
     UI_WALLPAPER_HOME_SRC,
     UI_WALLPAPER_IN_GAME_SRC,
     UI_CARD_DEFAULT_FRONT_SRC,

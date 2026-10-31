@@ -18,7 +18,7 @@ const neonFile = (name) => {
 };
 
 export const NEON_ASSETS = Object.freeze({
-  logo: bundledUiAsset('ui/logos/main-logo.png'),
+  logo: bundledUiAsset('images/logo.png'),
   wallHome: bundledUiAsset('ui/wallpapers/home-page.png'),
   wallGame: bundledUiAsset('ui/wallpapers/in-game.png'),
   btnNeon: neonFile('btn-1.png'),

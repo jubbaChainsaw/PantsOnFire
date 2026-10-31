@@ -53,12 +53,14 @@
   font-display: swap;
 }
 
-/* Primary UI display face (derived middle weight; source: PantsOnFireNarrow-Regular). */
+/* Primary UI display face (narrow outline; same glyphs as Pants on Fire Narrow). */
 @font-face {
   font-family: 'PoF Display';
   src:
-    url('/assets/fonts/pants-on-fire/PoFDisplay-Narrow-Regular.woff2') format('woff2'),
-    url('/assets/fonts/pants-on-fire/PoFDisplay-Narrow-Regular.ttf') format('truetype');
+    url('/assets/fonts/pants-on-fire/PantsOnFireNarrow-Regular.woff2') format('woff2'),
+    url('/assets/fonts/pants-on-fire/PantsOnFireNarrow-Regular-otf.woff2') format('woff2'),
+    url('/assets/fonts/pants-on-fire/PantsOnFireNarrow-Regular.ttf') format('truetype'),
+    url('/assets/fonts/pants-on-fire/PantsOnFireNarrow-Regular.otf') format('opentype');
   font-weight: 400;
   font-style: normal;
   font-display: swap;

@@ -31,4 +31,10 @@ const trim = spawnSync('node', ['scripts/trimMobileBundledDist.mjs', outDir], {
 });
 if (trim.status !== 0) process.exit(trim.status || 1);
 
+const verify = spawnSync('node', ['scripts/verifyDistAndroidAssets.mjs', outDir], {
+  stdio: 'inherit',
+  shell: false,
+});
+if (verify.status !== 0) process.exit(verify.status || 1);
+
 console.log(`Mobile bundled web ready at ${outDir}`);

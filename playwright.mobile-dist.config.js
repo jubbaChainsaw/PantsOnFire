@@ -13,7 +13,7 @@ export default defineConfig({
     command:
       'npx vite preview --outDir dist-android --host 127.0.0.1 --port 4177 --strictPort',
     port: 4177,
-    reuseExistingServer: true,
+    reuseExistingServer: !process.env.CI,
     timeout: 120_000,
   },
   projects: [

@@ -16,11 +16,7 @@ export function publicAssetUrl(relativePath = '') {
 /** Normalizes `/assets/...`, `./assets/...`, or `assets/...` for web and bundled WebView. */
 function applyMobileRasterExtension(url = '') {
   const value = String(url || '');
-  const rasterExt =
-    typeof import.meta !== 'undefined' && import.meta.env
-      ? import.meta.env.VITE_UI_RASTER_EXT
-      : '';
-  if (rasterExt !== 'webp') return value;
+  if (import.meta.env.VITE_UI_RASTER_EXT !== 'webp') return value;
   return value.replace(/\.(png|jpe?g)(?=($|\?|#))/i, '.webp');
 }
 

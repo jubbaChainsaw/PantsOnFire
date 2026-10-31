@@ -5,11 +5,11 @@ import unlockableBackManifest from '../../public/assets/themes/default/cards/unl
 
 export const THEME_ASSETS = {
   Default: {
-    personaHostIdle: '/assets/themes/default/hosts/persona-host-intro-poster.png',
+    personaHostIdle: '/assets/themes/default/hosts/persona-host-idle.png',
     talkingVideoWebm: '/assets/themes/default/hosts/persona-host-talking.webm',
     talkingVideoMp4: '/assets/themes/default/hosts/persona-host-talking.mp4',
     iconSheet: '/assets/themes/default/icons/icons-sheet.png',
-    uiBanner: '/assets/themes/default/hosts/persona-host-intro-poster.png',
+    uiBanner: '/assets/themes/default/hosts/persona-host-idle.png',
   },
   Pirates: {
     personaHostIdle: '/assets/themes/pirates/hosts/persona-host-idle.png',

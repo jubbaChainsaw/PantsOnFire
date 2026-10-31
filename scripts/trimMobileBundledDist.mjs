@@ -6,6 +6,7 @@
 import {
   createReadStream,
   existsSync,
+  readFileSync,
   readdirSync,
   rmSync,
   statSync,
@@ -24,6 +25,38 @@ const REMOVE_THEME_SLUGS = new Set(['grillem', 'grill-em']);
 const MAX_PERSONA = 512;
 const MAX_CARD = 768;
 const MAX_BG = 1280;
+
+const REQUIRED_POF_FONT_FILES = [
+  'PantsOnFireNarrow-Regular.woff2',
+  'PantsOnFireNarrow-Regular.ttf',
+];
+
+function rewriteCssRootAbsoluteAssetUrls(distDir) {
+  const assetsCssDir = path.join(distDir, 'assets');
+  for (const file of walkFiles(distDir)) {
+    if (!file.endsWith('.css')) continue;
+    if (path.dirname(file) !== assetsCssDir) continue;
+    const text = readFileSync(file, 'utf8');
+    const updated = text
+      .replace(/url\(\s*\/assets\//g, 'url(./')
+      .replace(/url\(\s*"\/assets\//g, 'url("./')
+      .replace(/url\(\s*'\/assets\//g, "url('./");
+    if (updated !== text) writeFileSync(file, updated);
+  }
+}
+
+function assertRequiredBundledFonts(distDir) {
+  const fontDir = path.join(distDir, 'assets/fonts/pants-on-fire');
+  const missing = REQUIRED_POF_FONT_FILES.filter(
+    (name) => !existsSync(path.join(fontDir, name)),
+  );
+  if (missing.length) {
+    console.error(
+      `Missing PoF font files in dist (add under public/assets/fonts/pants-on-fire): ${missing.join(', ')}`,
+    );
+    process.exit(1);
+  }
+}
 
 function walkFiles(dir, out = []) {
   if (!existsSync(dir)) return out;
@@ -164,6 +197,9 @@ async function main() {
       pngDropped += 1;
     }
   }
+
+  rewriteCssRootAbsoluteAssetUrls(distDir);
+  assertRequiredBundledFonts(distDir);
 
   const afterBytes = dirSizeBytes(distDir);
   const requiredFlameBasenames = ['flame-4', 'flame-6', 'flame-7', 'flame-8', 'flame-9'];

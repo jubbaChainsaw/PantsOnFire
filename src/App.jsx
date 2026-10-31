@@ -1551,7 +1551,9 @@ function BoxerToggle({
   const shellClass = active
     ? "border-emerald-300/75 bg-emerald-500/28"
     : "border-red-300/70 bg-red-500/24";
-  const iconSrc = active ? UI_ICON_BOXERS_GREEN_SRC : UI_ICON_BOXERS_RED_SRC;
+  const iconSrc = resolveBundledAssetSrc(
+    active ? UI_ICON_BOXERS_GREEN_SRC : UI_ICON_BOXERS_RED_SRC,
+  );
   return (
     <button
       type="button"
@@ -1577,10 +1579,14 @@ function BoxerToggle({
   );
 }
 function ThemedIcon({ src, alt = "", className = "" }) {
-  if (!src) return null;
+  const resolvedSrc = useMemo(
+    () => resolveBundledAssetSrc(String(src || "").trim()),
+    [src],
+  );
+  if (!resolvedSrc) return null;
   return (
     <img
-      src={src}
+      src={resolvedSrc}
       alt={alt}
       className={className}
       onError={(event) => {
@@ -2319,6 +2325,9 @@ function getRoundCardFrontSrc(
 function getImposterCardFrontSrc() {
   return UI_CARD_LIAR_FRONT_SRC;
 }
+function resolvePreloadImageSrc(source = "") {
+  return resolveBundledAssetSrc(String(source || "").trim());
+}
 function preloadImageSources(sources = []) {
   if (typeof window === "undefined" || typeof window.Image === "undefined")
     return;
@@ -2326,14 +2335,14 @@ function preloadImageSources(sources = []) {
   const seenCache = (window.__pofPreloadedImageSources =
     window.__pofPreloadedImageSources || new Set());
   sourceList
-    .map((source) => String(source || "").trim())
+    .map((source) => resolvePreloadImageSrc(source))
     .filter(Boolean)
-    .forEach((source) => {
-      if (seenCache.has(source)) return;
-      seenCache.add(source);
+    .forEach((resolved) => {
+      if (seenCache.has(resolved)) return;
+      seenCache.add(resolved);
       const image = new window.Image();
       image.decoding = "async";
-      image.src = source;
+      image.src = resolved;
     });
 }
 function preloadImageSourcesWithPromise(
@@ -2346,7 +2355,7 @@ function preloadImageSourcesWithPromise(
   const sourceList = Array.from(
     new Set(
       (Array.isArray(sources) ? sources : [sources])
-        .map((source) => String(source || "").trim())
+        .map((source) => resolvePreloadImageSrc(source))
         .filter(Boolean),
     ),
   );
@@ -3212,7 +3221,7 @@ function HomeScreen({
   canCreateLocalGame = true,
   canCreateOnlineLobby = true,
 }) {
-  const logoSrc = adultMode ? UI_LOGO_18PLUS_SRC : UI_LOGO_MAIN_SRC;
+  const logoSrc = UI_LOGO_MAIN_SRC;
   const displayName =
     personaProfile?.realName || personaProfile?.inGameName || "Player 1";
   const username = normalizeFriendUsername(personaProfile?.username || "");
@@ -5217,6 +5226,10 @@ function RevealScreen({
   const mediaSrc = onlineMode
     ? onlinePrivatePrompt?.mediaSrc || null
     : round.mediaByPlayerId?.[player.id] || null;
+  const resolvedMediaSrc = useMemo(
+    () => (mediaSrc ? resolveBundledAssetSrc(mediaSrc) : ""),
+    [mediaSrc],
+  );
   const isLast = currentRevealIndex === players.length - 1;
   const isImposter = onlineMode
     ? Boolean(onlinePrivatePrompt?.isImposter)
@@ -5482,11 +5495,11 @@ function RevealScreen({
                     className={`mt-3 inline-flex items-center justify-center gap-2 rounded-xl border border-fuchsia-200/40 bg-fuchsia-500/35 px-3 py-2 text-xs font-semibold uppercase tracking-[0.2em] ${showImposterRevealUi ? "text-orange-100" : "text-cyan-100"}`}
                   >
                     <img
-                      src={
+                      src={resolveBundledAssetSrc(
                         showImposterRevealUi
                           ? UI_ICON_BADGE_LIAR_SRC
-                          : UI_ICON_MAGNIFIER_FIRE_SRC
-                      }
+                          : UI_ICON_MAGNIFIER_FIRE_SRC,
+                      )}
                       alt=""
                       aria-hidden="true"
                       className="h-4 w-4 object-contain"
@@ -5504,9 +5517,9 @@ function RevealScreen({
                       {round.mediaPreviewLabel}
                     </div>
                   )}
-                  {mediaSrc && (
+                  {resolvedMediaSrc && (
                     <img
-                      src={mediaSrc}
+                      src={resolvedMediaSrc}
                       alt="Visual clue"
                       className="mt-2 w-full rounded-2xl"
                     />
