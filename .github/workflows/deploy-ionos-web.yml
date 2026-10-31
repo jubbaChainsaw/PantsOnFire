@@ -104,30 +104,40 @@ jobs:
         run: |
           set -euo pipefail
           sudo apt-get update
-          sudo apt-get install -y lftp
+          sudo apt-get install -y lftp openssh-client
           REMOTE="${REMOTE_DIR:-/}"
           REMOTE="${REMOTE%/}"
           if [ -z "$REMOTE" ]; then REMOTE="/"; fi
           PORT="${SFTP_PORT:-22}"
-          SSH_BASE="-a -x -o StrictHostKeyChecking=accept-new -p ${PORT}"
+          WRAPPER="${RUNNER_TEMP}/sftp-ssh-wrap.sh"
           if [ -n "${SFTP_KEY:-}" ]; then
             mkdir -p ~/.ssh
             umask 077
             printf '%s\n' "$SFTP_KEY" > ~/.ssh/ionos_deploy_key
             chmod 600 ~/.ssh/ionos_deploy_key
-            SSH_BASE="${SSH_BASE} -i ~/.ssh/ionos_deploy_key"
+            cat > "$WRAPPER" <<EOF
+          #!/bin/sh
+          exec ssh -a -x -o StrictHostKeyChecking=accept-new -p ${PORT} -i "$HOME/.ssh/ionos_deploy_key" "\$@"
+          EOF
             LFTP_OPEN="open -u ${SFTP_USER} sftp://${SFTP_HOST}"
           elif [ -n "${SFTP_PASS:-}" ]; then
-            LFTP_OPEN="open -u ${SFTP_USER},${SFTP_PASS} sftp://${SFTP_HOST}"
+            sudo apt-get install -y sshpass
+            cat > "$WRAPPER" <<EOF
+          #!/bin/sh
+          exec sshpass -e ssh -a -x -o StrictHostKeyChecking=accept-new -p ${PORT} "\$@"
+          EOF
+            export SSHPASS="$SFTP_PASS"
+            LFTP_OPEN="open -u ${SFTP_USER} sftp://${SFTP_HOST}"
           else
             echo "::error::Missing IONOS_SFTP_PASSWORD or IONOS_SFTP_KEY"
             exit 1
           fi
+          chmod +x "$WRAPPER"
           lftp -e "
             set cmd:fail-exit yes;
-            set sftp:connect-program \"ssh ${SSH_BASE}\";
+            set sftp:connect-program \"${WRAPPER}\";
             set net:max-retries 2;
-            set net:timeout 60;
+            set net:timeout 120;
             ${LFTP_OPEN};
             lcd dist;
             cd \"${REMOTE}\";
