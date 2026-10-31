@@ -5,7 +5,7 @@ MIN_MAJOR=8
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT/android"
 ./gradlew :app:dependencies --configuration releaseRuntimeClasspath --no-daemon -q 2>/dev/null | tee /tmp/pof-release-runtime-deps.txt
-mapfile -t versions < <(rg -o 'com\.android\.billingclient:billing:([0-9.]+)' /tmp/pof-release-runtime-deps.txt -r '$1' | sort -u)
+mapfile -t versions < <(grep -oE 'com\.android\.billingclient:billing:[0-9.]+' /tmp/pof-release-runtime-deps.txt | sed 's/.*://' | sort -u)
 if [ "${#versions[@]}" -eq 0 ]; then
   echo "::error::No com.android.billingclient:billing dependency found on releaseRuntimeClasspath"
   exit 1
