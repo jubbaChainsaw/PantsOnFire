@@ -62,6 +62,12 @@ const useBundledAndroidWeb =
     !__DEV__);
 
 const configuredGameUrl = process.env.EXPO_PUBLIC_GAME_URL || null;
+const preferLiveWebOnAndroid =
+  String(process.env.EXPO_PUBLIC_PREFER_LIVE_WEB || '').trim() === '1';
+const androidVersionCode = String(
+  process.env.EXPO_PUBLIC_ANDROID_VERSION_CODE || '',
+).trim();
+const webBuildSha = String(process.env.EXPO_PUBLIC_WEB_BUILD_SHA || '').trim();
 
 function compareSemver(a = '', b = '') {
   const pa = String(a).split('.').map((n) => parseInt(n, 10) || 0);
@@ -118,6 +124,10 @@ function injectNativeHostCredentials(webViewRef, creds) {
     platform: Platform.OS,
     installToken: String(creds?.installToken || '').trim(),
     expiresAt: Number(creds?.expiresAt) || 0,
+    shellVersion: SHELL_VERSION,
+    androidVersionCode,
+    webBuildSha,
+    gameSurface: 'bundled',
     safeAreaInsets: {
       top: topInset,
       bottom: bottomInset,
@@ -167,6 +177,11 @@ async function resolveAndroidGameUrl() {
   if (configuredGameUrl) return configuredGameUrl;
   if (!useBundledAndroidWeb) return DEFAULT_WEB_URL;
   if (__DEV__) return DEFAULT_WEB_URL;
+
+  // Bundled dist in the APK is authoritative for store/debug builds. Live web is
+  // opt-in only (ops flag or EXPO_PUBLIC_PREFER_LIVE_WEB) so CI fixes are visible
+  // before pantsonfire.app is redeployed.
+  if (!preferLiveWebOnAndroid) return BUNDLED_ANDROID_GAME_URI;
 
   const cfg = await fetchShellGateConfig();
   if (shouldUseLiveWeb(cfg)) return PRODUCTION_GAME_URL;
@@ -393,7 +408,12 @@ export default function App() {
   const [gameUrl, setGameUrl] = useState(
     () => configuredGameUrl || (useBundledAndroidWeb ? BUNDLED_ANDROID_GAME_URI : DEFAULT_WEB_URL),
   );
-  const [urlReady, setUrlReady] = useState(() => Boolean(configuredGameUrl) || !useBundledAndroidWeb);
+  const [urlReady, setUrlReady] = useState(
+    () =>
+      Boolean(configuredGameUrl) ||
+      (useBundledAndroidWeb && !preferLiveWebOnAndroid) ||
+      !useBundledAndroidWeb,
+  );
 
   useEffect(() => {
     const apiKey = Platform.OS === 'ios' ? IOS_KEY : ANDROID_KEY;
@@ -424,7 +444,9 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    if (configuredGameUrl) return undefined;
+    if (configuredGameUrl || (useBundledAndroidWeb && !preferLiveWebOnAndroid)) {
+      return undefined;
+    }
     let mounted = true;
     (async () => {
       await ensureMicPermission();
@@ -508,6 +530,8 @@ export default function App() {
           startInLoadingState
           javaScriptEnabled
           domStorageEnabled
+          cacheEnabled={false}
+          incognito
           mediaPlaybackRequiresUserAction={false}
           onMessage={onWebMessage}
           onLoadEnd={() => {

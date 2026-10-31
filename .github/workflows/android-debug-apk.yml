@@ -23,6 +23,13 @@ permissions:
 jobs:
   assemble-debug:
     runs-on: ubuntu-latest
+    env:
+      EXPO_PUBLIC_GAME_URL: file:///android_asset/pof-web/index.html
+      EXPO_PUBLIC_USE_BUNDLED_WEB: '1'
+      EXPO_PUBLIC_SHELL_VERSION: '0.1.0'
+      EXPO_PUBLIC_PRODUCTION_GAME_URL: https://www.pantsonfire.app/
+      EXPO_PUBLIC_ANDROID_VERSION_CODE: ${{ github.run_number }}
+      EXPO_PUBLIC_WEB_BUILD_SHA: ${{ github.sha }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -54,6 +61,9 @@ jobs:
         run: npm ci
 
       - name: Build slim bundled web
+        env:
+          VITE_APP_BUILD_SHA: ${{ github.sha }}
+          VITE_APP_BUILD_STAMP: ${{ github.run_number }}-${{ github.sha }}
         run: node scripts/buildMobileBundledWeb.mjs dist-android
 
       - name: Verify dist-android asset references
@@ -78,12 +88,7 @@ jobs:
 
       - name: Assemble debug APK
         working-directory: android
-        env:
-          EXPO_PUBLIC_GAME_URL: file:///android_asset/pof-web/index.html
-          EXPO_PUBLIC_USE_BUNDLED_WEB: '1'
-          EXPO_PUBLIC_SHELL_VERSION: '0.1.0'
-          EXPO_PUBLIC_PRODUCTION_GAME_URL: https://www.pantsonfire.app/
-        run: ./gradlew assembleDebug --no-daemon -PandroidVersionCode=${{ github.run_number }}
+        run: ./gradlew assembleDebug --no-daemon -PandroidVersionCode=${{ github.run_number }} -PandroidVersionName=0.1.${{ github.run_number }}
 
       - name: Collect APK for artifact
         run: |

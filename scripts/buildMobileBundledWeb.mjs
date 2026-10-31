@@ -16,6 +16,16 @@ const env = {
   VITE_MOBILE_SLIM_BUNDLE: '1',
   VITE_CONTENT_PACK_MANIFEST_URL: manifestUrl,
   VITE_WEB_JOIN_ONLY: '0',
+  VITE_APP_BUILD_SHA:
+    process.env.VITE_APP_BUILD_SHA ||
+    process.env.GITHUB_SHA ||
+    process.env.CI_COMMIT_SHA ||
+    '',
+  VITE_APP_BUILD_STAMP:
+    process.env.VITE_APP_BUILD_STAMP ||
+    (process.env.GITHUB_RUN_NUMBER && process.env.GITHUB_SHA
+      ? `${process.env.GITHUB_RUN_NUMBER}-${String(process.env.GITHUB_SHA).slice(0, 7)}`
+      : ''),
 };
 
 const vite = spawnSync(

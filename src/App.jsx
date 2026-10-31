@@ -256,6 +256,7 @@ import {
 import { BugReportScreen } from "./components/BugReportScreen.jsx";
 import { anonymizeLobbyId } from "./lib/bugReportClient.js";
 import { installNativeDiagnosticsBridge } from "./lib/nativeDiagnosticsBridge.js";
+import { formatNativeShellBuildLabel, getWebBuildStamp } from "./lib/buildStamp.js";
 
 const E2E_FORCE_ROUND_TYPE = String(
   import.meta.env.VITE_E2E_FORCE_ROUND_TYPE || "",
@@ -6923,6 +6924,22 @@ function SettingsScreen({
           </GlassPanel>
         ) : activeTab === "general" ? (
           <GlassPanel className="rounded-[2.5rem] p-8 border-cyan-400/20 bg-black/25 space-y-5">
+            <div
+              className="rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-center"
+              data-testid="pof-settings-build-stamp"
+            >
+              <div className="pof-label text-xs uppercase tracking-[0.16em] text-cyan-200/80">
+                Build info
+              </div>
+              <p className="pof-body mt-1 text-sm text-white/85">
+                Web {getWebBuildStamp()}
+              </p>
+              {formatNativeShellBuildLabel() ? (
+                <p className="pof-body mt-1 text-xs text-white/60">
+                  {formatNativeShellBuildLabel()}
+                </p>
+              ) : null}
+            </div>
             <SettingsToggleRow
               title="Premium Mode Toggle"
               description="Prototype switch for premium/admin features."

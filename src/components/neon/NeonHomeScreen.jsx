@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { KeyRound, Lock, Play, Wifi, X } from 'lucide-react';
 import { NEON_ASSETS, neonThemeVars } from '../../data/uiNeonAssets.js';
 import { resolveBundledAssetSrc } from '../../lib/publicAssetUrl.js';
+import { getWebBuildStamp } from '../../lib/buildStamp.js';
 import { loadFx, music, saveFx, tapFx } from '../../lib/pofFx.js';
 import WebPlayerNotice from './WebPlayerNotice.jsx';
 
@@ -275,6 +276,12 @@ export default function NeonHomeScreen({
             </button>
           </p>
         )}
+        <p
+          className="pof-body mt-2 shrink-0 text-center text-[0.58rem] uppercase tracking-[0.14em] text-white/35"
+          data-testid="pof-build-stamp"
+        >
+          Build {getWebBuildStamp()}
+        </p>
       </main>
 
       {overlay === 'help' && (
