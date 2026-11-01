@@ -898,6 +898,10 @@ app.post('/api/lobbies/:code/round/phase/advance', async (req, res) => {
     res.status(410).json({ error: 'session-player-missing' });
     return;
   }
+  if (result.error === 'host-only') {
+    res.status(403).json({ error: 'host-only' });
+    return;
+  }
   if (result.error === 'phase-advance-not-allowed' || result.error === 'voting-incomplete' || result.error === 'invalid-round-phase') {
     res.status(409).json({ error: 'round-phase-not-advanceable', phase: result.phase || null });
     return;

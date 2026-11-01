@@ -937,6 +937,7 @@ function buildStoreCore({
       return { error: 'session-token-expired' };
     }
     if (validation.error) return { error: validation.error };
+    if (!validation.player?.isHost) return { error: 'host-only' };
 
     const round = lobby.activeRound;
     round.phase = normalizeRoundPhase(round.phase, round.roundTypeId);

@@ -858,7 +858,9 @@ function mapLobbyErrorToMessage(
     return "Session expired because this player left the lobby.";
   if (code === "token-rotation-required")
     return "Match state already advanced on server. Tap Resume Match to sync.";
-  if (code === "host-only") return "Only the host can start this lobby.";
+  if (code === "host-only") {
+    return "Only the host can advance the round or start the lobby.";
+  }
   if (code === "hosting-web-only" || code === "app-hosting-required") {
     return "Hosting is only available in the mobile app. Download the app to host a lobby.";
   }
@@ -2577,7 +2579,7 @@ function resolveCategoryChoiceCardArt(category, themeName = "Default") {
   if (categoryIconSrc) return categoryIconSrc;
   return getRoundCardBackSrc(themeName);
 }
-function HostIntroScreen({ round, stingerLine, onContinue, theme }) {
+function HostIntroScreen({ round, stingerLine, onContinue, theme, phaseAdvanceEnabled = true }) {
   const themedHostPersona = useMemo(() => getIanPosterHostDisplayPersona(theme), [theme]);
   const speechSteps = useMemo(
     () =>
@@ -2647,7 +2649,9 @@ function HostIntroScreen({ round, stingerLine, onContinue, theme }) {
     bumpSession();
     clearAdvanceTimer();
     if (canContinue) {
-      onContinue();
+      if (phaseAdvanceEnabled) {
+        onContinue();
+      }
       return;
     }
     advanceSpeechLine();
@@ -2655,7 +2659,11 @@ function HostIntroScreen({ round, stingerLine, onContinue, theme }) {
   function handleSkipSpeech() {
     bumpSession();
     clearAdvanceTimer();
-    onContinue();
+    if (phaseAdvanceEnabled) {
+      onContinue();
+      return;
+    }
+    setSpeechIndex(speechSteps.length - 1);
   }
   function handleCaptionTap() {
     if (canContinue) return;
@@ -2732,7 +2740,13 @@ function HostIntroScreen({ round, stingerLine, onContinue, theme }) {
           </div>
         }
         footerSlot={
-          <div className="flex shrink-0 gap-3">
+          <div className="flex shrink-0 flex-col gap-2">
+            {canContinue && !phaseAdvanceEnabled ? (
+              <p className="text-center text-sm text-white/70">
+                Waiting for the host to continue…
+              </p>
+            ) : null}
+            <div className="flex gap-3">
             <Button
               className={HOST_DIALOGUE_BUTTON_CLASS}
               onClick={handleNextSpeechAction}
@@ -2743,9 +2757,11 @@ function HostIntroScreen({ round, stingerLine, onContinue, theme }) {
               className={HOST_DIALOGUE_BUTTON_CLASS}
               data-testid="host-intro-skip"
               onClick={handleSkipSpeech}
+              disabled={canContinue && !phaseAdvanceEnabled}
             >
               Skip
             </Button>
+            </div>
           </div>
         }
       />
@@ -5169,6 +5185,7 @@ function RevealScreen({
   playSfx = () => {},
   cardStyle = THEME_CARD_STYLE_CLASSIC,
   defaultBackSlug = "classic",
+  phaseAdvanceEnabled = true,
 }) {
   const player = players[currentRevealIndex];
   const personaCalloutLine = getPersonaCalloutLineTextForPlayer(player, theme);
@@ -5559,6 +5576,7 @@ function RevealScreen({
           )}
 
           {cardFace === "front" && (
+            phaseAdvanceEnabled || !onlineMode || !isLast ? (
             <button
               type="button"
               className="pof-btn pof-btn-blue pof-btn-sm pof-btn-wrap pof-focus mt-3 max-w-full"
@@ -5572,6 +5590,11 @@ function RevealScreen({
                   ? "Start one word round"
                   : `Hide & pass to ${players[currentRevealIndex + 1].name}`}
             </button>
+            ) : (
+              <p className="mt-3 text-center text-sm text-white/75">
+                Waiting for the host to continue the round…
+              </p>
+            )
           )}
         </div>
       </div>
@@ -5796,6 +5819,7 @@ function DiscussionScreen({
   talkingPlayers = {},
   localPlayerId = "",
   onToggleChat = () => {},
+  phaseAdvanceEnabled = true,
 }) {
   return (
     <TopFrame theme={theme}>
@@ -5828,6 +5852,7 @@ function DiscussionScreen({
             Discussion
           </h2>
           <div className="mt-8 flex justify-center">
+            {phaseAdvanceEnabled ? (
             <button
               type="button"
               className="pof-btn pof-btn-fire pof-btn-wrap pof-focus w-full max-w-[20rem] px-3"
@@ -5838,6 +5863,11 @@ function DiscussionScreen({
               <SkipForward className="mr-2 inline h-5 w-5" />
               {submitPending ? "Syncing..." : "Finish discussion and vote"}
             </button>
+            ) : (
+              <p className="text-center text-sm text-white/75">
+                Waiting for the host to start voting…
+              </p>
+            )}
           </div>
         </GlassPanel>
       </div>
@@ -9305,6 +9335,7 @@ export default function App() {
 
   async function runOnlinePhaseAdvance() {
     if (!onlineMode || !lobbyCode) return null;
+    if (onlineRole !== "host") return null;
     const sessionSnapshot = onlineSessionRef.current;
     const playerId = sessionSnapshot?.playerId || onlineJoinedPlayerId;
     const sessionToken = sessionSnapshot?.sessionToken || "";
@@ -9517,6 +9548,9 @@ export default function App() {
     if (onlineMode) {
       if (revealIndex < players.length - 1) {
         setRevealIndex((currentIndex) => currentIndex + 1);
+        return;
+      }
+      if (onlineRole !== "host") {
         return;
       }
       await runOnlinePhaseAdvance();
@@ -9760,6 +9794,9 @@ export default function App() {
   }
   async function finishLiarReveal() {
     if (onlineMode) {
+      if (onlineRole !== "host") {
+        return;
+      }
       await runOnlinePhaseAdvance();
       return;
     }
@@ -10970,6 +11007,7 @@ export default function App() {
             setScreen("reveal");
           }}
           theme={canonicalThemeName}
+          phaseAdvanceEnabled={!onlineMode || onlineRole === "host"}
         />
       )}
       {screen === "twotruths-input" && round && (
@@ -11046,6 +11084,7 @@ export default function App() {
             playSfx={playSfx}
             cardStyle={activeThemeCardStyle}
             defaultBackSlug={playerProfile?.selectedDefaultBackSlug || "classic"}
+            phaseAdvanceEnabled={!onlineMode || onlineRole === "host"}
           />
         </BrandedScreen>
       )}
@@ -11222,6 +11261,7 @@ export default function App() {
           talkingPlayers={partyTalkingPlayers}
           localPlayerId={onlineJoinedPlayerId}
           onToggleChat={() => setPartyChatOpen((current) => !current)}
+          phaseAdvanceEnabled={!onlineMode || onlineRole === "host"}
         />
         </>
       )}

@@ -66,10 +66,12 @@ Never trust:
   and are verified with a constant-time secret comparison; entitlements
   persist to Postgres or Redis when configured.
 - Idle lobbies expire (24 h TTL in Redis by default, periodic sweep in memory).
+- Round phase advancement via `POST /api/lobbies/:code/round/phase/advance` is
+  host-only (`403` / `host-only`); the web client shows advance controls only
+  to the host.
 
 See `docs/review-2026-06/SECURITY_AUDIT.md` for the full audit, including
-open items (per-lobby locking, host-only phase advancement, clientId
-exposure in snapshots).
+open items (per-lobby locking, clientId exposure in snapshots).
 
 ## Production Recommendations
 

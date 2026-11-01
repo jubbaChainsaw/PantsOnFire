@@ -202,6 +202,30 @@ test('private round view requires the matching session token', async () => {
   assert.equal(view.round.isImposter, isLiar);
 });
 
+test('advanceRoundPhase is host-only after the lobby has started', async () => {
+  const store = makeStore();
+  const { code, members } = await makeLobbyWithPlayers(store, 3);
+  await readyAllAndStart(store, code, members);
+  const host = members[0];
+  const guest = members[1];
+
+  const denied = await store.advanceRoundPhase(
+    code,
+    guest.player.id,
+    guest.sessionToken,
+  );
+  assert.equal(denied.error, 'host-only');
+
+  const allowed = await store.advanceRoundPhase(
+    code,
+    host.player.id,
+    host.sessionToken,
+  );
+  assert.equal(allowed.error, undefined);
+  assert.equal(allowed.round?.phase, 'reveal');
+  host.sessionToken = allowed.sessionToken;
+});
+
 test('voting flow: validation, server scoring, and reveal-phase disclosure', async () => {
   const store = makeStore();
   const { code, members } = await makeLobbyWithPlayers(store, 3);

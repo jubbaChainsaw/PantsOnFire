@@ -31,15 +31,15 @@ Entitlements use the same Redis client when Postgres is not configured, under
 ## Server authority
 
 The server is authoritative for membership, session tokens, round generation,
-liar assignment, voting, and scoring. **Today, any seated player with a valid
-session token can call `POST …/round/phase/advance`** — host-only phase
-advance is a documented goal, not enforced yet (see
-`docs/review-2026-06/SECURITY_AUDIT.md`).
+liar assignment, voting, and scoring.
 
-Host-validated actions that **are** enforced:
+Host-validated actions enforced in `lobbyStore.js` / HTTP handlers:
 
-- **Start game** — host session token (`startRound`).
-- **Next round** — host session token (`startNextRound`).
+- **Start game** — host session token (`startLobby`).
+- **Next round** — host session token (`createNextRound`).
+- **Phase advance** — host only (`advanceRoundPhase`; `POST …/round/phase/advance`
+  returns `403` `{ "error": "host-only" }` for non-host callers). One-word turn
+  timeouts still advance internally by mutating round state (no HTTP caller).
 - **Kick player** — host only (`POST /api/lobbies/:code/kick` in
   `server/moderationRoutes.js`).
 
