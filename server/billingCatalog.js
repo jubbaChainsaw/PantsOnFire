@@ -1,4 +1,5 @@
 import Stripe from 'stripe';
+import { DLC_PACK_PRICE_LABEL } from '../src/account/tierModel.js';
 import { resolveStripePriceId } from './stripeCatalog.js';
 
 const TIER_FIBBER = 'fibber';
@@ -12,7 +13,7 @@ export const DEFAULT_PRICE_LABELS = {
   [`tier:${TIER_SUSPECT}`]: '£4.99',
   [`tier:${TIER_HOST_MOST}`]: '£9.99',
   'addon:twist_truth': '£1.99',
-  'dlc:pack': '£2.99',
+  'dlc:pack': DLC_PACK_PRICE_LABEL,
 };
 
 function loadDisplayJson() {
@@ -48,17 +49,20 @@ async function labelForSku(stripe, sku, kind, productId) {
   if (overrides[sku]) return String(overrides[sku]).trim();
   if (DEFAULT_PRICE_LABELS[sku]) return DEFAULT_PRICE_LABELS[sku];
 
+  // DLC display is fixed at £0.99 in product copy; checkout still uses Stripe Price ids via resolveStripePriceId.
+  if (kind === 'dlc') {
+    return DEFAULT_PRICE_LABELS['dlc:pack'];
+  }
+
   const priceId = resolveStripePriceId(kind, productId);
   if (!stripe || !priceId) {
-    if (kind === 'dlc') return DEFAULT_PRICE_LABELS['dlc:pack'];
-    return '';
+    return DEFAULT_PRICE_LABELS[sku] || '';
   }
   try {
     const price = await stripe.prices.retrieve(priceId);
     const label = formatPriceLabel(price.unit_amount, price.currency);
     return label || DEFAULT_PRICE_LABELS[sku] || '';
   } catch {
-    if (kind === 'dlc') return DEFAULT_PRICE_LABELS['dlc:pack'];
     return DEFAULT_PRICE_LABELS[sku] || '';
   }
 }

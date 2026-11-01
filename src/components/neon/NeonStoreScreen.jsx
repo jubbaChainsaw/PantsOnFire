@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import {
   ADDON_TWIST_TRUTH,
+  DLC_PACK_PRICE_LABEL,
   REVENUE_CAT_ENTITLEMENTS,
   SUBSCRIPTION_TIERS,
   TIER_FIBBER,
@@ -192,7 +193,7 @@ export default function NeonStoreScreen({
 
   const twistPriceLabel =
     billingCatalog?.addonTwistTruth || ADDON_TWIST_TRUTH.priceLabel;
-  const dlcPackPriceLabel = billingCatalog?.dlcPack || '£2.99';
+  const dlcPackPriceLabel = billingCatalog?.dlcPack || DLC_PACK_PRICE_LABEL;
 
   const currentTierRank = accountSession ? TIER_RANK[accountSession.tierId] ?? 0 : 0;
   const currentTierName =

@@ -66,8 +66,10 @@ export const ADDON_TWIST_TRUTH = {
   description: 'Unlocks the advanced category editor on its own (without Host with the Most).',
 };
 
+export const DLC_PACK_PRICE_LABEL = '£0.99';
+
 export const DLC_STORE_BLURB =
-  'DLC packs add three themed experiences each (host, card decks, personas, tailored dialogue) for £2.99 per pack. Host with the Most includes every pack.';
+  `DLC packs add three themed experiences each (host, card decks, personas, tailored dialogue) for ${DLC_PACK_PRICE_LABEL} per pack. Host with the Most includes every pack.`;
 
 /** RevenueCat entitlement / product identifiers (see server/entitlementsRoutes.js mapRevenueCatEntitlements). */
 export const REVENUE_CAT_ENTITLEMENTS = {

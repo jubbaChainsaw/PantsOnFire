@@ -11,6 +11,7 @@ import {
   coreThemeContentPackId,
 } from '../../lib/contentPacks/storeThemeDownloads.js';
 import { tapFx } from '../../lib/pofFx.js';
+import { DLC_PACK_PRICE_LABEL } from '../../account/tierModel.js';
 import { DownloadBadge, StoreActionChip } from './neonStoreUi.jsx';
 
 function StoreThemeImage({ src, alt = '', className = '', testId }) {
@@ -49,7 +50,7 @@ export default function NeonStoreThemesPanel({
   onUnlockThemePack = () => {},
   onWebPurchaseDlc = async () => {},
   webShopMode = false,
-  dlcPackPriceLabel = '£2.99',
+  dlcPackPriceLabel = DLC_PACK_PRICE_LABEL,
   downloadByPackId = {},
 }) {
   const unlocked = useMemo(() => new Set(unlockedThemePackIds || []), [unlockedThemePackIds]);
