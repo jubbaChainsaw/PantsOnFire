@@ -25,7 +25,7 @@ Use explicit, domain-focused file names for data modules. Prefer names that desc
 - `guessableEntityPools.js`, `specialRoundPromptPools.js`
 - `dlc/` theme pack definitions under `src/data/dlc/`
 
----
+## For future DLC packs
 
 - Use pack-oriented paths under `public/assets/graphic-packs/<type>/<pack-id>/...`.
 - Keep `pack-id` kebab-case and versioned (for example `core-v1`, `animals-v2`).

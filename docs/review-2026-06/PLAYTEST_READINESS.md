@@ -68,7 +68,6 @@ quality gap.
 | Sound Off | ✅ | ❌ | |
 | Off Topic Defense | ✅ | ❌ | |
 | Chain Reaction | ✅ | ❌ | logo missing |
-| Grill 'Em | ✅ | ❌ | needs byteblitz SFX |
 | Dodgy Audio | ❌ | stub | hide or finish |
 | Clip Trap | ❌ | stub | hide or finish |
 

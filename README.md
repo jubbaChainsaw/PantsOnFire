@@ -138,6 +138,10 @@ Copy:
 
 - `tools/royalty-free-import-template/picture-import.spec.example.json`
 
+Example committed picture pack manifest:
+
+- `public/assets/graphic-packs/picture/coastal-v1/manifest.json`
+
 Then edit:
 
 - `pack.id`, `pack.label`, `pack.releaseChannel`
