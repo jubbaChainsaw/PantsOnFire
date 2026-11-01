@@ -1,4 +1,5 @@
 import { timingSafeEqual } from 'node:crypto';
+import { resolveInternalThemePackIdFromStoreKey } from '../src/billing/googlePlayProductCatalog.js';
 import { resolveAuthUserFromBearer } from './resolveAuthUser.js';
 import { isFirstPaidEntitlementTransition } from './referralEntitlements.js';
 
@@ -98,7 +99,9 @@ export function mapRevenueCatEntitlements(activeEntitlementIds) {
     } else if (id === 'twist_truth' || id === 'twist_the_truth') {
       addonTwistTruth = true;
     } else if (id.startsWith('dlc_pack_')) {
-      unlockedThemePackIds.push(id.slice('dlc_pack_'.length));
+      unlockedThemePackIds.push(
+        resolveInternalThemePackIdFromStoreKey(id),
+      );
     }
   }
 

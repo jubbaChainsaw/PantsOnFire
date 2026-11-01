@@ -23,6 +23,7 @@ import {
   normalizeWebBuildMeta,
   isAtLeastBundled,
 } from './nativeShell/gameSourceSelection.js';
+import { purchaseViaGooglePlayCatalog } from './nativeShell/googlePlayPurchase.js';
 import {
   BUNDLED_BUILD_STAMP_URI,
   cachedGameUri,
@@ -565,6 +566,26 @@ export default function App() {
       }
       if (msg.type === 'POF_REFRESH_ENTITLEMENTS') {
         Purchases.syncPurchases().catch(() => {});
+      }
+      if (msg.type === 'POF_PURCHASE' && msg.kind && msg.internalProductId) {
+        void (async () => {
+          try {
+            await purchaseViaGooglePlayCatalog(
+              String(msg.kind),
+              String(msg.internalProductId),
+            );
+            webViewRef.current?.injectJavaScript(`
+              window.dispatchEvent(new CustomEvent('pof-native-purchase', { detail: ${JSON.stringify({ ok: true })} }));
+              true;
+            `);
+          } catch (error) {
+            const code = String(error?.code || error?.message || 'purchase-failed');
+            webViewRef.current?.injectJavaScript(`
+              window.dispatchEvent(new CustomEvent('pof-native-purchase', { detail: ${JSON.stringify({ ok: false, error: code })} }));
+              true;
+            `);
+          }
+        })();
       }
       if (String(msg.type || '').startsWith('POF_CONTENT_PACK_')) {
         void handleContentPackMessage(webViewRef, msg);
