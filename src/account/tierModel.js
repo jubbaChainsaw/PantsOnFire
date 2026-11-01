@@ -1,4 +1,4 @@
-import { DLC_THEME_PACKS, normalizeUnlockedThemePackIds } from '../data/themeCatalog';
+import { DLC_THEME_PACKS, normalizeUnlockedThemePackIds } from '../data/themeCatalog.js';
 
 export const TIER_FIBBER = 'fibber';
 export const TIER_LOCAL_LIAR = 'local_liar';
