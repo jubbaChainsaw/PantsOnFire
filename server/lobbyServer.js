@@ -40,6 +40,7 @@ import {
 } from './moderationStore.js';
 import { mountModerationRoutes } from './moderationRoutes.js';
 import { mountAccountDeletionRoutes } from './accountDeletionRoutes.js';
+import { createRateLimiter } from './rateLimit.js';
 
 const PORT = Number(process.env.LOBBY_SERVER_PORT || process.env.PORT || 8787);
 const CLIENT_ORIGINS_RAW = String(
@@ -139,35 +140,6 @@ function validateLobbyPlayerSession(lobby, playerId, sessionToken) {
 const { store, kind: storeKind, close: closeStore, redisClient } = await createLobbyStore({
   sessionTokenTtlMs: SESSION_TOKEN_TTL_MS,
 });
-
-// Minimal fixed-window rate limiter (per IP) so lobby-code guessing and join
-// spam cannot run unthrottled. Swap for a shared-store limiter if the server
-// is ever scaled to multiple instances.
-function createRateLimiter({ windowMs, max }) {
-  const buckets = new Map();
-  const cleanupTimer = setInterval(() => {
-    const now = Date.now();
-    for (const [key, bucket] of buckets.entries()) {
-      if (bucket.resetAt <= now) buckets.delete(key);
-    }
-  }, windowMs);
-  cleanupTimer.unref?.();
-  return (req, res, next) => {
-    const key = String(req.ip || req.socket?.remoteAddress || 'unknown');
-    const now = Date.now();
-    let bucket = buckets.get(key);
-    if (!bucket || bucket.resetAt <= now) {
-      bucket = { count: 0, resetAt: now + windowMs };
-      buckets.set(key, bucket);
-    }
-    bucket.count += 1;
-    if (bucket.count > max) {
-      res.status(429).json({ error: 'rate-limited' });
-      return;
-    }
-    next();
-  };
-}
 
 const createLobbyLimiter = createRateLimiter({ windowMs: 60_000, max: 10 });
 const joinLobbyLimiter = createRateLimiter({ windowMs: 60_000, max: 20 });
@@ -570,7 +542,7 @@ app.post('/api/lobbies/:code/join', joinLobbyLimiter, async (req, res) => {
   });
 });
 
-app.post('/api/lobbies/:code/resume', async (req, res) => {
+app.post('/api/lobbies/:code/resume', resumeLimiter, async (req, res) => {
   const code = normalizeCode(req.params.code);
   const sessionToken = String(req.body?.sessionToken || '');
   const clientId = String(req.body?.clientId || '');
@@ -756,7 +728,7 @@ app.post('/api/lobbies/:code/ready', async (req, res) => {
   });
 });
 
-app.get('/api/lobbies/:code/round', async (req, res) => {
+app.get('/api/lobbies/:code/round', lookupLimiter, async (req, res) => {
   const code = normalizeCode(req.params.code);
   const result = await store.getCurrentRound(code);
   if (result.error === 'not-found') {
@@ -784,7 +756,7 @@ app.get('/api/lobbies/:code/round', async (req, res) => {
   });
 });
 
-app.get('/api/lobbies/:code/round/private', async (req, res) => {
+app.get('/api/lobbies/:code/round/private', lookupLimiter, async (req, res) => {
   const code = normalizeCode(req.params.code);
   const playerId = String(req.query?.playerId || '');
   const sessionToken = String(req.query?.sessionToken || '');
