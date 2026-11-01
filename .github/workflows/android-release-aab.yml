@@ -107,7 +107,7 @@ jobs:
         run: |
           ./gradlew bundleRelease --no-daemon \
             -PandroidVersionCode=${{ github.run_number }} \
-            -PandroidVersionName=1.0.2
+            -PandroidVersionName=1.0.3
 
       - name: Collect AAB + size report
         run: |
