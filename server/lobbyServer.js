@@ -362,6 +362,10 @@ function hasActiveSocketSubscription(code, playerId) {
   return Boolean(playerSockets && playerSockets.size > 0);
 }
 
+store.setOneWordConnectionChecker?.((code, playerId) =>
+  hasActiveSocketSubscription(code, playerId),
+);
+
 function scheduleDisconnectGraceTimer(code, playerId) {
   const normalizedCode = normalizeCode(code);
   const normalizedPlayerId = String(playerId || '').trim();
@@ -928,6 +932,55 @@ app.post('/api/lobbies/:code/round/phase/advance', async (req, res) => {
   }
   if (result.error === 'lock-timeout') {
     res.status(503).json({ error: 'lobby-busy' });
+    return;
+  }
+  if (result.lobby) {
+    broadcastSnapshot(code, result.lobby);
+  }
+  res.json({
+    lobby: toClientSnapshot(result.lobby),
+    round: result.round || null,
+    phase: result.phase || result.round?.phase || null,
+    rotatedSessionToken: result.sessionToken || '',
+  });
+});
+
+app.post('/api/lobbies/:code/round/one-word', async (req, res) => {
+  const code = normalizeCode(req.params.code);
+  const playerId = String(req.body?.playerId || '');
+  const sessionToken = String(req.body?.sessionToken || '');
+  const action = String(req.body?.action || '').trim();
+  const word = req.body?.word;
+  const result = await store.submitOneWordTurn(code, playerId, sessionToken, { action, word });
+  if (result.error === 'not-found') {
+    res.status(404).json({ error: 'lobby-not-found' });
+    return;
+  }
+  if (result.error === 'lobby-not-started') {
+    res.status(409).json({ error: 'lobby-not-started' });
+    return;
+  }
+  if (result.error === 'lobby-ended') {
+    res.status(409).json({
+      error: 'lobby-ended',
+      lobby: toClientSnapshot(result.lobby || null),
+    });
+    return;
+  }
+  if (result.error === 'round-not-found') {
+    res.status(404).json({ error: 'round-not-found' });
+    return;
+  }
+  if (result.error === 'player-id-required') {
+    res.status(400).json({ error: 'player-id-required' });
+    return;
+  }
+  if (result.error === 'invalid-session-token' || result.error === 'session-token-expired') {
+    res.status(401).json({ error: result.error });
+    return;
+  }
+  if (result.error === 'one-word-not-active' || result.error === 'not-your-turn' || result.error === 'invalid-one-word-action') {
+    res.status(409).json({ error: result.error });
     return;
   }
   if (result.lobby) {

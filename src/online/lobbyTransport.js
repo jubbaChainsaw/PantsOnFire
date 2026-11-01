@@ -206,6 +206,23 @@ export async function advanceRoundPhaseOnServer(lobbyCode, { playerId, sessionTo
   };
 }
 
+export async function submitOneWordTurnOnServer(
+  lobbyCode,
+  { playerId, sessionToken, action, word } = {},
+) {
+  const normalizedCode = normalizeCode(lobbyCode);
+  const payload = await requestJson(`/lobbies/${encodeURIComponent(normalizedCode)}/round/one-word`, {
+    method: 'POST',
+    body: { playerId, sessionToken, action, word },
+  });
+  return {
+    lobby: payload?.lobby || null,
+    round: payload?.round || null,
+    phase: payload?.phase || '',
+    rotatedSessionToken: payload?.rotatedSessionToken || '',
+  };
+}
+
 export async function submitRoundVotesOnServer(
   lobbyCode,
   { playerId, sessionToken, votesByPlayerId } = {}

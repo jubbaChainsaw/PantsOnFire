@@ -1,5 +1,11 @@
 import { randomBytes, randomInt } from 'node:crypto';
 import { toCanonicalThemeName } from '../../src/data/themeAliases.js';
+import {
+  completeOneWordTurnForPlayer,
+  hydrateOneWordFields,
+  initializeOneWordPhase,
+  maybeTimeoutOneWordTurn,
+} from '../oneWordRound.js';
 
 const LOBBY_CODE_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 const LOBBY_CODE_LENGTH = 6;
@@ -270,6 +276,7 @@ function normalizeRoundPhase(rawPhase, roundTypeId = 'prompt') {
   const phase = String(rawPhase || '').trim();
   if (phase === 'host-intro') return 'host-intro';
   if (phase === 'reveal') return 'reveal';
+  if (phase === 'one-word') return 'one-word';
   if (phase === 'discussion') return 'discussion';
   if (phase === 'voting') return 'voting';
   if (phase === 'liar-reveal') return 'liar-reveal';
@@ -280,7 +287,8 @@ function normalizeRoundPhase(rawPhase, roundTypeId = 'prompt') {
 
 function getNextRoundPhase(currentPhase, roundTypeId = 'prompt') {
   if (currentPhase === 'host-intro') return 'reveal';
-  if (currentPhase === 'reveal') return 'discussion';
+  if (currentPhase === 'reveal') return 'one-word';
+  if (currentPhase === 'one-word') return 'discussion';
   if (currentPhase === 'discussion') return 'voting';
   if (currentPhase === 'liar-reveal') return 'results';
   return null;
@@ -327,7 +335,7 @@ function hydrateRound(rawRound, playerCount = 0) {
     ? rawRound.votesByPlayerId
     : {};
   const submittedVotes = Object.values(votesByPlayerId).filter(Boolean).length;
-  return {
+  const hydrated = {
     ...rawRound,
     phase: normalizeRoundPhase(rawRound.phase, roundTypeId),
     phaseUpdatedAt: rawRound.phaseUpdatedAt || rawRound.createdAt || nowIso(),
@@ -338,6 +346,8 @@ function hydrateRound(rawRound, playerCount = 0) {
       ? rawRound.resolution
       : null,
   };
+  hydrateOneWordFields(hydrated);
+  return hydrated;
 }
 
 function buildAuthoritativeRound(players = [], roundNumber = 1, recentPromptKeys = []) {
@@ -534,12 +544,27 @@ function buildStoreCore({
   shutdown = async () => {},
 }) {
   const helpers = createStoreHelpers({ sessionTokenTtlMs });
+  let isPlayerConnectedHook = () => true;
+
+  function applyOneWordTimeouts(lobby) {
+    if (!lobby?.activeRound) return false;
+    const result = maybeTimeoutOneWordTurn(lobby.activeRound, {
+      isPlayerConnected: (playerId) =>
+        isPlayerConnectedHook(String(lobby.code || ''), String(playerId || '')),
+    });
+    return Boolean(result.changed);
+  }
 
   async function getLobby(code) {
     const normalized = normalizeCode(code);
     if (!normalized) return null;
     const raw = await readLobbyRaw(normalized);
-    return hydrateLobby(raw);
+    const lobby = hydrateLobby(raw);
+    if (lobby && applyOneWordTimeouts(lobby)) {
+      lobby.updatedAt = nowIso();
+      await writeLobbyRaw(lobby.code, lobby);
+    }
+    return lobby;
   }
 
   async function saveLobby(nextLobby) {
@@ -949,6 +974,9 @@ function buildStoreCore({
     if (!nextPhase) return { error: 'invalid-round-phase' };
     round.phase = nextPhase;
     round.phaseUpdatedAt = nowIso();
+    if (nextPhase === 'one-word') {
+      initializeOneWordPhase(round, lobby.players);
+    }
     if (nextPhase === 'voting') {
       round.votesByPlayerId = {};
       round.voteCompletionCount = 0;
@@ -961,6 +989,48 @@ function buildStoreCore({
       lobby,
       round: toPublicRound(round),
       sessionToken: rotatedSessionToken,
+    };
+  }
+
+  async function submitOneWordTurn(code, playerId, sessionToken = '', payload = {}) {
+    const lobby = await getLobby(code);
+    if (!lobby) return { error: 'not-found' };
+    if (lobby.status === 'ended') return { error: 'lobby-ended' };
+    if (lobby.status !== 'started') return { error: 'lobby-not-started' };
+    if (!lobby.activeRound) return { error: 'round-not-found' };
+    const normalizedPlayerId = String(playerId || '').trim();
+    if (!normalizedPlayerId) return { error: 'player-id-required' };
+    const validation = validatePlayerSession(lobby, sessionToken, normalizedPlayerId);
+    if (validation.error === 'session-token-expired') {
+      await saveLobby(lobby);
+      return { error: 'session-token-expired' };
+    }
+    if (validation.error) return { error: validation.error };
+
+    const round = lobby.activeRound;
+    round.phase = normalizeRoundPhase(round.phase, round.roundTypeId);
+    if (round.phase !== 'one-word') return { error: 'one-word-not-active' };
+
+    const action = String(payload.action || '').trim();
+    let turnResult;
+    if (action === 'typed') {
+      turnResult = completeOneWordTurnForPlayer(round, normalizedPlayerId, {
+        word: payload.word,
+      });
+    } else if (action === 'done') {
+      turnResult = completeOneWordTurnForPlayer(round, normalizedPlayerId, { spoken: true });
+    } else {
+      return { error: 'invalid-one-word-action' };
+    }
+    if (turnResult.error) return { error: turnResult.error };
+
+    const rotatedSessionToken = helpers.rotateSessionTokenForPlayer(lobby, normalizedPlayerId);
+    await saveLobby(lobby);
+    return {
+      lobby,
+      round: toPublicRound(round),
+      sessionToken: rotatedSessionToken,
+      phase: round.phase,
     };
   }
 
@@ -1093,6 +1163,7 @@ function buildStoreCore({
     resumePlayer,
     startLobby,
     advanceRoundPhase,
+    submitOneWordTurn,
     submitRoundVote,
     createNextRound,
     getCurrentRound,
@@ -1100,6 +1171,11 @@ function buildStoreCore({
     completeHostedOnlineGame,
     deleteLobby,
     getRoleForPlayer: helpers.getRoleForPlayer,
+    setOneWordConnectionChecker(fn) {
+      if (typeof fn === 'function') {
+        isPlayerConnectedHook = fn;
+      }
+    },
     shutdown,
   };
 }

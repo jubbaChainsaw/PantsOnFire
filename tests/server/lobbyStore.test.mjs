@@ -223,7 +223,8 @@ test('voting flow: validation, server scoring, and reveal-phase disclosure', asy
   assert.equal(early.error, 'voting-not-active');
 
   await advance(members[0]); // host-intro -> reveal
-  await advance(members[0]); // reveal -> discussion
+  await advance(members[0]); // reveal -> one-word
+  await advance(members[0]); // one-word -> discussion
   await advance(members[0]); // discussion -> voting
 
   const selfVote = await store.submitRoundVote(
