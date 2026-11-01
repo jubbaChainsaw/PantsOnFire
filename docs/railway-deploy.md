@@ -1,12 +1,12 @@
 # Deploy the lobby server to Railway
 
-This repo runs the **multiplayer lobby** as a Node process (`server/lobbyServer.js`). Railway hosts that process and gives you a public `https://…` URL for Socket.IO, REST `/api/lobbies/*`, `/health`, `/api/me/entitlements`, and `/api/billing/revenuecat`.
+This repo runs the **multiplayer lobby** as a Node process (`server/lobbyServer.js`). Railway hosts that process and gives you a public `https://…` URL for Socket.IO, REST `/api/lobbies/*`, `/health`, auth, billing, content packs, and related `/api/me/*` routes (see `docs/LOBBY_ARCHITECTURE.md`).
 
 ## What is already configured in the repository
 
 - **`package.json`** — `"start": "node server/lobbyServer.js"` so Railway’s default `npm start` boots the lobby.
 - **`railway.toml`** — Nixpacks build, `npm start`, `/health` deploy health check, restart on failure.
-- **`src/lib/lobbyApiEnv.js`** — centralises `VITE_LOBBY_SERVER_URL` so production web builds can reach your Railway host (same base used by `lobbyTransport.js` and `fetchRemoteEntitlements`).
+- **`src/lib/lobbyApiEnv.js`** — centralises `VITE_LOBBY_SERVER_URL` so production web builds can reach your Railway host (same base used by `src/online/lobbyTransport.js` and client entitlement fetch).
 - **`.env.example`** — lists `VITE_LOBBY_SERVER_URL` and server secrets you will set in Railway.
 
 ---
@@ -49,7 +49,8 @@ In **Variables**, add (names match `.env.example`):
 Optional (see `server/lobbyServer.js`):
 
 - `LIVEKIT_*` if you use voice rooms.
-- `REDIS_URL` if you switch the lobby store to Redis later.
+- `REDIS_URL` or `LOBBY_REDIS_URL` — lobby persistence (`server/storage/index.js`); entitlements also use Redis when Postgres is not set.
+- `LOBBY_REDIS_KEY_PREFIX` (default `pof:lobby`).
 - `REVENUECAT_ENTITLEMENT_TIER_JSON` if your RC entitlement identifiers need mapping.
 
 **Do not** set `VITE_*` variables on Railway for this service unless you also run a Vite build there; `VITE_*` belongs on whatever **hosts the static web UI** (Netlify, Cloudflare Pages, another Railway static site, etc.).
@@ -73,7 +74,7 @@ VITE_LOBBY_SERVER_URL=https://YOUR_RAILWAY_DOMAIN
 
 Rebuild the client (`npm run build`) and deploy `dist/` to your static host.
 
-Without this, the browser only uses relative `/api` on localhost; on a real domain the app falls back to `VITE_LOBBY_SERVER_FALLBACK_URL` or the built-in default in `lobbyApiEnv.js` (change that default only if you control that hostname).
+Without this, the browser only uses relative `/api` on localhost; on a real domain the app falls back to `VITE_LOBBY_SERVER_FALLBACK_URL` or the built-in default in `src/lib/lobbyApiEnv.js` (change that default only if you control that hostname).
 
 ---
 

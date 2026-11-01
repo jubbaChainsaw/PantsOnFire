@@ -10,7 +10,10 @@
 | **Lobby API** | `https://api.pantsonfire.app` (Railway; CORS allows pantsonfire web origins) |
 | **CI** | `.github/workflows/deploy-ionos-web.yml` |
 
-The workflow builds the **web** bundle (not `build:mobile`), sets `VITE_WEB_JOIN_ONLY=true` and `VITE_LOBBY_SERVER_URL=https://api.pantsonfire.app`, then uploads `dist/` via SFTP.
+The workflow builds the **web** bundle via `npm run build` (not a separate
+`build:mobile` script; Android uses `npm run mobile:build-bundled-web`), sets
+`VITE_WEB_JOIN_ONLY=true` and `VITE_LOBBY_SERVER_URL=https://api.pantsonfire.app`,
+then uploads `dist/` via SFTP.
 
 `public/.htaccess` is copied into `dist/` for Apache SPA routing on IONOS.
 

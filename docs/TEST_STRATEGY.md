@@ -6,7 +6,8 @@ Protect gameplay, lobby stability, purchases, entitlements and future releases.
 
 ## Current Automated Coverage
 
-Run with `npm test` (dependency-free `node --test`, in `tests/`):
+Run with `npm test` or `npm run test:server` (Node `node --test`, under
+`tests/server/` and `tests/billing/`):
 
 - Server lobby store: create/join, seat-hijack protection, ready/start,
   round generation and liar assignment, public snapshot redaction, private
@@ -16,7 +17,11 @@ Run with `npm test` (dependency-free `node --test`, in `tests/`):
   replace/downgrade semantics, webhook authentication.
 
 Client-side game logic is not yet under test; extract pure logic from
-App.jsx and add vitest (see docs/review-2026-06/TECHNICAL_DEBT_AND_ROADMAP.md).
+`src/App.jsx` and add vitest (see docs/review-2026-06/TECHNICAL_DEBT_AND_ROADMAP.md).
+
+**CI note:** GitHub Actions workflows (Android, IONOS deploy, media validation)
+do not currently run `npm test` on every push — run `npm run test:server`
+locally or add a CI job when ready.
 
 ## Unit Tests
 

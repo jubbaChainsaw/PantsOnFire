@@ -176,7 +176,7 @@ src/
 
 ## Refactoring Priorities
 
-1. Extract lobby setup and player management from `App.jsx`.
+1. Extract lobby setup and player management from `src/App.jsx`.
 2. Extract round flow state machine.
 3. Extract voting and scoring logic.
 4. Extract host/audio/media playback logic.

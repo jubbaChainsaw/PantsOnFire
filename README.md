@@ -37,19 +37,26 @@ Think social deduction meets gameshow energy, with neon arcade style and rapid-f
 
 ## Round Types
 
-### Hot Seat (Classic)
-- Truthful players share one prompt
-- Liars get a different prompt
-- Blend in without over-explaining
+Canonical list: `src/data/roundTypes.js` (11 types).
 
-### Truth or Twisted
-- Everyone receives the same scenario
-- Truthful players respond honestly
-- Liars must argue against their natural take and still look legit
+**Pass-the-phone**
 
-### Flash Frame
-- Visual clue round in pass-the-phone flow
-- Great for fast, high-confusion rounds
+- **Hot Seat** — truthful vs liar prompts
+- **Truth or Twisted** — same scenario; liars argue the twist
+- **Flash Frame** — picture clues
+- **Double Take** — spot-the-difference pairs
+- **Name and Blame** — lobby callout round
+- **Sound Off** — non-verbal sound clues
+- **Off Topic Defense** — liars defend a rogue scenario
+- **Chain Reaction** — linked clue cards, one broken link
+- **Two Truths, One Fire** — two truths and one lie per player
+
+**Online-only**
+
+- **Dodgy Audio** — audio clue round
+- **Clip Trap** — short video clip round
+
+*(Grill 'Em was removed from the product; do not reintroduce without a deliberate content pass.)*
 
 ---
 
@@ -105,7 +112,7 @@ If talk frames are not provided, the app automatically falls back to the idle fr
 - Local data-driven architecture:
   - `src/data/categories.js`
   - `src/data/roundTypes.js`
-  - `src/data/copy.js`
+  - `src/data/gameTextContent.js` (UI copy; there is no `copy.js`)
   - `src/data/names.js`
   - `src/data/themes.js`
   - `src/data/themeAssets.js`
@@ -579,8 +586,10 @@ This URL is what all devices connect to for lobby creation/join/sync.
 ### 3) Use Redis in production (strongly recommended)
 
 ```bash
-LOBBY_REDIS_URL=redis://your-redis-host:6379
+REDIS_URL=redis://your-redis-host:6379
 ```
+
+(`LOBBY_REDIS_URL` is accepted as an alias; `server/storage/index.js` prefers `REDIS_URL`.)
 
 Without Redis, lobby state is in-memory and will reset on server restart.
 
@@ -603,7 +612,8 @@ LOBBY_CLIENT_ORIGINS=https://your-web-app.example.com,https://staging.your-web-a
 ```bash
 PORT=8787
 LOBBY_SESSION_TOKEN_TTL_MS=43200000
-LOBBY_REDIS_URL=redis://your-redis-host:6379
+REDIS_URL=redis://your-redis-host:6379
+LOBBY_REDIS_KEY_PREFIX=pof:lobby
 LOBBY_CLIENT_ORIGIN=https://your-web-app.example.com
 ```
 
@@ -613,7 +623,7 @@ LOBBY_CLIENT_ORIGIN=https://your-web-app.example.com
 curl https://your-lobby-server.example.com/health
 ```
 
-Expected JSON includes `ok: true` and storage kind (`memory` or `redis`).
+Expected JSON includes `ok: true`, `service: "lobby-server"`, `store` (`memory` or `redis`), `voice.enabled`, and `now` (ISO timestamp).
 
 ### Realtime Online Lobby Server (required for networked play)
 
@@ -646,14 +656,19 @@ To persist lobbies/session tokens across server restarts and support multi-insta
 set a Redis URL before starting the lobby server:
 
 ```bash
-export LOBBY_REDIS_URL=redis://localhost:6379
+REDIS_URL=redis://your-redis-host:6379
+# or LOBBY_REDIS_URL (same effect; REDIS_URL is checked first)
 npm run lobby:server
 ```
 
 Optional durability/security env vars:
 
-- `LOBBY_REDIS_NAMESPACE` (default: `pof:lobby`)
+- `LOBBY_REDIS_KEY_PREFIX` (default: `pof:lobby`) — Redis key prefix for lobby blobs
 - `LOBBY_SESSION_TOKEN_TTL_MS` (default: `43200000`, i.e. 12h)
+- `LOBBY_IDLE_TTL_MS` (default: 24h) — idle lobby expiry when using Redis
+- `LOBBY_SERVER_PORT` — binds before `PORT` (`server/lobbyServer.js`)
+- `ENTITLEMENTS_REDIS_KEY_PREFIX` (default: `pof:entitlements`)
+- `VITE_LOBBY_SERVER_FALLBACK_URL` — client fallback if `VITE_LOBBY_SERVER_URL` unset
 
 ---
 
@@ -676,10 +691,10 @@ npm run expo:start
 
 ## What’s Next
 
-- Online lobby + real party chat
-- Device-per-player sessions (Jackbox style)
-- More premium content packs
-- Enhanced animation + SFX pass
+- **Shipped on this branch:** online lobby (REST + Socket.IO), party chat, LiveKit voice, one-word phase, Play compliance surfaces (privacy, deletion, moderation).
+- Device-per-player / Jackbox-style UX polish (online sessions exist; UX still evolving).
+- More premium content packs and host voice coverage.
+- Enhanced animation + SFX pass (many SFX paths still placeholders).
 
 If it feels too clean, it's wrong.  
 This game should feel loud, suspicious, and a little unhinged.

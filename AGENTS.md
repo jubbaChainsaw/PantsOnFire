@@ -24,6 +24,7 @@ Pants on Fire: Find the Liar — a React + Vite party/social-deduction game with
 ### Caveats
 
 - The Vite proxy config (`vite.config.js`) forwards `/api` and `/socket.io` to `localhost:8787`. Start the lobby server first if testing online multiplayer features.
-- No lint or test scripts are defined in `package.json`. Lint checking is limited to `npm run build` (which surfaces TypeScript/JSX errors via Vite/Rollup).
-- Redis, LiveKit, and Expo are optional — only needed for advanced features (persistent lobbies, voice chat, mobile shell).
+- **Tests:** `npm run test:server` (Node `node --test` in `tests/server/`). Full tree: `npm test`. Optional: `npm run lint:undef` (eslint), Playwright `npm run test:e2e` / `npm run test:mobile-dist-smoke` (not run on every CI workflow).
+- **CI:** `.github/workflows/` — Android debug APK, release AAB, IONOS web deploy (`deploy-ionos-web.yml`), `media-validation.yml`. Workflows do not currently run `npm test` on every push; run tests locally before release.
+- Redis, LiveKit, Postgres, and Expo are optional — needed for durable lobbies, voice, cloud entitlements, and the mobile shell.
 - The `sharp` native module is a dependency; `npm install` handles it automatically on supported platforms.
