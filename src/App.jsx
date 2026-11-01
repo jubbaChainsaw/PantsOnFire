@@ -178,7 +178,13 @@ import {
 } from "./account/accountStorage";
 import { isCloudAuthProvider } from "./account/cloudAuth.js";
 import { buildSessionFromRemote, fetchRemoteEntitlements } from "./account/remoteEntitlements";
-import { notifyNativePurchasesUser } from "./billing/nativePurchasesBridge";
+import {
+  isNativeStorePurchaseAvailable,
+  notifyNativePurchasesUser,
+  requestNativeEntitlementsRefresh,
+  requestNativeStorePurchase,
+} from "./billing/nativePurchasesBridge";
+import { googlePlayProductIdForPurchase } from "./billing/googlePlayProductCatalog.js";
 import { useAuth } from "./auth/AuthProvider.jsx";
 import { getThemePackRedeemOffer } from "./data/dlc/themeRedeemCodes";
 import {
@@ -235,6 +241,7 @@ import {
   resumeLobbySessionOnServer,
   setLobbyReadyOnServer,
   startLobbyOnServer,
+  submitOneWordTurnOnServer,
   toGamePlayers,
 } from "./online/lobbyTransport";
 import { createVoicePartyTransport } from "./online/voicePartyTransport";
@@ -277,6 +284,11 @@ import {
   ContentPackSettingsPanel,
 } from "./components/ContentPackDownloadUI.jsx";
 import { BugReportScreen } from "./components/BugReportScreen.jsx";
+import {
+  ONE_WORD_HINT,
+  OneWordRoundPanel,
+  buildOneWordHostLine,
+} from "./components/OneWordRoundScreen.jsx";
 import { anonymizeLobbyId } from "./lib/bugReportClient.js";
 import { installNativeDiagnosticsBridge } from "./lib/nativeDiagnosticsBridge.js";
 import { formatNativeShellBuildLabel, getWebBuildStamp, formatHomeBuildStampLine } from "./lib/buildStamp.js";
@@ -337,6 +349,7 @@ const MAX_PLAYERS = 12;
 const ONLINE_VOICE_ACTIVE_SCREENS = new Set([
   "online-lobby-created",
   "online-lobby-waiting",
+  "one-word",
   "discussion",
   "voting",
   "twotruths-input",
@@ -350,6 +363,7 @@ const ONLINE_CONNECTION_ACTIVE_SCREENS = new Set([
   "rules",
   "host-intro",
   "reveal",
+  "one-word",
   "discussion",
   "voting",
   "twotruths-input",
@@ -364,6 +378,7 @@ const ONLINE_IN_SESSION_LEAVE_SCREENS = new Set([
   "rules",
   "host-intro",
   "reveal",
+  "one-word",
   "discussion",
   "voting",
   "twotruths-input",
@@ -380,6 +395,7 @@ const ONLINE_PARTY_CHAT_ACTIVE_SCREENS = new Set([
   "rules",
   "host-intro",
   "reveal",
+  "one-word",
   "discussion",
   "voting",
   "twotruths-input",
@@ -396,6 +412,7 @@ const LOCAL_GAME_PAUSE_SCREENS = new Set([
   "category-choice",
   "round-type-choice",
   "reveal",
+  "one-word",
   "discussion",
   "voting",
   "twotruths-input",
@@ -5552,7 +5569,7 @@ function RevealScreen({
               {onlineMode
                 ? "Hide my prompt"
                 : isLast
-                  ? "Start discussion"
+                  ? "Start one word round"
                   : `Hide & pass to ${players[currentRevealIndex + 1].name}`}
             </button>
           )}
@@ -6999,7 +7016,7 @@ function SettingsScreen({
             <SettingsToggleRow
               title="Voice chat (online)"
               description="When off, you won't join live voice in online lobbies (text chat still works)."
-              checked={audioSettings.voiceChatEnabled === true}
+              checked={audioSettings.voiceChatEnabled !== false}
               onCheckedChange={(next) =>
                 setAudioSettings((cur) => ({ ...cur, voiceChatEnabled: next }))
               }
@@ -7311,6 +7328,22 @@ function AdminDialog({
     </Dialog>
   );
 }
+function DiscussionTimeHostVoice({ enabled, themeName }) {
+  const line = "Discussion time!";
+  const audioSrcCandidates = useMemo(
+    () => getHostVoiceSrcCandidatesForLine(line, themeName),
+    [themeName],
+  );
+  useIanPosterHostVoicePlayback({
+    enabled: enabled && isIanPosterVoiceTheme(themeName),
+    line,
+    lineKey: "discussion-from-one-word",
+    themeName,
+    audioSrcCandidates,
+    fallbackDurationMs: 1800,
+  });
+  return null;
+}
 export default function App() {
   const {
     loading: authLoading,
@@ -7479,6 +7512,9 @@ export default function App() {
   const onlineTransportRef = useRef(null);
   const onlineVoiceTransportRef = useRef(null);
   const onlineStartedRevisionHandledRef = useRef("");
+  const onlineRoundLiveSyncRef = useRef("");
+  const prevScreenRef = useRef("");
+  const roundSyncRef = useRef(null);
   const onlineClientIdRef = useRef(getOrCreatePersistentClientId());
   const onlineSessionRef = useRef(getStoredOnlineSession());
   const onlineClientId = onlineClientIdRef.current;
@@ -7492,6 +7528,11 @@ export default function App() {
   const [selectedRoundType, setSelectedRoundType] = useState(null);
   const [round, setRound] = useState(null);
   const [revealIndex, setRevealIndex] = useState(0);
+  const [localOneWordIndex, setLocalOneWordIndex] = useState(0);
+  const [oneWordSubmitPending, setOneWordSubmitPending] = useState(false);
+  const [onlineVoiceMicBlocked, setOnlineVoiceMicBlocked] = useState(false);
+  const [discussionFromOneWordHostCue, setDiscussionFromOneWordHostCue] =
+    useState(false);
   const [twoTruthsInputIndex, setTwoTruthsInputIndex] = useState(0);
   const [twoTruthsVotesByVoterId, setTwoTruthsVotesByVoterId] = useState({});
   const [categoryOptions, setCategoryOptions] = useState([]);
@@ -7507,7 +7548,7 @@ export default function App() {
       musicEnabled: Boolean(fxSettings.music),
       sfxEnabled: Boolean(fxSettings.sfx),
       hapticsEnabled: Boolean(fxSettings.haptics),
-      voiceChatEnabled: fxSettings.voiceChat === true,
+      voiceChatEnabled: fxSettings.voiceChat !== false,
       musicVol: Number(fxSettings.musicVol) || 60,
       sfxVol: Number(fxSettings.sfxVol) || 80,
     };
@@ -8328,13 +8369,39 @@ export default function App() {
   useEffect(() => {
     const phaseAllowsVoice =
       onlineMode && ONLINE_VOICE_ACTIVE_SCREENS.has(screen);
-    const userWantsVoice = audioSettings.voiceChatEnabled === true;
+    const userWantsVoice = audioSettings.voiceChatEnabled !== false;
     setOnlineVoiceEnabled(phaseAllowsVoice && userWantsVoice);
     if (!phaseAllowsVoice || !userWantsVoice) {
       setOnlineVoiceMuted(false);
       setPartyTalkingPlayers({});
     }
   }, [onlineMode, screen, audioSettings.voiceChatEnabled]);
+  useEffect(() => {
+    roundSyncRef.current = round;
+  }, [round]);
+  useEffect(() => {
+    if (screen === "discussion" && prevScreenRef.current === "one-word") {
+      setDiscussionFromOneWordHostCue(true);
+    } else if (screen !== "discussion") {
+      setDiscussionFromOneWordHostCue(false);
+    }
+    prevScreenRef.current = screen;
+  }, [screen]);
+  useEffect(() => {
+    if (screen !== "one-word") {
+      setOnlineVoiceMicBlocked(false);
+    }
+  }, [screen]);
+  useEffect(() => {
+    if (typeof window === "undefined") return undefined;
+    const onNativePurchase = () => {
+      requestNativeEntitlementsRefresh();
+    };
+    window.addEventListener("pof-native-purchase", onNativePurchase);
+    return () => {
+      window.removeEventListener("pof-native-purchase", onNativePurchase);
+    };
+  }, []);
   useEffect(() => {
     if (screen !== "home") setHomeProfileMenuOpen(false);
   }, [screen]);
@@ -8618,6 +8685,7 @@ export default function App() {
           sessionToken,
           onEvent: (event) => {
             if (event?.type === "media-devices-error") {
+              setOnlineVoiceMicBlocked(true);
               setOnlineLobbyError(
                 "Microphone access blocked. Allow mic permission in browser settings.",
               );
@@ -8681,10 +8749,42 @@ export default function App() {
   useEffect(() => {
     const activeTransport = onlineVoiceTransportRef.current?.transport;
     if (!activeTransport) return;
+    const sessionSnapshot = onlineSessionRef.current;
+    const selfPlayerId = sessionSnapshot?.playerId || onlineJoinedPlayerId;
+    const activeRound = roundSyncRef.current;
+    let oneWordCurrentPlayerId = String(
+      activeRound?.oneWordCurrentPlayerId || "",
+    ).trim();
+    if (!oneWordCurrentPlayerId && activeRound?.oneWordTurnOrder) {
+      const order = Array.isArray(activeRound.oneWordTurnOrder)
+        ? activeRound.oneWordTurnOrder
+        : [];
+      const turnIndex = Math.max(0, Number(activeRound.oneWordTurnIndex) || 0);
+      oneWordCurrentPlayerId = String(order[turnIndex] || "").trim();
+    }
+    const oneWordTurnGatesMic =
+      screen === "one-word" &&
+      onlineMode &&
+      oneWordCurrentPlayerId &&
+      oneWordCurrentPlayerId !== selfPlayerId;
     activeTransport
-      .setMuted(!onlineVoiceEnabled || onlineVoiceMuted)
+      .setMuted(
+        !onlineVoiceEnabled ||
+          onlineVoiceMuted ||
+          oneWordTurnGatesMic ||
+          onlineVoiceMicBlocked,
+      )
       .catch(() => {});
-  }, [onlineVoiceEnabled, onlineVoiceMuted]);
+  }, [
+    onlineVoiceEnabled,
+    onlineVoiceMuted,
+    onlineVoiceMicBlocked,
+    onlineMode,
+    screen,
+    onlineJoinedPlayerId,
+    round?.oneWordCurrentPlayerId,
+    round?.oneWordTurnIndex,
+  ]);
   useEffect(() => {
     const transport = onlineTransportRef.current;
     const sessionSnapshot = onlineSessionRef.current;
@@ -8931,6 +9031,40 @@ export default function App() {
             },
             { openHostIntro: true },
           );
+        } else if (snapshot.status === "started" && snapshot.activeRound) {
+          const activeRound = snapshot.activeRound;
+          const snapshotPhase = String(activeRound.phase || "").trim();
+          const localRound = roundSyncRef.current;
+          const localPhase = String(localRound?.phase || "").trim();
+          const snapshotTurnIndex = Math.max(
+            0,
+            Number(activeRound.oneWordTurnIndex) || 0,
+          );
+          const localTurnIndex = Math.max(
+            0,
+            Number(localRound?.oneWordTurnIndex) || 0,
+          );
+          const phaseChanged = snapshotPhase !== localPhase;
+          const oneWordTurnAdvanced =
+            snapshotPhase === "one-word" &&
+            snapshotTurnIndex !== localTurnIndex;
+          if (
+            onlineMode &&
+            (phaseChanged || oneWordTurnAdvanced)
+          ) {
+            const syncSignature = `${snapshotPhase}:${snapshotTurnIndex}:${activeRound.roundNumber || 0}:${activeRound.phaseUpdatedAt || ""}`;
+            if (onlineRoundLiveSyncRef.current !== syncSignature) {
+              onlineRoundLiveSyncRef.current = syncSignature;
+              void syncOnlineRoundFromSnapshot(
+                {
+                  ...snapshot,
+                  players: snapshotPlayers,
+                  code: snapshot.code || effectiveLobbyCode,
+                },
+                { openHostIntro: false },
+              );
+            }
+          }
         }
       },
       onEvent: (event) => {
@@ -9060,6 +9194,7 @@ export default function App() {
     setRound(serverRound);
     setRoundNumber(serverRound.roundNumber || 1);
     setRevealIndex(0);
+    setLocalOneWordIndex(0);
     setVotesByPlayerId(serverRound.votesByPlayerId || {});
     const resolution = serverRound.resolution || null;
     setTally(resolution?.tally || {});
@@ -9105,6 +9240,11 @@ export default function App() {
     if (normalizedPhase === "reveal") {
       refreshCopy(["passPhone", "revealNormal", "revealLiar"]);
       setScreen("reveal");
+      return serverRound;
+    }
+    if (normalizedPhase === "one-word") {
+      refreshCopy(["discussion"]);
+      setScreen("one-word");
       return serverRound;
     }
     if (normalizedPhase === "discussion") {
@@ -9212,6 +9352,60 @@ export default function App() {
       return null;
     } finally {
       setOnlinePhasePending(false);
+    }
+  }
+
+  async function runOnlineOneWordAction(action, word = "") {
+    if (!onlineMode || !lobbyCode) return null;
+    const sessionSnapshot = onlineSessionRef.current;
+    const playerId = sessionSnapshot?.playerId || onlineJoinedPlayerId;
+    const sessionToken = sessionSnapshot?.sessionToken || "";
+    if (!playerId || !sessionToken) {
+      setOnlineLobbyError("Session expired. Rejoin lobby to continue.");
+      return null;
+    }
+    setOneWordSubmitPending(true);
+    try {
+      const result = await submitOneWordTurnOnServer(lobbyCode, {
+        playerId,
+        sessionToken,
+        action,
+        word,
+      });
+      if (
+        result?.rotatedSessionToken &&
+        result.rotatedSessionToken !== sessionToken
+      ) {
+        const nextSession = {
+          ...(sessionSnapshot || {}),
+          sessionToken: result.rotatedSessionToken,
+        };
+        onlineSessionRef.current = nextSession;
+        setStoredOnlineSession(nextSession);
+        onlineTransportRef.current?.updateSessionToken(
+          nextSession.sessionToken,
+        );
+      }
+      setOnlineLobbyError("");
+      if (result?.lobby?.activeRound) {
+        return await syncOnlineRoundFromSnapshot(result.lobby, {
+          openHostIntro: false,
+        });
+      }
+      const synced = await onlineTransportRef.current?.syncSnapshot();
+      if (synced?.activeRound) {
+        return await syncOnlineRoundFromSnapshot(synced, {
+          openHostIntro: false,
+        });
+      }
+      return null;
+    } catch (error) {
+      setOnlineLobbyError(
+        mapLobbyErrorToMessage(error, "Unable to submit one-word turn."),
+      );
+      return null;
+    } finally {
+      setOneWordSubmitPending(false);
     }
   }
 
@@ -9330,6 +9524,16 @@ export default function App() {
     }
     if (revealIndex < players.length - 1) {
       setRevealIndex((r) => r + 1);
+      return;
+    }
+    refreshCopy(["discussion"]);
+    setLocalOneWordIndex(0);
+    setScreen("one-word");
+  }
+
+  function handleLocalOneWordNext() {
+    if (localOneWordIndex < players.length - 1) {
+      setLocalOneWordIndex((index) => index + 1);
       return;
     }
     refreshCopy(["discussion"]);
@@ -10845,8 +11049,159 @@ export default function App() {
           />
         </BrandedScreen>
       )}
+      {screen === "one-word" && round && (
+        <TopFrame theme={canonicalThemeName}>
+          <div className="mx-auto max-w-3xl space-y-6">
+            <ScoreStrip
+              players={players}
+              roundNumber={round.roundNumber}
+              totalRounds={totalRounds}
+              themeName={canonicalThemeName}
+            />
+            {onlineMode && (
+              <VoicePartyStatusStrip
+                onlineVoiceEnabled={onlineMode}
+                onlineVoiceMuted={onlineVoiceMuted}
+                setOnlineVoiceMuted={setOnlineVoiceMuted}
+                canTalk={
+                  onlineVoiceEnabled &&
+                  !onlineVoiceMicBlocked &&
+                  (() => {
+                    let currentId = String(
+                      round.oneWordCurrentPlayerId || "",
+                    ).trim();
+                    if (!currentId) {
+                      const order = Array.isArray(round.oneWordTurnOrder)
+                        ? round.oneWordTurnOrder
+                        : players.map((player) => player.id);
+                      const turnIndex = Math.max(
+                        0,
+                        Number(round.oneWordTurnIndex) || 0,
+                      );
+                      currentId = String(order[turnIndex] || "").trim();
+                    }
+                    return currentId === onlineJoinedPlayerId;
+                  })()
+                }
+                talkingPlayers={partyTalkingPlayers}
+                players={players}
+                localPlayerId={onlineJoinedPlayerId}
+                onToggleChat={() => setPartyChatOpen((current) => !current)}
+                themeName={canonicalThemeName}
+              />
+            )}
+            <OneWordRoundPanel
+              players={players}
+              currentPlayerId={
+                onlineMode
+                  ? (() => {
+                      let currentId = String(
+                        round.oneWordCurrentPlayerId || "",
+                      ).trim();
+                      if (!currentId) {
+                        const order = Array.isArray(round.oneWordTurnOrder)
+                          ? round.oneWordTurnOrder
+                          : players.map((player) => player.id);
+                        const turnIndex = Math.max(
+                          0,
+                          Number(round.oneWordTurnIndex) || 0,
+                        );
+                        currentId = String(order[turnIndex] || "").trim();
+                      }
+                      return currentId;
+                    })()
+                  : players[localOneWordIndex]?.id || ""
+              }
+              currentPlayerName={
+                onlineMode
+                  ? players.find((player) => {
+                      let currentId = String(
+                        round.oneWordCurrentPlayerId || "",
+                      ).trim();
+                      if (!currentId) {
+                        const order = Array.isArray(round.oneWordTurnOrder)
+                          ? round.oneWordTurnOrder
+                          : players.map((p) => p.id);
+                        const turnIndex = Math.max(
+                          0,
+                          Number(round.oneWordTurnIndex) || 0,
+                        );
+                        currentId = String(order[turnIndex] || "").trim();
+                      }
+                      return player.id === currentId;
+                    })?.name || "Player"
+                  : players[localOneWordIndex]?.name || "Player"
+              }
+              isLocalTurn={
+                onlineMode
+                  ? (() => {
+                      let currentId = String(
+                        round.oneWordCurrentPlayerId || "",
+                      ).trim();
+                      if (!currentId) {
+                        const order = Array.isArray(round.oneWordTurnOrder)
+                          ? round.oneWordTurnOrder
+                          : players.map((player) => player.id);
+                        const turnIndex = Math.max(
+                          0,
+                          Number(round.oneWordTurnIndex) || 0,
+                        );
+                        currentId = String(order[turnIndex] || "").trim();
+                      }
+                      return currentId === onlineJoinedPlayerId;
+                    })()
+                  : true
+              }
+              onlineMode={onlineMode}
+              turnDeadlineAt={round.oneWordTurnDeadlineAt || ""}
+              oneWordByPlayerId={round.oneWordByPlayerId || {}}
+              oneWordSpokenByPlayerId={round.oneWordSpokenByPlayerId || {}}
+              oneWordSkippedByPlayerId={round.oneWordSkippedByPlayerId || {}}
+              hostLine={
+                onlineMode
+                  ? buildOneWordHostLine(
+                      players.find((player) => {
+                        let currentId = String(
+                          round.oneWordCurrentPlayerId || "",
+                        ).trim();
+                        if (!currentId) {
+                          const order = Array.isArray(round.oneWordTurnOrder)
+                            ? round.oneWordTurnOrder
+                            : players.map((p) => p.id);
+                          const turnIndex = Math.max(
+                            0,
+                            Number(round.oneWordTurnIndex) || 0,
+                          );
+                          currentId = String(order[turnIndex] || "").trim();
+                        }
+                        return player.id === currentId;
+                      })?.name || "Player",
+                    )
+                  : buildOneWordHostLine(
+                      players[localOneWordIndex]?.name || "Player",
+                    )
+              }
+              hintLine={ONE_WORD_HINT}
+              micAvailable={!onlineVoiceMicBlocked}
+              micPermissionDenied={onlineVoiceMicBlocked}
+              voiceChatEnabled={audioSettings.voiceChatEnabled !== false}
+              onSubmitTyped={(word) => runOnlineOneWordAction("typed", word)}
+              onDoneSpeaking={() => runOnlineOneWordAction("done")}
+              onLocalNext={handleLocalOneWordNext}
+              isLastLocalTurn={localOneWordIndex >= players.length - 1}
+              submitPending={oneWordSubmitPending}
+              themeName={canonicalThemeName}
+            />
+          </div>
+        </TopFrame>
+      )}
       {screen === "discussion" && round && (
-        <DiscussionScreen
+        <>
+          <DiscussionTimeHostVoice
+            enabled={discussionFromOneWordHostCue}
+            themeName={canonicalThemeName}
+          />
+          <DiscussionScreen
           players={players}
           round={round}
           totalRounds={totalRounds}
@@ -10868,6 +11223,7 @@ export default function App() {
           localPlayerId={onlineJoinedPlayerId}
           onToggleChat={() => setPartyChatOpen((current) => !current)}
         />
+        </>
       )}
       {screen === "voting" && round && (
         <VotingScreen
@@ -11037,6 +11393,10 @@ export default function App() {
               return "";
             }
             if (isCloudAuthProvider(accountSession.authProvider)) {
+              if (isNativeStorePurchaseAvailable()) {
+                requestNativeStorePurchase({ kind: "tier", productId: tierId });
+                return "Opening Google Play…";
+              }
               return "Cloud accounts unlock tiers via the web shop or App Store / Play Billing (RevenueCat). Demo checkout is only for device accounts.";
             }
             const result = purchaseTierDemo(accountSession.userId, tierId);
@@ -11059,6 +11419,13 @@ export default function App() {
               return "";
             }
             if (isCloudAuthProvider(accountSession.authProvider)) {
+              if (isNativeStorePurchaseAvailable()) {
+                requestNativeStorePurchase({
+                  kind: "addon",
+                  productId: "twist_truth",
+                });
+                return "Opening Google Play…";
+              }
               return "Cloud accounts unlock add-ons via the web shop or native stores. Demo checkout is only for device accounts.";
             }
             const result = purchaseAddonTwistTruthDemo(accountSession.userId);
@@ -11067,6 +11434,15 @@ export default function App() {
             return "Successfully unlocked Twist the Truth (demo checkout).";
           }}
           onUnlockThemePack={(packId) => {
+            if (
+              accountSession &&
+              isCloudAuthProvider(accountSession.authProvider) &&
+              !webShopMode &&
+              isNativeStorePurchaseAvailable()
+            ) {
+              requestNativeStorePurchase({ kind: "dlc", productId: packId });
+              return;
+            }
             if (accountSession && !entitlements.allDlcIncluded) {
               const result = purchaseDlcPackDemo(accountSession.userId, packId);
               if (result.ok) {
