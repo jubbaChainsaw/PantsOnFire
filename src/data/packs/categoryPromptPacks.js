@@ -80,7 +80,7 @@ const TravelDisastersPromptRoundData = {
     { hint: 'Weather Ruin', main: 'Monsoon beach holiday', imposter: 'Heatwave city break' },
     { hint: 'Luggage Drama', main: 'Suitcase sent to the wrong country', imposter: 'Suitcase arrives days late' },
     { hint: 'Tourist Trap', main: 'Overpriced taxi scam', imposter: 'Fake ticket scam' },
-    { hint: 'Travel Mix-up', main: 'Awkward hotel checkout together', imposter: 'Walk of shame airport run' },
+    { hint: 'Travel Mix-up', main: 'Embarrassing lobby checkout queue', imposter: 'Early-morning dash to the airport in pajamas' },
   ],
 };
 
