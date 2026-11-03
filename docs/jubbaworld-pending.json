@@ -19,7 +19,7 @@
       "status": "done",
       "description": "Compared main PR #112 (bef0969/3a39254) minimal manual workflow with branch pipeline (bundled web, smoke test, billing verify, 1.0.3). Recommendation: keep branch workflow; do not replace with main file wholesale. Documented merge strategy.",
       "files": ["docs/decisions/POF-DEC-112-android-debug-apk-workflow.md"],
-      "commit": "18627ae"
+      "commit": "3b5a5d1"
     },
     {
       "type": "work_task",
@@ -45,7 +45,8 @@
         "docs/store/graphics/screenshot-02-ingame.png",
         "docs/store/graphics/screenshot-03-lobby.png",
         "scripts/generatePlayStoreGraphics.mjs"
-      ]
+      ],
+      "commit": "3b5a5d1"
     },
     {
       "type": "work_task",
@@ -53,7 +54,8 @@
       "title": "Stripe live + RevenueCat production checklist (research)",
       "status": "done",
       "description": "Documented click-path for Jubba: live Stripe products/prices matching sandbox (99p DLC, £1.99 Twist, tier subs), Railway env vars, RevenueCat goog_ Android key + Play service account link, webhooks, and fixing non-UK subscription prices via Play Console / Stripe currency options. No live changes in repo.",
-      "files": ["docs/store/STRIPE_REVENUECAT_LIVE_CHECKLIST.md"]
+      "files": ["docs/store/STRIPE_REVENUECAT_LIVE_CHECKLIST.md"],
+      "commit": "3b5a5d1"
     },
     {
       "type": "work_task",
