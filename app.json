@@ -1,12 +1,14 @@
 {
   "expo": {
-    "name": "Pants on Fire! Find the Liar",
+    "name": "Pants on Fire",
+    "icon": "./assets/icon.png",
     "slug": "pants-on-fire-find-the-liar",
     "version": "0.1.0",
     "orientation": "portrait",
     "scheme": "pantsonfire",
     "userInterfaceStyle": "dark",
     "splash": {
+      "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
       "backgroundColor": "#120038"
     },
@@ -17,7 +19,9 @@
       "supportsTablet": true
     },
     "android": {
+      "package": "app.pantsonfire.liar",
       "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#120038"
       }
     },

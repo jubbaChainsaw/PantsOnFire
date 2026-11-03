@@ -199,6 +199,7 @@ function sanitizeLobbySettings(raw = {}) {
       micEnabled: grillSettings.micEnabled !== false,
       ttsEnabled: grillSettings.ttsEnabled !== false,
     },
+    hostPromptEditorUnlocked: Boolean(raw.hostPromptEditorUnlocked),
   };
 }
 

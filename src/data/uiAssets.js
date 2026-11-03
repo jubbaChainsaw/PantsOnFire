@@ -1,5 +1,6 @@
 import { DEFAULT_CATEGORIES } from './categories.js';
 import { getIanPosterThemeSlug } from './ianPosterThemeVoice.js';
+import { publicAssetUrl } from '../lib/publicAssetUrl.js';
 
 /**
  * Active UI asset pack folder under public/assets/.
@@ -11,7 +12,7 @@ import { getIanPosterThemeSlug } from './ianPosterThemeVoice.js';
 export const UI_PACK_SLUG = 'ui';
 
 /** Public URL base for the active UI pack. */
-export const UI_ASSET_BASE = `/assets/${UI_PACK_SLUG}`;
+export const UI_ASSET_BASE = publicAssetUrl(UI_PACK_SLUG);
 
 export const UI_WALLPAPER_HOME_SRC = `${UI_ASSET_BASE}/wallpapers/home-page.png`;
 export const UI_WALLPAPER_IN_GAME_SRC = `${UI_ASSET_BASE}/wallpapers/in-game.png`;
@@ -40,9 +41,11 @@ export const UI_GAME_MODE_ICON_BY_ID = Object.freeze({
   prompt: `${UI_GAME_MODE_ICON_BASE}/prompt.png`,
   opinion: `${UI_GAME_MODE_ICON_BASE}/opinion.png`,
   picture: `${UI_GAME_MODE_ICON_BASE}/picture.png`,
-  nameblame: '/assets/images/round-types/name-and-shame.png',
+  nameblame: publicAssetUrl('images/round-types/name-and-shame.png'),
   noise: `${UI_GAME_MODE_ICON_BASE}/noise.png`,
   chain: `${UI_GAME_MODE_ICON_BASE}/chain.png`,
+  twotruths: `${UI_GAME_MODE_ICON_BASE}/twotruths.png`,
+  offtopic: `${UI_GAME_MODE_ICON_BASE}/offtopic.png`,
   grill: `${UI_GAME_MODE_ICON_BASE}/grill.png`,
   sound: `${UI_GAME_MODE_ICON_BASE}/sound.png`,
   video: `${UI_GAME_MODE_ICON_BASE}/video.png`,
@@ -106,8 +109,7 @@ export function getUiCategoryIconSrc(categoryId = '') {
 export function getUiGameModeIconSrc(roundTypeId = 'prompt') {
   const id = String(roundTypeId || 'prompt').trim().toLowerCase();
   if (!id) return UI_GAME_MODE_ICON_BY_ID.prompt;
-  if (id === 'offtopic') return UI_GAME_MODE_ICON_BY_ID.prompt;
-  return UI_GAME_MODE_ICON_BY_ID[id] || UI_GAME_MODE_ICON_BY_ID.prompt;
+  return UI_GAME_MODE_ICON_BY_ID[id] || '';
 }
 
 /** Sources to preload on startup (wallpapers, cards, modes, categories). */
