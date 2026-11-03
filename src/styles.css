@@ -1,3 +1,22 @@
+@import './pof-components.css';
+
+/* Host intro caption — attribute selectors survive mobile/APK builds and beat theme inheritance */
+[data-testid='host-intro-caption'] {
+  background-color: #b8007a !important;
+  background-image: none !important;
+  opacity: 1 !important;
+  isolation: isolate;
+}
+[data-testid='host-intro-caption'] p {
+  color: #ffffff !important;
+  font-family: Inter, system-ui, sans-serif !important;
+  font-style: normal !important;
+  font-weight: 600 !important;
+  text-transform: none !important;
+  letter-spacing: normal !important;
+  opacity: 1 !important;
+}
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -12,12 +31,56 @@
   font-display: swap;
 }
 
+@font-face {
+  font-family: 'Pants on Fire';
+  src:
+    url('/assets/fonts/pants-on-fire/PantsOnFire-Regular.woff2') format('woff2'),
+    url('/assets/fonts/pants-on-fire/PantsOnFire-Regular-otf.woff2') format('woff2'),
+    url('/assets/fonts/pants-on-fire/PantsOnFire-Regular.ttf') format('truetype'),
+    url('/assets/fonts/pants-on-fire/PantsOnFire-Regular.otf') format('opentype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Pants on Fire Color';
+  src:
+    url('/assets/fonts/pants-on-fire/PantsOnFireColor-Regular.woff2') format('woff2'),
+    url('/assets/fonts/pants-on-fire/PantsOnFireColor-Regular.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Pants on Fire Narrow';
+  src:
+    url('/assets/fonts/pants-on-fire/PantsOnFireNarrow-Regular.woff2') format('woff2'),
+    url('/assets/fonts/pants-on-fire/PantsOnFireNarrow-Regular-otf.woff2') format('woff2'),
+    url('/assets/fonts/pants-on-fire/PantsOnFireNarrow-Regular.ttf') format('truetype'),
+    url('/assets/fonts/pants-on-fire/PantsOnFireNarrow-Regular.otf') format('opentype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Pants on Fire Narrow Color';
+  src:
+    url('/assets/fonts/pants-on-fire/PantsOnFireNarrowColor-Regular.woff2') format('woff2'),
+    url('/assets/fonts/pants-on-fire/PantsOnFireNarrowColor-Regular.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
 html, body, #root {
   min-height: 100%;
 }
 body {
   margin: 0;
-  font-family: 'Vintage Cowboy', Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   background: #0f172a;
   text-align: center;
 }

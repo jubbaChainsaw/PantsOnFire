@@ -87,7 +87,7 @@ Theme system drives:
 - Theme art surfaces (banner, character card, icon sheet)
 
 Asset structure is organized under:
-- `public/assets/themes/<theme>/characters`
+- `public/assets/themes/<theme>/hosts`
 - `public/assets/themes/<theme>/icons`
 - `public/assets/themes/<theme>/ui`
 
@@ -97,11 +97,12 @@ For each theme host, use a portrait transparent PNG at **900 x 1400 px (2:3)**.
 
 - Safe zone recommendation for face/speech acting: centered, keep key details within ~70% width and ~80% height.
 - Keep transparent padding around the character so bottom-left placement works cleanly across screens.
-- Provide these files per theme in `src/data/themeAssets.js`:
-  - `hostIdle` (required)
-  - `hostTalk1`, `hostTalk2`, `hostTalk3` (optional but recommended)
+- Provide these files per theme in `src/data/themeAssets.js` (under `public/assets/themes/<theme>/hosts/`):
+  - `personaHostIdle` (required)
+  - `personaHostTalk1`, `personaHostTalk2`, `personaHostTalk3` (optional still frames)
+  - `persona-host-talking.webm` / `.mp4` (optional; preferred for host intro)
 
-If talk frames are not provided, the app automatically falls back to the idle frame.
+If talk frames or video are not provided, the app falls back to the idle frame.
 
 ---
 

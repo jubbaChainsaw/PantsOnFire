@@ -58,6 +58,8 @@ class RootErrorBoundary extends React.Component {
 
 async function bootstrap() {
   try {
+    const { installDiagnosticsLogCapture } = await import('./lib/diagnosticsLog.js');
+    installDiagnosticsLogCapture();
     const { AuthProvider } = await import('./auth/AuthProvider.jsx');
     const { default: App } = await import('./App.jsx');
     if (!rootElement) throw new Error('Root element #root not found');

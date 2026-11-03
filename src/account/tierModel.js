@@ -69,6 +69,15 @@ export const ADDON_TWIST_TRUTH = {
 export const DLC_STORE_BLURB =
   'DLC packs add three themed experiences each (host, card decks, personas, tailored dialogue) for 99p per pack. Host with the Most includes every pack.';
 
+/** RevenueCat entitlement / product identifiers (see server/entitlementsRoutes.js mapRevenueCatEntitlements). */
+export const REVENUE_CAT_ENTITLEMENTS = {
+  [TIER_LOCAL_LIAR]: 'local_liar',
+  [TIER_SUSPECT]: 'suspect',
+  [TIER_HOST_MOST]: 'host_most',
+  twistTruth: 'twist_truth',
+  dlcPack: (packId) => `dlc_pack_${packId}`,
+};
+
 /**
  * @param {{ tierId?: string, addonTwistTruth?: boolean } | null | undefined} session
  */

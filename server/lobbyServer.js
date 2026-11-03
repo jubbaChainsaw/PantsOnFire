@@ -5,6 +5,7 @@ import { Server } from 'socket.io';
 import { AccessToken } from 'livekit-server-sdk';
 import { createLobbyStore, toClientSnapshot } from './storage/index.js';
 import { mountEntitlementsRoutes } from './entitlementsRoutes.js';
+import { mountBugReportRoutes } from './bugReportRoutes.js';
 
 const PORT = Number(process.env.LOBBY_SERVER_PORT || process.env.PORT || 8787);
 const CLIENT_ORIGINS_RAW = String(
@@ -143,7 +144,7 @@ const voiceTokenLimiter = createRateLimiter({ windowMs: 60_000, max: 12 });
 const app = express();
 app.set('trust proxy', 1);
 app.use(cors({ origin: corsOriginHandler }));
-app.use(express.json({ limit: '1mb' }));
+app.use(express.json({ limit: '3mb' }));
 
 // Entitlements survive restarts when Redis is configured; the Map fallback is
 // for local development only.
@@ -165,6 +166,7 @@ const entitlementsStore = redisClient
     }
   : new Map();
 mountEntitlementsRoutes(app, { store: entitlementsStore });
+mountBugReportRoutes(app);
 
 const httpServer = createServer(app);
 const io = new Server(httpServer, {
