@@ -1,0 +1,150 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-11-03",
+  "instructions": "Jubba (or delegate) logs these in JubbaWorld manually. This file is not sent to JubbaWorld by automation.",
+  "entries": [
+    {
+      "type": "work_task",
+      "id": "POF-ENH-005",
+      "title": "CI: npm test job on PR/push",
+      "status": "done",
+      "description": "GitHub Actions had no unit test gate. Added .github/workflows/npm-test.yml running npm test (server + billing) with npm cache, path filters, and cancel-in-progress to limit minutes.",
+      "files": [".github/workflows/npm-test.yml"],
+      "commit": "8b2881c"
+    },
+    {
+      "type": "work_task",
+      "id": "POF-DEC-112",
+      "title": "Decision: Android debug APK workflow vs PR #112",
+      "status": "done",
+      "description": "Compared main PR #112 (bef0969/3a39254) minimal manual workflow with branch pipeline (bundled web, smoke test, billing verify, 1.0.3). Recommendation: keep branch workflow; do not replace with main file wholesale. Documented merge strategy.",
+      "files": ["docs/decisions/POF-DEC-112-android-debug-apk-workflow.md"],
+      "commit": "18627ae"
+    },
+    {
+      "type": "work_task",
+      "id": "POF-ENH-006",
+      "title": "13+ prompt copy: Travel Disasters pack",
+      "status": "done",
+      "description": "Travel Mix-up prompt used walk-of-shame / awkward checkout wording read as sexual for 13+ default. Reworded to embarrassing lobby checkout vs early-morning airport dash in pajamas (same travel-disaster theme).",
+      "files": ["src/data/packs/categoryPromptPacks.js"],
+      "commit": "8b2881c"
+    },
+    {
+      "type": "work_task",
+      "id": "POF-ENH-007",
+      "title": "Play Store listing draft + graphics",
+      "status": "done",
+      "description": "Draft short/full descriptions, subscription benefit bullets (£2.99 / £4.99 / £9.99), content declaration answer notes, and generated icon/feature/screenshots (Chewy outlined neon style) under docs/store/.",
+      "files": [
+        "docs/store/play-listing.md",
+        "docs/store/content-declarations-notes.md",
+        "docs/store/graphics/icon-512.png",
+        "docs/store/graphics/feature-1024x500.png",
+        "docs/store/graphics/screenshot-01-home.png",
+        "docs/store/graphics/screenshot-02-ingame.png",
+        "docs/store/graphics/screenshot-03-lobby.png",
+        "scripts/generatePlayStoreGraphics.mjs"
+      ]
+    },
+    {
+      "type": "work_task",
+      "id": "POF-ENH-008",
+      "title": "Stripe live + RevenueCat production checklist (research)",
+      "status": "done",
+      "description": "Documented click-path for Jubba: live Stripe products/prices matching sandbox (99p DLC, £1.99 Twist, tier subs), Railway env vars, RevenueCat goog_ Android key + Play service account link, webhooks, and fixing non-UK subscription prices via Play Console / Stripe currency options. No live changes in repo.",
+      "files": ["docs/store/STRIPE_REVENUECAT_LIVE_CHECKLIST.md"]
+    },
+    {
+      "type": "work_task",
+      "id": "POF-ENH-004",
+      "title": "Backlog: host-only phase advance",
+      "status": "done",
+      "description": "Any seated player could advance round phase online. Server advanceRoundPhase now host-only (403); client gates controls; tests + LOBBY_ARCHITECTURE / ONLINE_SECURITY_MODEL updated.",
+      "files": [
+        "server/storage/lobbyStore.js",
+        "server/lobbyServer.js",
+        "src/App.jsx",
+        "tests/server/lobbyStore.test.mjs"
+      ],
+      "commit": "00c0342"
+    },
+    {
+      "type": "work_task",
+      "id": "POF-ENH-004",
+      "title": "Backlog: lobby resume/round read rate limits",
+      "status": "done",
+      "description": "Public round GET and resume routes lacked limiter wiring. Added resumeLimiter/lookupLimiter in lobbyServer.js and tests (429 after burst).",
+      "commit": "285f31f",
+      "files": ["server/rateLimit.js", "server/lobbyServer.js", "tests/server/lobbyHttpRateLimit.test.mjs"]
+    },
+    {
+      "type": "work_task",
+      "id": "POF-ENH-004",
+      "title": "Backlog: £0.99 DLC store copy",
+      "status": "done",
+      "description": "UI/catalog still showed £2.99 per DLC pack. Updated tierModel/theme catalog copy and artifacts/stripe-dlc-pricing.md for Jubba Stripe Price updates.",
+      "commit": "03d10cc"
+    },
+    {
+      "type": "work_task",
+      "id": "POF-ENH-004",
+      "title": "Backlog: doc drift after 637fdfe",
+      "status": "done",
+      "description": "Re-review found wrong LOBBY fn names, BUILD_PIPELINE accuracy, TEST_STRATEGY npm test scope, DLC README heading, obsolete Grill round refs in review docs, README manifest example.",
+      "commit": "052ea9c",
+      "files": [
+        "README.md",
+        "docs/BUILD_PIPELINE.md",
+        "docs/TEST_STRATEGY.md",
+        "src/data/README.md",
+        "docs/review-2026-06/MOBILE_DEPLOYMENT_READINESS.md",
+        "docs/review-2026-06/PLAYTEST_READINESS.md",
+        "docs/review-2026-06/BUG_LIST.md"
+      ]
+    },
+    {
+      "type": "work_task",
+      "id": "POF-ENH-004",
+      "title": "Backlog: critical security fixes (June 2026 review)",
+      "status": "done",
+      "description": "Seat hijack on join, liar leak in public round, guessable session tokens, RevenueCat merge-not-revoke, rate limits on lobby create/join, LiveKit token TTL, voice activity session check — see docs/review-2026-06/BUG_LIST.md fixed rows.",
+      "commit": "637fdfe",
+      "reference": "docs/review-2026-06/SECURITY_AUDIT.md"
+    },
+    {
+      "type": "work_task",
+      "id": "POF-ENH-004",
+      "title": "Backlog: Google Play product id catalog",
+      "status": "done",
+      "description": "Mapped internal tier/addon/DLC ids to Play product ids for RevenueCat and native purchase bridge.",
+      "commit": "d584349",
+      "files": ["src/billing/googlePlayProductCatalog.js", "tests/billing/googlePlayProductCatalog.test.mjs"]
+    },
+    {
+      "type": "work_task",
+      "id": "POF-ENH-004",
+      "title": "Backlog: Play compliance pages (privacy, deletion, moderation)",
+      "status": "done",
+      "description": "Added account deletion flow, privacy pages, in-lobby report/block for store policy.",
+      "commit": "e12ad7c"
+    },
+    {
+      "type": "work_task",
+      "id": "POF-ENH-004",
+      "title": "Backlog: app crash on load (DLC_BUNDLE_NAMES_LIST)",
+      "status": "done",
+      "description": "ReferenceError in tierModel broke all modes including pass-the-phone. Fixed derivation from DLC_THEME_PACKS.",
+      "commit": "2b51024",
+      "reference": "docs/review-2026-06/BUG_LIST.md #1"
+    },
+    {
+      "type": "work_task",
+      "id": "POF-ENH-004",
+      "title": "Backlog: one-word online round",
+      "status": "done",
+      "description": "Server one-word phase, client panel, App.jsx online sync integration.",
+      "commit": "407a5cf"
+    }
+  ]
+}
