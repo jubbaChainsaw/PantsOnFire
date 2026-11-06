@@ -1,7 +1,7 @@
 import { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { getHostVoiceSrcCandidatesForLine } from '../data/hostVoiceLineMap.js';
 import { resolveBundledAssetSrc } from './contentPacks/resolveAsset.js';
-import { HostCommentaryContext } from '../context/HostCommentaryContext.jsx';
+import { HostCommentaryContext } from '../context/HostCommentaryContext.js';
 
 /** Short pause after a voice clip before auto-advancing dialogue. */
 export const HOST_SPEECH_PAUSE_AFTER_MS = 320;

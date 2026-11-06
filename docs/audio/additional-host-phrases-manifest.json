@@ -5,8 +5,8 @@
     "t220u",
     "t221u"
   ],
-  "generatedAt": "2026-11-06T21:49:21.151Z",
-  "corpusSha256": "e639a9fbfce31226effa9274c63d347d5995622743b89289b34f189a6e01eb48",
+  "generatedAt": "2026-11-06T22:04:40.490Z",
+  "corpusSha256": "df72695d966150aa4e21cd53a6d50ce166251d7c3100e4cd0378c84b94cd8dc4",
   "voiceNote": "Uses existing Ian Poster voice id from parent batch; no catalog name regeneration.",
   "lineCount": 104,
   "lines": [
@@ -16,10 +16,10 @@
       "themeSlug": "default",
       "segmentRole": "prefix",
       "scriptId": "banter_picker_prefix_v1",
-      "spokenText": "you're choosing the chaos this round.",
+      "spokenText": "Player, you're choosing the chaos this round.",
       "primaryRelativePath": "public/assets/audio/host/default/tts/default_banter_banter_picker_prefix_v1.mp3",
       "stableFilename": "default_banter_banter_picker_prefix_v1.mp3",
-      "contentSha256": "3a15e80390bd9255b3fd4770fe84dfc14b21be64f47e3afebaaafe62e2a880b4"
+      "contentSha256": "41db365011cd098622e3f7416fe5f0dfaa72ceb68d4e43e081bd95f21778a16d"
     },
     {
       "lineId": "default:banter_picker_prefix_v2",
@@ -27,10 +27,10 @@
       "themeSlug": "default",
       "segmentRole": "prefix",
       "scriptId": "banter_picker_prefix_v2",
-      "spokenText": "pick a mode, pick a category, try not to look guilty before we start.",
+      "spokenText": "Alright Player — pick a mode, pick a category, try not to look guilty before we start.",
       "primaryRelativePath": "public/assets/audio/host/default/tts/default_banter_banter_picker_prefix_v2.mp3",
       "stableFilename": "default_banter_banter_picker_prefix_v2.mp3",
-      "contentSha256": "e21ee1930e7bb13dbe04c0c522eafb254031e716574271c1921d9b9cc24a72e6"
+      "contentSha256": "50a8ea519d7abc56f1ea38df42bad470b6a48baa2ca503b6da49277f7a601184"
     },
     {
       "lineId": "default:banter_picker_prefix_v3",
@@ -38,10 +38,10 @@
       "themeSlug": "default",
       "segmentRole": "prefix",
       "scriptId": "banter_picker_prefix_v3",
-      "spokenText": "the wheel of bad decisions stops here.",
+      "spokenText": "The wheel of bad decisions stops with Player.",
       "primaryRelativePath": "public/assets/audio/host/default/tts/default_banter_banter_picker_prefix_v3.mp3",
       "stableFilename": "default_banter_banter_picker_prefix_v3.mp3",
-      "contentSha256": "9707c24ba6253afa34977d9f1b2ce66bd7819d391d8a7ac030be8a05a7549afc"
+      "contentSha256": "41fbc4ff666f946e2541ced62c9d1ffdc2732709695ab3340454a7fdd7b9b1c6"
     },
     {
       "lineId": "default:banter_reveal_suffix_singular_v1",
@@ -49,10 +49,10 @@
       "themeSlug": "default",
       "segmentRole": "suffix",
       "scriptId": "banter_reveal_suffix_singular_v1",
-      "spokenText": "was bluffing the whole time.",
+      "spokenText": "Was bluffing the whole time.",
       "primaryRelativePath": "public/assets/audio/host/default/tts/default_banter_banter_reveal_suffix_singular_v1.mp3",
       "stableFilename": "default_banter_banter_reveal_suffix_singular_v1.mp3",
-      "contentSha256": "a71770cf93256a6d7c0ffe17298bcf111807f5c62b2ff6a8fe709610914944c6"
+      "contentSha256": "4e5ad35cc5cd71d6075681ed6e14661498244fd379034f9562f6bc2ea2b13edd"
     },
     {
       "lineId": "default:banter_reveal_suffix_singular_v2",
@@ -60,10 +60,10 @@
       "themeSlug": "default",
       "segmentRole": "suffix",
       "scriptId": "banter_reveal_suffix_singular_v2",
-      "spokenText": "— called it.",
+      "spokenText": "Called it.",
       "primaryRelativePath": "public/assets/audio/host/default/tts/default_banter_banter_reveal_suffix_singular_v2.mp3",
       "stableFilename": "default_banter_banter_reveal_suffix_singular_v2.mp3",
-      "contentSha256": "facff20e3a971426d90986dd40128157b9370320e8ddd8684a555f6e3188cfb8"
+      "contentSha256": "72ee765b9f5c23144de09444c1abfe9f5105e39bbfd79ccf7a1591f600b381ce"
     },
     {
       "lineId": "default:banter_result_caught_v1",
@@ -71,10 +71,10 @@
       "themeSlug": "default",
       "segmentRole": "name_free",
       "scriptId": "banter_result_caught_v1",
-      "spokenText": "that round had actual detective energy. shocking, honestly.",
+      "spokenText": "That round had actual detective energy. Shocking, honestly.",
       "primaryRelativePath": "public/assets/audio/host/default/tts/default_banter_banter_result_caught_v1.mp3",
       "stableFilename": "default_banter_banter_result_caught_v1.mp3",
-      "contentSha256": "fcd4c667d36bf4b9d003ccee8d0b0ccab443f9e72cc576c62ed0c8a13431d702"
+      "contentSha256": "818f32ddadd6384225e66ab10b1260230b5553de97ad4a1a4f86e9a80d60f3ee"
     },
     {
       "lineId": "default:banter_result_caught_v2",
@@ -82,10 +82,10 @@
       "themeSlug": "default",
       "segmentRole": "name_free",
       "scriptId": "banter_result_caught_v2",
-      "spokenText": "clean vote — the table actually agreed. suspiciously organised.",
+      "spokenText": "Clean vote — the table actually agreed. Suspiciously organised.",
       "primaryRelativePath": "public/assets/audio/host/default/tts/default_banter_banter_result_caught_v2.mp3",
       "stableFilename": "default_banter_banter_result_caught_v2.mp3",
-      "contentSha256": "148319cef5dba973453adc04a999c74040eb3dd3402d4463488f20aeda920b09"
+      "contentSha256": "8608789f4b0e4a429390ce9f6cd2070749e9c6f8984c1524df2756948437d0aa"
     },
     {
       "lineId": "default:banter_result_escaped_v1",
@@ -93,10 +93,10 @@
       "themeSlug": "default",
       "segmentRole": "name_free",
       "scriptId": "banter_result_escaped_v1",
-      "spokenText": "somehow the lie walked out wearing flip-flops. tough scene.",
+      "spokenText": "Somehow the lie walked out wearing flip-flops. Tough scene.",
       "primaryRelativePath": "public/assets/audio/host/default/tts/default_banter_banter_result_escaped_v1.mp3",
       "stableFilename": "default_banter_banter_result_escaped_v1.mp3",
-      "contentSha256": "76013daaa86efa166f9b36e2acb11c79d15a204a9d3f7d5a4587cb7ba0dc4f2b"
+      "contentSha256": "f632568951c96288b006de1ea513fde8a97abdfd6542a9a11f7e27ec135fa54f"
     },
     {
       "lineId": "default:banter_result_escaped_v2",
@@ -104,10 +104,10 @@
       "themeSlug": "default",
       "segmentRole": "name_free",
       "scriptId": "banter_result_escaped_v2",
-      "spokenText": "the fib survived — not a compliment, just a fact.",
+      "spokenText": "The fib survived — not a compliment, just a fact.",
       "primaryRelativePath": "public/assets/audio/host/default/tts/default_banter_banter_result_escaped_v2.mp3",
       "stableFilename": "default_banter_banter_result_escaped_v2.mp3",
-      "contentSha256": "f1a4a7ab25a1700d8f9b5e950037f49ef06dbdbd9a5ab718522a9ca93b8a2767"
+      "contentSha256": "ce4b138b595851eb31c7eddfd1afde661fac873d44ba06b685764a0005c6aa6d"
     },
     {
       "lineId": "default:banter_result_chaos_v1",
@@ -115,10 +115,10 @@
       "themeSlug": "default",
       "segmentRole": "name_free",
       "scriptId": "banter_result_chaos_v1",
-      "spokenText": "that was a chaotic round. beautiful, but chaotic.",
+      "spokenText": "That was a chaotic round. Beautiful, but chaotic.",
       "primaryRelativePath": "public/assets/audio/host/default/tts/default_banter_banter_result_chaos_v1.mp3",
       "stableFilename": "default_banter_banter_result_chaos_v1.mp3",
-      "contentSha256": "e32a7a014deec7b420172799db807693b2aee5606fe5c353f77fce7fb61f90e6"
+      "contentSha256": "9723f8bb389540ffb1c91cf9b4fddaa40eb5d0b1c08a756426bc759452afcfae"
     },
     {
       "lineId": "default:banter_wrap_v1",
@@ -126,10 +126,10 @@
       "themeSlug": "default",
       "segmentRole": "name_free",
       "scriptId": "banter_wrap_v1",
-      "spokenText": "that's a wrap — crown the chaos and run it back.",
+      "spokenText": "That's a wrap — crown the chaos and run it back.",
       "primaryRelativePath": "public/assets/audio/host/default/tts/default_banter_banter_wrap_v1.mp3",
       "stableFilename": "default_banter_banter_wrap_v1.mp3",
-      "contentSha256": "815df462585bfa4fd43a25b553e3929ac645dc25b9bf4e1f77d2e997b00f0d16"
+      "contentSha256": "4e89318e0bc8a34c64062f57252c3cc5c4f8cdc60039b6360fdecfd57c35e2ba"
     },
     {
       "lineId": "default:banter_reveal_liar_is_prefix_v1",
@@ -137,21 +137,21 @@
       "themeSlug": "default",
       "segmentRole": "prefix",
       "scriptId": "banter_reveal_liar_is_prefix_v1",
-      "spokenText": "the liar is",
+      "spokenText": "The liar is…",
       "primaryRelativePath": "public/assets/audio/host/default/tts/default_banter_banter_reveal_liar_is_prefix_v1.mp3",
       "stableFilename": "default_banter_banter_reveal_liar_is_prefix_v1.mp3",
-      "contentSha256": "051f1f88d1754b376327f1d1178b2339668d9c72b36c67bffec36804423f6e0b"
+      "contentSha256": "951f3b5eff6470f3cf4178843c8061d6397abaf9121819e8423511495973272f"
     },
     {
       "lineId": "default:banter_reveal_plural_v1",
       "themeName": "Default",
       "themeSlug": "default",
-      "segmentRole": "name_free",
+      "segmentRole": "prefix",
       "scriptId": "banter_reveal_plural_v1",
-      "spokenText": "we've got a whole team tonight.",
+      "spokenText": "The liars are…",
       "primaryRelativePath": "public/assets/audio/host/default/tts/default_banter_banter_reveal_plural_v1.mp3",
       "stableFilename": "default_banter_banter_reveal_plural_v1.mp3",
-      "contentSha256": "5ad1db8c4ca6823c60f5fdc69e813863cbd3c9206ac1d235be36cb057d90bcb5"
+      "contentSha256": "759387c42d108432da49c70e7d01294ef0d44ef95c600257a32c5a110302e2c6"
     },
     {
       "lineId": "murder-mystery:banter_picker_prefix_v1",
@@ -159,10 +159,10 @@
       "themeSlug": "murder-mystery",
       "segmentRole": "prefix",
       "scriptId": "banter_picker_prefix_v1",
-      "spokenText": "you're choosing the chaos this round.",
+      "spokenText": "Player, you're choosing the chaos this round.",
       "primaryRelativePath": "public/assets/audio/host/murder-mystery/tts/murder-mystery_banter_banter_picker_prefix_v1.mp3",
       "stableFilename": "murder-mystery_banter_banter_picker_prefix_v1.mp3",
-      "contentSha256": "3a15e80390bd9255b3fd4770fe84dfc14b21be64f47e3afebaaafe62e2a880b4"
+      "contentSha256": "41db365011cd098622e3f7416fe5f0dfaa72ceb68d4e43e081bd95f21778a16d"
     },
     {
       "lineId": "murder-mystery:banter_picker_prefix_v2",
@@ -170,10 +170,10 @@
       "themeSlug": "murder-mystery",
       "segmentRole": "prefix",
       "scriptId": "banter_picker_prefix_v2",
-      "spokenText": "pick a mode, pick a category, try not to look guilty before we start.",
+      "spokenText": "Alright Player — pick a mode, pick a category, try not to look guilty before we start.",
       "primaryRelativePath": "public/assets/audio/host/murder-mystery/tts/murder-mystery_banter_banter_picker_prefix_v2.mp3",
       "stableFilename": "murder-mystery_banter_banter_picker_prefix_v2.mp3",
-      "contentSha256": "e21ee1930e7bb13dbe04c0c522eafb254031e716574271c1921d9b9cc24a72e6"
+      "contentSha256": "50a8ea519d7abc56f1ea38df42bad470b6a48baa2ca503b6da49277f7a601184"
     },
     {
       "lineId": "murder-mystery:banter_picker_prefix_v3",
@@ -181,10 +181,10 @@
       "themeSlug": "murder-mystery",
       "segmentRole": "prefix",
       "scriptId": "banter_picker_prefix_v3",
-      "spokenText": "the wheel of bad decisions stops here.",
+      "spokenText": "The wheel of bad decisions stops with Player.",
       "primaryRelativePath": "public/assets/audio/host/murder-mystery/tts/murder-mystery_banter_banter_picker_prefix_v3.mp3",
       "stableFilename": "murder-mystery_banter_banter_picker_prefix_v3.mp3",
-      "contentSha256": "9707c24ba6253afa34977d9f1b2ce66bd7819d391d8a7ac030be8a05a7549afc"
+      "contentSha256": "41fbc4ff666f946e2541ced62c9d1ffdc2732709695ab3340454a7fdd7b9b1c6"
     },
     {
       "lineId": "murder-mystery:banter_reveal_suffix_singular_v1",
@@ -192,10 +192,10 @@
       "themeSlug": "murder-mystery",
       "segmentRole": "suffix",
       "scriptId": "banter_reveal_suffix_singular_v1",
-      "spokenText": "was bluffing the whole time.",
+      "spokenText": "Was bluffing the whole time.",
       "primaryRelativePath": "public/assets/audio/host/murder-mystery/tts/murder-mystery_banter_banter_reveal_suffix_singular_v1.mp3",
       "stableFilename": "murder-mystery_banter_banter_reveal_suffix_singular_v1.mp3",
-      "contentSha256": "a71770cf93256a6d7c0ffe17298bcf111807f5c62b2ff6a8fe709610914944c6"
+      "contentSha256": "4e5ad35cc5cd71d6075681ed6e14661498244fd379034f9562f6bc2ea2b13edd"
     },
     {
       "lineId": "murder-mystery:banter_reveal_suffix_singular_v2",
@@ -203,10 +203,10 @@
       "themeSlug": "murder-mystery",
       "segmentRole": "suffix",
       "scriptId": "banter_reveal_suffix_singular_v2",
-      "spokenText": "— called it.",
+      "spokenText": "Called it.",
       "primaryRelativePath": "public/assets/audio/host/murder-mystery/tts/murder-mystery_banter_banter_reveal_suffix_singular_v2.mp3",
       "stableFilename": "murder-mystery_banter_banter_reveal_suffix_singular_v2.mp3",
-      "contentSha256": "facff20e3a971426d90986dd40128157b9370320e8ddd8684a555f6e3188cfb8"
+      "contentSha256": "72ee765b9f5c23144de09444c1abfe9f5105e39bbfd79ccf7a1591f600b381ce"
     },
     {
       "lineId": "murder-mystery:banter_result_caught_v1",
@@ -214,10 +214,10 @@
       "themeSlug": "murder-mystery",
       "segmentRole": "name_free",
       "scriptId": "banter_result_caught_v1",
-      "spokenText": "that round had actual detective energy. shocking, honestly.",
+      "spokenText": "That round had actual detective energy. Shocking, honestly.",
       "primaryRelativePath": "public/assets/audio/host/murder-mystery/tts/murder-mystery_banter_banter_result_caught_v1.mp3",
       "stableFilename": "murder-mystery_banter_banter_result_caught_v1.mp3",
-      "contentSha256": "fcd4c667d36bf4b9d003ccee8d0b0ccab443f9e72cc576c62ed0c8a13431d702"
+      "contentSha256": "818f32ddadd6384225e66ab10b1260230b5553de97ad4a1a4f86e9a80d60f3ee"
     },
     {
       "lineId": "murder-mystery:banter_result_caught_v2",
@@ -225,10 +225,10 @@
       "themeSlug": "murder-mystery",
       "segmentRole": "name_free",
       "scriptId": "banter_result_caught_v2",
-      "spokenText": "clean vote — the table actually agreed. suspiciously organised.",
+      "spokenText": "Clean vote — the table actually agreed. Suspiciously organised.",
       "primaryRelativePath": "public/assets/audio/host/murder-mystery/tts/murder-mystery_banter_banter_result_caught_v2.mp3",
       "stableFilename": "murder-mystery_banter_banter_result_caught_v2.mp3",
-      "contentSha256": "148319cef5dba973453adc04a999c74040eb3dd3402d4463488f20aeda920b09"
+      "contentSha256": "8608789f4b0e4a429390ce9f6cd2070749e9c6f8984c1524df2756948437d0aa"
     },
     {
       "lineId": "murder-mystery:banter_result_escaped_v1",
@@ -236,10 +236,10 @@
       "themeSlug": "murder-mystery",
       "segmentRole": "name_free",
       "scriptId": "banter_result_escaped_v1",
-      "spokenText": "somehow the lie walked out wearing flip-flops. tough scene.",
+      "spokenText": "Somehow the lie walked out wearing flip-flops. Tough scene.",
       "primaryRelativePath": "public/assets/audio/host/murder-mystery/tts/murder-mystery_banter_banter_result_escaped_v1.mp3",
       "stableFilename": "murder-mystery_banter_banter_result_escaped_v1.mp3",
-      "contentSha256": "76013daaa86efa166f9b36e2acb11c79d15a204a9d3f7d5a4587cb7ba0dc4f2b"
+      "contentSha256": "f632568951c96288b006de1ea513fde8a97abdfd6542a9a11f7e27ec135fa54f"
     },
     {
       "lineId": "murder-mystery:banter_result_escaped_v2",
@@ -247,10 +247,10 @@
       "themeSlug": "murder-mystery",
       "segmentRole": "name_free",
       "scriptId": "banter_result_escaped_v2",
-      "spokenText": "the fib survived — not a compliment, just a fact.",
+      "spokenText": "The fib survived — not a compliment, just a fact.",
       "primaryRelativePath": "public/assets/audio/host/murder-mystery/tts/murder-mystery_banter_banter_result_escaped_v2.mp3",
       "stableFilename": "murder-mystery_banter_banter_result_escaped_v2.mp3",
-      "contentSha256": "f1a4a7ab25a1700d8f9b5e950037f49ef06dbdbd9a5ab718522a9ca93b8a2767"
+      "contentSha256": "ce4b138b595851eb31c7eddfd1afde661fac873d44ba06b685764a0005c6aa6d"
     },
     {
       "lineId": "murder-mystery:banter_result_chaos_v1",
@@ -258,10 +258,10 @@
       "themeSlug": "murder-mystery",
       "segmentRole": "name_free",
       "scriptId": "banter_result_chaos_v1",
-      "spokenText": "that was a chaotic round. beautiful, but chaotic.",
+      "spokenText": "That was a chaotic round. Beautiful, but chaotic.",
       "primaryRelativePath": "public/assets/audio/host/murder-mystery/tts/murder-mystery_banter_banter_result_chaos_v1.mp3",
       "stableFilename": "murder-mystery_banter_banter_result_chaos_v1.mp3",
-      "contentSha256": "e32a7a014deec7b420172799db807693b2aee5606fe5c353f77fce7fb61f90e6"
+      "contentSha256": "9723f8bb389540ffb1c91cf9b4fddaa40eb5d0b1c08a756426bc759452afcfae"
     },
     {
       "lineId": "murder-mystery:banter_wrap_v1",
@@ -269,10 +269,10 @@
       "themeSlug": "murder-mystery",
       "segmentRole": "name_free",
       "scriptId": "banter_wrap_v1",
-      "spokenText": "that's a wrap — crown the chaos and run it back.",
+      "spokenText": "That's a wrap — crown the chaos and run it back.",
       "primaryRelativePath": "public/assets/audio/host/murder-mystery/tts/murder-mystery_banter_banter_wrap_v1.mp3",
       "stableFilename": "murder-mystery_banter_banter_wrap_v1.mp3",
-      "contentSha256": "815df462585bfa4fd43a25b553e3929ac645dc25b9bf4e1f77d2e997b00f0d16"
+      "contentSha256": "4e89318e0bc8a34c64062f57252c3cc5c4f8cdc60039b6360fdecfd57c35e2ba"
     },
     {
       "lineId": "murder-mystery:banter_reveal_liar_is_prefix_v1",
@@ -280,21 +280,21 @@
       "themeSlug": "murder-mystery",
       "segmentRole": "prefix",
       "scriptId": "banter_reveal_liar_is_prefix_v1",
-      "spokenText": "the liar is",
+      "spokenText": "The liar is…",
       "primaryRelativePath": "public/assets/audio/host/murder-mystery/tts/murder-mystery_banter_banter_reveal_liar_is_prefix_v1.mp3",
       "stableFilename": "murder-mystery_banter_banter_reveal_liar_is_prefix_v1.mp3",
-      "contentSha256": "051f1f88d1754b376327f1d1178b2339668d9c72b36c67bffec36804423f6e0b"
+      "contentSha256": "951f3b5eff6470f3cf4178843c8061d6397abaf9121819e8423511495973272f"
     },
     {
       "lineId": "murder-mystery:banter_reveal_plural_v1",
       "themeName": "Murder Mystery",
       "themeSlug": "murder-mystery",
-      "segmentRole": "name_free",
+      "segmentRole": "prefix",
       "scriptId": "banter_reveal_plural_v1",
-      "spokenText": "we've got a whole team tonight.",
+      "spokenText": "The liars are…",
       "primaryRelativePath": "public/assets/audio/host/murder-mystery/tts/murder-mystery_banter_banter_reveal_plural_v1.mp3",
       "stableFilename": "murder-mystery_banter_banter_reveal_plural_v1.mp3",
-      "contentSha256": "5ad1db8c4ca6823c60f5fdc69e813863cbd3c9206ac1d235be36cb057d90bcb5"
+      "contentSha256": "759387c42d108432da49c70e7d01294ef0d44ef95c600257a32c5a110302e2c6"
     },
     {
       "lineId": "pirates:banter_picker_prefix_v1",
@@ -302,10 +302,10 @@
       "themeSlug": "pirates",
       "segmentRole": "prefix",
       "scriptId": "banter_picker_prefix_v1",
-      "spokenText": "you're choosing the chaos this round.",
+      "spokenText": "Player, you're choosing the chaos this round.",
       "primaryRelativePath": "public/assets/audio/host/pirates/tts/pirates_banter_banter_picker_prefix_v1.mp3",
       "stableFilename": "pirates_banter_banter_picker_prefix_v1.mp3",
-      "contentSha256": "3a15e80390bd9255b3fd4770fe84dfc14b21be64f47e3afebaaafe62e2a880b4"
+      "contentSha256": "41db365011cd098622e3f7416fe5f0dfaa72ceb68d4e43e081bd95f21778a16d"
     },
     {
       "lineId": "pirates:banter_picker_prefix_v2",
@@ -313,10 +313,10 @@
       "themeSlug": "pirates",
       "segmentRole": "prefix",
       "scriptId": "banter_picker_prefix_v2",
-      "spokenText": "pick a mode, pick a category, try not to look guilty before we start.",
+      "spokenText": "Alright Player — pick a mode, pick a category, try not to look guilty before we start.",
       "primaryRelativePath": "public/assets/audio/host/pirates/tts/pirates_banter_banter_picker_prefix_v2.mp3",
       "stableFilename": "pirates_banter_banter_picker_prefix_v2.mp3",
-      "contentSha256": "e21ee1930e7bb13dbe04c0c522eafb254031e716574271c1921d9b9cc24a72e6"
+      "contentSha256": "50a8ea519d7abc56f1ea38df42bad470b6a48baa2ca503b6da49277f7a601184"
     },
     {
       "lineId": "pirates:banter_picker_prefix_v3",
@@ -324,10 +324,10 @@
       "themeSlug": "pirates",
       "segmentRole": "prefix",
       "scriptId": "banter_picker_prefix_v3",
-      "spokenText": "the wheel of bad decisions stops here.",
+      "spokenText": "The wheel of bad decisions stops with Player.",
       "primaryRelativePath": "public/assets/audio/host/pirates/tts/pirates_banter_banter_picker_prefix_v3.mp3",
       "stableFilename": "pirates_banter_banter_picker_prefix_v3.mp3",
-      "contentSha256": "9707c24ba6253afa34977d9f1b2ce66bd7819d391d8a7ac030be8a05a7549afc"
+      "contentSha256": "41fbc4ff666f946e2541ced62c9d1ffdc2732709695ab3340454a7fdd7b9b1c6"
     },
     {
       "lineId": "pirates:banter_reveal_suffix_singular_v1",
@@ -335,10 +335,10 @@
       "themeSlug": "pirates",
       "segmentRole": "suffix",
       "scriptId": "banter_reveal_suffix_singular_v1",
-      "spokenText": "was bluffing the whole time.",
+      "spokenText": "Was bluffing the whole time.",
       "primaryRelativePath": "public/assets/audio/host/pirates/tts/pirates_banter_banter_reveal_suffix_singular_v1.mp3",
       "stableFilename": "pirates_banter_banter_reveal_suffix_singular_v1.mp3",
-      "contentSha256": "a71770cf93256a6d7c0ffe17298bcf111807f5c62b2ff6a8fe709610914944c6"
+      "contentSha256": "4e5ad35cc5cd71d6075681ed6e14661498244fd379034f9562f6bc2ea2b13edd"
     },
     {
       "lineId": "pirates:banter_reveal_suffix_singular_v2",
@@ -346,10 +346,10 @@
       "themeSlug": "pirates",
       "segmentRole": "suffix",
       "scriptId": "banter_reveal_suffix_singular_v2",
-      "spokenText": "— called it.",
+      "spokenText": "Called it.",
       "primaryRelativePath": "public/assets/audio/host/pirates/tts/pirates_banter_banter_reveal_suffix_singular_v2.mp3",
       "stableFilename": "pirates_banter_banter_reveal_suffix_singular_v2.mp3",
-      "contentSha256": "facff20e3a971426d90986dd40128157b9370320e8ddd8684a555f6e3188cfb8"
+      "contentSha256": "72ee765b9f5c23144de09444c1abfe9f5105e39bbfd79ccf7a1591f600b381ce"
     },
     {
       "lineId": "pirates:banter_result_caught_v1",
@@ -357,10 +357,10 @@
       "themeSlug": "pirates",
       "segmentRole": "name_free",
       "scriptId": "banter_result_caught_v1",
-      "spokenText": "that round had actual detective energy. shocking, honestly.",
+      "spokenText": "That round had actual detective energy. Shocking, honestly.",
       "primaryRelativePath": "public/assets/audio/host/pirates/tts/pirates_banter_banter_result_caught_v1.mp3",
       "stableFilename": "pirates_banter_banter_result_caught_v1.mp3",
-      "contentSha256": "fcd4c667d36bf4b9d003ccee8d0b0ccab443f9e72cc576c62ed0c8a13431d702"
+      "contentSha256": "818f32ddadd6384225e66ab10b1260230b5553de97ad4a1a4f86e9a80d60f3ee"
     },
     {
       "lineId": "pirates:banter_result_caught_v2",
@@ -368,10 +368,10 @@
       "themeSlug": "pirates",
       "segmentRole": "name_free",
       "scriptId": "banter_result_caught_v2",
-      "spokenText": "clean vote — the table actually agreed. suspiciously organised.",
+      "spokenText": "Clean vote — the table actually agreed. Suspiciously organised.",
       "primaryRelativePath": "public/assets/audio/host/pirates/tts/pirates_banter_banter_result_caught_v2.mp3",
       "stableFilename": "pirates_banter_banter_result_caught_v2.mp3",
-      "contentSha256": "148319cef5dba973453adc04a999c74040eb3dd3402d4463488f20aeda920b09"
+      "contentSha256": "8608789f4b0e4a429390ce9f6cd2070749e9c6f8984c1524df2756948437d0aa"
     },
     {
       "lineId": "pirates:banter_result_escaped_v1",
@@ -379,10 +379,10 @@
       "themeSlug": "pirates",
       "segmentRole": "name_free",
       "scriptId": "banter_result_escaped_v1",
-      "spokenText": "somehow the lie walked out wearing flip-flops. tough scene.",
+      "spokenText": "Somehow the lie walked out wearing flip-flops. Tough scene.",
       "primaryRelativePath": "public/assets/audio/host/pirates/tts/pirates_banter_banter_result_escaped_v1.mp3",
       "stableFilename": "pirates_banter_banter_result_escaped_v1.mp3",
-      "contentSha256": "76013daaa86efa166f9b36e2acb11c79d15a204a9d3f7d5a4587cb7ba0dc4f2b"
+      "contentSha256": "f632568951c96288b006de1ea513fde8a97abdfd6542a9a11f7e27ec135fa54f"
     },
     {
       "lineId": "pirates:banter_result_escaped_v2",
@@ -390,10 +390,10 @@
       "themeSlug": "pirates",
       "segmentRole": "name_free",
       "scriptId": "banter_result_escaped_v2",
-      "spokenText": "the fib survived — not a compliment, just a fact.",
+      "spokenText": "The fib survived — not a compliment, just a fact.",
       "primaryRelativePath": "public/assets/audio/host/pirates/tts/pirates_banter_banter_result_escaped_v2.mp3",
       "stableFilename": "pirates_banter_banter_result_escaped_v2.mp3",
-      "contentSha256": "f1a4a7ab25a1700d8f9b5e950037f49ef06dbdbd9a5ab718522a9ca93b8a2767"
+      "contentSha256": "ce4b138b595851eb31c7eddfd1afde661fac873d44ba06b685764a0005c6aa6d"
     },
     {
       "lineId": "pirates:banter_result_chaos_v1",
@@ -401,10 +401,10 @@
       "themeSlug": "pirates",
       "segmentRole": "name_free",
       "scriptId": "banter_result_chaos_v1",
-      "spokenText": "that was a chaotic round. beautiful, but chaotic.",
+      "spokenText": "That was a chaotic round. Beautiful, but chaotic.",
       "primaryRelativePath": "public/assets/audio/host/pirates/tts/pirates_banter_banter_result_chaos_v1.mp3",
       "stableFilename": "pirates_banter_banter_result_chaos_v1.mp3",
-      "contentSha256": "e32a7a014deec7b420172799db807693b2aee5606fe5c353f77fce7fb61f90e6"
+      "contentSha256": "9723f8bb389540ffb1c91cf9b4fddaa40eb5d0b1c08a756426bc759452afcfae"
     },
     {
       "lineId": "pirates:banter_wrap_v1",
@@ -412,10 +412,10 @@
       "themeSlug": "pirates",
       "segmentRole": "name_free",
       "scriptId": "banter_wrap_v1",
-      "spokenText": "that's a wrap — crown the chaos and run it back.",
+      "spokenText": "That's a wrap — crown the chaos and run it back.",
       "primaryRelativePath": "public/assets/audio/host/pirates/tts/pirates_banter_banter_wrap_v1.mp3",
       "stableFilename": "pirates_banter_banter_wrap_v1.mp3",
-      "contentSha256": "815df462585bfa4fd43a25b553e3929ac645dc25b9bf4e1f77d2e997b00f0d16"
+      "contentSha256": "4e89318e0bc8a34c64062f57252c3cc5c4f8cdc60039b6360fdecfd57c35e2ba"
     },
     {
       "lineId": "pirates:banter_reveal_liar_is_prefix_v1",
@@ -423,21 +423,21 @@
       "themeSlug": "pirates",
       "segmentRole": "prefix",
       "scriptId": "banter_reveal_liar_is_prefix_v1",
-      "spokenText": "the liar is",
+      "spokenText": "The liar is…",
       "primaryRelativePath": "public/assets/audio/host/pirates/tts/pirates_banter_banter_reveal_liar_is_prefix_v1.mp3",
       "stableFilename": "pirates_banter_banter_reveal_liar_is_prefix_v1.mp3",
-      "contentSha256": "051f1f88d1754b376327f1d1178b2339668d9c72b36c67bffec36804423f6e0b"
+      "contentSha256": "951f3b5eff6470f3cf4178843c8061d6397abaf9121819e8423511495973272f"
     },
     {
       "lineId": "pirates:banter_reveal_plural_v1",
       "themeName": "Pirates",
       "themeSlug": "pirates",
-      "segmentRole": "name_free",
+      "segmentRole": "prefix",
       "scriptId": "banter_reveal_plural_v1",
-      "spokenText": "we've got a whole team tonight.",
+      "spokenText": "The liars are…",
       "primaryRelativePath": "public/assets/audio/host/pirates/tts/pirates_banter_banter_reveal_plural_v1.mp3",
       "stableFilename": "pirates_banter_banter_reveal_plural_v1.mp3",
-      "contentSha256": "5ad1db8c4ca6823c60f5fdc69e813863cbd3c9206ac1d235be36cb057d90bcb5"
+      "contentSha256": "759387c42d108432da49c70e7d01294ef0d44ef95c600257a32c5a110302e2c6"
     },
     {
       "lineId": "cops-and-robbers:banter_picker_prefix_v1",
@@ -445,10 +445,10 @@
       "themeSlug": "cops-and-robbers",
       "segmentRole": "prefix",
       "scriptId": "banter_picker_prefix_v1",
-      "spokenText": "you're choosing the chaos this round.",
+      "spokenText": "Player, you're choosing the chaos this round.",
       "primaryRelativePath": "public/assets/audio/host/cops-and-robbers/tts/cops-and-robbers_banter_banter_picker_prefix_v1.mp3",
       "stableFilename": "cops-and-robbers_banter_banter_picker_prefix_v1.mp3",
-      "contentSha256": "3a15e80390bd9255b3fd4770fe84dfc14b21be64f47e3afebaaafe62e2a880b4"
+      "contentSha256": "41db365011cd098622e3f7416fe5f0dfaa72ceb68d4e43e081bd95f21778a16d"
     },
     {
       "lineId": "cops-and-robbers:banter_picker_prefix_v2",
@@ -456,10 +456,10 @@
       "themeSlug": "cops-and-robbers",
       "segmentRole": "prefix",
       "scriptId": "banter_picker_prefix_v2",
-      "spokenText": "pick a mode, pick a category, try not to look guilty before we start.",
+      "spokenText": "Alright Player — pick a mode, pick a category, try not to look guilty before we start.",
       "primaryRelativePath": "public/assets/audio/host/cops-and-robbers/tts/cops-and-robbers_banter_banter_picker_prefix_v2.mp3",
       "stableFilename": "cops-and-robbers_banter_banter_picker_prefix_v2.mp3",
-      "contentSha256": "e21ee1930e7bb13dbe04c0c522eafb254031e716574271c1921d9b9cc24a72e6"
+      "contentSha256": "50a8ea519d7abc56f1ea38df42bad470b6a48baa2ca503b6da49277f7a601184"
     },
     {
       "lineId": "cops-and-robbers:banter_picker_prefix_v3",
@@ -467,10 +467,10 @@
       "themeSlug": "cops-and-robbers",
       "segmentRole": "prefix",
       "scriptId": "banter_picker_prefix_v3",
-      "spokenText": "the wheel of bad decisions stops here.",
+      "spokenText": "The wheel of bad decisions stops with Player.",
       "primaryRelativePath": "public/assets/audio/host/cops-and-robbers/tts/cops-and-robbers_banter_banter_picker_prefix_v3.mp3",
       "stableFilename": "cops-and-robbers_banter_banter_picker_prefix_v3.mp3",
-      "contentSha256": "9707c24ba6253afa34977d9f1b2ce66bd7819d391d8a7ac030be8a05a7549afc"
+      "contentSha256": "41fbc4ff666f946e2541ced62c9d1ffdc2732709695ab3340454a7fdd7b9b1c6"
     },
     {
       "lineId": "cops-and-robbers:banter_reveal_suffix_singular_v1",
@@ -478,10 +478,10 @@
       "themeSlug": "cops-and-robbers",
       "segmentRole": "suffix",
       "scriptId": "banter_reveal_suffix_singular_v1",
-      "spokenText": "was bluffing the whole time.",
+      "spokenText": "Was bluffing the whole time.",
       "primaryRelativePath": "public/assets/audio/host/cops-and-robbers/tts/cops-and-robbers_banter_banter_reveal_suffix_singular_v1.mp3",
       "stableFilename": "cops-and-robbers_banter_banter_reveal_suffix_singular_v1.mp3",
-      "contentSha256": "a71770cf93256a6d7c0ffe17298bcf111807f5c62b2ff6a8fe709610914944c6"
+      "contentSha256": "4e5ad35cc5cd71d6075681ed6e14661498244fd379034f9562f6bc2ea2b13edd"
     },
     {
       "lineId": "cops-and-robbers:banter_reveal_suffix_singular_v2",
@@ -489,10 +489,10 @@
       "themeSlug": "cops-and-robbers",
       "segmentRole": "suffix",
       "scriptId": "banter_reveal_suffix_singular_v2",
-      "spokenText": "— called it.",
+      "spokenText": "Called it.",
       "primaryRelativePath": "public/assets/audio/host/cops-and-robbers/tts/cops-and-robbers_banter_banter_reveal_suffix_singular_v2.mp3",
       "stableFilename": "cops-and-robbers_banter_banter_reveal_suffix_singular_v2.mp3",
-      "contentSha256": "facff20e3a971426d90986dd40128157b9370320e8ddd8684a555f6e3188cfb8"
+      "contentSha256": "72ee765b9f5c23144de09444c1abfe9f5105e39bbfd79ccf7a1591f600b381ce"
     },
     {
       "lineId": "cops-and-robbers:banter_result_caught_v1",
@@ -500,10 +500,10 @@
       "themeSlug": "cops-and-robbers",
       "segmentRole": "name_free",
       "scriptId": "banter_result_caught_v1",
-      "spokenText": "that round had actual detective energy. shocking, honestly.",
+      "spokenText": "That round had actual detective energy. Shocking, honestly.",
       "primaryRelativePath": "public/assets/audio/host/cops-and-robbers/tts/cops-and-robbers_banter_banter_result_caught_v1.mp3",
       "stableFilename": "cops-and-robbers_banter_banter_result_caught_v1.mp3",
-      "contentSha256": "fcd4c667d36bf4b9d003ccee8d0b0ccab443f9e72cc576c62ed0c8a13431d702"
+      "contentSha256": "818f32ddadd6384225e66ab10b1260230b5553de97ad4a1a4f86e9a80d60f3ee"
     },
     {
       "lineId": "cops-and-robbers:banter_result_caught_v2",
@@ -511,10 +511,10 @@
       "themeSlug": "cops-and-robbers",
       "segmentRole": "name_free",
       "scriptId": "banter_result_caught_v2",
-      "spokenText": "clean vote — the table actually agreed. suspiciously organised.",
+      "spokenText": "Clean vote — the table actually agreed. Suspiciously organised.",
       "primaryRelativePath": "public/assets/audio/host/cops-and-robbers/tts/cops-and-robbers_banter_banter_result_caught_v2.mp3",
       "stableFilename": "cops-and-robbers_banter_banter_result_caught_v2.mp3",
-      "contentSha256": "148319cef5dba973453adc04a999c74040eb3dd3402d4463488f20aeda920b09"
+      "contentSha256": "8608789f4b0e4a429390ce9f6cd2070749e9c6f8984c1524df2756948437d0aa"
     },
     {
       "lineId": "cops-and-robbers:banter_result_escaped_v1",
@@ -522,10 +522,10 @@
       "themeSlug": "cops-and-robbers",
       "segmentRole": "name_free",
       "scriptId": "banter_result_escaped_v1",
-      "spokenText": "somehow the lie walked out wearing flip-flops. tough scene.",
+      "spokenText": "Somehow the lie walked out wearing flip-flops. Tough scene.",
       "primaryRelativePath": "public/assets/audio/host/cops-and-robbers/tts/cops-and-robbers_banter_banter_result_escaped_v1.mp3",
       "stableFilename": "cops-and-robbers_banter_banter_result_escaped_v1.mp3",
-      "contentSha256": "76013daaa86efa166f9b36e2acb11c79d15a204a9d3f7d5a4587cb7ba0dc4f2b"
+      "contentSha256": "f632568951c96288b006de1ea513fde8a97abdfd6542a9a11f7e27ec135fa54f"
     },
     {
       "lineId": "cops-and-robbers:banter_result_escaped_v2",
@@ -533,10 +533,10 @@
       "themeSlug": "cops-and-robbers",
       "segmentRole": "name_free",
       "scriptId": "banter_result_escaped_v2",
-      "spokenText": "the fib survived — not a compliment, just a fact.",
+      "spokenText": "The fib survived — not a compliment, just a fact.",
       "primaryRelativePath": "public/assets/audio/host/cops-and-robbers/tts/cops-and-robbers_banter_banter_result_escaped_v2.mp3",
       "stableFilename": "cops-and-robbers_banter_banter_result_escaped_v2.mp3",
-      "contentSha256": "f1a4a7ab25a1700d8f9b5e950037f49ef06dbdbd9a5ab718522a9ca93b8a2767"
+      "contentSha256": "ce4b138b595851eb31c7eddfd1afde661fac873d44ba06b685764a0005c6aa6d"
     },
     {
       "lineId": "cops-and-robbers:banter_result_chaos_v1",
@@ -544,10 +544,10 @@
       "themeSlug": "cops-and-robbers",
       "segmentRole": "name_free",
       "scriptId": "banter_result_chaos_v1",
-      "spokenText": "that was a chaotic round. beautiful, but chaotic.",
+      "spokenText": "That was a chaotic round. Beautiful, but chaotic.",
       "primaryRelativePath": "public/assets/audio/host/cops-and-robbers/tts/cops-and-robbers_banter_banter_result_chaos_v1.mp3",
       "stableFilename": "cops-and-robbers_banter_banter_result_chaos_v1.mp3",
-      "contentSha256": "e32a7a014deec7b420172799db807693b2aee5606fe5c353f77fce7fb61f90e6"
+      "contentSha256": "9723f8bb389540ffb1c91cf9b4fddaa40eb5d0b1c08a756426bc759452afcfae"
     },
     {
       "lineId": "cops-and-robbers:banter_wrap_v1",
@@ -555,10 +555,10 @@
       "themeSlug": "cops-and-robbers",
       "segmentRole": "name_free",
       "scriptId": "banter_wrap_v1",
-      "spokenText": "that's a wrap — crown the chaos and run it back.",
+      "spokenText": "That's a wrap — crown the chaos and run it back.",
       "primaryRelativePath": "public/assets/audio/host/cops-and-robbers/tts/cops-and-robbers_banter_banter_wrap_v1.mp3",
       "stableFilename": "cops-and-robbers_banter_banter_wrap_v1.mp3",
-      "contentSha256": "815df462585bfa4fd43a25b553e3929ac645dc25b9bf4e1f77d2e997b00f0d16"
+      "contentSha256": "4e89318e0bc8a34c64062f57252c3cc5c4f8cdc60039b6360fdecfd57c35e2ba"
     },
     {
       "lineId": "cops-and-robbers:banter_reveal_liar_is_prefix_v1",
@@ -566,21 +566,21 @@
       "themeSlug": "cops-and-robbers",
       "segmentRole": "prefix",
       "scriptId": "banter_reveal_liar_is_prefix_v1",
-      "spokenText": "the liar is",
+      "spokenText": "The liar is…",
       "primaryRelativePath": "public/assets/audio/host/cops-and-robbers/tts/cops-and-robbers_banter_banter_reveal_liar_is_prefix_v1.mp3",
       "stableFilename": "cops-and-robbers_banter_banter_reveal_liar_is_prefix_v1.mp3",
-      "contentSha256": "051f1f88d1754b376327f1d1178b2339668d9c72b36c67bffec36804423f6e0b"
+      "contentSha256": "951f3b5eff6470f3cf4178843c8061d6397abaf9121819e8423511495973272f"
     },
     {
       "lineId": "cops-and-robbers:banter_reveal_plural_v1",
       "themeName": "Cops and Robbers",
       "themeSlug": "cops-and-robbers",
-      "segmentRole": "name_free",
+      "segmentRole": "prefix",
       "scriptId": "banter_reveal_plural_v1",
-      "spokenText": "we've got a whole team tonight.",
+      "spokenText": "The liars are…",
       "primaryRelativePath": "public/assets/audio/host/cops-and-robbers/tts/cops-and-robbers_banter_banter_reveal_plural_v1.mp3",
       "stableFilename": "cops-and-robbers_banter_banter_reveal_plural_v1.mp3",
-      "contentSha256": "5ad1db8c4ca6823c60f5fdc69e813863cbd3c9206ac1d235be36cb057d90bcb5"
+      "contentSha256": "759387c42d108432da49c70e7d01294ef0d44ef95c600257a32c5a110302e2c6"
     },
     {
       "lineId": "ghosts-and-ghouls:banter_picker_prefix_v1",
@@ -588,10 +588,10 @@
       "themeSlug": "ghosts-and-ghouls",
       "segmentRole": "prefix",
       "scriptId": "banter_picker_prefix_v1",
-      "spokenText": "you're choosing the chaos this round.",
+      "spokenText": "Player, you're choosing the chaos this round.",
       "primaryRelativePath": "public/assets/audio/host/ghosts-and-ghouls/tts/ghosts-and-ghouls_banter_banter_picker_prefix_v1.mp3",
       "stableFilename": "ghosts-and-ghouls_banter_banter_picker_prefix_v1.mp3",
-      "contentSha256": "3a15e80390bd9255b3fd4770fe84dfc14b21be64f47e3afebaaafe62e2a880b4"
+      "contentSha256": "41db365011cd098622e3f7416fe5f0dfaa72ceb68d4e43e081bd95f21778a16d"
     },
     {
       "lineId": "ghosts-and-ghouls:banter_picker_prefix_v2",
@@ -599,10 +599,10 @@
       "themeSlug": "ghosts-and-ghouls",
       "segmentRole": "prefix",
       "scriptId": "banter_picker_prefix_v2",
-      "spokenText": "pick a mode, pick a category, try not to look guilty before we start.",
+      "spokenText": "Alright Player — pick a mode, pick a category, try not to look guilty before we start.",
       "primaryRelativePath": "public/assets/audio/host/ghosts-and-ghouls/tts/ghosts-and-ghouls_banter_banter_picker_prefix_v2.mp3",
       "stableFilename": "ghosts-and-ghouls_banter_banter_picker_prefix_v2.mp3",
-      "contentSha256": "e21ee1930e7bb13dbe04c0c522eafb254031e716574271c1921d9b9cc24a72e6"
+      "contentSha256": "50a8ea519d7abc56f1ea38df42bad470b6a48baa2ca503b6da49277f7a601184"
     },
     {
       "lineId": "ghosts-and-ghouls:banter_picker_prefix_v3",
@@ -610,10 +610,10 @@
       "themeSlug": "ghosts-and-ghouls",
       "segmentRole": "prefix",
       "scriptId": "banter_picker_prefix_v3",
-      "spokenText": "the wheel of bad decisions stops here.",
+      "spokenText": "The wheel of bad decisions stops with Player.",
       "primaryRelativePath": "public/assets/audio/host/ghosts-and-ghouls/tts/ghosts-and-ghouls_banter_banter_picker_prefix_v3.mp3",
       "stableFilename": "ghosts-and-ghouls_banter_banter_picker_prefix_v3.mp3",
-      "contentSha256": "9707c24ba6253afa34977d9f1b2ce66bd7819d391d8a7ac030be8a05a7549afc"
+      "contentSha256": "41fbc4ff666f946e2541ced62c9d1ffdc2732709695ab3340454a7fdd7b9b1c6"
     },
     {
       "lineId": "ghosts-and-ghouls:banter_reveal_suffix_singular_v1",
@@ -621,10 +621,10 @@
       "themeSlug": "ghosts-and-ghouls",
       "segmentRole": "suffix",
       "scriptId": "banter_reveal_suffix_singular_v1",
-      "spokenText": "was bluffing the whole time.",
+      "spokenText": "Was bluffing the whole time.",
       "primaryRelativePath": "public/assets/audio/host/ghosts-and-ghouls/tts/ghosts-and-ghouls_banter_banter_reveal_suffix_singular_v1.mp3",
       "stableFilename": "ghosts-and-ghouls_banter_banter_reveal_suffix_singular_v1.mp3",
-      "contentSha256": "a71770cf93256a6d7c0ffe17298bcf111807f5c62b2ff6a8fe709610914944c6"
+      "contentSha256": "4e5ad35cc5cd71d6075681ed6e14661498244fd379034f9562f6bc2ea2b13edd"
     },
     {
       "lineId": "ghosts-and-ghouls:banter_reveal_suffix_singular_v2",
@@ -632,10 +632,10 @@
       "themeSlug": "ghosts-and-ghouls",
       "segmentRole": "suffix",
       "scriptId": "banter_reveal_suffix_singular_v2",
-      "spokenText": "— called it.",
+      "spokenText": "Called it.",
       "primaryRelativePath": "public/assets/audio/host/ghosts-and-ghouls/tts/ghosts-and-ghouls_banter_banter_reveal_suffix_singular_v2.mp3",
       "stableFilename": "ghosts-and-ghouls_banter_banter_reveal_suffix_singular_v2.mp3",
-      "contentSha256": "facff20e3a971426d90986dd40128157b9370320e8ddd8684a555f6e3188cfb8"
+      "contentSha256": "72ee765b9f5c23144de09444c1abfe9f5105e39bbfd79ccf7a1591f600b381ce"
     },
     {
       "lineId": "ghosts-and-ghouls:banter_result_caught_v1",
@@ -643,10 +643,10 @@
       "themeSlug": "ghosts-and-ghouls",
       "segmentRole": "name_free",
       "scriptId": "banter_result_caught_v1",
-      "spokenText": "that round had actual detective energy. shocking, honestly.",
+      "spokenText": "That round had actual detective energy. Shocking, honestly.",
       "primaryRelativePath": "public/assets/audio/host/ghosts-and-ghouls/tts/ghosts-and-ghouls_banter_banter_result_caught_v1.mp3",
       "stableFilename": "ghosts-and-ghouls_banter_banter_result_caught_v1.mp3",
-      "contentSha256": "fcd4c667d36bf4b9d003ccee8d0b0ccab443f9e72cc576c62ed0c8a13431d702"
+      "contentSha256": "818f32ddadd6384225e66ab10b1260230b5553de97ad4a1a4f86e9a80d60f3ee"
     },
     {
       "lineId": "ghosts-and-ghouls:banter_result_caught_v2",
@@ -654,10 +654,10 @@
       "themeSlug": "ghosts-and-ghouls",
       "segmentRole": "name_free",
       "scriptId": "banter_result_caught_v2",
-      "spokenText": "clean vote — the table actually agreed. suspiciously organised.",
+      "spokenText": "Clean vote — the table actually agreed. Suspiciously organised.",
       "primaryRelativePath": "public/assets/audio/host/ghosts-and-ghouls/tts/ghosts-and-ghouls_banter_banter_result_caught_v2.mp3",
       "stableFilename": "ghosts-and-ghouls_banter_banter_result_caught_v2.mp3",
-      "contentSha256": "148319cef5dba973453adc04a999c74040eb3dd3402d4463488f20aeda920b09"
+      "contentSha256": "8608789f4b0e4a429390ce9f6cd2070749e9c6f8984c1524df2756948437d0aa"
     },
     {
       "lineId": "ghosts-and-ghouls:banter_result_escaped_v1",
@@ -665,10 +665,10 @@
       "themeSlug": "ghosts-and-ghouls",
       "segmentRole": "name_free",
       "scriptId": "banter_result_escaped_v1",
-      "spokenText": "somehow the lie walked out wearing flip-flops. tough scene.",
+      "spokenText": "Somehow the lie walked out wearing flip-flops. Tough scene.",
       "primaryRelativePath": "public/assets/audio/host/ghosts-and-ghouls/tts/ghosts-and-ghouls_banter_banter_result_escaped_v1.mp3",
       "stableFilename": "ghosts-and-ghouls_banter_banter_result_escaped_v1.mp3",
-      "contentSha256": "76013daaa86efa166f9b36e2acb11c79d15a204a9d3f7d5a4587cb7ba0dc4f2b"
+      "contentSha256": "f632568951c96288b006de1ea513fde8a97abdfd6542a9a11f7e27ec135fa54f"
     },
     {
       "lineId": "ghosts-and-ghouls:banter_result_escaped_v2",
@@ -676,10 +676,10 @@
       "themeSlug": "ghosts-and-ghouls",
       "segmentRole": "name_free",
       "scriptId": "banter_result_escaped_v2",
-      "spokenText": "the fib survived — not a compliment, just a fact.",
+      "spokenText": "The fib survived — not a compliment, just a fact.",
       "primaryRelativePath": "public/assets/audio/host/ghosts-and-ghouls/tts/ghosts-and-ghouls_banter_banter_result_escaped_v2.mp3",
       "stableFilename": "ghosts-and-ghouls_banter_banter_result_escaped_v2.mp3",
-      "contentSha256": "f1a4a7ab25a1700d8f9b5e950037f49ef06dbdbd9a5ab718522a9ca93b8a2767"
+      "contentSha256": "ce4b138b595851eb31c7eddfd1afde661fac873d44ba06b685764a0005c6aa6d"
     },
     {
       "lineId": "ghosts-and-ghouls:banter_result_chaos_v1",
@@ -687,10 +687,10 @@
       "themeSlug": "ghosts-and-ghouls",
       "segmentRole": "name_free",
       "scriptId": "banter_result_chaos_v1",
-      "spokenText": "that was a chaotic round. beautiful, but chaotic.",
+      "spokenText": "That was a chaotic round. Beautiful, but chaotic.",
       "primaryRelativePath": "public/assets/audio/host/ghosts-and-ghouls/tts/ghosts-and-ghouls_banter_banter_result_chaos_v1.mp3",
       "stableFilename": "ghosts-and-ghouls_banter_banter_result_chaos_v1.mp3",
-      "contentSha256": "e32a7a014deec7b420172799db807693b2aee5606fe5c353f77fce7fb61f90e6"
+      "contentSha256": "9723f8bb389540ffb1c91cf9b4fddaa40eb5d0b1c08a756426bc759452afcfae"
     },
     {
       "lineId": "ghosts-and-ghouls:banter_wrap_v1",
@@ -698,10 +698,10 @@
       "themeSlug": "ghosts-and-ghouls",
       "segmentRole": "name_free",
       "scriptId": "banter_wrap_v1",
-      "spokenText": "that's a wrap — crown the chaos and run it back.",
+      "spokenText": "That's a wrap — crown the chaos and run it back.",
       "primaryRelativePath": "public/assets/audio/host/ghosts-and-ghouls/tts/ghosts-and-ghouls_banter_banter_wrap_v1.mp3",
       "stableFilename": "ghosts-and-ghouls_banter_banter_wrap_v1.mp3",
-      "contentSha256": "815df462585bfa4fd43a25b553e3929ac645dc25b9bf4e1f77d2e997b00f0d16"
+      "contentSha256": "4e89318e0bc8a34c64062f57252c3cc5c4f8cdc60039b6360fdecfd57c35e2ba"
     },
     {
       "lineId": "ghosts-and-ghouls:banter_reveal_liar_is_prefix_v1",
@@ -709,21 +709,21 @@
       "themeSlug": "ghosts-and-ghouls",
       "segmentRole": "prefix",
       "scriptId": "banter_reveal_liar_is_prefix_v1",
-      "spokenText": "the liar is",
+      "spokenText": "The liar is…",
       "primaryRelativePath": "public/assets/audio/host/ghosts-and-ghouls/tts/ghosts-and-ghouls_banter_banter_reveal_liar_is_prefix_v1.mp3",
       "stableFilename": "ghosts-and-ghouls_banter_banter_reveal_liar_is_prefix_v1.mp3",
-      "contentSha256": "051f1f88d1754b376327f1d1178b2339668d9c72b36c67bffec36804423f6e0b"
+      "contentSha256": "951f3b5eff6470f3cf4178843c8061d6397abaf9121819e8423511495973272f"
     },
     {
       "lineId": "ghosts-and-ghouls:banter_reveal_plural_v1",
       "themeName": "Ghosts and Ghouls",
       "themeSlug": "ghosts-and-ghouls",
-      "segmentRole": "name_free",
+      "segmentRole": "prefix",
       "scriptId": "banter_reveal_plural_v1",
-      "spokenText": "we've got a whole team tonight.",
+      "spokenText": "The liars are…",
       "primaryRelativePath": "public/assets/audio/host/ghosts-and-ghouls/tts/ghosts-and-ghouls_banter_banter_reveal_plural_v1.mp3",
       "stableFilename": "ghosts-and-ghouls_banter_banter_reveal_plural_v1.mp3",
-      "contentSha256": "5ad1db8c4ca6823c60f5fdc69e813863cbd3c9206ac1d235be36cb057d90bcb5"
+      "contentSha256": "759387c42d108432da49c70e7d01294ef0d44ef95c600257a32c5a110302e2c6"
     },
     {
       "lineId": "cops-and-robbers:banter_picker_prefix_v1",
@@ -731,10 +731,10 @@
       "themeSlug": "cops-and-robbers",
       "segmentRole": "prefix",
       "scriptId": "banter_picker_prefix_v1",
-      "spokenText": "you're choosing the chaos this round.",
+      "spokenText": "Player, you're choosing the chaos this round.",
       "primaryRelativePath": "public/assets/audio/host/cops-and-robbers/tts/cops-and-robbers_banter_banter_picker_prefix_v1.mp3",
       "stableFilename": "cops-and-robbers_banter_banter_picker_prefix_v1.mp3",
-      "contentSha256": "3a15e80390bd9255b3fd4770fe84dfc14b21be64f47e3afebaaafe62e2a880b4"
+      "contentSha256": "41db365011cd098622e3f7416fe5f0dfaa72ceb68d4e43e081bd95f21778a16d"
     },
     {
       "lineId": "cops-and-robbers:banter_picker_prefix_v2",
@@ -742,10 +742,10 @@
       "themeSlug": "cops-and-robbers",
       "segmentRole": "prefix",
       "scriptId": "banter_picker_prefix_v2",
-      "spokenText": "pick a mode, pick a category, try not to look guilty before we start.",
+      "spokenText": "Alright Player — pick a mode, pick a category, try not to look guilty before we start.",
       "primaryRelativePath": "public/assets/audio/host/cops-and-robbers/tts/cops-and-robbers_banter_banter_picker_prefix_v2.mp3",
       "stableFilename": "cops-and-robbers_banter_banter_picker_prefix_v2.mp3",
-      "contentSha256": "e21ee1930e7bb13dbe04c0c522eafb254031e716574271c1921d9b9cc24a72e6"
+      "contentSha256": "50a8ea519d7abc56f1ea38df42bad470b6a48baa2ca503b6da49277f7a601184"
     },
     {
       "lineId": "cops-and-robbers:banter_picker_prefix_v3",
@@ -753,10 +753,10 @@
       "themeSlug": "cops-and-robbers",
       "segmentRole": "prefix",
       "scriptId": "banter_picker_prefix_v3",
-      "spokenText": "the wheel of bad decisions stops here.",
+      "spokenText": "The wheel of bad decisions stops with Player.",
       "primaryRelativePath": "public/assets/audio/host/cops-and-robbers/tts/cops-and-robbers_banter_banter_picker_prefix_v3.mp3",
       "stableFilename": "cops-and-robbers_banter_banter_picker_prefix_v3.mp3",
-      "contentSha256": "9707c24ba6253afa34977d9f1b2ce66bd7819d391d8a7ac030be8a05a7549afc"
+      "contentSha256": "41fbc4ff666f946e2541ced62c9d1ffdc2732709695ab3340454a7fdd7b9b1c6"
     },
     {
       "lineId": "cops-and-robbers:banter_reveal_suffix_singular_v1",
@@ -764,10 +764,10 @@
       "themeSlug": "cops-and-robbers",
       "segmentRole": "suffix",
       "scriptId": "banter_reveal_suffix_singular_v1",
-      "spokenText": "was bluffing the whole time.",
+      "spokenText": "Was bluffing the whole time.",
       "primaryRelativePath": "public/assets/audio/host/cops-and-robbers/tts/cops-and-robbers_banter_banter_reveal_suffix_singular_v1.mp3",
       "stableFilename": "cops-and-robbers_banter_banter_reveal_suffix_singular_v1.mp3",
-      "contentSha256": "a71770cf93256a6d7c0ffe17298bcf111807f5c62b2ff6a8fe709610914944c6"
+      "contentSha256": "4e5ad35cc5cd71d6075681ed6e14661498244fd379034f9562f6bc2ea2b13edd"
     },
     {
       "lineId": "cops-and-robbers:banter_reveal_suffix_singular_v2",
@@ -775,10 +775,10 @@
       "themeSlug": "cops-and-robbers",
       "segmentRole": "suffix",
       "scriptId": "banter_reveal_suffix_singular_v2",
-      "spokenText": "— called it.",
+      "spokenText": "Called it.",
       "primaryRelativePath": "public/assets/audio/host/cops-and-robbers/tts/cops-and-robbers_banter_banter_reveal_suffix_singular_v2.mp3",
       "stableFilename": "cops-and-robbers_banter_banter_reveal_suffix_singular_v2.mp3",
-      "contentSha256": "facff20e3a971426d90986dd40128157b9370320e8ddd8684a555f6e3188cfb8"
+      "contentSha256": "72ee765b9f5c23144de09444c1abfe9f5105e39bbfd79ccf7a1591f600b381ce"
     },
     {
       "lineId": "cops-and-robbers:banter_result_caught_v1",
@@ -786,10 +786,10 @@
       "themeSlug": "cops-and-robbers",
       "segmentRole": "name_free",
       "scriptId": "banter_result_caught_v1",
-      "spokenText": "that round had actual detective energy. shocking, honestly.",
+      "spokenText": "That round had actual detective energy. Shocking, honestly.",
       "primaryRelativePath": "public/assets/audio/host/cops-and-robbers/tts/cops-and-robbers_banter_banter_result_caught_v1.mp3",
       "stableFilename": "cops-and-robbers_banter_banter_result_caught_v1.mp3",
-      "contentSha256": "fcd4c667d36bf4b9d003ccee8d0b0ccab443f9e72cc576c62ed0c8a13431d702"
+      "contentSha256": "818f32ddadd6384225e66ab10b1260230b5553de97ad4a1a4f86e9a80d60f3ee"
     },
     {
       "lineId": "cops-and-robbers:banter_result_caught_v2",
@@ -797,10 +797,10 @@
       "themeSlug": "cops-and-robbers",
       "segmentRole": "name_free",
       "scriptId": "banter_result_caught_v2",
-      "spokenText": "clean vote — the table actually agreed. suspiciously organised.",
+      "spokenText": "Clean vote — the table actually agreed. Suspiciously organised.",
       "primaryRelativePath": "public/assets/audio/host/cops-and-robbers/tts/cops-and-robbers_banter_banter_result_caught_v2.mp3",
       "stableFilename": "cops-and-robbers_banter_banter_result_caught_v2.mp3",
-      "contentSha256": "148319cef5dba973453adc04a999c74040eb3dd3402d4463488f20aeda920b09"
+      "contentSha256": "8608789f4b0e4a429390ce9f6cd2070749e9c6f8984c1524df2756948437d0aa"
     },
     {
       "lineId": "cops-and-robbers:banter_result_escaped_v1",
@@ -808,10 +808,10 @@
       "themeSlug": "cops-and-robbers",
       "segmentRole": "name_free",
       "scriptId": "banter_result_escaped_v1",
-      "spokenText": "somehow the lie walked out wearing flip-flops. tough scene.",
+      "spokenText": "Somehow the lie walked out wearing flip-flops. Tough scene.",
       "primaryRelativePath": "public/assets/audio/host/cops-and-robbers/tts/cops-and-robbers_banter_banter_result_escaped_v1.mp3",
       "stableFilename": "cops-and-robbers_banter_banter_result_escaped_v1.mp3",
-      "contentSha256": "76013daaa86efa166f9b36e2acb11c79d15a204a9d3f7d5a4587cb7ba0dc4f2b"
+      "contentSha256": "f632568951c96288b006de1ea513fde8a97abdfd6542a9a11f7e27ec135fa54f"
     },
     {
       "lineId": "cops-and-robbers:banter_result_escaped_v2",
@@ -819,10 +819,10 @@
       "themeSlug": "cops-and-robbers",
       "segmentRole": "name_free",
       "scriptId": "banter_result_escaped_v2",
-      "spokenText": "the fib survived — not a compliment, just a fact.",
+      "spokenText": "The fib survived — not a compliment, just a fact.",
       "primaryRelativePath": "public/assets/audio/host/cops-and-robbers/tts/cops-and-robbers_banter_banter_result_escaped_v2.mp3",
       "stableFilename": "cops-and-robbers_banter_banter_result_escaped_v2.mp3",
-      "contentSha256": "f1a4a7ab25a1700d8f9b5e950037f49ef06dbdbd9a5ab718522a9ca93b8a2767"
+      "contentSha256": "ce4b138b595851eb31c7eddfd1afde661fac873d44ba06b685764a0005c6aa6d"
     },
     {
       "lineId": "cops-and-robbers:banter_result_chaos_v1",
@@ -830,10 +830,10 @@
       "themeSlug": "cops-and-robbers",
       "segmentRole": "name_free",
       "scriptId": "banter_result_chaos_v1",
-      "spokenText": "that was a chaotic round. beautiful, but chaotic.",
+      "spokenText": "That was a chaotic round. Beautiful, but chaotic.",
       "primaryRelativePath": "public/assets/audio/host/cops-and-robbers/tts/cops-and-robbers_banter_banter_result_chaos_v1.mp3",
       "stableFilename": "cops-and-robbers_banter_banter_result_chaos_v1.mp3",
-      "contentSha256": "e32a7a014deec7b420172799db807693b2aee5606fe5c353f77fce7fb61f90e6"
+      "contentSha256": "9723f8bb389540ffb1c91cf9b4fddaa40eb5d0b1c08a756426bc759452afcfae"
     },
     {
       "lineId": "cops-and-robbers:banter_wrap_v1",
@@ -841,10 +841,10 @@
       "themeSlug": "cops-and-robbers",
       "segmentRole": "name_free",
       "scriptId": "banter_wrap_v1",
-      "spokenText": "that's a wrap — crown the chaos and run it back.",
+      "spokenText": "That's a wrap — crown the chaos and run it back.",
       "primaryRelativePath": "public/assets/audio/host/cops-and-robbers/tts/cops-and-robbers_banter_banter_wrap_v1.mp3",
       "stableFilename": "cops-and-robbers_banter_banter_wrap_v1.mp3",
-      "contentSha256": "815df462585bfa4fd43a25b553e3929ac645dc25b9bf4e1f77d2e997b00f0d16"
+      "contentSha256": "4e89318e0bc8a34c64062f57252c3cc5c4f8cdc60039b6360fdecfd57c35e2ba"
     },
     {
       "lineId": "cops-and-robbers:banter_reveal_liar_is_prefix_v1",
@@ -852,21 +852,21 @@
       "themeSlug": "cops-and-robbers",
       "segmentRole": "prefix",
       "scriptId": "banter_reveal_liar_is_prefix_v1",
-      "spokenText": "the liar is",
+      "spokenText": "The liar is…",
       "primaryRelativePath": "public/assets/audio/host/cops-and-robbers/tts/cops-and-robbers_banter_banter_reveal_liar_is_prefix_v1.mp3",
       "stableFilename": "cops-and-robbers_banter_banter_reveal_liar_is_prefix_v1.mp3",
-      "contentSha256": "051f1f88d1754b376327f1d1178b2339668d9c72b36c67bffec36804423f6e0b"
+      "contentSha256": "951f3b5eff6470f3cf4178843c8061d6397abaf9121819e8423511495973272f"
     },
     {
       "lineId": "cops-and-robbers:banter_reveal_plural_v1",
       "themeName": "Cowboys",
       "themeSlug": "cops-and-robbers",
-      "segmentRole": "name_free",
+      "segmentRole": "prefix",
       "scriptId": "banter_reveal_plural_v1",
-      "spokenText": "we've got a whole team tonight.",
+      "spokenText": "The liars are…",
       "primaryRelativePath": "public/assets/audio/host/cops-and-robbers/tts/cops-and-robbers_banter_banter_reveal_plural_v1.mp3",
       "stableFilename": "cops-and-robbers_banter_banter_reveal_plural_v1.mp3",
-      "contentSha256": "5ad1db8c4ca6823c60f5fdc69e813863cbd3c9206ac1d235be36cb057d90bcb5"
+      "contentSha256": "759387c42d108432da49c70e7d01294ef0d44ef95c600257a32c5a110302e2c6"
     },
     {
       "lineId": "cops-and-robbers:banter_picker_prefix_v1",
@@ -874,10 +874,10 @@
       "themeSlug": "cops-and-robbers",
       "segmentRole": "prefix",
       "scriptId": "banter_picker_prefix_v1",
-      "spokenText": "you're choosing the chaos this round.",
+      "spokenText": "Player, you're choosing the chaos this round.",
       "primaryRelativePath": "public/assets/audio/host/cops-and-robbers/tts/cops-and-robbers_banter_banter_picker_prefix_v1.mp3",
       "stableFilename": "cops-and-robbers_banter_banter_picker_prefix_v1.mp3",
-      "contentSha256": "3a15e80390bd9255b3fd4770fe84dfc14b21be64f47e3afebaaafe62e2a880b4"
+      "contentSha256": "41db365011cd098622e3f7416fe5f0dfaa72ceb68d4e43e081bd95f21778a16d"
     },
     {
       "lineId": "cops-and-robbers:banter_picker_prefix_v2",
@@ -885,10 +885,10 @@
       "themeSlug": "cops-and-robbers",
       "segmentRole": "prefix",
       "scriptId": "banter_picker_prefix_v2",
-      "spokenText": "pick a mode, pick a category, try not to look guilty before we start.",
+      "spokenText": "Alright Player — pick a mode, pick a category, try not to look guilty before we start.",
       "primaryRelativePath": "public/assets/audio/host/cops-and-robbers/tts/cops-and-robbers_banter_banter_picker_prefix_v2.mp3",
       "stableFilename": "cops-and-robbers_banter_banter_picker_prefix_v2.mp3",
-      "contentSha256": "e21ee1930e7bb13dbe04c0c522eafb254031e716574271c1921d9b9cc24a72e6"
+      "contentSha256": "50a8ea519d7abc56f1ea38df42bad470b6a48baa2ca503b6da49277f7a601184"
     },
     {
       "lineId": "cops-and-robbers:banter_picker_prefix_v3",
@@ -896,10 +896,10 @@
       "themeSlug": "cops-and-robbers",
       "segmentRole": "prefix",
       "scriptId": "banter_picker_prefix_v3",
-      "spokenText": "the wheel of bad decisions stops here.",
+      "spokenText": "The wheel of bad decisions stops with Player.",
       "primaryRelativePath": "public/assets/audio/host/cops-and-robbers/tts/cops-and-robbers_banter_banter_picker_prefix_v3.mp3",
       "stableFilename": "cops-and-robbers_banter_banter_picker_prefix_v3.mp3",
-      "contentSha256": "9707c24ba6253afa34977d9f1b2ce66bd7819d391d8a7ac030be8a05a7549afc"
+      "contentSha256": "41fbc4ff666f946e2541ced62c9d1ffdc2732709695ab3340454a7fdd7b9b1c6"
     },
     {
       "lineId": "cops-and-robbers:banter_reveal_suffix_singular_v1",
@@ -907,10 +907,10 @@
       "themeSlug": "cops-and-robbers",
       "segmentRole": "suffix",
       "scriptId": "banter_reveal_suffix_singular_v1",
-      "spokenText": "was bluffing the whole time.",
+      "spokenText": "Was bluffing the whole time.",
       "primaryRelativePath": "public/assets/audio/host/cops-and-robbers/tts/cops-and-robbers_banter_banter_reveal_suffix_singular_v1.mp3",
       "stableFilename": "cops-and-robbers_banter_banter_reveal_suffix_singular_v1.mp3",
-      "contentSha256": "a71770cf93256a6d7c0ffe17298bcf111807f5c62b2ff6a8fe709610914944c6"
+      "contentSha256": "4e5ad35cc5cd71d6075681ed6e14661498244fd379034f9562f6bc2ea2b13edd"
     },
     {
       "lineId": "cops-and-robbers:banter_reveal_suffix_singular_v2",
@@ -918,10 +918,10 @@
       "themeSlug": "cops-and-robbers",
       "segmentRole": "suffix",
       "scriptId": "banter_reveal_suffix_singular_v2",
-      "spokenText": "— called it.",
+      "spokenText": "Called it.",
       "primaryRelativePath": "public/assets/audio/host/cops-and-robbers/tts/cops-and-robbers_banter_banter_reveal_suffix_singular_v2.mp3",
       "stableFilename": "cops-and-robbers_banter_banter_reveal_suffix_singular_v2.mp3",
-      "contentSha256": "facff20e3a971426d90986dd40128157b9370320e8ddd8684a555f6e3188cfb8"
+      "contentSha256": "72ee765b9f5c23144de09444c1abfe9f5105e39bbfd79ccf7a1591f600b381ce"
     },
     {
       "lineId": "cops-and-robbers:banter_result_caught_v1",
@@ -929,10 +929,10 @@
       "themeSlug": "cops-and-robbers",
       "segmentRole": "name_free",
       "scriptId": "banter_result_caught_v1",
-      "spokenText": "that round had actual detective energy. shocking, honestly.",
+      "spokenText": "That round had actual detective energy. Shocking, honestly.",
       "primaryRelativePath": "public/assets/audio/host/cops-and-robbers/tts/cops-and-robbers_banter_banter_result_caught_v1.mp3",
       "stableFilename": "cops-and-robbers_banter_banter_result_caught_v1.mp3",
-      "contentSha256": "fcd4c667d36bf4b9d003ccee8d0b0ccab443f9e72cc576c62ed0c8a13431d702"
+      "contentSha256": "818f32ddadd6384225e66ab10b1260230b5553de97ad4a1a4f86e9a80d60f3ee"
     },
     {
       "lineId": "cops-and-robbers:banter_result_caught_v2",
@@ -940,10 +940,10 @@
       "themeSlug": "cops-and-robbers",
       "segmentRole": "name_free",
       "scriptId": "banter_result_caught_v2",
-      "spokenText": "clean vote — the table actually agreed. suspiciously organised.",
+      "spokenText": "Clean vote — the table actually agreed. Suspiciously organised.",
       "primaryRelativePath": "public/assets/audio/host/cops-and-robbers/tts/cops-and-robbers_banter_banter_result_caught_v2.mp3",
       "stableFilename": "cops-and-robbers_banter_banter_result_caught_v2.mp3",
-      "contentSha256": "148319cef5dba973453adc04a999c74040eb3dd3402d4463488f20aeda920b09"
+      "contentSha256": "8608789f4b0e4a429390ce9f6cd2070749e9c6f8984c1524df2756948437d0aa"
     },
     {
       "lineId": "cops-and-robbers:banter_result_escaped_v1",
@@ -951,10 +951,10 @@
       "themeSlug": "cops-and-robbers",
       "segmentRole": "name_free",
       "scriptId": "banter_result_escaped_v1",
-      "spokenText": "somehow the lie walked out wearing flip-flops. tough scene.",
+      "spokenText": "Somehow the lie walked out wearing flip-flops. Tough scene.",
       "primaryRelativePath": "public/assets/audio/host/cops-and-robbers/tts/cops-and-robbers_banter_banter_result_escaped_v1.mp3",
       "stableFilename": "cops-and-robbers_banter_banter_result_escaped_v1.mp3",
-      "contentSha256": "76013daaa86efa166f9b36e2acb11c79d15a204a9d3f7d5a4587cb7ba0dc4f2b"
+      "contentSha256": "f632568951c96288b006de1ea513fde8a97abdfd6542a9a11f7e27ec135fa54f"
     },
     {
       "lineId": "cops-and-robbers:banter_result_escaped_v2",
@@ -962,10 +962,10 @@
       "themeSlug": "cops-and-robbers",
       "segmentRole": "name_free",
       "scriptId": "banter_result_escaped_v2",
-      "spokenText": "the fib survived — not a compliment, just a fact.",
+      "spokenText": "The fib survived — not a compliment, just a fact.",
       "primaryRelativePath": "public/assets/audio/host/cops-and-robbers/tts/cops-and-robbers_banter_banter_result_escaped_v2.mp3",
       "stableFilename": "cops-and-robbers_banter_banter_result_escaped_v2.mp3",
-      "contentSha256": "f1a4a7ab25a1700d8f9b5e950037f49ef06dbdbd9a5ab718522a9ca93b8a2767"
+      "contentSha256": "ce4b138b595851eb31c7eddfd1afde661fac873d44ba06b685764a0005c6aa6d"
     },
     {
       "lineId": "cops-and-robbers:banter_result_chaos_v1",
@@ -973,10 +973,10 @@
       "themeSlug": "cops-and-robbers",
       "segmentRole": "name_free",
       "scriptId": "banter_result_chaos_v1",
-      "spokenText": "that was a chaotic round. beautiful, but chaotic.",
+      "spokenText": "That was a chaotic round. Beautiful, but chaotic.",
       "primaryRelativePath": "public/assets/audio/host/cops-and-robbers/tts/cops-and-robbers_banter_banter_result_chaos_v1.mp3",
       "stableFilename": "cops-and-robbers_banter_banter_result_chaos_v1.mp3",
-      "contentSha256": "e32a7a014deec7b420172799db807693b2aee5606fe5c353f77fce7fb61f90e6"
+      "contentSha256": "9723f8bb389540ffb1c91cf9b4fddaa40eb5d0b1c08a756426bc759452afcfae"
     },
     {
       "lineId": "cops-and-robbers:banter_wrap_v1",
@@ -984,10 +984,10 @@
       "themeSlug": "cops-and-robbers",
       "segmentRole": "name_free",
       "scriptId": "banter_wrap_v1",
-      "spokenText": "that's a wrap — crown the chaos and run it back.",
+      "spokenText": "That's a wrap — crown the chaos and run it back.",
       "primaryRelativePath": "public/assets/audio/host/cops-and-robbers/tts/cops-and-robbers_banter_banter_wrap_v1.mp3",
       "stableFilename": "cops-and-robbers_banter_banter_wrap_v1.mp3",
-      "contentSha256": "815df462585bfa4fd43a25b553e3929ac645dc25b9bf4e1f77d2e997b00f0d16"
+      "contentSha256": "4e89318e0bc8a34c64062f57252c3cc5c4f8cdc60039b6360fdecfd57c35e2ba"
     },
     {
       "lineId": "cops-and-robbers:banter_reveal_liar_is_prefix_v1",
@@ -995,21 +995,21 @@
       "themeSlug": "cops-and-robbers",
       "segmentRole": "prefix",
       "scriptId": "banter_reveal_liar_is_prefix_v1",
-      "spokenText": "the liar is",
+      "spokenText": "The liar is…",
       "primaryRelativePath": "public/assets/audio/host/cops-and-robbers/tts/cops-and-robbers_banter_banter_reveal_liar_is_prefix_v1.mp3",
       "stableFilename": "cops-and-robbers_banter_banter_reveal_liar_is_prefix_v1.mp3",
-      "contentSha256": "051f1f88d1754b376327f1d1178b2339668d9c72b36c67bffec36804423f6e0b"
+      "contentSha256": "951f3b5eff6470f3cf4178843c8061d6397abaf9121819e8423511495973272f"
     },
     {
       "lineId": "cops-and-robbers:banter_reveal_plural_v1",
       "themeName": "Gangsters",
       "themeSlug": "cops-and-robbers",
-      "segmentRole": "name_free",
+      "segmentRole": "prefix",
       "scriptId": "banter_reveal_plural_v1",
-      "spokenText": "we've got a whole team tonight.",
+      "spokenText": "The liars are…",
       "primaryRelativePath": "public/assets/audio/host/cops-and-robbers/tts/cops-and-robbers_banter_banter_reveal_plural_v1.mp3",
       "stableFilename": "cops-and-robbers_banter_banter_reveal_plural_v1.mp3",
-      "contentSha256": "5ad1db8c4ca6823c60f5fdc69e813863cbd3c9206ac1d235be36cb057d90bcb5"
+      "contentSha256": "759387c42d108432da49c70e7d01294ef0d44ef95c600257a32c5a110302e2c6"
     },
     {
       "lineId": "wrestlers:banter_picker_prefix_v1",
@@ -1017,10 +1017,10 @@
       "themeSlug": "wrestlers",
       "segmentRole": "prefix",
       "scriptId": "banter_picker_prefix_v1",
-      "spokenText": "you're choosing the chaos this round.",
+      "spokenText": "Player, you're choosing the chaos this round.",
       "primaryRelativePath": "public/assets/audio/host/wrestlers/tts/wrestlers_banter_banter_picker_prefix_v1.mp3",
       "stableFilename": "wrestlers_banter_banter_picker_prefix_v1.mp3",
-      "contentSha256": "3a15e80390bd9255b3fd4770fe84dfc14b21be64f47e3afebaaafe62e2a880b4"
+      "contentSha256": "41db365011cd098622e3f7416fe5f0dfaa72ceb68d4e43e081bd95f21778a16d"
     },
     {
       "lineId": "wrestlers:banter_picker_prefix_v2",
@@ -1028,10 +1028,10 @@
       "themeSlug": "wrestlers",
       "segmentRole": "prefix",
       "scriptId": "banter_picker_prefix_v2",
-      "spokenText": "pick a mode, pick a category, try not to look guilty before we start.",
+      "spokenText": "Alright Player — pick a mode, pick a category, try not to look guilty before we start.",
       "primaryRelativePath": "public/assets/audio/host/wrestlers/tts/wrestlers_banter_banter_picker_prefix_v2.mp3",
       "stableFilename": "wrestlers_banter_banter_picker_prefix_v2.mp3",
-      "contentSha256": "e21ee1930e7bb13dbe04c0c522eafb254031e716574271c1921d9b9cc24a72e6"
+      "contentSha256": "50a8ea519d7abc56f1ea38df42bad470b6a48baa2ca503b6da49277f7a601184"
     },
     {
       "lineId": "wrestlers:banter_picker_prefix_v3",
@@ -1039,10 +1039,10 @@
       "themeSlug": "wrestlers",
       "segmentRole": "prefix",
       "scriptId": "banter_picker_prefix_v3",
-      "spokenText": "the wheel of bad decisions stops here.",
+      "spokenText": "The wheel of bad decisions stops with Player.",
       "primaryRelativePath": "public/assets/audio/host/wrestlers/tts/wrestlers_banter_banter_picker_prefix_v3.mp3",
       "stableFilename": "wrestlers_banter_banter_picker_prefix_v3.mp3",
-      "contentSha256": "9707c24ba6253afa34977d9f1b2ce66bd7819d391d8a7ac030be8a05a7549afc"
+      "contentSha256": "41fbc4ff666f946e2541ced62c9d1ffdc2732709695ab3340454a7fdd7b9b1c6"
     },
     {
       "lineId": "wrestlers:banter_reveal_suffix_singular_v1",
@@ -1050,10 +1050,10 @@
       "themeSlug": "wrestlers",
       "segmentRole": "suffix",
       "scriptId": "banter_reveal_suffix_singular_v1",
-      "spokenText": "was bluffing the whole time.",
+      "spokenText": "Was bluffing the whole time.",
       "primaryRelativePath": "public/assets/audio/host/wrestlers/tts/wrestlers_banter_banter_reveal_suffix_singular_v1.mp3",
       "stableFilename": "wrestlers_banter_banter_reveal_suffix_singular_v1.mp3",
-      "contentSha256": "a71770cf93256a6d7c0ffe17298bcf111807f5c62b2ff6a8fe709610914944c6"
+      "contentSha256": "4e5ad35cc5cd71d6075681ed6e14661498244fd379034f9562f6bc2ea2b13edd"
     },
     {
       "lineId": "wrestlers:banter_reveal_suffix_singular_v2",
@@ -1061,10 +1061,10 @@
       "themeSlug": "wrestlers",
       "segmentRole": "suffix",
       "scriptId": "banter_reveal_suffix_singular_v2",
-      "spokenText": "— called it.",
+      "spokenText": "Called it.",
       "primaryRelativePath": "public/assets/audio/host/wrestlers/tts/wrestlers_banter_banter_reveal_suffix_singular_v2.mp3",
       "stableFilename": "wrestlers_banter_banter_reveal_suffix_singular_v2.mp3",
-      "contentSha256": "facff20e3a971426d90986dd40128157b9370320e8ddd8684a555f6e3188cfb8"
+      "contentSha256": "72ee765b9f5c23144de09444c1abfe9f5105e39bbfd79ccf7a1591f600b381ce"
     },
     {
       "lineId": "wrestlers:banter_result_caught_v1",
@@ -1072,10 +1072,10 @@
       "themeSlug": "wrestlers",
       "segmentRole": "name_free",
       "scriptId": "banter_result_caught_v1",
-      "spokenText": "that round had actual detective energy. shocking, honestly.",
+      "spokenText": "That round had actual detective energy. Shocking, honestly.",
       "primaryRelativePath": "public/assets/audio/host/wrestlers/tts/wrestlers_banter_banter_result_caught_v1.mp3",
       "stableFilename": "wrestlers_banter_banter_result_caught_v1.mp3",
-      "contentSha256": "fcd4c667d36bf4b9d003ccee8d0b0ccab443f9e72cc576c62ed0c8a13431d702"
+      "contentSha256": "818f32ddadd6384225e66ab10b1260230b5553de97ad4a1a4f86e9a80d60f3ee"
     },
     {
       "lineId": "wrestlers:banter_result_caught_v2",
@@ -1083,10 +1083,10 @@
       "themeSlug": "wrestlers",
       "segmentRole": "name_free",
       "scriptId": "banter_result_caught_v2",
-      "spokenText": "clean vote — the table actually agreed. suspiciously organised.",
+      "spokenText": "Clean vote — the table actually agreed. Suspiciously organised.",
       "primaryRelativePath": "public/assets/audio/host/wrestlers/tts/wrestlers_banter_banter_result_caught_v2.mp3",
       "stableFilename": "wrestlers_banter_banter_result_caught_v2.mp3",
-      "contentSha256": "148319cef5dba973453adc04a999c74040eb3dd3402d4463488f20aeda920b09"
+      "contentSha256": "8608789f4b0e4a429390ce9f6cd2070749e9c6f8984c1524df2756948437d0aa"
     },
     {
       "lineId": "wrestlers:banter_result_escaped_v1",
@@ -1094,10 +1094,10 @@
       "themeSlug": "wrestlers",
       "segmentRole": "name_free",
       "scriptId": "banter_result_escaped_v1",
-      "spokenText": "somehow the lie walked out wearing flip-flops. tough scene.",
+      "spokenText": "Somehow the lie walked out wearing flip-flops. Tough scene.",
       "primaryRelativePath": "public/assets/audio/host/wrestlers/tts/wrestlers_banter_banter_result_escaped_v1.mp3",
       "stableFilename": "wrestlers_banter_banter_result_escaped_v1.mp3",
-      "contentSha256": "76013daaa86efa166f9b36e2acb11c79d15a204a9d3f7d5a4587cb7ba0dc4f2b"
+      "contentSha256": "f632568951c96288b006de1ea513fde8a97abdfd6542a9a11f7e27ec135fa54f"
     },
     {
       "lineId": "wrestlers:banter_result_escaped_v2",
@@ -1105,10 +1105,10 @@
       "themeSlug": "wrestlers",
       "segmentRole": "name_free",
       "scriptId": "banter_result_escaped_v2",
-      "spokenText": "the fib survived — not a compliment, just a fact.",
+      "spokenText": "The fib survived — not a compliment, just a fact.",
       "primaryRelativePath": "public/assets/audio/host/wrestlers/tts/wrestlers_banter_banter_result_escaped_v2.mp3",
       "stableFilename": "wrestlers_banter_banter_result_escaped_v2.mp3",
-      "contentSha256": "f1a4a7ab25a1700d8f9b5e950037f49ef06dbdbd9a5ab718522a9ca93b8a2767"
+      "contentSha256": "ce4b138b595851eb31c7eddfd1afde661fac873d44ba06b685764a0005c6aa6d"
     },
     {
       "lineId": "wrestlers:banter_result_chaos_v1",
@@ -1116,10 +1116,10 @@
       "themeSlug": "wrestlers",
       "segmentRole": "name_free",
       "scriptId": "banter_result_chaos_v1",
-      "spokenText": "that was a chaotic round. beautiful, but chaotic.",
+      "spokenText": "That was a chaotic round. Beautiful, but chaotic.",
       "primaryRelativePath": "public/assets/audio/host/wrestlers/tts/wrestlers_banter_banter_result_chaos_v1.mp3",
       "stableFilename": "wrestlers_banter_banter_result_chaos_v1.mp3",
-      "contentSha256": "e32a7a014deec7b420172799db807693b2aee5606fe5c353f77fce7fb61f90e6"
+      "contentSha256": "9723f8bb389540ffb1c91cf9b4fddaa40eb5d0b1c08a756426bc759452afcfae"
     },
     {
       "lineId": "wrestlers:banter_wrap_v1",
@@ -1127,10 +1127,10 @@
       "themeSlug": "wrestlers",
       "segmentRole": "name_free",
       "scriptId": "banter_wrap_v1",
-      "spokenText": "that's a wrap — crown the chaos and run it back.",
+      "spokenText": "That's a wrap — crown the chaos and run it back.",
       "primaryRelativePath": "public/assets/audio/host/wrestlers/tts/wrestlers_banter_banter_wrap_v1.mp3",
       "stableFilename": "wrestlers_banter_banter_wrap_v1.mp3",
-      "contentSha256": "815df462585bfa4fd43a25b553e3929ac645dc25b9bf4e1f77d2e997b00f0d16"
+      "contentSha256": "4e89318e0bc8a34c64062f57252c3cc5c4f8cdc60039b6360fdecfd57c35e2ba"
     },
     {
       "lineId": "wrestlers:banter_reveal_liar_is_prefix_v1",
@@ -1138,21 +1138,21 @@
       "themeSlug": "wrestlers",
       "segmentRole": "prefix",
       "scriptId": "banter_reveal_liar_is_prefix_v1",
-      "spokenText": "the liar is",
+      "spokenText": "The liar is…",
       "primaryRelativePath": "public/assets/audio/host/wrestlers/tts/wrestlers_banter_banter_reveal_liar_is_prefix_v1.mp3",
       "stableFilename": "wrestlers_banter_banter_reveal_liar_is_prefix_v1.mp3",
-      "contentSha256": "051f1f88d1754b376327f1d1178b2339668d9c72b36c67bffec36804423f6e0b"
+      "contentSha256": "951f3b5eff6470f3cf4178843c8061d6397abaf9121819e8423511495973272f"
     },
     {
       "lineId": "wrestlers:banter_reveal_plural_v1",
       "themeName": "Wrestlers",
       "themeSlug": "wrestlers",
-      "segmentRole": "name_free",
+      "segmentRole": "prefix",
       "scriptId": "banter_reveal_plural_v1",
-      "spokenText": "we've got a whole team tonight.",
+      "spokenText": "The liars are…",
       "primaryRelativePath": "public/assets/audio/host/wrestlers/tts/wrestlers_banter_banter_reveal_plural_v1.mp3",
       "stableFilename": "wrestlers_banter_banter_reveal_plural_v1.mp3",
-      "contentSha256": "5ad1db8c4ca6823c60f5fdc69e813863cbd3c9206ac1d235be36cb057d90bcb5"
+      "contentSha256": "759387c42d108432da49c70e7d01294ef0d44ef95c600257a32c5a110302e2c6"
     }
   ]
 }

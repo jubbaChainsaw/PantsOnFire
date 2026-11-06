@@ -211,6 +211,7 @@ import {
 } from "./lib/twoTruthsOneFire.js";
 import { buildOnlineRoundLiveSyncSignature } from "./lib/onlineRoundLiveSync.js";
 import { onlinePhaseAllowsPartyVoice } from "./lib/onlineVoicePolicy.js";
+import { shouldPlayBundledHostBanter } from "./lib/hostBanterPlaybackPolicy.js";
 import NeonTwoTruthsInputScreen from "./components/neon/NeonTwoTruthsInputScreen.jsx";
 import NeonTwoTruthsVotingScreen from "./components/neon/NeonTwoTruthsVotingScreen.jsx";
 import NeonTwoTruthsRevealScreen from "./components/neon/NeonTwoTruthsRevealScreen.jsx";
@@ -226,7 +227,7 @@ import {
   useHostSpeechAutoAdvance,
   useModularHostBanterQueue,
 } from "./lib/hostSpeechPlayback.js";
-import { useHostCommentary } from "./context/HostCommentaryContext.jsx";
+import { useHostCommentary } from "./context/HostCommentaryContext.js";
 import {
   planFinalWrapBanter,
   planLiarRevealPluralBanter,
@@ -2037,6 +2038,7 @@ function GameIntroScreen({
   isOnlineMode = false,
   totalRounds = 1,
   playerCount = 0,
+  bundledHostBanterAllowed = true,
 }) {
   const themedHostPersona = useMemo(() => getIanPosterHostDisplayPersona(theme), [theme]);
   const greeting = (() => {
@@ -2085,7 +2087,7 @@ function GameIntroScreen({
     stepIndex: lineIndex,
     stepCount: introSteps.length,
     lineKey: currentStep.id,
-    voiceEnabled: voicePlaybackEnabled,
+    voiceEnabled: voicePlaybackEnabled && bundledHostBanterAllowed,
     voiceLine: currentStep.voice,
     nextVoiceLine: nextStep?.voice || "",
     themeName: theme,
@@ -2618,7 +2620,14 @@ function resolveCategoryChoiceCardArt(category, themeName = "Default") {
   if (categoryIconSrc) return categoryIconSrc;
   return getRoundCardBackSrc(themeName);
 }
-function HostIntroScreen({ round, stingerLine, onContinue, theme, phaseAdvanceEnabled = true }) {
+function HostIntroScreen({
+  round,
+  stingerLine,
+  onContinue,
+  theme,
+  phaseAdvanceEnabled = true,
+  bundledHostBanterAllowed = true,
+}) {
   const themedHostPersona = useMemo(() => getIanPosterHostDisplayPersona(theme), [theme]);
   const speechSteps = useMemo(
     () =>
@@ -2658,7 +2667,7 @@ function HostIntroScreen({ round, stingerLine, onContinue, theme, phaseAdvanceEn
     stepIndex: speechIndex,
     stepCount: speechSteps.length,
     lineKey: `${round.id || round.roundNumber}-${currentStep.id}`,
-    voiceEnabled: voicePlaybackEnabled && Boolean(currentStep.voice),
+    voiceEnabled: voicePlaybackEnabled && bundledHostBanterAllowed && Boolean(currentStep.voice),
     voiceLine: currentStep.voice,
     nextVoiceLine: nextStep?.voice || "",
     themeName: theme,
@@ -5241,6 +5250,7 @@ function RevealScreen({
   cardStyle = THEME_CARD_STYLE_CLASSIC,
   defaultBackSlug = "classic",
   phaseAdvanceEnabled = true,
+  bundledHostBanterAllowed = true,
 }) {
   const player = players[currentRevealIndex];
   const personaCalloutLine = getPersonaCalloutLineTextForPlayer(player, theme);
@@ -5255,6 +5265,7 @@ function RevealScreen({
   );
   useIanPosterHostVoicePlayback({
     enabled:
+      bundledHostBanterAllowed &&
       shouldPlayPersonaCallout &&
       isIanPosterVoiceTheme(theme) &&
       Boolean(personaCalloutLine),
@@ -6135,11 +6146,23 @@ function LiarRevealModularBanter({
   round,
   liars,
   announcementIndex,
+  banterAllowed = true,
 }) {
   const plan = useMemo(() => {
-    if (announcementIndex !== 1 || !isIanPosterVoiceTheme(theme)) return null;
+    if (
+      !banterAllowed ||
+      announcementIndex !== 1 ||
+      !isIanPosterVoiceTheme(theme)
+    ) {
+      return null;
+    }
     if (liars.length > 1) {
-      return planLiarRevealPluralBanter({ themeName: theme, round });
+      return planLiarRevealPluralBanter({
+        themeName: theme,
+        round,
+        liars,
+        personaOnlyMode,
+      });
     }
     if (liars.length === 1) {
       return planLiarRevealSingularBanter({
@@ -6150,7 +6173,7 @@ function LiarRevealModularBanter({
       });
     }
     return null;
-  }, [theme, personaOnlyMode, round, liars, announcementIndex]);
+  }, [banterAllowed, theme, personaOnlyMode, round, liars, announcementIndex]);
   useModularHostBanterQueue({
     plan,
     themeName: theme,
@@ -6166,6 +6189,7 @@ function LiarRevealScreen({
   theme,
   personaOnlyMode = false,
   playSfx = () => {},
+  bundledHostBanterAllowed = true,
 }) {
   const liars = players.filter((p) => (round.imposterIds || []).includes(p.id));
   const [announcementIndex, setAnnouncementIndex] = useState(0);
@@ -6253,6 +6277,7 @@ function LiarRevealScreen({
         round={round}
         liars={liars}
         announcementIndex={announcementIndex}
+        banterAllowed={bundledHostBanterAllowed}
       />
       <div className="mx-auto flex w-full max-w-3xl flex-col py-2">
         <GlassPanel className="relative overflow-visible rounded-[2.5rem] border-red-400/25 bg-black/35 p-5 sm:p-7 text-center">
@@ -6363,6 +6388,7 @@ function ResultsScreen({
   onEndGame,
   resultLine,
   theme,
+  bundledHostBanterAllowed = true,
 }) {
   const [resultsStage, setResultsStage] = useState("summary");
   const lastRound = round.roundNumber >= totalRounds;
@@ -6426,6 +6452,7 @@ function ResultsScreen({
                   themeName={theme}
                   round={round}
                   imposterCaught={imposterCaught}
+                  banterAllowed={bundledHostBanterAllowed}
                 />
               </div>
               <DoubleTakePairsRevealPanel round={round} className="mt-4" />
@@ -6593,7 +6620,14 @@ function ResultsScreen({
     </TopFrame>
   );
 }
-function FinalScreen({ players, onRestart, line, theme, unlockToast = false }) {
+function FinalScreen({
+  players,
+  onRestart,
+  line,
+  theme,
+  unlockToast = false,
+  bundledHostBanterAllowed = true,
+}) {
   const ranked = [...players].sort((a, b) => b.score - a.score);
   const winner = ranked[0];
   return (
@@ -6616,7 +6650,11 @@ function FinalScreen({ players, onRestart, line, theme, unlockToast = false }) {
           <h2 className="pof-preserve-heading-case mt-3 text-5xl font-black text-yellow-300">
             Winner: {winner?.name}
           </h2>
-          <FinalWrapHostBanter themeName={theme} winnerName={winner?.name || ""} />
+          <FinalWrapHostBanter
+            themeName={theme}
+            winnerName={winner?.name || ""}
+            banterAllowed={bundledHostBanterAllowed}
+          />
           <p className="mt-3 text-white/75">{line}</p>
           <div className="mt-8 grid gap-4 md:grid-cols-3">
             {ranked.map((player, index) => (
@@ -7460,7 +7498,7 @@ function DiscussionTimeHostVoice({ enabled, themeName }) {
     [themeName],
   );
   useIanPosterHostVoicePlayback({
-    enabled: enabled && isIanPosterVoiceTheme(themeName),
+    enabled: Boolean(enabled) && isIanPosterVoiceTheme(themeName),
     line,
     lineKey: "discussion-from-one-word",
     themeName,
@@ -7501,7 +7539,7 @@ function TwoTruthsPhaseHostVoice({ enabled, themeName, round, screen }) {
   }, [round?.id, round?.phase, screen]);
 
   useIanPosterHostVoicePlayback({
-    enabled: Boolean(line) && isIanPosterVoiceTheme(themeName),
+    enabled: Boolean(enabled) && Boolean(line) && isIanPosterVoiceTheme(themeName),
     line,
     lineKey,
     themeName,
@@ -7517,9 +7555,10 @@ function RoundPickerHostBanter({
   players,
   currentRoundOwnerIndex,
   personaOnlyMode,
+  banterAllowed = true,
 }) {
   const plan = useMemo(() => {
-    if (!round || !Array.isArray(players) || !players.length) return null;
+    if (!banterAllowed || !round || !Array.isArray(players) || !players.length) return null;
     const chooserId = round.chooserId || players[currentRoundOwnerIndex]?.id;
     const chooser = players.find((p) => p.id === chooserId) || players[currentRoundOwnerIndex] || null;
     return planPickerTurnBanter({
@@ -7528,7 +7567,7 @@ function RoundPickerHostBanter({
       chooser,
       personaOnlyMode,
     });
-  }, [themeName, round, players, currentRoundOwnerIndex, personaOnlyMode]);
+  }, [banterAllowed, themeName, round, players, currentRoundOwnerIndex, personaOnlyMode]);
   const { composedSubtitle, subtitleVisible } = useModularHostBanterQueue({
     plan,
     themeName,
@@ -7545,10 +7584,11 @@ function RoundPickerHostBanter({
   );
 }
 
-function ResultsBanterSubtitle({ themeName, round, imposterCaught }) {
+function ResultsBanterSubtitle({ themeName, round, imposterCaught, banterAllowed = true }) {
   const plan = useMemo(
-    () => planResultBanter({ themeName, round, imposterCaught }),
-    [themeName, round, imposterCaught],
+    () =>
+      banterAllowed ? planResultBanter({ themeName, round, imposterCaught }) : null,
+    [banterAllowed, themeName, round, imposterCaught],
   );
   const { composedSubtitle, subtitleVisible } = useModularHostBanterQueue({
     plan,
@@ -7566,10 +7606,13 @@ function ResultsBanterSubtitle({ themeName, round, imposterCaught }) {
   );
 }
 
-function FinalWrapHostBanter({ themeName, winnerName }) {
+function FinalWrapHostBanter({ themeName, winnerName, banterAllowed = true }) {
   const plan = useMemo(
-    () => planFinalWrapBanter({ themeName, sessionKey: winnerName || "final" }),
-    [themeName, winnerName],
+    () =>
+      banterAllowed
+        ? planFinalWrapBanter({ themeName, sessionKey: winnerName || "final" })
+        : null,
+    [banterAllowed, themeName, winnerName],
   );
   const { composedSubtitle, subtitleVisible } = useModularHostBanterQueue({
     plan,
@@ -7773,6 +7816,15 @@ export default function App() {
   const [roundTypeOptions, setRoundTypeOptions] = useState([]);
   const [selectedRoundType, setSelectedRoundType] = useState(null);
   const [round, setRound] = useState(null);
+  const bundledHostBanterAllowed = useMemo(
+    () =>
+      shouldPlayBundledHostBanter({
+        onlineMode,
+        screen,
+        roundPhase: round?.phase,
+      }),
+    [onlineMode, screen, round?.phase],
+  );
   const [revealIndex, setRevealIndex] = useState(0);
   const [localOneWordIndex, setLocalOneWordIndex] = useState(0);
   const [oneWordSubmitPending, setOneWordSubmitPending] = useState(false);
@@ -11313,6 +11365,7 @@ export default function App() {
           isOnlineMode={onlineMode}
           totalRounds={totalRounds}
           playerCount={players.length}
+          bundledHostBanterAllowed={bundledHostBanterAllowed}
           onContinue={() => setScreen("rules")}
         />
       )}
@@ -11340,6 +11393,7 @@ export default function App() {
               players={players}
               currentRoundOwnerIndex={currentRoundOwnerIndex}
               personaOnlyMode={personaOnlyMode}
+              banterAllowed={bundledHostBanterAllowed}
             />
             <RoundTypeChoiceGrid
               roundTypeOptions={roundTypeOptions}
@@ -11428,6 +11482,7 @@ export default function App() {
         <HostIntroScreen
           round={round}
           stingerLine={copyState.hostStinger}
+          bundledHostBanterAllowed={bundledHostBanterAllowed}
           onContinue={() => {
             if (round.roundTypeId === "twotruths") {
               setTwoTruthsInputIndex(0);
@@ -11451,7 +11506,7 @@ export default function App() {
       {screen === "twotruths-input" && round && (
         <>
         <TwoTruthsPhaseHostVoice
-          enabled
+          enabled={bundledHostBanterAllowed}
           themeName={canonicalThemeName}
           round={round}
           screen="twotruths-input"
@@ -11476,7 +11531,7 @@ export default function App() {
       {screen === "twotruths-voting" && round && (
         <>
         <TwoTruthsPhaseHostVoice
-          enabled
+          enabled={bundledHostBanterAllowed}
           themeName={canonicalThemeName}
           round={round}
           screen="twotruths-voting"
@@ -11503,7 +11558,7 @@ export default function App() {
       {screen === "twotruths-reveal" && round && (
         <>
         <TwoTruthsPhaseHostVoice
-          enabled
+          enabled={bundledHostBanterAllowed}
           themeName={canonicalThemeName}
           round={round}
           screen="twotruths-reveal"
@@ -11547,6 +11602,7 @@ export default function App() {
             cardStyle={activeThemeCardStyle}
             defaultBackSlug={playerProfile?.selectedDefaultBackSlug || "classic"}
             phaseAdvanceEnabled={!onlineMode || onlineRole === "host"}
+            bundledHostBanterAllowed={bundledHostBanterAllowed}
           />
         </BrandedScreen>
       )}
@@ -11699,7 +11755,7 @@ export default function App() {
       {screen === "discussion" && round && (
         <>
           <DiscussionTimeHostVoice
-            enabled={discussionFromOneWordHostCue}
+            enabled={discussionFromOneWordHostCue && bundledHostBanterAllowed}
             themeName={canonicalThemeName}
           />
           <DiscussionScreen
@@ -11758,6 +11814,7 @@ export default function App() {
           theme={canonicalThemeName}
           personaOnlyMode={personaOnlyMode}
           playSfx={playSfx}
+          bundledHostBanterAllowed={bundledHostBanterAllowed}
         />
       )}
       {screen === "results" && round && (
@@ -11777,6 +11834,7 @@ export default function App() {
           onEndGame={endGame}
           resultLine={copyState.result}
           theme={canonicalThemeName}
+          bundledHostBanterAllowed={bundledHostBanterAllowed}
         />
       )}
       {screen === "final" && (
@@ -11786,6 +11844,7 @@ export default function App() {
           line={copyState.winner}
           theme={canonicalThemeName}
           unlockToast={cardStyleUnlockToast}
+          bundledHostBanterAllowed={bundledHostBanterAllowed}
         />
       )}
       {(LOCAL_GAME_PAUSE_SCREENS.has(screen) ||

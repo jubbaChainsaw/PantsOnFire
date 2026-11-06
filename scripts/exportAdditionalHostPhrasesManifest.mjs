@@ -24,12 +24,13 @@ function modularBanterCorpusSha256() {
   const themes = [...IAN_POSTER_VOICE_THEME_NAMES]
     .map((name) => getIanPosterThemeSlug(name))
     .sort();
-  const scripts = [...MODULAR_BANTER_FIXED_SCRIPTS]
+    const scripts = [...MODULAR_BANTER_FIXED_SCRIPTS]
     .map((s) => ({
       id: s.id,
       filenameStem: s.filenameStem,
       segmentRole: s.segmentRole,
-      spokenText: s.spokenText,
+      /** Parent TTS line: full sentence for export, or runtime line for fixed banks */
+      spokenText: s.exportSpokenText || s.spokenText || '',
     }))
     .sort((a, b) => a.id.localeCompare(b.id));
   return sha256(JSON.stringify({ themes, scripts }));
@@ -39,7 +40,7 @@ const lines = [];
 for (const themeName of IAN_POSTER_VOICE_THEME_NAMES) {
   for (const script of MODULAR_BANTER_FIXED_SCRIPTS) {
     const filename = stableFilename(themeName, script.filenameStem);
-    const spokenText = script.spokenText;
+    const spokenText = script.exportSpokenText || script.spokenText || '';
     lines.push({
       lineId: `${getIanPosterThemeSlug(themeName)}:${script.id}`,
       themeName,

@@ -60,6 +60,15 @@ function saveBanterUsageState(next) {
   writeJson(USAGE_KEY, next);
 }
 
+/** Resolved line for TTS + subtitles (parent export uses exportSpokenText / spokenText). */
+export function lineForPickerOrFixedScript(script, nameArg = '') {
+  if (!script) return '';
+  if (typeof script.buildSpokenLine === 'function') {
+    return script.buildSpokenLine(nameArg);
+  }
+  return String(script.spokenText || '').trim();
+}
+
 function pickAntiRepeatVariant(list, usedList, maxRemember = 8) {
   const used = new Set(usedList || []);
   const fresh = list.filter((item) => !used.has(item.id));
@@ -111,8 +120,8 @@ export function planPickerTurnBanter({
   const themeSlug = getIanPosterThemeSlug(themeName);
   const filename = buildModularFilename(themeSlug, prefixChoice.filenameStem);
   const segments = [];
-  let composedSubtitle = '';
   const chooserName = String(chooser?.name || '').trim();
+  const fixedSpoken = lineForPickerOrFixedScript(prefixChoice, chooserName);
   if (
     personaOnlyMode &&
     chooser &&
@@ -126,16 +135,21 @@ export function planPickerTurnBanter({
       audioSrcCandidates: nameCandidates,
       fallbackDurationMs: 1800,
     });
+    segments.push({
+      line: fixedSpoken,
+      subtitleSegment: fixedSpoken,
+      audioSrcCandidates: getModularBanterSrcCandidates(themeName, filename),
+      fallbackDurationMs: 2800,
+    });
+  } else {
+    segments.push({
+      line: fixedSpoken,
+      subtitleSegment: fixedSpoken,
+      audioSrcCandidates: getModularBanterSrcCandidates(themeName, filename),
+      fallbackDurationMs: 2800,
+    });
   }
-  segments.push({
-    line: prefixChoice.spokenText,
-    subtitleSegment: prefixChoice.spokenText,
-    audioSrcCandidates: getModularBanterSrcCandidates(themeName, filename),
-    fallbackDurationMs: 2800,
-  });
-  composedSubtitle = chooserName
-    ? `${chooserName}, ${prefixChoice.spokenText}`
-    : prefixChoice.spokenText;
+  const composedSubtitle = fixedSpoken;
 
   return {
     dedupKey,
@@ -169,11 +183,13 @@ export function planLiarRevealSingularBanter({
     (s) => s.segmentRole === 'suffix' && s.id.includes('banter_reveal_suffix'),
   );
   const { choice: suffixChoice } = pickAntiRepeatVariant(suffixScripts, [], 6);
+  const prefixSpoken = lineForPickerOrFixedScript(prefixScript);
+  const suffixSpoken = lineForPickerOrFixedScript(suffixChoice);
 
   const segments = [
     {
-      line: prefixScript.spokenText,
-      subtitleSegment: `${prefixScript.spokenText}…`,
+      line: prefixSpoken,
+      subtitleSegment: `${prefixSpoken}`,
       audioSrcCandidates: getModularBanterSrcCandidates(
         themeName,
         buildModularFilename(themeSlug, prefixScript.filenameStem),
@@ -183,7 +199,6 @@ export function planLiarRevealSingularBanter({
   ];
 
   const name = String(liar?.name || '').trim();
-  let subtitle = `${prefixScript.spokenText} ${name}`;
   if (personaOnlyMode && liar && String(liar.personaId || '').trim() && name) {
     segments.push({
       line: name,
@@ -191,25 +206,28 @@ export function planLiarRevealSingularBanter({
       audioSrcCandidates: getPersonaCalloutSrcCandidates(themeName, liar.personaId),
       fallbackDurationMs: 2200,
     });
-  } else if (name) {
-    subtitle = `${prefixScript.spokenText} ${name}.`;
   }
 
   segments.push({
-    line: suffixChoice.spokenText,
-    subtitleSegment: suffixChoice.spokenText,
+    line: suffixSpoken,
+    subtitleSegment: suffixSpoken,
     audioSrcCandidates: getModularBanterSrcCandidates(
       themeName,
       buildModularFilename(themeSlug, suffixChoice.filenameStem),
     ),
     fallbackDurationMs: 2400,
   });
-  subtitle = `${subtitle} ${suffixChoice.spokenText}`;
+  const middle = name ? `${name}.` : '';
+  const subtitle = [prefixSpoken, middle, suffixSpoken]
+    .filter(Boolean)
+    .join(' ')
+    .replace(/\s+/g, ' ')
+    .trim();
 
   return {
     dedupKey,
     eventId: BANTER_EVENT_IDS.liarRevealSingular,
-    composedSubtitle: subtitle.replace(/\s+/g, ' ').trim(),
+    composedSubtitle: subtitle,
     segments,
     onCommit: () => {
       rememberDedup(dedupKey);
@@ -217,28 +235,58 @@ export function planLiarRevealSingularBanter({
   };
 }
 
-/** Multiple liars — name-free line only (no 950× list generation) */
-export function planLiarRevealPluralBanter({ themeName = 'Default', round = {} } = {}) {
+/**
+ * Multiple liars — prefix clip + persona name callouts when available; subtitle always lists display names.
+ */
+export function planLiarRevealPluralBanter({
+  themeName = 'Default',
+  round = {},
+  liars = [],
+  personaOnlyMode = false,
+} = {}) {
   const roundId = round.id || `r${round.roundNumber || 0}`;
   const dedupKey = buildRoundScopedDedupKey(roundId, BANTER_EVENT_IDS.liarRevealPlural);
   if (wasBanterDedupPlayed(dedupKey)) return null;
   const script = MODULAR_BANTER_FIXED_SCRIPTS.find((s) => s.id === 'banter_reveal_plural_v1');
   const themeSlug = getIanPosterThemeSlug(themeName);
+  const prefixSpoken = lineForPickerOrFixedScript(script);
+  const list = Array.isArray(liars) ? liars : [];
+  const names = list
+    .map((p) => String(p?.name || '').trim())
+    .filter(Boolean);
+  const nameBit = names.length ? ` ${names.join(', ')}` : '';
+  const composedSubtitle = `${prefixSpoken}${nameBit}.`.replace(/\s+/g, ' ').trim();
+
+  const segments = [
+    {
+      line: prefixSpoken,
+      subtitleSegment: prefixSpoken,
+      audioSrcCandidates: getModularBanterSrcCandidates(
+        themeName,
+        buildModularFilename(themeSlug, script.filenameStem),
+      ),
+      fallbackDurationMs: 2000,
+    },
+  ];
+  if (personaOnlyMode) {
+    for (const p of list) {
+      const n = String(p?.name || '').trim();
+      const pid = String(p?.personaId || '').trim();
+      if (!n || !pid) continue;
+      segments.push({
+        line: n,
+        subtitleSegment: n,
+        audioSrcCandidates: getPersonaCalloutSrcCandidates(themeName, pid),
+        fallbackDurationMs: 2200,
+      });
+    }
+  }
+
   return {
     dedupKey,
     eventId: BANTER_EVENT_IDS.liarRevealPlural,
-    composedSubtitle: script.spokenText,
-    segments: [
-      {
-        line: script.spokenText,
-        subtitleSegment: script.spokenText,
-        audioSrcCandidates: getModularBanterSrcCandidates(
-          themeName,
-          buildModularFilename(themeSlug, script.filenameStem),
-        ),
-        fallbackDurationMs: 2800,
-      },
-    ],
+    composedSubtitle,
+    segments,
     onCommit: () => rememberDedup(dedupKey),
   };
 }
@@ -273,14 +321,15 @@ export function planResultBanter({
   const { choice, nextUsed } = pickAntiRepeatVariant(pool, usage.usedResultScripts || [], 12);
   const themeSlug = getIanPosterThemeSlug(themeName);
   const filename = buildModularFilename(themeSlug, choice.filenameStem);
+  const lineText = lineForPickerOrFixedScript(choice);
   return {
     dedupKey,
     eventId: BANTER_EVENT_IDS.resultBanter,
-    composedSubtitle: choice.spokenText,
+    composedSubtitle: lineText,
     segments: [
       {
-        line: choice.spokenText,
-        subtitleSegment: choice.spokenText,
+        line: lineText,
+        subtitleSegment: lineText,
         audioSrcCandidates: getModularBanterSrcCandidates(themeName, filename),
         fallbackDurationMs: 3200,
       },
@@ -308,14 +357,15 @@ export function planFinalWrapBanter({
   if (wasBanterDedupPlayed(dedupKey)) return null;
   const script = MODULAR_BANTER_FIXED_SCRIPTS.find((s) => s.id === 'banter_wrap_v1');
   const themeSlug = getIanPosterThemeSlug(themeName);
+  const lineText = lineForPickerOrFixedScript(script);
   return {
     dedupKey,
     eventId: BANTER_EVENT_IDS.finalWrap,
-    composedSubtitle: script.spokenText,
+    composedSubtitle: lineText,
     segments: [
       {
-        line: script.spokenText,
-        subtitleSegment: script.spokenText,
+        line: lineText,
+        subtitleSegment: lineText,
         audioSrcCandidates: getModularBanterSrcCandidates(
           themeName,
           buildModularFilename(themeSlug, script.filenameStem),

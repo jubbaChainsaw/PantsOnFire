@@ -82,10 +82,10 @@ export function HostCommentaryProvider({ children }) {
     ],
   );
 
-  return (
-    <HostCommentaryContext.Provider value={value}>
-      {children}
-    </HostCommentaryContext.Provider>
+  return React.createElement(
+    HostCommentaryContext.Provider,
+    { value },
+    children,
   );
 }
 
