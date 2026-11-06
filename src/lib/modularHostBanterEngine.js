@@ -115,7 +115,12 @@ export function planPickerTurnBanter({
   const dedupKey = buildRoundScopedDedupKey(roundId, BANTER_EVENT_IDS.pickerTurn);
   if (wasBanterDedupPlayed(dedupKey)) return null;
 
-  const prefixes = MODULAR_BANTER_FIXED_SCRIPTS.filter((s) => s.segmentRole === 'prefix' && s.id.startsWith('banter_picker_'));
+  const prefixes = MODULAR_BANTER_FIXED_SCRIPTS.filter(
+    (s) =>
+      s.segmentRole === 'prefix' &&
+      s.id.startsWith('banter_picker_') &&
+      s.id !== 'banter_picker_alright_lead_v2',
+  );
   const usage = getBanterUsageState();
   const { choice: prefixChoice, nextUsed: nextPickerUsed } = pickAntiRepeatVariant(
     prefixes,
@@ -129,6 +134,9 @@ export function planPickerTurnBanter({
   const chooserName = String(chooser?.name || '').trim();
   const fixedSpoken = lineForFixedScript(prefixChoice);
   const composedSubtitle = lineForPickerOrFixedSubtitle(prefixChoice, chooserName);
+  const alrightV2Script = MODULAR_BANTER_FIXED_SCRIPTS.find((s) => s.id === 'banter_picker_alright_lead_v2');
+  const alrightV2Spoken = lineForFixedScript(alrightV2Script);
+  const alrightV2File = buildModularFilename(themeSlug, alrightV2Script.filenameStem);
   if (
     personaOnlyMode &&
     chooser &&
@@ -142,6 +150,14 @@ export function planPickerTurnBanter({
       audioSrcCandidates: nameCandidates,
       fallbackDurationMs: 1800,
     });
+    if (prefixChoice.id === 'banter_picker_prefix_v2' && alrightV2Script) {
+      segments.push({
+        line: alrightV2Spoken,
+        subtitleSegment: alrightV2Spoken,
+        audioSrcCandidates: getModularBanterSrcCandidates(themeName, alrightV2File),
+        fallbackDurationMs: 600,
+      });
+    }
     segments.push({
       line: fixedSpoken,
       subtitleSegment: fixedSpoken,
