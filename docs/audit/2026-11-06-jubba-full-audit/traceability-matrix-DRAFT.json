@@ -1,0 +1,105 @@
+{
+  "schemaVersion": 1,
+  "auditId": "POF-AUDIT-2026-11-06-JUBBA-FULL",
+  "status": "awaiting_jubbaworld_inventory",
+  "generatedAt": "2026-11-06",
+  "branch": "cursor/ionos-web-deploy-6e4c",
+  "pr": 111,
+  "note": "DRAFT: rows for docs/jubbaworld-pending.json IDs only. Full matrix requires sanitized JubbaWorld inventory from user.",
+  "rows": [
+    {
+      "trackerId": "POF-ENH-DISPLAY-CAPS",
+      "source": "docs/jubbaworld-pending.json",
+      "requirementSummary": "ALL CAPS display typography for headers/nav/store art; preserve user-entered casing where needed",
+      "implementationEvidence": ["src/pof-components.css", "src/components/ui/button.jsx", "scripts/generatePlayStoreGraphics.mjs"],
+      "testsRun": [
+        { "command": "npm test", "result": "pass", "scope": "repo Node tests only; no UI regression" }
+      ],
+      "matrixStatus": "partial",
+      "confidence": "medium",
+      "gapNotes": "h1-h3 under .pof-root uppercased; many titles remain div+font-black — not covered by global heading rule (known partial per user)."
+    },
+    {
+      "trackerId": "POF-ENH-005",
+      "source": "docs/jubbaworld-pending.json",
+      "requirementSummary": "CI: npm test on PR/push",
+      "implementationEvidence": [".github/workflows/npm-test.yml"],
+      "testsRun": [{ "command": "npm test", "result": "pass", "scope": "local agent run" }],
+      "matrixStatus": "pass",
+      "confidence": "high",
+      "gapNotes": "docs/TEST_STRATEGY.md still mentions npm test not on every push in some wording — possible doc drift to verify against workflows."
+    },
+    {
+      "trackerId": "POF-DEC-112",
+      "source": "docs/jubbaworld-pending.json",
+      "requirementSummary": "Decision record: Android debug APK workflow vs main PR #112",
+      "implementationEvidence": ["docs/decisions/POF-DEC-112-android-debug-apk-workflow.md"],
+      "testsRun": [],
+      "matrixStatus": "deferred",
+      "confidence": "low",
+      "gapNotes": "Human/product decision may be pending per user; do not mark closed without explicit owner decision."
+    },
+    {
+      "trackerId": "POF-ENH-006",
+      "source": "docs/jubbaworld-pending.json",
+      "requirementSummary": "13+ prompt copy fix (Travel Disasters)",
+      "implementationEvidence": ["src/data/packs/categoryPromptPacks.js"],
+      "testsRun": [],
+      "matrixStatus": "untested",
+      "confidence": "low",
+      "gapNotes": "No automated content test; needs inventory mapping + optional content review checklist."
+    },
+    {
+      "trackerId": "POF-FIX-STORE-GRAPHICS-FONT",
+      "source": "docs/jubbaworld-pending.json",
+      "requirementSummary": "Play Store graphics Chewy path rendering",
+      "implementationEvidence": ["scripts/generatePlayStoreGraphics.mjs", "public/assets/fonts/chewy/Chewy-Regular.ttf"],
+      "testsRun": [
+        {
+          "command": "node scripts/generatePlayStoreGraphics.mjs (implicit verifyChewyPixels in script)",
+          "result": "not_run_this_audit_session",
+          "scope": "regenerate verification optional"
+        }
+      ],
+      "matrixStatus": "partial",
+      "confidence": "medium",
+      "gapNotes": "Generator self-checks; visual sign-off is manual."
+    },
+    {
+      "trackerId": "POF-ENH-007",
+      "source": "docs/jubbaworld-pending.json",
+      "requirementSummary": "Play Store listing draft + graphics",
+      "implementationEvidence": ["docs/store/play-listing.md", "docs/store/graphics/"],
+      "testsRun": [],
+      "matrixStatus": "untested",
+      "confidence": "low",
+      "gapNotes": "Documentation and assets; no automated compliance test."
+    },
+    {
+      "trackerId": "POF-ENH-008",
+      "source": "docs/jubbaworld-pending.json",
+      "requirementSummary": "Stripe live + RevenueCat production checklist (research doc)",
+      "implementationEvidence": ["docs/store/STRIPE_REVENUECAT_LIVE_CHECKLIST.md"],
+      "testsRun": [],
+      "matrixStatus": "deferred",
+      "confidence": "n/a",
+      "gapNotes": "Explicitly out of scope for sandbox audit; no live verification."
+    },
+    {
+      "trackerId": "POF-ENH-004",
+      "source": "docs/jubbaworld-pending.json",
+      "requirementSummary": "Multiple backlog items share same id (duplicate key in JSON) — security, rate limits, billing, DLC, etc.",
+      "implementationEvidence": ["See individual commits listed in jubbaworld-pending.json entries"],
+      "testsRun": [
+        {
+          "command": "npm test (subset: lobby, rate limit, JWT, install token, billing)",
+          "result": "pass",
+          "scope": "automated server-side only"
+        }
+      ],
+      "matrixStatus": "partial",
+      "confidence": "medium",
+      "gapNotes": "JubbaWorld file uses repeated id POF-ENH-004 for different titles — needs inventory disambiguation and stable external_ref per story."
+    }
+  ]
+}
