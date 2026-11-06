@@ -2,8 +2,14 @@ import { io } from 'socket.io-client';
 import { getLobbyApiBase, getLobbyServerOrigin } from '../lib/lobbyApiEnv.js';
 import { getNativeHostingHeaders } from '../lib/nativeHostingCredentials.js';
 
-const LOBBY_SERVER_URL = getLobbyServerOrigin();
-const LOBBY_API_BASE = getLobbyApiBase();
+/** Resolve per call: module load can run before `window` exists; preview needs same-origin `/api` + Vite proxy. */
+function lobbyApiBase() {
+  return getLobbyApiBase();
+}
+
+function lobbyServerOrigin() {
+  return getLobbyServerOrigin();
+}
 
 function randomId(prefix = 'id') {
   return `${prefix}-${Math.random().toString(36).slice(2, 10)}-${Date.now().toString(36)}`;
@@ -25,7 +31,7 @@ async function requestJson(path, { method = 'GET', body, accessToken = '' } = {}
   if (accessToken) {
     headers.Authorization = `Bearer ${accessToken}`;
   }
-  const response = await fetch(`${LOBBY_API_BASE}${path}`, {
+  const response = await fetch(`${lobbyApiBase()}${path}`, {
     method,
     headers,
     body: body === undefined ? undefined : JSON.stringify(body),
@@ -342,7 +348,7 @@ export function createLobbyTransport({
   let currentSessionToken = String(sessionToken || '').trim();
   let closed = false;
   let lastSnapshot = null;
-  const socket = io(LOBBY_SERVER_URL || undefined, {
+  const socket = io(lobbyServerOrigin() || undefined, {
     transports: ['websocket', 'polling'],
   });
 

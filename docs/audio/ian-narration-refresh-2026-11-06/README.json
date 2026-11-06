@@ -1,0 +1,35 @@
+{
+  "purpose": "Cursor handoff: frozen Ian host FRAGMENTS v1 for integration",
+  "frozenCorpusId": "df7269-modular-fragments-v1",
+  "corpusSha256": "e8b9c9c2365798927892c6c04cd4aa3c32dc82ddc37e38e2e6f20e31f8a72513",
+  "uniqueFragmentCount": 14,
+  "uniqueThemeFilenames": 84,
+  "themeRows": 112,
+  "themeSlugSharedPaths": [
+    {
+      "themeSlug": "cops-and-robbers",
+      "themeNames": [
+        "Cops and Robbers",
+        "Cowboys",
+        "Gangsters"
+      ]
+    }
+  ],
+  "excludes": [
+    "obsolete Player full-line texts",
+    "alts/take2",
+    "base host cues",
+    "prior 104 Player corpus"
+  ],
+  "aliasesNote": "cops-and-robbers stableFilename shared deliberately for Cops and Robbers + Cowboys + Gangsters; same valid MP3",
+  "voice_id": "h3DRPfZTD0Z1BwDc142N",
+  "modelId": "eleven_v4",
+  "generatedAt": "2026-11-06T22:21:29.586605+00:00",
+  "missing": [],
+  "reuse_vs_new": {
+    "reuse": 12,
+    "generated_new": 2,
+    "complete_unique": 14,
+    "theme_rows": 112
+  }
+}

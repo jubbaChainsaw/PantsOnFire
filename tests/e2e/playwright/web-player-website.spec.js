@@ -34,18 +34,18 @@ test.describe('web player (join-only)', () => {
 
     await seedLocalAccount(guestPage, 'fibber');
     await guestPage.goto(`/?join=${code}`);
-    await expect(guestPage.getByRole('button', { name: 'Continue' })).toBeVisible({
+    await expect(guestPage.getByTestId('online-join-code-continue')).toBeVisible({
       timeout: 15_000,
     });
-    await expect(guestPage.locator('input').first()).toHaveValue(code);
+    await expect(guestPage.getByTestId('online-join-code-input')).toHaveValue(code);
     await guestPage.screenshot({
       path: `${SHOTS}/web-player-join-link-mobile-390x844.png`,
       fullPage: true,
     });
 
-    await guestPage.getByRole('button', { name: 'Continue' }).click();
-    await guestPage.locator('input').first().fill('Web Guest');
-    await guestPage.getByRole('button', { name: 'Join Game' }).click();
+    await guestPage.getByTestId('online-join-code-continue').click();
+    await guestPage.getByTestId('online-join-player-name').fill('Web Guest');
+    await guestPage.getByTestId('online-join-submit').click();
     await expect(guestPage.getByText('Joined Lobby')).toBeVisible({ timeout: 45_000 });
 
     await hostContext.close();
