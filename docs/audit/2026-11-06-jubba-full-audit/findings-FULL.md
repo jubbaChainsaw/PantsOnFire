@@ -6,8 +6,10 @@
 1. `cbef5d48c4805833b2f74fdecb0acc2ddc434064` — snapshot, traceability, findings, generator, Superpowers bundle copy, E2E selector fix, `.gitignore` dist-android  
 2. `9fb745f749700ecdf684cad8678cedea4a0e5131` — `docs/jubbaworld-pending.json` pointer entry  
 3. `22508a64e4bbc513b79015080466a9e1ef6c6ba8` — record SHAs in findings  
-4. `f73c735f2f0e6cda6e14890d06d55b79952606c2` — append commit to pending list  
-5. `0e1c36adce560d7118c43e2735cc42f6f4121e70` — canonical multi-commit list in pending + findings  
+4. `f73c735f2f0e6cda6e14890d06d55b79952606c2` — extend `commits` in `jubbaworld-pending`  
+5. `0e1c36adce560d7118c43e2735cc42f6f4121e70` — add `auditDeliverableCommits` (five SHAs) and sync pending `commit` to chain tip  
+
+Later commits on the branch may tweak prose only — the **frozen audit evidence chain** for parent logging is these five SHAs (see `findings-FULL.json` → `auditDeliverableCommits`).  
 **Status:** **Evidence baseline complete** — per-item **deep code proof** for all **119** rows is **not** claimed; **72** rows remain **`untested`** under audit heuristics (see JSON).
 
 ## Superpowers (attached bundle)
