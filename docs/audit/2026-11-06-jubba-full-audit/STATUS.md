@@ -2,7 +2,7 @@
 
 **Branch:** `cursor/ionos-web-deploy-6e4c` (PR #111)  
 **Baseline snapshot:** `jubbaworld-snapshot-2026-11-06.json` (119 items, fetched 18:34Z per parent export)  
-**Audit commits:** `cbef5d48c4805833b2f74fdecb0acc2ddc434064` (deliverables + E2E fix), `9fb745f749700ecdf684cad8678cedea4a0e5131` (pending-file pointer), `22508a64e4bbc513b79015080466a9e1ef6c6ba8` (findings SHA notes)  
+**Audit commits:** `cbef5d48c4805833b2f74fdecb0acc2ddc434064` (deliverables + E2E fix), `9fb745f749700ecdf684cad8678cedea4a0e5131` (pending-file pointer), `22508a64e4bbc513b79015080466a9e1ef6c6ba8` (findings SHA notes), `f73c735f2f0e6cda6e14890d06d55b79952606c2` (final commit list)  
 **State:** **Evidence baseline delivered** — see honesty section below
 
 ## Superpowers
