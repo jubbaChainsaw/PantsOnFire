@@ -63,7 +63,8 @@ export const MODULAR_BANTER_FIXED_SCRIPTS = Object.freeze([
     buildComposedSubtitleLine: (chooserName) => {
       const n = String(chooserName || '').trim();
       if (!n) return 'The wheel of bad decisions stops here.';
-      return `The wheel of bad decisions stops with ${n}.`;
+      /** Recorded fragment is name-free (“stops here.”); announce the name separately for accuracy. */
+      return `${n}. The wheel of bad decisions stops here.`;
     },
   },
   {

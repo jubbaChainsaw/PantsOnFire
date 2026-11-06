@@ -69,16 +69,16 @@ const COMPOSITION_BY_EVENT = [
   {
     eventId: 'picker_turn',
     description:
-      'Persona-only: persona name MP3, optional "Alright —" lead when variant is banter_picker_prefix_v2, then fixed picker fragment. Else: one fragment; subtitle may prepend display name.',
+      'Persona-only: v2 plays lead “Alright —” then persona name then body; v3 plays name then name-free “stops here.”; v1 name then body. Else one fragment; subtitle from buildComposedSubtitleLine.',
     segmentPattern: [
-      { order: 0, optional: true, kind: 'persona_name', note: 'Only when personaOnlyMode and chooser has personaId.' },
       {
-        order: 1,
+        order: 0,
         optional: true,
         kind: 'fixed_script',
         scriptId: 'banter_picker_alright_lead_v2',
-        note: 'Only when personaOnlyMode and selected variant is banter_picker_prefix_v2.',
+        note: 'Only persona + banter_picker_prefix_v2.',
       },
+      { order: 1, optional: true, kind: 'persona_name', note: 'Persona name clip (950 bank or theme file).' },
       {
         order: 2,
         kind: 'fixed_script',
