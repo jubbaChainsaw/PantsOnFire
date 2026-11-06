@@ -1,6 +1,7 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { getHostVoiceSrcCandidatesForLine } from '../data/hostVoiceLineMap.js';
 import { resolveBundledAssetSrc } from './contentPacks/resolveAsset.js';
+import { HostCommentaryContext } from '../context/HostCommentaryContext.jsx';
 
 /** Short pause after a voice clip before auto-advancing dialogue. */
 export const HOST_SPEECH_PAUSE_AFTER_MS = 320;
@@ -37,6 +38,11 @@ export function useIanPosterHostVoicePlayback({
   nextLine = '',
   nextThemeName = null,
 } = {}) {
+  const commentaryCtx = useContext(HostCommentaryContext);
+  const hostCommentaryEnabled = commentaryCtx?.hostCommentaryEnabled !== false;
+  const commentaryGeneration = commentaryCtx?.commentaryGeneration ?? 0;
+  const registerStopHandler = commentaryCtx?.registerStopHandler;
+
   const [isPlaying, setIsPlaying] = useState(false);
   const audioRef = useRef(null);
   const fallbackTimerRef = useRef(null);
@@ -68,12 +74,20 @@ export function useIanPosterHostVoicePlayback({
   }, []);
 
   useEffect(() => {
+    if (typeof registerStopHandler !== 'function') return undefined;
+    return registerStopHandler(stopActiveAudio);
+  }, [registerStopHandler, stopActiveAudio]);
+
+  const effectiveEnabled = Boolean(enabled && hostCommentaryEnabled);
+  const guardedLineKey = `${lineKey}:cg${commentaryGeneration}`;
+
+  useEffect(() => {
     const session = sessionRef.current + 1;
     sessionRef.current = session;
     stopActiveAudio();
 
     const normalized = normalizeHostVoiceLine(line);
-    if (!enabled || !normalized) {
+    if (!effectiveEnabled || !normalized) {
       return undefined;
     }
 
@@ -89,7 +103,7 @@ export function useIanPosterHostVoicePlayback({
       setIsPlaying(false);
       const cb = onFinishedRef.current;
       if (typeof cb === 'function') {
-        cb({ session, reason, lineKey });
+        cb({ session, reason, lineKey: guardedLineKey });
       }
     };
 
@@ -166,9 +180,9 @@ export function useIanPosterHostVoicePlayback({
       }
     };
   }, [
-    enabled,
+    effectiveEnabled,
     line,
-    lineKey,
+    guardedLineKey,
     themeName,
     fallbackDurationMs,
     audioSrcCandidates,
@@ -196,6 +210,10 @@ export function useHostSpeechAutoAdvance({
   onAdvanceStep,
   pauseAfterMs = HOST_SPEECH_PAUSE_AFTER_MS,
 } = {}) {
+  const commentaryCtx = useContext(HostCommentaryContext);
+  const hostCommentaryEnabled = commentaryCtx?.hostCommentaryEnabled !== false;
+  const registerStopHandler = commentaryCtx?.registerStopHandler;
+
   const advanceTimerRef = useRef(null);
 
   const clearAdvanceTimer = useCallback(() => {
@@ -204,14 +222,27 @@ export function useHostSpeechAutoAdvance({
     advanceTimerRef.current = null;
   }, []);
 
+  useEffect(() => {
+    if (typeof registerStopHandler !== 'function') return undefined;
+    return registerStopHandler(clearAdvanceTimer);
+  }, [registerStopHandler, clearAdvanceTimer]);
+
   const handleFinished = useCallback(() => {
+    if (!hostCommentaryEnabled) return;
     if (stepIndex >= stepCount - 1) return;
     clearAdvanceTimer();
     advanceTimerRef.current = setTimeout(() => {
       advanceTimerRef.current = null;
       onAdvanceStep?.();
     }, Math.max(0, Number(pauseAfterMs) || HOST_SPEECH_PAUSE_AFTER_MS));
-  }, [stepIndex, stepCount, onAdvanceStep, pauseAfterMs, clearAdvanceTimer]);
+  }, [
+    hostCommentaryEnabled,
+    stepIndex,
+    stepCount,
+    onAdvanceStep,
+    pauseAfterMs,
+    clearAdvanceTimer,
+  ]);
 
   useEffect(() => clearAdvanceTimer, [lineKey, clearAdvanceTimer]);
 
@@ -225,5 +256,114 @@ export function useHostSpeechAutoAdvance({
     onFinished: handleFinished,
   });
 
+  /** When commentary is off, advance dialogue without waiting for host MP3 */
+  useEffect(() => {
+    if (hostCommentaryEnabled) return undefined;
+    if (!voiceEnabled || !voiceLine || stepIndex >= stepCount - 1) return undefined;
+    clearAdvanceTimer();
+    advanceTimerRef.current = setTimeout(() => {
+      advanceTimerRef.current = null;
+      onAdvanceStep?.();
+    }, 120);
+    return () => clearAdvanceTimer();
+  }, [
+    hostCommentaryEnabled,
+    voiceEnabled,
+    voiceLine,
+    stepIndex,
+    stepCount,
+    lineKey,
+    onAdvanceStep,
+    clearAdvanceTimer,
+  ]);
+
   return { isPlaying, stopPlayback, bumpSession, clearAdvanceTimer };
+}
+
+const SEGMENT_PAUSE_MS = 120;
+
+/**
+ * Play a chain of host voice segments (modular banter). Stops and clears queue when commentary off.
+ */
+export function useModularHostBanterQueue({
+  plan = null,
+  themeName = 'Default',
+  lineKeyPrefix = 'banter',
+} = {}) {
+  const commentaryCtx = useContext(HostCommentaryContext);
+  const hostCommentaryEnabled = commentaryCtx?.hostCommentaryEnabled !== false;
+  const commentaryGeneration = commentaryCtx?.commentaryGeneration ?? 0;
+  const registerStopHandler = commentaryCtx?.registerStopHandler;
+
+  const [segmentIndex, setSegmentIndex] = useState(0);
+  const committedOnceRef = useRef('');
+  const pauseTimerRef = useRef(null);
+
+  const segments = plan?.segments;
+  const segCount = Array.isArray(segments) ? segments.length : 0;
+  const current = segCount ? segments[Math.min(segmentIndex, segCount - 1)] : null;
+
+  const clearPause = useCallback(() => {
+    if (pauseTimerRef.current) {
+      clearTimeout(pauseTimerRef.current);
+      pauseTimerRef.current = null;
+    }
+  }, []);
+
+  const stopQueue = useCallback(() => {
+    clearPause();
+    setSegmentIndex(0);
+  }, [clearPause]);
+
+  useEffect(() => {
+    if (typeof registerStopHandler !== 'function') return undefined;
+    return registerStopHandler(stopQueue);
+  }, [registerStopHandler, stopQueue]);
+
+  useEffect(() => {
+    stopQueue();
+    committedOnceRef.current = '';
+  }, [plan?.dedupKey, commentaryGeneration, stopQueue]);
+
+  /** Dedup / anti-repeat when the moment is shown — not deferred until audio ends (t221u: subtitles without audio) */
+  useEffect(() => {
+    if (!plan?.onCommit || !plan.dedupKey) return;
+    if (committedOnceRef.current === plan.dedupKey) return;
+    committedOnceRef.current = plan.dedupKey;
+    plan.onCommit();
+  }, [plan]);
+
+  const handleSegmentFinished = useCallback(() => {
+    if (!hostCommentaryEnabled) return;
+    if (!segCount) return;
+    if (segmentIndex >= segCount - 1) {
+      return;
+    }
+    clearPause();
+    pauseTimerRef.current = setTimeout(() => {
+      pauseTimerRef.current = null;
+      setSegmentIndex((i) => i + 1);
+    }, SEGMENT_PAUSE_MS);
+  }, [hostCommentaryEnabled, segCount, segmentIndex, clearPause]);
+
+  const effectiveLineKey = `${lineKeyPrefix}:${plan?.dedupKey || 'none'}:s${segmentIndex}:cg${commentaryGeneration}`;
+
+  useIanPosterHostVoicePlayback({
+    enabled:
+      hostCommentaryEnabled &&
+      Boolean(plan) &&
+      Boolean(current?.line) &&
+      segCount > 0,
+    line: current?.line || '',
+    lineKey: effectiveLineKey,
+    themeName,
+    audioSrcCandidates: current?.audioSrcCandidates || null,
+    fallbackDurationMs: current?.fallbackDurationMs ?? 2600,
+    onFinished: handleSegmentFinished,
+  });
+
+  return {
+    composedSubtitle: plan?.composedSubtitle || '',
+    subtitleVisible: Boolean(plan?.composedSubtitle),
+  };
 }

@@ -66,13 +66,16 @@ async function bootstrap() {
     const { installDiagnosticsLogCapture } = await import('./lib/diagnosticsLog.js');
     installDiagnosticsLogCapture();
     const { AuthProvider } = await import('./auth/AuthProvider.jsx');
+    const { HostCommentaryProvider } = await import('./context/HostCommentaryContext.jsx');
     const { default: App } = await import('./App.jsx');
     if (!rootElement) throw new Error('Root element #root not found');
     ReactDOM.createRoot(rootElement).render(
       <React.StrictMode>
         <RootErrorBoundary>
           <AuthProvider>
-            <App />
+            <HostCommentaryProvider>
+              <App />
+            </HostCommentaryProvider>
           </AuthProvider>
         </RootErrorBoundary>
       </React.StrictMode>,

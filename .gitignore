@@ -8,6 +8,7 @@ playwright-report/
 scripts/royaltyFreeApiKeys.local.json
 scripts/royaltyFreeApiKeys.json
 scripts/personaAvatarApiKeys.local.json
+docs/audio/*.bak
 .tmp/
 exports/generated-host-stills/
 exports/Hosts (1).zip

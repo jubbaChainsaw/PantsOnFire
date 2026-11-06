@@ -105,6 +105,8 @@
 .pof-root h1,.pof-root h2,.pof-root h3,.pof-root .font-black{font-family:'PoF Display',Inter,sans-serif;font-style:italic;letter-spacing:.05em}
 /* Display headings: all-caps (Jubba); use .pof-preserve-heading-case for mixed-case (e.g. player names). */
 .pof-root :where(h1,h2,h3):not(.pof-preserve-heading-case){text-transform:uppercase}
+/* ENHC0024: div/span display titles using Tailwind font-black match h1–h3 caps unless preserved */
+.pof-root .font-black:not(.pof-preserve-heading-case){text-transform:uppercase}
 .pof-heading{font-family:'PoF Display',Inter,sans-serif;font-style:italic;text-transform:uppercase;letter-spacing:.05em}
 .pof-heading.pof-preserve-heading-case{text-transform:none}
 /* Body / chat / prompts: use .pof-body or .pof-ui-copy — not .pof-heading — so sentence case is preserved under Jubba ALL-CAPS heading rules */

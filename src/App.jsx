@@ -209,6 +209,8 @@ import {
   calculateTwoTruthsRoundResolution,
   createEmptyTwoTruthsData,
 } from "./lib/twoTruthsOneFire.js";
+import { buildOnlineRoundLiveSyncSignature } from "./lib/onlineRoundLiveSync.js";
+import { onlinePhaseAllowsPartyVoice } from "./lib/onlineVoicePolicy.js";
 import NeonTwoTruthsInputScreen from "./components/neon/NeonTwoTruthsInputScreen.jsx";
 import NeonTwoTruthsVotingScreen from "./components/neon/NeonTwoTruthsVotingScreen.jsx";
 import NeonTwoTruthsRevealScreen from "./components/neon/NeonTwoTruthsRevealScreen.jsx";
@@ -222,7 +224,16 @@ import {
 import {
   useIanPosterHostVoicePlayback,
   useHostSpeechAutoAdvance,
+  useModularHostBanterQueue,
 } from "./lib/hostSpeechPlayback.js";
+import { useHostCommentary } from "./context/HostCommentaryContext.jsx";
+import {
+  planFinalWrapBanter,
+  planLiarRevealPluralBanter,
+  planLiarRevealSingularBanter,
+  planPickerTurnBanter,
+  planResultBanter,
+} from "./lib/modularHostBanterEngine.js";
 import {
   buildIanPosterGreetingLine,
   buildIanPosterRoundsLine,
@@ -384,17 +395,6 @@ const UI_ICON_BADGE_LIAR_SRC = "/assets/images/ui-icons/badge-liar.png";
 const UI_ICON_MAGNIFIER_FIRE_SRC = "/assets/images/ui-icons/magnifier-fire.png";
 const MIN_PLAYERS = 3;
 const MAX_PLAYERS = 12;
-const ONLINE_VOICE_ACTIVE_SCREENS = new Set([
-  "online-lobby-created",
-  "online-lobby-waiting",
-  "one-word",
-  "discussion",
-  "voting",
-  "twotruths-input",
-  "twotruths-voting",
-  "twotruths-reveal",
-  "results",
-]);
 const ONLINE_CONNECTION_ACTIVE_SCREENS = new Set([
   "online-lobby-created",
   "online-lobby-waiting",
@@ -1039,10 +1039,6 @@ function normalizeEnabledPictureReleaseChannels(raw = {}, manifests = []) {
       raw?.[channel] === undefined ? true : Boolean(raw[channel]);
   });
   return result;
-}
-
-function isVoiceEnabledForScreen(screen) {
-  return ONLINE_VOICE_ACTIVE_SCREENS.has(screen);
 }
 
 function applyPicturePackSelection(
@@ -1922,7 +1918,7 @@ function RoundMascot({ roundTypeId }) {
           <div className="text-xs uppercase tracking-[0.2em] text-white/55">
             Host mascot
           </div>
-          <div className="text-lg font-black text-yellow-300">
+          <div className="pof-preserve-heading-case text-lg font-black text-yellow-300">
             {mascot.name}
           </div>
           <div className="text-sm text-cyan-200">{mascot.blurb}</div>
@@ -5198,7 +5194,7 @@ function SetupScreen(props) {
                     ) : (
                       <div className="text-lg">{category.emoji || "🎲"}</div>
                     )}
-                    <div className="text-lg font-black">{category.name}</div>
+                    <div className="pof-preserve-heading-case text-lg font-black">{category.name}</div>
                     <div className="text-xs text-white/60">
                       {enabled ? "Enabled" : "Disabled"}
                     </div>
@@ -5578,7 +5574,7 @@ function RevealScreen({
                   >
                     <div
                       ref={promptTextRef}
-                      className={`font-black ${showImposterRevealUi ? "text-yellow-300" : "text-white"}`}
+                      className={`pof-preserve-heading-case font-black ${showImposterRevealUi ? "text-yellow-300" : "text-white"}`}
                       style={{
                         fontSize: `${promptFontSize}px`,
                         wordBreak: "normal",
@@ -6133,6 +6129,36 @@ function VotingScreen({
     </TopFrame>
   );
 }
+function LiarRevealModularBanter({
+  theme,
+  personaOnlyMode,
+  round,
+  liars,
+  announcementIndex,
+}) {
+  const plan = useMemo(() => {
+    if (announcementIndex !== 1 || !isIanPosterVoiceTheme(theme)) return null;
+    if (liars.length > 1) {
+      return planLiarRevealPluralBanter({ themeName: theme, round });
+    }
+    if (liars.length === 1) {
+      return planLiarRevealSingularBanter({
+        themeName: theme,
+        round,
+        liar: liars[0],
+        personaOnlyMode,
+      });
+    }
+    return null;
+  }, [theme, personaOnlyMode, round, liars, announcementIndex]);
+  useModularHostBanterQueue({
+    plan,
+    themeName: theme,
+    lineKeyPrefix: "banter-liar-reveal",
+  });
+  return null;
+}
+
 function LiarRevealScreen({
   players,
   round,
@@ -6142,31 +6168,7 @@ function LiarRevealScreen({
   playSfx = () => {},
 }) {
   const liars = players.filter((p) => (round.imposterIds || []).includes(p.id));
-  const primaryLiar = liars[0] || null;
-  const liarPersonaCalloutLine = getPersonaCalloutLineTextForPlayer(
-    primaryLiar,
-    theme,
-  );
-  const liarPersonaCalloutSrcCandidates = getPersonaCalloutSrcCandidates(
-    theme,
-    primaryLiar?.personaId,
-  );
-  const shouldPlayLiarPersonaCallout =
-    shouldPlayPersonaCalloutForPlayer(primaryLiar, theme, personaOnlyMode) &&
-    liars.length === 1;
   const [announcementIndex, setAnnouncementIndex] = useState(0);
-  useIanPosterHostVoicePlayback({
-    enabled:
-      announcementIndex === 1 &&
-      shouldPlayLiarPersonaCallout &&
-      isIanPosterVoiceTheme(theme) &&
-      Boolean(liarPersonaCalloutLine),
-    line: liarPersonaCalloutLine,
-    lineKey: `liar-callout-${primaryLiar?.id || "none"}-${announcementIndex}`,
-    themeName: theme,
-    audioSrcCandidates: liarPersonaCalloutSrcCandidates,
-    fallbackDurationMs: 2200,
-  });
   const audioRef = useRef(null);
   const hasCompletedRef = useRef(false);
   const announcementBubbleTextRef = useRef(null);
@@ -6245,6 +6247,13 @@ function LiarRevealScreen({
   }
   return (
     <TopFrame theme={theme} allowScroll>
+      <LiarRevealModularBanter
+        theme={theme}
+        personaOnlyMode={personaOnlyMode}
+        round={round}
+        liars={liars}
+        announcementIndex={announcementIndex}
+      />
       <div className="mx-auto flex w-full max-w-3xl flex-col py-2">
         <GlassPanel className="relative overflow-visible rounded-[2.5rem] border-red-400/25 bg-black/35 p-5 sm:p-7 text-center">
           <div className="absolute inset-0 animate-pulse bg-[radial-gradient(circle,_rgba(255,0,80,0.16)_0%,_rgba(255,0,80,0.08)_35%,_transparent_70%)]" />
@@ -6413,6 +6422,11 @@ function ResultsScreen({
                 <p className="mx-auto mt-2 max-w-3xl text-sm sm:text-base font-semibold text-white/75">
                   {resultLine}
                 </p>
+                <ResultsBanterSubtitle
+                  themeName={theme}
+                  round={round}
+                  imposterCaught={imposterCaught}
+                />
               </div>
               <DoubleTakePairsRevealPanel round={round} className="mt-4" />
               <div className="mt-4 grid gap-2 content-start sm:grid-cols-2 lg:grid-cols-3">
@@ -6602,6 +6616,7 @@ function FinalScreen({ players, onRestart, line, theme, unlockToast = false }) {
           <h2 className="pof-preserve-heading-case mt-3 text-5xl font-black text-yellow-300">
             Winner: {winner?.name}
           </h2>
+          <FinalWrapHostBanter themeName={theme} winnerName={winner?.name || ""} />
           <p className="mt-3 text-white/75">{line}</p>
           <div className="mt-8 grid gap-4 md:grid-cols-3">
             {ranked.map((player, index) => (
@@ -6781,9 +6796,18 @@ function redeemThemePackIds(currentPackIds = [], rawCode = "") {
   };
 }
 
-function SettingsToggleRow({ title, description, checked, onCheckedChange }) {
+function SettingsToggleRow({
+  title,
+  description,
+  checked,
+  onCheckedChange,
+  testId = "",
+}) {
   return (
-    <div className="rounded-[1.75rem] border border-white/10 bg-white/5 p-5">
+    <div
+      className="rounded-[1.75rem] border border-white/10 bg-white/5 p-5"
+      data-testid={testId || undefined}
+    >
       <div className="flex items-center gap-4">
         <div className="min-w-0 flex-1 text-left">
           <div className="pof-heading text-lg text-white">{title}</div>
@@ -6835,6 +6859,8 @@ function SettingsScreen({
   setPremiumEnabled,
   audioSettings,
   setAudioSettings,
+  hostCommentaryEnabled,
+  setHostCommentaryEnabled,
   theme,
   picturePackManifests,
   enabledPicturePacks,
@@ -7112,6 +7138,13 @@ function SettingsScreen({
               onCheckedChange={(next) =>
                 setAudioSettings((cur) => ({ ...cur, voiceChatEnabled: next }))
               }
+            />
+            <SettingsToggleRow
+              title="IAN HOST COMMENTARY"
+              description="When off, Ian’s voice lines stay silent. Music, sound effects, and party voice chat are unchanged. You’ll still see on-screen text."
+              checked={hostCommentaryEnabled !== false}
+              onCheckedChange={(next) => setHostCommentaryEnabled(next)}
+              testId="settings-host-commentary-toggle"
             />
             <SettingsToggleRow
               title="Visual Effects"
@@ -7477,7 +7510,85 @@ function TwoTruthsPhaseHostVoice({ enabled, themeName, round, screen }) {
   });
   return null;
 }
+
+function RoundPickerHostBanter({
+  themeName,
+  round,
+  players,
+  currentRoundOwnerIndex,
+  personaOnlyMode,
+}) {
+  const plan = useMemo(() => {
+    if (!round || !Array.isArray(players) || !players.length) return null;
+    const chooserId = round.chooserId || players[currentRoundOwnerIndex]?.id;
+    const chooser = players.find((p) => p.id === chooserId) || players[currentRoundOwnerIndex] || null;
+    return planPickerTurnBanter({
+      themeName,
+      round,
+      chooser,
+      personaOnlyMode,
+    });
+  }, [themeName, round, players, currentRoundOwnerIndex, personaOnlyMode]);
+  const { composedSubtitle, subtitleVisible } = useModularHostBanterQueue({
+    plan,
+    themeName,
+    lineKeyPrefix: "banter-picker",
+  });
+  if (!subtitleVisible || !composedSubtitle) return null;
+  return (
+    <div
+      className="mt-3 rounded-2xl border border-cyan-300/25 bg-cyan-500/10 px-3 py-2 text-center text-sm text-cyan-100"
+      data-testid="banter-picker-subtitle"
+    >
+      {composedSubtitle}
+    </div>
+  );
+}
+
+function ResultsBanterSubtitle({ themeName, round, imposterCaught }) {
+  const plan = useMemo(
+    () => planResultBanter({ themeName, round, imposterCaught }),
+    [themeName, round, imposterCaught],
+  );
+  const { composedSubtitle, subtitleVisible } = useModularHostBanterQueue({
+    plan,
+    themeName,
+    lineKeyPrefix: "banter-result",
+  });
+  if (!subtitleVisible || !composedSubtitle) return null;
+  return (
+    <p
+      className="mx-auto mt-2 max-w-3xl text-xs text-cyan-200/90"
+      data-testid="banter-result-subtitle"
+    >
+      {composedSubtitle}
+    </p>
+  );
+}
+
+function FinalWrapHostBanter({ themeName, winnerName }) {
+  const plan = useMemo(
+    () => planFinalWrapBanter({ themeName, sessionKey: winnerName || "final" }),
+    [themeName, winnerName],
+  );
+  const { composedSubtitle, subtitleVisible } = useModularHostBanterQueue({
+    plan,
+    themeName,
+    lineKeyPrefix: "banter-final",
+  });
+  if (!subtitleVisible || !composedSubtitle) return null;
+  return (
+    <p className="mt-2 text-sm text-cyan-200/85" data-testid="banter-final-subtitle">
+      {composedSubtitle}
+    </p>
+  );
+}
+
 export default function App() {
+  const {
+    hostCommentaryEnabled,
+    setHostCommentaryEnabled,
+  } = useHostCommentary();
   const {
     loading: authLoading,
     session: supabaseSession,
@@ -8502,8 +8613,7 @@ export default function App() {
     );
   }, [availablePicturePackManifests]);
   useEffect(() => {
-    const phaseAllowsVoice =
-      onlineMode && ONLINE_VOICE_ACTIVE_SCREENS.has(screen);
+    const phaseAllowsVoice = onlinePhaseAllowsPartyVoice(onlineMode, screen);
     const userWantsVoice = audioSettings.voiceChatEnabled !== false;
     setOnlineVoiceEnabled(phaseAllowsVoice && userWantsVoice);
     if (!phaseAllowsVoice || !userWantsVoice) {
@@ -9168,17 +9278,8 @@ export default function App() {
           );
         } else if (snapshot.status === "started" && snapshot.activeRound) {
           const activeRound = snapshot.activeRound;
-          const snapshotPhase = String(activeRound.phase || "").trim();
-          const snapshotTurnIndex = Math.max(
-            0,
-            Number(activeRound.oneWordTurnIndex) || 0,
-          );
-          const snapshotTwoTruthsInputIdx = Math.max(
-            0,
-            Number(activeRound.twoTruthsData?.inputPlayerIndex) || 0,
-          );
           if (onlineMode) {
-            const syncSignature = `${snapshotPhase}:${snapshotTurnIndex}:${activeRound.roundNumber || 0}:${activeRound.phaseUpdatedAt || ""}:${snapshotTwoTruthsInputIdx}`;
+            const syncSignature = buildOnlineRoundLiveSyncSignature(activeRound);
             if (onlineRoundLiveSyncRef.current !== syncSignature) {
               onlineRoundLiveSyncRef.current = syncSignature;
               void syncOnlineRoundFromSnapshot(
@@ -11078,7 +11179,7 @@ export default function App() {
               </h2>
               <p className="text-white/75 mt-3">
                 You are connected as{" "}
-                <span className="font-black text-yellow-300">
+                <span className="pof-preserve-heading-case font-black text-yellow-300">
                   {onlinePlayerName}
                 </span>
                 .
@@ -11233,6 +11334,13 @@ export default function App() {
             <h2 className="shrink-0 px-1 text-center text-2xl font-black leading-tight text-yellow-300 [text-shadow:0_4px_16px_rgba(0,0,0,0.65)] sm:text-3xl">
               Choose the game mode
             </h2>
+            <RoundPickerHostBanter
+              themeName={canonicalThemeName}
+              round={round}
+              players={players}
+              currentRoundOwnerIndex={currentRoundOwnerIndex}
+              personaOnlyMode={personaOnlyMode}
+            />
             <RoundTypeChoiceGrid
               roundTypeOptions={roundTypeOptions}
               onlineMode={onlineMode}
@@ -11873,6 +11981,8 @@ export default function App() {
           setPremiumEnabled={setPremiumEnabled}
           audioSettings={audioSettings}
           setAudioSettings={setAudioSettings}
+          hostCommentaryEnabled={hostCommentaryEnabled}
+          setHostCommentaryEnabled={setHostCommentaryEnabled}
           theme={canonicalThemeName}
           picturePackManifests={availablePicturePackManifests}
           enabledPicturePacks={enabledPicturePacks}
