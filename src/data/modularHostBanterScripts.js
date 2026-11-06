@@ -32,6 +32,13 @@ export const MODULAR_BANTER_FIXED_SCRIPTS = Object.freeze([
     },
   },
   {
+    id: 'banter_picker_alright_lead_v2',
+    segmentRole: 'prefix',
+    filenameStem: 'banter_picker_alright_lead_v2',
+    spokenText: 'Alright —',
+    exportSpokenText: 'Alright —',
+  },
+  {
     id: 'banter_picker_prefix_v2',
     segmentRole: 'prefix',
     filenameStem: 'banter_picker_prefix_v2',

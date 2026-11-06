@@ -23,4 +23,4 @@ git diff 09a8180 HEAD -- docs/audio/additional-host-phrases-manifest.json
 
 ## Counts
 
-- **104** manifest rows = **13** unique fragment texts × **8** Ian Poster voice themes (see `lineCount` / `uniqueFragmentCount` in the JSON).
+- **112** manifest rows = **14** unique fragment texts × **8** Ian Poster voice themes (see `lineCount` / `uniqueFragmentCount` in the JSON). One fragment (`Alright —`) is **persona-mode-only** for picker variant **v2** (NAME + lead + suffix).
