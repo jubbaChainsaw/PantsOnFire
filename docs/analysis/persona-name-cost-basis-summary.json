@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
   "taskId": "t215u",
-  "generatedAt": "2026-11-06T20:55:39.085Z",
-  "gitCommit": "44a8508b4c4f87130a5343954229e0615f8be907",
+  "generatedAt": "2026-11-06T20:56:04.060Z",
+  "gitCommit": "859ed18e322e28707716ec7cfc99a949d97fc93a",
   "sourcePaths": [
     "src/data/themePersonas.js",
     "src/data/dlcPersonaRoster.json",
