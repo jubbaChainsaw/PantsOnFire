@@ -1,6 +1,7 @@
 # Jubba full audit — findings (evidence baseline)
 
 **Branch:** `cursor/ionos-web-deploy-6e4c` — **PR #111**  
+**Commits (audit):** `cbef5d48c4805833b2f74fdecb0acc2ddc434064` (deliverables + E2E fix), `9fb745f749700ecdf684cad8678cedea4a0e5131` (`jubbaworld-pending` entry)  
 **Status:** **Evidence baseline complete** — per-item **deep code proof** for all **119** rows is **not** claimed; **72** rows remain **`untested`** under audit heuristics (see JSON).
 
 ## Superpowers (attached bundle)

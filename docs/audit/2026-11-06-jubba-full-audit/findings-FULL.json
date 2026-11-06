@@ -4,7 +4,11 @@
   "status": "evidence_baseline_complete_deep_verification_ongoing",
   "branch": "cursor/ionos-web-deploy-6e4c",
   "pr": 111,
-  "baseCommit": "0b878f4",
+  "preliminaryCommit": "0b878f4",
+  "auditDeliverableCommits": [
+    "cbef5d48c4805833b2f74fdecb0acc2ddc434064",
+    "9fb745f749700ecdf684cad8678cedea4a0e5131"
+  ],
   "completedAtApproxUtc": "2026-11-06T19:00:00Z",
   "superpowers": {
     "bundleFile": "docs/audit/2026-11-06-jubba-full-audit/SUPERPOWERS_SKILLS_BUNDLE.md",

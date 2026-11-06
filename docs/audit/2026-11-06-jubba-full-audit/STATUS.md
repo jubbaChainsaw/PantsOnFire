@@ -2,6 +2,7 @@
 
 **Branch:** `cursor/ionos-web-deploy-6e4c` (PR #111)  
 **Baseline snapshot:** `jubbaworld-snapshot-2026-11-06.json` (119 items, fetched 18:34Z per parent export)  
+**Audit commits:** `cbef5d48c4805833b2f74fdecb0acc2ddc434064` (deliverables + E2E fix), `9fb745f749700ecdf684cad8678cedea4a0e5131` (pending-file pointer)  
 **State:** **Evidence baseline delivered** — see honesty section below
 
 ## Superpowers
