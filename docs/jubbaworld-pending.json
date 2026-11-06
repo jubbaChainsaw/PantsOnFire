@@ -5,6 +5,26 @@
   "entries": [
     {
       "type": "work_task",
+      "id": "POF-AUDIT-2026-11-06-FULL",
+      "title": "JubbaWorld full audit: traceability + tests + findings (evidence baseline)",
+      "status": "done",
+      "description": "119-item snapshot + inventory attached; traceability-FULL.json (119 + 10 conversation rows); findings; proposed tracker/task payloads; Superpowers plan; E2E (web-player selector fix) + mobile dist smoke after build; artifacts under /opt/cursor/artifacts/jubba-audit-2026-11-06/. Heuristic untested rows remain — not product sign-off.",
+      "files": [
+        "docs/audit/2026-11-06-jubba-full-audit/traceability-FULL.json",
+        "docs/audit/2026-11-06-jubba-full-audit/findings-FULL.json",
+        "docs/audit/2026-11-06-jubba-full-audit/AUDIT_TEST_LOG.md",
+        "docs/audit/2026-11-06-jubba-full-audit/proposed-tracker-updates.json",
+        "docs/audit/2026-11-06-jubba-full-audit/proposed-new-work-tasks.json",
+        "docs/superpowers/plans/2026-11-06-jubba-full-audit.md",
+        "scripts/audit/buildJubbaWorldTraceability.mjs",
+        "tests/e2e/playwright/web-player-website.spec.js",
+        "tests/e2e/playwright/store-neon.spec.js",
+        ".gitignore"
+      ],
+      "commit": "cbef5d48c4805833b2f74fdecb0acc2ddc434064"
+    },
+    {
+      "type": "work_task",
       "id": "POF-ENH-DISPLAY-CAPS",
       "title": "Display typography: ALL CAPS for headings, nav, store art",
       "status": "done",
