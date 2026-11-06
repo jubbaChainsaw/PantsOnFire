@@ -12,8 +12,9 @@
 
 - No merge/deploy/Play/live billing from audit run  
 - No secrets in logs  
-- Do not trust tracker Done without repo/test evidence  
+- Do not trust tracker Done without repo/test evidence — see `findings-FULL.json` `snapshotDoneAnalysis` (only 4 rows are `verified` via cited automation)  
 - POF-DEC-001 remains **pending decision** until Jubba chooses PR #112 vs branch workflow  
+- Superpowers **requesting-code-review** is **not fulfilled** for this audit (no independent reviewer agent)
 
 ---
 

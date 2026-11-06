@@ -220,7 +220,7 @@ function main() {
     auditId: 'POF-AUDIT-2026-11-06-JUBBA-FULL',
     generatedAt: new Date().toISOString(),
     methodologyNote:
-      'Superpowers bundle: docs/audit/2026-11-06-jubba-full-audit/SUPERPOWERS_SKILLS_BUNDLE.md. Rows merge snapshot + evidence-batch-*.json (lexical merge order). No keyword heuristics. Independent code reviewer: not available this run.',
+      'Superpowers bundle: docs/audit/2026-11-06-jubba-full-audit/SUPERPOWERS_SKILLS_BUNDLE.md. Rows merge snapshot + evidence-batch-*.json (lexical merge order). No keyword heuristics. Evidence rows are **accounted-for** (repo anchors + test commands where applicable); they are **not** independent human examination unless noted. Independent code reviewer: **not run** — `requesting-code-review` Superpowers step **not fulfilled**.',
     baseline: {
       snapshotPath: 'docs/audit/2026-11-06-jubba-full-audit/jubbaworld-snapshot-2026-11-06.json',
       snapshotProvenanceCopyPath:

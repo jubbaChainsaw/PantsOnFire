@@ -8,9 +8,10 @@
       "id": "POF-AUDIT-2026-11-06-FULL",
       "title": "JubbaWorld full audit: traceability + tests + findings (evidence baseline)",
       "status": "done",
-      "description": "119-item snapshot + inventory; traceability-FULL.json (schema v3, merges evidence-batch-01/02/03.json — no keyword heuristics); generateEvidenceBatch02.mjs; findings; proposed payloads (REQ0017 note, deduped); Superpowers plan; E2E (web-player selector fix); mobile dist smoke + API proxy diagnostic; artifacts under /opt/cursor/artifacts/jubba-audit-2026-11-06/. Matrix row coverage complete — many rows partial/device-blocked per taxonomy (not product sign-off).",
+      "description": "119-item snapshot + inventory; traceability-FULL.json (schema v3, merges evidence-batch-01/02/03.json — no keyword heuristics); generateEvidenceBatch02.mjs (evidence quality remediation: line-anchored refs, account_status_unknown org rows); audit-gap-criteria-2026-11-06.json; findings; proposed payloads v4 (REQ0012-17 reconciliation); Superpowers plan; requesting-code-review not fulfilled; E2E (web-player selector fix); mobile dist smoke + API proxy diagnostic; artifacts under /opt/cursor/artifacts/jubba-audit-2026-11-06/. Matrix row coverage complete — evidence-accounted rows, not blanket Done verification.",
       "files": [
         "docs/audit/2026-11-06-jubba-full-audit/traceability-FULL.json",
+        "docs/audit/2026-11-06-jubba-full-audit/audit-gap-criteria-2026-11-06.json",
         "docs/audit/2026-11-06-jubba-full-audit/evidence-batch-01.json",
         "docs/audit/2026-11-06-jubba-full-audit/evidence-batch-02.json",
         "docs/audit/2026-11-06-jubba-full-audit/evidence-batch-03.json",

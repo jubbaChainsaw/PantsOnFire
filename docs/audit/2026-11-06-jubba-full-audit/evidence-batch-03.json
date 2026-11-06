@@ -9,7 +9,7 @@
       "methodologyNote": "Existing JubbaWorld item REQ0017 — server `buildAuthoritativeRound` only emits Hot Seat (`roundTypeId: 'prompt'`). Client already implements Two Truths screens (`twotruths-input` / `twotruths-voting` / `twotruths-reveal` in App.jsx) but online authority + E2E unskip depend on REQ0017 + TEST0004.",
       "implementationRefs": [
         "server/storage/lobbyStore.js:353-410 buildAuthoritativeRound — roundTypeId: prompt",
-        "src/App.jsx — twotruths screen IDs (9257+ phase routing)"
+        "src/App.jsx:9257-9273 syncOnlineRoundFromSnapshot — twotruths-input / twotruths-voting / reveal branches"
       ],
       "nextAction": "Extend server round generator + lobby store for online Two Truths (use existing REQ0017); add server tests; then unblock Playwright online two-truths path (TEST0004)."
     },

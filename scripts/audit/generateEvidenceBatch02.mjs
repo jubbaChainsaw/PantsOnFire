@@ -20,7 +20,7 @@ function baseRow(emptyDesc, extra = {}) {
     acceptanceInferredFlag: emptyDesc,
     evidenceSource: 'repo_read_batch02',
     methodologyNote:
-      'Batch 02: explicit defaults and overrides (not keyword heuristics). Tracker Done still not trusted without device/visual confirmation where UI/APK.',
+      'Batch 02: generator-authored structured overrides (not keyword heuristics). Count≠depth: this is not independent human/code-review examination. Tracker snapshot.done is organizational only — each row states repo/test vs device gap.',
     implementationRefs: [],
     testRefs: [],
     runtimeNotes: null,
@@ -59,12 +59,16 @@ const OVERRIDES = {
   DFCT0003: {
     ...baseRow(false),
     evidenceClassification: 'partial',
-    confidence: 'low',
+    confidence: 'medium',
     methodologyNote:
-      'Inventory notes “assumed fixed in port”; no dedicated test id for layout under primary buttons.',
-    implementationRefs: ['src/App.jsx — home/setup shell (large file)'],
-    testRefs: ['tests/e2e/playwright/martin-smoke.spec.js'],
-    nextAction: 'Viewport snapshot test or manual pass-the-phone QA (REQ0005).',
+      'Inventory “assumed fixed in port” — local setup uses `LocalSetupScreen` with `data-testid="start-match"`; no test asserting buttons never cover name fields.',
+    implementationRefs: [
+      'src/App.jsx:4625-5088 LocalSetupScreen — Create Pass the Phone Game / start-match',
+    ],
+    testRefs: [
+      'tests/e2e/playwright/martin-smoke.spec.js:26-27 — click Play, expect getByTestId("start-match")',
+    ],
+    nextAction: 'Playwright viewport matrix: assert setup fields visible above docked buttons (REQ0005 / ENHC0025).',
     linksExistingTracker: ['REQ0005', 'REQ0008'],
   },
   DFCT0004: {
@@ -72,24 +76,29 @@ const OVERRIDES = {
     evidenceClassification: 'partial',
     confidence: 'medium',
     methodologyNote:
-      'Round-type grid exists (`data-testid="round-type-choice-grid"` in E2E); tracker still In progress — visual regression for “lost graphics / duplicate Hot Seat” not closed in this audit.',
-    implementationRefs: ['src/App.jsx — round type choice UI'],
-    testRefs: [
-      'tests/e2e/playwright/mobile-bundled-dist-smoke.spec.js — iterates round-type icons',
+      '`RoundTypeChoiceGrid` (4033-4095) + screen branch `screen === "round-type-choice"` (10899-10922); duplicate Hot Seat / missing art not asserted in tests — tracker In progress.',
+    implementationRefs: [
+      'src/App.jsx:4033-4095 RoundTypeChoiceGrid — data-testid="round-type-choice-grid", data-testid={`round-type-${type.id}`}',
+      'src/App.jsx:10899-10922 round-type-choice screen + onSelectRoundType',
     ],
-    nextAction: 'Visual E2E or device pass on mode screen (neon assets).',
+    testRefs: [
+      'tests/e2e/playwright/mobile-bundled-dist-smoke.spec.js — forEach data-testid round-type-* / icon',
+    ],
+    nextAction: 'Visual E2E: assert ≥N distinct round-type ids visible; device pass if graphics loss reported (REQ0008).',
     linksExistingTracker: ['REQ0008', 'STRY0007'],
   },
   DFCT0005: {
     ...baseRow(false),
     evidenceClassification: 'partial',
-    confidence: 'low',
-    methodologyNote: 'Host intro timing/background — host dialogue CSS in `src/pof-components.css`; “lines too slow” is subjective without device video.',
+    confidence: 'medium',
+    methodologyNote:
+      'Host intro: `HostIntroScreen` uses `useHostSpeechAutoAdvance` + `HOST_DIALOGUE_TIMINGS.roundIntroAdvanceMs` fallback; “too slow” is subjective — not metered in CI.',
     implementationRefs: [
-      'src/pof-components.css — host dialogue / wallpaper tokens',
+      'src/App.jsx:2582-2675 HostIntroScreen — speechSteps, useHostSpeechAutoAdvance, data-testid="host-intro-skip"',
+      'src/pof-components.css — .pof-host-dialogue (wallpaper via BrandedScreen/TopFrame)',
     ],
-    testRefs: [],
-    nextAction: 'Device capture + tune host intro scroll/timing (REQ0008).',
+    testRefs: ['tests/e2e/playwright/martin-smoke.spec.js — may skip intro via host-intro-skip when present'],
+    nextAction: 'Device: measure tap-to-next vs auto-advance; tune HOST_DIALOGUE_TIMINGS if needed.',
     linksExistingTracker: ['REQ0008'],
   },
   DFCT0006: {
@@ -110,12 +119,15 @@ const OVERRIDES = {
   DFCT0007: {
     ...baseRow(false),
     evidenceClassification: 'partial',
-    confidence: 'low',
+    confidence: 'medium',
     methodologyNote:
-      'UI uses responsive clamps; inventory marked “uncertain / MagicPath” — no pixel-proof in automation.',
-    implementationRefs: ['src/App.jsx — card/button layout regions'],
-    testRefs: ['tests/e2e/playwright/mobile-bundled-dist-smoke.spec.js — broken image check'],
-    nextAction: 'Responsive visual baselines or manual sweep (REQ0008).',
+      'Round/category tiles use flex + `ThemeArt` object-contain; inventory “uncertain” — mobile smoke checks broken images, not overflow per breakpoint.',
+    implementationRefs: [
+      'src/App.jsx:4067-4091 RoundTypeChoiceGrid button + ThemeArt scale-[1.03]',
+      'src/App.jsx:4147-4165 CategoryChoiceGrid category tile + ThemeArt max-h clamps',
+    ],
+    testRefs: ['tests/e2e/playwright/mobile-bundled-dist-smoke.spec.js — expect(page.locator("img")).not broken naturalWidth'],
+    nextAction: 'Playwright overflow assert on small viewports or manual sweep (REQ0008 / ENHC0025).',
     linksExistingTracker: ['REQ0008'],
   },
   DFCT0008: {
@@ -123,13 +135,16 @@ const OVERRIDES = {
     evidenceClassification: 'partial',
     confidence: 'medium',
     methodologyNote:
-      'Inventory cites timer bug + regression test — likely covered indirectly in server/lobby tests; client “start game” path exercised by martin/mobile smoke.',
-    implementationRefs: ['src/App.jsx — screen transitions'],
-    testRefs: [
-      'tests/e2e/playwright/martin-smoke.spec.js',
-      'tests/server/lobbyStore.test.mjs',
+      'Inventory cites timer regression (historical) — not re-isolated here. Client path: martin-smoke Play → start-match; online timer paths in `useTimedChoice` + `NeonTimerBar` (CategoryChoiceGrid).',
+    implementationRefs: [
+      'src/App.jsx:4108-4121 CategoryChoiceGrid — useTimedChoice + NeonTimerBar',
+      'src/App.jsx:4042-4057 RoundTypeChoiceGrid — useTimedChoice when onlineMode',
     ],
-    nextAction: 'If recurrence: add targeted repro + client unit test (ENHC0025).',
+    testRefs: [
+      'tests/e2e/playwright/martin-smoke.spec.js:26-27',
+      'tests/server/lobbyStore.test.mjs — lobby lifecycle (not same bug class)',
+    ],
+    nextAction: 'If recurrence: git bisect + minimal Playwright repro for offending timer.',
     linksExistingTracker: ['REQ0005', 'ENHC0025'],
   },
   DFCT0009: {
@@ -158,10 +173,13 @@ const OVERRIDES = {
     evidenceClassification: 'partial',
     confidence: 'medium',
     methodologyNote:
-      'Prompt card backs use bundled assets + `ThemeArt`; empty description — inferred fix = asset paths resolve.',
-    implementationRefs: ['src/App.jsx — ThemeArt / card back sources'],
-    testRefs: ['tests/e2e/playwright/mobile-bundled-dist-smoke.spec.js'],
-    nextAction: 'Spot-check each theme prompt card back in dist-android.',
+      'Card backs: `resolveCategoryChoiceCardArt` → `getRoundCardBackSrc`; tiles use `ThemeArt` — mobile smoke checks images load.',
+    implementationRefs: [
+      'src/App.jsx:2577-2581 resolveCategoryChoiceCardArt',
+      'src/App.jsx:4159-4164 CategoryChoiceGrid ThemeArt for category icon',
+    ],
+    testRefs: ['tests/e2e/playwright/mobile-bundled-dist-smoke.spec.js — img naturalWidth assertions'],
+    nextAction: 'Per-theme spot-check in dist-android APK (device).',
     linksExistingTracker: ['REQ0008'],
   },
   DFCT0012: {
@@ -188,21 +206,28 @@ const OVERRIDES = {
   DFCT0014: {
     ...baseRow(true),
     evidenceClassification: 'partial',
-    confidence: 'low',
-    methodologyNote: 'Wallpapers in neon assets; empty description in tracker.',
-    implementationRefs: ['src/data/uiNeonAssets.js', 'src/pof-components.css'],
+    confidence: 'medium',
+    methodologyNote:
+      'Wallpapers: `BrandedScreen` uses `backgroundImage` from props; neon UI refs in `src/data/uiNeonAssets.js`. Repeating-tile class of bug needs device screenshot.',
+    implementationRefs: [
+      'src/App.jsx:4018-4023 BrandedScreen wallpaper div backgroundRepeat no-repeat',
+      'src/data/uiNeonAssets.js — UI_WALLPAPER_* exports',
+    ],
     testRefs: [],
-    nextAction: 'Visual QA wallpapers per theme.',
+    nextAction: 'Device visual QA per theme (repeating artifact).',
     linksExistingTracker: ['REQ0008'],
   },
   DFCT0015: {
     ...baseRow(false),
     evidenceClassification: 'partial',
     confidence: 'medium',
-    methodologyNote: 'Host reveal uses host dialogue layers; black frame issue needs device repro.',
-    implementationRefs: ['src/pof-components.css — host intro caption'],
+    methodologyNote:
+      'Reveal host visual: `RevealPromptScreen` / host layers — black frame not reproduced in headless; needs device.',
+    implementationRefs: [
+      'src/App.jsx:2582-2700 HostIntroScreen — ThemeHostVisual + caption panel data-testid="host-intro-caption"',
+    ],
     testRefs: [],
-    nextAction: 'Repro on target device + capture (DFCT0028 cluster).',
+    nextAction: 'Device repro + screen recording (DFCT0028 cluster).',
     linksExistingTracker: ['REQ0005'],
   },
   DFCT0016: {
@@ -230,11 +255,15 @@ const OVERRIDES = {
   DFCT0018: {
     ...baseRow(false),
     evidenceClassification: 'partial',
-    confidence: 'low',
-    methodologyNote: 'Choose-for-me control in category screen stack; clip overlap needs viewport test.',
-    implementationRefs: ['src/App.jsx ~10975 Choose for me'],
+    confidence: 'medium',
+    methodologyNote:
+      'Choose-for-me bar is fixed header `data-testid="category-choice-random-bar"` above scroll — clip risk on short viewports.',
+    implementationRefs: [
+      'src/App.jsx:10961-10977 category-choice-random-bar + data-testid="choose-category-random"',
+      'src/App.jsx:10978-10986 CategoryChoiceGrid wrapper',
+    ],
     testRefs: [],
-    nextAction: 'Playwright viewport snapshot small height (ENHC0019 roulette area).',
+    nextAction: 'Playwright small viewport: assert bar + first category row both visible (ENHC0019).',
     linksExistingTracker: ['ENHC0019'],
   },
   DFCT0019: {
@@ -270,11 +299,15 @@ const OVERRIDES = {
   DFCT0022: {
     ...baseRow(false),
     evidenceClassification: 'partial',
-    confidence: 'low',
-    methodologyNote: 'Home safe-area padding in `NeonHomeScreen` — edge spacing device-dependent.',
-    implementationRefs: ['src/components/neon/NeonHomeScreen.jsx:145-146 safe-area padding'],
+    confidence: 'medium',
+    methodologyNote:
+      'Home uses `--pof-safe-top/bottom` padding on shell (`NeonHomeScreen`); exact balance vs bottom CTAs is device-dependent.',
+    implementationRefs: [
+      'src/components/neon/NeonHomeScreen.jsx:145-146 paddingTop/Bottom max(... var(--pof-safe-*) ...)',
+      'src/pof-components.css:3-6 --pof-safe-* tokens',
+    ],
     testRefs: [],
-    nextAction: 'Device screenshot matrix (DFCT0028).',
+    nextAction: 'Device screenshot matrix vs design tokens (DFCT0028 cluster).',
     linksExistingTracker: ['DFCT0028'],
   },
   DFCT0023: {
@@ -292,10 +325,15 @@ const OVERRIDES = {
     ...baseRow(false),
     evidenceClassification: 'partial',
     confidence: 'medium',
-    methodologyNote: 'Chain Reaction screens use neon typography; countdown font — verify in `pof-components.css` / round screens.',
-    implementationRefs: ['src/pof-components.css', 'src/App.jsx — chain round branch'],
+    methodologyNote:
+      'Chain rounds branch in `getRoundScreenCopy` / reveal copy; countdown typography not isolated — compare NeonTimerBar vs host intro caption styling.',
+    implementationRefs: [
+      'src/App.jsx:1121-1128 getRoundScreenCopy chain branch',
+      'src/App.jsx:4054-4056 NeonTimerBar in RoundTypeChoiceGrid',
+      'src/pof-components.css:84-108 heading/body font rules',
+    ],
     testRefs: [],
-    nextAction: 'Visual compare Chain vs global countdown (STRY0010).',
+    nextAction: 'Device visual: Chain host vs selection timer numerals (STRY0010).',
     linksExistingTracker: ['STRY0010'],
   },
   DFCT0025: {
@@ -351,8 +389,12 @@ const OVERRIDES = {
     ...baseRow(false),
     evidenceClassification: 'blocked_device_external',
     confidence: 'medium',
-    methodologyNote: 'Same S24 cluster as DFCT0028 — layout gap host vs intro.',
-    implementationRefs: ['src/App.jsx — host card + intro stack'],
+    methodologyNote:
+      'Layout gap between host card and intro text — device-only verification; code path: `HostIntroScreen` + `TopFrame`.',
+    implementationRefs: [
+      'src/App.jsx:2582-2674 HostIntroScreen layout',
+      'src/App.jsx:10993-11008 host-intro screen branch + onContinue',
+    ],
     testRefs: [],
     nextAction: 'Device capture + CSS fix; grouped with DFCT0028.',
     linksExistingTracker: ['DFCT0028'],
@@ -361,40 +403,54 @@ const OVERRIDES = {
     ...baseRow(false),
     evidenceClassification: 'blocked_device_external',
     confidence: 'medium',
-    methodologyNote: 'Clipped pill — needs device viewport.',
-    implementationRefs: ['src/App.jsx — top pill / debug overlay region'],
+    methodologyNote:
+      'Category header uses `pl-14 sm:pl-0` for round-owner pill — may clip on some notches; needs device.',
+    implementationRefs: [
+      'src/App.jsx:10932-10943 category-choice-header — pl-14 sm:pl-0',
+    ],
     testRefs: [],
-    nextAction: 'Identify pill component; fix padding (DFCT0028 batch).',
+    nextAction: 'Device: confirm pill + h2 alignment; adjust safe-area padding (DFCT0028).',
     linksExistingTracker: ['DFCT0028'],
   },
   DFCT0031: {
     ...baseRow(false),
     evidenceClassification: 'blocked_device_external',
     confidence: 'medium',
-    methodologyNote: 'Persona avatars vs initials — visual on scoreboard.',
-    implementationRefs: ['src/App.jsx — persona / scoreboard'],
+    methodologyNote:
+      '`PlayerPersonaAvatar` on results/scoreboard — broken image falls back to initials.',
+    implementationRefs: [
+      'src/App.jsx:6383-6389 ResultsScreen summary row — PlayerPersonaAvatar',
+      'src/App.jsx:6433-6441 Vote Tally row — PlayerPersonaAvatar',
+      'src/App.jsx:6471-6477 Scoreboard — PlayerPersonaAvatar',
+    ],
     testRefs: [],
-    nextAction: 'Device QA persona pipeline (STRY0026 host costumes related).',
+    nextAction: 'Device QA: broken personaImageSrc vs intended art (STRY0026).',
     linksExistingTracker: ['DFCT0028', 'STRY0026'],
   },
   DFCT0032: {
     ...baseRow(false),
     evidenceClassification: 'blocked_device_external',
     confidence: 'medium',
-    methodologyNote: 'Vote tally layout whitespace.',
-    implementationRefs: ['src/App.jsx — voting / tally panels'],
+    methodologyNote:
+      'Vote tally UI in `ResultsScreen` details stage — whitespace subjective on device.',
+    implementationRefs: [
+      'src/App.jsx:6419-6453 Vote Tally GlassPanel + sortedVoteRows map',
+    ],
     testRefs: [],
-    nextAction: 'UI polish pass on device.',
+    nextAction: 'Device UI polish (DFCT0028 batch).',
     linksExistingTracker: ['DFCT0028'],
   },
   DFCT0033: {
     ...baseRow(false),
     evidenceClassification: 'blocked_device_external',
     confidence: 'medium',
-    methodologyNote: 'Final accusation layout.',
-    implementationRefs: ['src/App.jsx — final accusation reveal'],
+    methodologyNote:
+      '`FinalAccusationReveal` (inline in App.jsx) — host + announcement bubble + liar badges.',
+    implementationRefs: [
+      'src/App.jsx:6187-6281 Final accusation block — ThemeHostVisual, announcement bubble, PlayerPersonaAvatar for liars',
+    ],
     testRefs: [],
-    nextAction: 'Device regression.',
+    nextAction: 'Device regression: centering/overflow on S24 (DFCT0028).',
     linksExistingTracker: ['DFCT0028'],
   },
   DFCT0034: {
@@ -402,10 +458,14 @@ const OVERRIDES = {
     evidenceClassification: 'blocked_device_external',
     confidence: 'high',
     methodologyNote:
-      'ReferenceError `theme` on Randomize personas — needs repro build; not reproduced in headless smoke.',
-    implementationRefs: ['src/App.jsx — persona randomize handler'],
+      'Randomize all personas: `randomizeAllPlayersForTheme` calls `buildRandomizedPlayerIdentity` — historical ReferenceError on device build be03dd5 not reproduced here.',
+    implementationRefs: [
+      'src/App.jsx:4689-4702 randomizeAllPlayersForTheme',
+      'src/App.jsx:4815-4822 Button Randomize all personas for this theme',
+      'src/App.jsx:631-660 buildRandomizedPlayerIdentity',
+    ],
     testRefs: [],
-    nextAction: 'Repro on S24 + add try/coverage (ENHC0025).',
+    nextAction: 'Repro on reported build/device + add regression test (ENHC0025).',
     linksExistingTracker: ['DFCT0028', 'ENHC0025'],
   },
   DFCT0037: {
@@ -442,11 +502,16 @@ const OVERRIDES = {
   DFCT0041: {
     ...baseRow(false),
     evidenceClassification: 'partial',
-    confidence: 'low',
-    methodologyNote: 'Minor doc slips — batch 01 covered sibling items; residual slips untracked.',
-    implementationRefs: ['docs/'],
+    confidence: 'medium',
+    methodologyNote:
+      '“Minor slips” not enumerated — sibling doc defects have file anchors (DFCT0037-39); this row stays open-ended.',
+    implementationRefs: [
+      'README.md — round list / env (spot-check only)',
+      'docs/FEATURE_INVENTORY.md — mode inventory',
+      'docs/LOBBY_ARCHITECTURE.md — route list',
+    ],
     testRefs: [],
-    nextAction: 'Next Toolsmith doc sweep.',
+    nextAction: 'Toolsmith pass: diff README FEATURE_INVENTORY LOBBY_ARCHITECTURE vs server route table.',
     linksExistingTracker: ['DFCT0039'],
   },
   ENHC0001: {
@@ -473,9 +538,13 @@ const OVERRIDES = {
     ...baseRow(false),
     evidenceClassification: 'partial',
     confidence: 'medium',
-    methodologyNote: 'Persona flow in App (`screen === "persona"` paths); leaderboard hook — verify routing.',
-    implementationRefs: ['src/App.jsx — persona settings'],
-    testRefs: ['tests/e2e/playwright/martin-smoke.spec.js — profile tab'],
+    methodologyNote:
+      'Persona screen branch `screen === "persona"` (8629-8631, 10765+); profile menu navigates via `onSelectProfileMenu("persona")`.',
+    implementationRefs: [
+      'src/App.jsx:8629-8631 setScreen("persona")',
+      'src/App.jsx:3232 onSelectProfileMenu → persona',
+    ],
+    testRefs: ['tests/e2e/playwright/martin-smoke.spec.js — Leaderboard/profile tab'],
     nextAction: 'E2E persona rename + uniqueness (ENHC0025).',
     linksExistingTracker: ['REQ0005'],
   },
@@ -484,7 +553,11 @@ const OVERRIDES = {
     evidenceClassification: 'code_proven_partial',
     confidence: 'high',
     methodologyNote: 'Lobby code uses countdown digit styling (audit fixed E2E selector `.pof-countdown-digit`).',
-    implementationRefs: ['src/App.jsx — lobby code display', 'tests/e2e/playwright/web-player-website.spec.js'],
+    implementationRefs: [
+      'src/App.jsx:4444 .pof-countdown-digit — lobby / match context',
+      'src/App.jsx:5406 .pof-countdown-digit — themed prompt card overlay countdown',
+      'tests/e2e/playwright/web-player-website.spec.js — lobby code visibility',
+    ],
     testRefs: ['tests/e2e/playwright/web-player-website.spec.js'],
     nextAction: 'None unless typography changes.',
     linksExistingTracker: [],
@@ -503,21 +576,30 @@ const OVERRIDES = {
     ...baseRow(false),
     evidenceClassification: 'partial',
     confidence: 'medium',
-    methodologyNote: 'Custom prompt editor gated by entitlements in App — full gate not unit-tested.',
-    implementationRefs: ['src/App.jsx — AdminDialog / category editor'],
+    methodologyNote:
+      '`AdminDialog` — custom category CRUD; gated by `premiumEnabled || categoryEditorUnlocked` (props from entitlements).',
+    implementationRefs: [
+      'src/App.jsx:7232-7323 AdminDialog — category list + add flow',
+      'src/App.jsx:11603-11612 AdminDialog open + categoryEditorUnlocked',
+    ],
     testRefs: [],
-    nextAction: 'Entitlement matrix test (tests/server/entitlements + UI).',
+    nextAction: 'Entitlement matrix test (tests/server/entitlements + UI E2E).',
     linksExistingTracker: ['ENHC0013'],
   },
   ENHC0007: {
     ...baseRow(false),
     evidenceClassification: 'partial',
-    confidence: 'low',
-    methodologyNote: 'Audio settings separate music/SFX; theme tune mix not verified with metering.',
-    implementationRefs: ['src/App.jsx — audioSettings'],
+    confidence: 'medium',
+    methodologyNote:
+      'Settings persist music/sfx/haptics via `audioSettings` state + `useEffect` syncing to sound engine (lines ~8301+); theme tune relative levels not metered in CI.',
+    implementationRefs: [
+      'src/App.jsx:6770-7050 SettingsScreen — SettingsToggleRow / Slider rows',
+      'src/App.jsx:7575-7580 initial audioSettings from storage',
+      'src/App.jsx:8301-8306 map audioSettings to sound engine payload',
+    ],
     testRefs: [],
-    runtimeNotes: 'No audio level automated test.',
-    nextAction: 'Manual listen pass.',
+    runtimeNotes: 'No automated audio level assertion.',
+    nextAction: 'Manual listen: menu vs gameplay mix (REQ0005).',
     linksExistingTracker: ['REQ0005'],
   },
   ENHC0008: {
@@ -568,10 +650,14 @@ const OVERRIDES = {
     ...baseRow(false),
     evidenceClassification: 'partial',
     confidence: 'medium',
-    methodologyNote: 'Randomisation in client round selection — server round is still Hot Seat for online sync (gap vs REQ0017).',
-    implementationRefs: ['src/App.jsx — round shuffle'],
+    methodologyNote:
+      'Client round choice: `pickCompatibleRoundTypeId` + `getCompatibleRoundTypes` (1065-1087); server online authority still prompt-only (`buildAuthoritativeRound`).',
+    implementationRefs: [
+      'src/App.jsx:1065-1087 getCompatibleRoundTypes / pickCompatibleRoundTypeId',
+      'server/storage/lobbyStore.js:353-378 buildAuthoritativeRound roundTypeId prompt',
+    ],
     testRefs: [],
-    nextAction: 'Align server randomisation when non-prompt rounds online (REQ0017, REQ0009).',
+    nextAction: 'Align server when non-prompt rounds online (REQ0017, REQ0009).',
     linksExistingTracker: ['REQ0017', 'REQ0009'],
   },
   ENHC0013: {
@@ -624,21 +710,25 @@ const OVERRIDES = {
   ENHC0017: {
     ...baseRow(false),
     evidenceClassification: 'partial',
-    confidence: 'low',
-    methodologyNote: 'UK English pass in data packs — grep/lint not run in batch.',
-    implementationRefs: ['src/data/packs/categoryPromptPacks.js'],
+    confidence: 'medium',
+    methodologyNote:
+      'UK editorial in prompt packs — sample strings are UK-flavoured; full pack not linguistically linted.',
+    implementationRefs: [
+      'src/data/packs/categoryPromptPacks.js — e.g. Travel / category strings (search UK spellings ad hoc)',
+    ],
     testRefs: [],
-    nextAction: 'Editorial checklist.',
+    nextAction: 'Editorial checklist with style guide.',
     linksExistingTracker: ['ENHC0018'],
   },
   ENHC0018: {
     ...baseRow(false),
     evidenceClassification: 'partial',
-    confidence: 'low',
-    methodologyNote: 'Editorial quality — subjective.',
-    implementationRefs: ['src/data/twoTruthsOneFire/'],
+    confidence: 'medium',
+    methodologyNote:
+      'Two Truths content: `src/data/twoTruthsOneFire/**` — quality subjective; no automated quality gate.',
+    implementationRefs: ['src/data/twoTruthsOneFire/categoryTopicNouns.js', 'src/data/twoTruthsOneFire/**'],
     testRefs: [],
-    nextAction: 'Content review pass.',
+    nextAction: 'Content review pass (STRY0013).',
     linksExistingTracker: ['STRY0013'],
   },
   ENHC0019: {
@@ -654,9 +744,12 @@ const OVERRIDES = {
   ENHC0020: {
     ...baseRow(false),
     evidenceClassification: 'partial',
-    confidence: 'low',
-    methodologyNote: 'Prompt copy lives in data packs — Chain Reaction fit is editorial.',
-    implementationRefs: ['src/data/packs/'],
+    confidence: 'medium',
+    methodologyNote:
+      'Chain reaction prompts: pack data in `categoryPromptPacks.js` — fit vs mechanic is editorial.',
+    implementationRefs: [
+      'src/data/packs/categoryPromptPacks.js — search chain / reaction prompt ids',
+    ],
     testRefs: [],
     nextAction: 'Content ticket per round family.',
     linksExistingTracker: ['REQ0005'],
@@ -664,9 +757,11 @@ const OVERRIDES = {
   ENHC0021: {
     ...baseRow(false),
     evidenceClassification: 'deferred',
-    confidence: 'low',
+    confidence: 'medium',
     methodologyNote: '“Extract as skills” is process/backlog — no code change in scope.',
-    implementationRefs: [],
+    implementationRefs: [
+      'docs/superpowers/plans/2026-11-06-jubba-full-audit.md — planning artifact only',
+    ],
     testRefs: [],
     nextAction: 'Defer to post-release tooling (WTSK0001 logging related).',
     linksExistingTracker: ['WTSK0001'],
@@ -675,10 +770,13 @@ const OVERRIDES = {
     ...baseRow(false),
     evidenceClassification: 'partial',
     confidence: 'medium',
-    methodologyNote: 'Mode card layout — device S24 report (DFCT0028 cluster).',
-    implementationRefs: ['src/App.jsx — round type choice cards'],
+    methodologyNote:
+      'Round type cards: `RoundTypeChoiceGrid` uses `ThemeArt` `object-cover object-center scale-[1.03]` — fill vs letterbox device-dependent.',
+    implementationRefs: [
+      'src/App.jsx:4033-4095 RoundTypeChoiceGrid — min-h-0 flex-1 cards',
+    ],
     testRefs: [],
-    nextAction: 'Device QA with ENHC0015 assets.',
+    nextAction: 'Device QA with ENHC0015 assets (DFCT0028).',
     linksExistingTracker: ['ENHC0015', 'DFCT0028'],
   },
   REQ0005: {
@@ -686,9 +784,10 @@ const OVERRIDES = {
     evidenceClassification: 'code_proven_partial',
     confidence: 'medium',
     methodologyNote:
-      'Core loop screens encoded in App (home, setup, rounds, voting, reveal); E2E smokes cover subset not full matrix.',
+      'Core loop: screen union LOCAL_GAME_PAUSE_SCREENS + ONLINE_* sets (349-423) drive phase gating; `syncOnlineRoundFromSnapshot` maps server phases to screens (9210-9293). E2E smokes cover subset.',
     implementationRefs: [
-      'src/App.jsx — screen state machine (host-intro, voting, twotruths-*, one-word, discussion, final)',
+      'src/App.jsx:349-423 ONLINE_VOICE_ACTIVE_SCREENS / LOCAL_GAME_PAUSE_SCREENS',
+      'src/App.jsx:9210-9293 syncOnlineRoundFromSnapshot phase→screen',
     ],
     testRefs: [
       'tests/e2e/playwright/martin-smoke.spec.js',
@@ -702,10 +801,14 @@ const OVERRIDES = {
     evidenceClassification: 'missing',
     confidence: 'high',
     methodologyNote:
-      "Grill 'Em removed from product; requirement obsolete unless spec rewritten — voice I/O not present as described.",
-    implementationRefs: [],
+      "Historical Grill 'Em voice mode — `grill` round type absent in `ROUND_TYPES` / src grep; product voice is LiveKit party (`server/lobbyServer.js` `/api/lobbies/:code/voice/token`, `src/online/voicePartyTransport.js`).",
+    implementationRefs: [
+      'src/data/packs/categoryPromptPacks.js — MemesViralPromptRoundData only (word grill as content, not mode)',
+      'server/lobbyServer.js:403-456 POST /api/lobbies/:code/voice/token',
+      'src/online/voicePartyTransport.js — Room.connect',
+    ],
     testRefs: [],
-    nextAction: 'Tracker: close or rewrite REQ0006 to current voice (LiveKit party) scope.',
+    nextAction: 'Tracker: close or rewrite REQ0006 to LiveKit voice scope.',
     linksExistingTracker: ['STRY0012', 'TEST0003'],
   },
   REQ0007: {
@@ -753,61 +856,77 @@ const OVERRIDES = {
   },
   REQ0012: {
     ...baseRow(false),
-    evidenceClassification: 'blocked_external_owner',
+    evidenceClassification: 'account_status_unknown',
     confidence: 'high',
-    methodologyNote: 'Martin/org keystore — not in repo.',
-    implementationRefs: [],
+    methodologyNote:
+      'Repo expectation: release AAB workflow **requires** GitHub secrets ANDROID_KEYSTORE_* (`.github/workflows/android-release-aab.yml:84-98`). User context: Play internal draft + signing may already exist — **audit does not verify** org secrets or Play state.',
+    implementationRefs: [
+      '.github/workflows/android-release-aab.yml:84-98 Require Play upload signing secrets',
+    ],
     testRefs: [],
-    nextAction: 'Owner: enable Play App Signing or supply keystore.',
+    nextAction: 'Parent: mark REQ0012 satisfied in tracker if secrets + signing match production, or paste pointer to where secrets live (not in repo).',
     linksExistingTracker: ['STRY0017'],
   },
   REQ0013: {
     ...baseRow(false),
-    evidenceClassification: 'blocked_external_owner',
+    evidenceClassification: 'account_status_unknown',
     confidence: 'high',
-    methodologyNote: 'Play Console app creation — org.',
-    implementationRefs: [],
+    methodologyNote:
+      'Play Console app **existence** is not derivable from repo; user context reports internal draft **1.0.3 (v20)** — reconcile in tracker.',
+    implementationRefs: ['app.json:22-24 android.package — intended application id'],
     testRefs: [],
-    nextAction: 'Owner: create app + link to package.',
+    nextAction: 'Parent: confirm REQ0013 against Play Console (org-only); close or update externalRef.',
     linksExistingTracker: ['REQ0007'],
   },
   REQ0014: {
     ...baseRow(false),
-    evidenceClassification: 'code_proven_partial',
+    evidenceClassification: 'stale_tracker_mismatch',
     confidence: 'high',
     methodologyNote:
-      'Package id in Expo: `app.pantsonfire.findtheliar` — snapshot text `app.pantsonfire.liar` may be outdated (verify tracker).',
+      '**Stale title in tracker:** Expo `android.package` is `app.pantsonfire.findtheliar` (`app.json:23`). Snapshot REQ0014 title says `app.pantsonfire.liar` — **do not rename package in audit**; human resolves tracker vs shipped id.',
     implementationRefs: ['app.json:22-24 android.package'],
     testRefs: [],
-    nextAction: 'Align tracker REQ0014 title with `app.json` or rename package.',
+    nextAction: 'Parent: update REQ0014 title or close with rationale (no repo rename from audit).',
     linksExistingTracker: [],
   },
   REQ0015: {
     ...baseRow(false),
-    evidenceClassification: 'blocked_external_owner',
+    evidenceClassification: 'account_status_unknown',
     confidence: 'high',
-    methodologyNote: 'Privacy policy URL — host/org.',
-    implementationRefs: ['docs/store/play-listing.md'],
+    methodologyNote:
+      'Repo hosts static privacy page `public/privacy/index.html` + join-site links (`src/components/SiteLegalLinks.jsx`). Play Console “Data safety” URL **not verified** here — user context may already have published URL.',
+    implementationRefs: [
+      'public/privacy/index.html',
+      'src/components/SiteLegalLinks.jsx:11-12 href `${base}/privacy`',
+      'docs/store/play-listing.md:35 — references in-app links',
+    ],
     testRefs: [],
-    nextAction: 'Publish URL + paste in Console.',
+    nextAction: 'Parent: confirm live URL in Console matches deployed site; close REQ0015 if done.',
     linksExistingTracker: ['WTSK0005'],
   },
   REQ0016: {
     ...baseRow(false),
-    evidenceClassification: 'blocked_external_owner',
+    evidenceClassification: 'deferred',
     confidence: 'high',
-    methodologyNote: 'EAS project id — Expo cloud.',
-    implementationRefs: ['app.json', 'eas.json if present'],
+    methodologyNote:
+      'No `eas.json` in repo; Android CI uses `npx expo prebuild` + Gradle (`.github/workflows/android-release-aab.yml:72-79`). EAS project id may be **inapplicable** if releases are Gradle/GitHub-Actions only — **not verified**.',
+    implementationRefs: [
+      'glob: eas.json — absent in repo (audit)',
+      '.github/workflows/android-release-aab.yml:72-79 Expo prebuild + bundle',
+    ],
     testRefs: [],
-    nextAction: 'Owner: set EAS project in Expo dashboard.',
+    nextAction: 'Parent: close REQ0016 as N/A or document EAS only if OTA used.',
     linksExistingTracker: ['REQ0007'],
   },
   REQ0018: {
     ...baseRow(false),
     evidenceClassification: 'deferred',
     confidence: 'high',
-    methodologyNote: 'Meme Decoder on hold per tracker.',
-    implementationRefs: [],
+    methodologyNote:
+      'Dedicated “Meme Decoder” mode not found in `ROUND_TYPES`; meme **category** data exists (`MemesViralPromptRoundData`) — product hold is tracker state, not code absence of word meme.',
+    implementationRefs: [
+      'src/data/packs/categoryPromptPacks.js:53-65 MemesViralPromptRoundData',
+    ],
     testRefs: [],
     nextAction: 'Defer until product rethink.',
     linksExistingTracker: [],
@@ -830,11 +949,14 @@ const OVERRIDES = {
   STRY0001: {
     ...baseRow(false),
     evidenceClassification: 'partial',
-    confidence: 'low',
-    methodologyNote: 'MCP wiring is tooling — not verifiable from runtime tests here.',
-    implementationRefs: ['.cursor/ or docs if any'],
+    confidence: 'medium',
+    methodologyNote:
+      'MCP availability is **Cursor host configuration** — not encoded in application tests.',
+    implementationRefs: [
+      'AGENTS.md — agent environment notes (no MCP manifest in repo root)',
+    ],
     testRefs: [],
-    nextAction: 'Owner: confirm MCP config in Cursor team settings.',
+    nextAction: 'Owner: confirm Cursor team MCP enablement in product settings.',
     linksExistingTracker: ['REQ0011'],
   },
   STRY0002: {
@@ -884,10 +1006,14 @@ const OVERRIDES = {
   STRY0006: {
     ...baseRow(false),
     evidenceClassification: 'partial',
-    confidence: 'low',
-    methodologyNote: 'MagicPath external; ported UI in repo under neon — completion subjective.',
-    implementationRefs: ['src/components/neon/'],
-    testRefs: [],
+    confidence: 'medium',
+    methodologyNote:
+      'Neon UI components live under `src/components/neon/` (e.g. `NeonHomeScreen.jsx`, `NeonStoreScreen.jsx`); parity vs MagicPath is **design sign-off** not automated.',
+    implementationRefs: [
+      'src/components/neon/NeonHomeScreen.jsx',
+      'src/components/neon/NeonStoreScreen.jsx',
+    ],
+    testRefs: ['tests/e2e/playwright/mobile-bundled-dist-smoke.spec.js — home UI smoke'],
     nextAction: 'Design sign-off vs MagicPath reference.',
     linksExistingTracker: ['REQ0008', 'STRY0014'],
   },
@@ -895,8 +1021,13 @@ const OVERRIDES = {
     ...baseRow(false),
     evidenceClassification: 'code_proven_partial',
     confidence: 'medium',
-    methodologyNote: 'Neon port merged into App.jsx monolith.',
-    implementationRefs: ['src/App.jsx', 'src/components/neon/'],
+    methodologyNote:
+      'Neon shell integrated: `NeonHomeScreen` imported and home branch in render tree — monolith file.',
+    implementationRefs: [
+      'src/App.jsx:248 import NeonHomeScreen',
+      'src/App.jsx:10554+ <NeonHomeScreen ... /> render branch',
+      'src/App.jsx:10484+ startupGraphicsReady / app shell',
+    ],
     testRefs: ['tests/e2e/playwright/mobile-bundled-dist-smoke.spec.js'],
     nextAction: 'Regression sweep vs STRY0006.',
     linksExistingTracker: ['REQ0008'],
@@ -925,9 +1056,13 @@ const OVERRIDES = {
     ...baseRow(false),
     evidenceClassification: 'partial',
     confidence: 'medium',
-    methodologyNote: 'Many round types in client; server online round = prompt only — sync gap.',
-    implementationRefs: ['src/App.jsx — round type ids', 'server/storage/lobbyStore.js:353-378'],
-    testRefs: ['mobile-bundled-dist-smoke lists round-type icons'],
+    methodologyNote:
+      'Client lists round types in `RoundTypeChoiceGrid`; server `buildAuthoritativeRound` still Hot Seat online — gap.',
+    implementationRefs: [
+      'src/App.jsx:4033-4095 RoundTypeChoiceGrid',
+      'server/storage/lobbyStore.js:353-378 buildAuthoritativeRound',
+    ],
+    testRefs: ['tests/e2e/playwright/mobile-bundled-dist-smoke.spec.js — iterates round-type-icon-*'],
     nextAction: 'Server parity for non-prompt rounds online (REQ0017, REQ0009).',
     linksExistingTracker: ['REQ0017', 'REQ0009', 'REQ0005'],
   },
@@ -935,9 +1070,13 @@ const OVERRIDES = {
     ...baseRow(false),
     evidenceClassification: 'partial',
     confidence: 'medium',
-    methodologyNote: 'Classic/Chaos + rules + reveal in client state machine.',
-    implementationRefs: ['src/App.jsx'],
-    testRefs: ['martin-smoke partial'],
+    methodologyNote:
+      'Rules splash: `RulesSplashScreen` + `data-testid="rules-continue"` (2788-2817); chaos banned words in reveal stack (1196-1249 sanitizeBannedWords).',
+    implementationRefs: [
+      'src/App.jsx:2788-2817 RulesSplashScreen — rules-continue',
+      'src/App.jsx:1196-1249 bannedWords sanitizeBannedWords',
+    ],
+    testRefs: ['tests/e2e/playwright/martin-smoke.spec.js:53 rules-continue'],
     nextAction: 'E2E chaos mode path.',
     linksExistingTracker: ['REQ0005', 'STRY0010'],
   },
@@ -946,7 +1085,10 @@ const OVERRIDES = {
     evidenceClassification: 'missing',
     confidence: 'high',
     methodologyNote: 'Grill Em strand obsolete — see REQ0006.',
-    implementationRefs: [],
+    implementationRefs: [
+      'REQ0006 evidence — no grill round type in client routing',
+      'server/lobbyServer.js:403-456 voice token (current voice stack)',
+    ],
     testRefs: [],
     nextAction: 'Close or retarget STRY0012 to LiveKit voice chat.',
     linksExistingTracker: ['REQ0006', 'TEST0003'],
@@ -955,8 +1097,12 @@ const OVERRIDES = {
     ...baseRow(false),
     evidenceClassification: 'code_proven_partial',
     confidence: 'medium',
-    methodologyNote: 'Two Truths client screens + data; online server gap REQ0017.',
-    implementationRefs: ['src/App.jsx:9257-9272 twotruths screens', 'src/data/twoTruthsOneFire/'],
+    methodologyNote:
+      'Client phases `twotruths-input|voting|reveal` in `syncOnlineRoundFromSnapshot` (9257-9273); data under `src/data/twoTruthsOneFire/`; server gap REQ0017.',
+    implementationRefs: [
+      'src/App.jsx:9257-9273 twotruths phase branches',
+      'src/data/twoTruthsOneFire/',
+    ],
     testRefs: [],
     nextAction: 'Server + E2E online Two Truths (REQ0017).',
     linksExistingTracker: ['REQ0017', 'STRY0010'],
@@ -964,11 +1110,12 @@ const OVERRIDES = {
   STRY0014: {
     ...baseRow(false),
     evidenceClassification: 'partial',
-    confidence: 'low',
-    methodologyNote: 'MagicPath mockup — external; tracker In progress.',
+    confidence: 'medium',
+    methodologyNote:
+      'In-app store: `NeonStoreScreen.jsx` implements collapsible shop UI — MagicPath mockup equivalence is **subjective**.',
     implementationRefs: ['src/components/neon/NeonStoreScreen.jsx'],
     testRefs: [],
-    nextAction: 'Martin feedback gate.',
+    nextAction: 'Martin feedback gate vs mockup.',
     linksExistingTracker: ['ENHC0013'],
   },
   STRY0015: {
@@ -985,11 +1132,12 @@ const OVERRIDES = {
     ...baseRow(false),
     evidenceClassification: 'partial',
     confidence: 'medium',
-    methodologyNote: 'expo-updates / EAS OTA — config in Expo layer; not verified in CI.',
-    implementationRefs: ['app.json', 'eas.json'],
+    methodologyNote:
+      'OTA via EAS not evidenced in repo (no eas.json); releases use GitHub + Gradle (`android-release-aab.yml`).',
+    implementationRefs: ['app.json:1-37', '.github/workflows/android-release-aab.yml:1-80'],
     testRefs: [],
-    nextAction: 'EAS channel smoke on device.',
-    linksExistingTracker: ['REQ0007'],
+    nextAction: 'If OTA needed: add eas.json + channel policy; else close story as web shell only.',
+    linksExistingTracker: ['REQ0007', 'REQ0016'],
   },
   STRY0017: {
     ...baseRow(true),
@@ -1004,8 +1152,9 @@ const OVERRIDES = {
   STRY0018: {
     ...baseRow(false),
     evidenceClassification: 'partial',
-    confidence: 'low',
-    methodologyNote: 'Theme-driven AV — data in theme packs; broad scope.',
+    confidence: 'medium',
+    methodologyNote:
+      'Theme host visuals/audio driven from `themeHosts.js` + `themeAssets.js` — per-theme QA not automated.',
     implementationRefs: ['src/data/themeHosts.js', 'src/data/themeAssets.js'],
     testRefs: [],
     nextAction: 'Content QA per theme.',
@@ -1025,10 +1174,14 @@ const OVERRIDES = {
     ...baseRow(false),
     evidenceClassification: 'partial',
     confidence: 'medium',
-    methodologyNote: 'Chaos banned words — data/config in App for rounds.',
-    implementationRefs: ['src/App.jsx — chaos / banned'],
+    methodologyNote:
+      'Chaos banned words: `sanitizeBannedWords` + `BANNED_WORD_BANK` (1196-1249); server mirrors in `lobbyStore` `pickBannedWords` (~228-241).',
+    implementationRefs: [
+      'src/App.jsx:1196-1249 sanitizeBannedWords / BANNED_WORD_BANK',
+      'server/storage/lobbyStore.js:228-241 pickBannedWords',
+    ],
     testRefs: [],
-    nextAction: 'Unit test banned word merge.',
+    nextAction: 'Unit test banned word merge client vs server.',
     linksExistingTracker: ['STRY0011'],
   },
   STRY0021: {
@@ -1036,7 +1189,7 @@ const OVERRIDES = {
     evidenceClassification: 'partial',
     confidence: 'medium',
     methodologyNote: 'Round scoring server-side `scoreRoundServer` in lobbyStore.',
-    implementationRefs: ['server/storage/lobbyStore.js — scoring'],
+    implementationRefs: ['server/storage/lobbyStore.js:243-273 scoreRoundServer'],
     testRefs: ['tests/server/lobbyStore.test.mjs'],
     nextAction: 'Client display alignment tests.',
     linksExistingTracker: ['STRY0010'],
@@ -1044,9 +1197,13 @@ const OVERRIDES = {
   STRY0022: {
     ...baseRow(false),
     evidenceClassification: 'partial',
-    confidence: 'low',
-    methodologyNote: 'Heartbeat / disconnect grace — server timers in lobbyServer.',
-    implementationRefs: ['server/lobbyServer.js — disconnect grace'],
+    confidence: 'medium',
+    methodologyNote:
+      'Disconnect grace: `scheduleDisconnectGraceTimer` + socket `disconnect` handler (341-389, 1120-1134).',
+    implementationRefs: [
+      'server/lobbyServer.js:341-389 scheduleDisconnectGraceTimer',
+      'server/lobbyServer.js:1120-1134 socket disconnect → scheduleDisconnectGraceTimer',
+    ],
     testRefs: ['tests/server/lobbyStore.test.mjs'],
     nextAction: 'Soak test multi-tab disconnect.',
     linksExistingTracker: ['STRY0002'],
@@ -1055,10 +1212,14 @@ const OVERRIDES = {
     ...baseRow(false),
     evidenceClassification: 'partial',
     confidence: 'medium',
-    methodologyNote: 'AV online-only gating in client settings / mode flags.',
-    implementationRefs: ['src/App.jsx — onlineMode branches'],
+    methodologyNote:
+      'Voice: `ONLINE_VOICE_ACTIVE_SCREENS` (349-358) + effect gates `setOnlineVoiceEnabled` (8399-8407).',
+    implementationRefs: [
+      'src/App.jsx:349-358 ONLINE_VOICE_ACTIVE_SCREENS',
+      'src/App.jsx:8399-8407 useEffect onlineVoiceEnabled',
+    ],
     testRefs: [],
-    nextAction: 'E2E verify local has no live AV when offline.',
+    nextAction: 'E2E verify local pass-phone screens do not enable LiveKit connect.',
     linksExistingTracker: ['REQ0009'],
   },
   STRY0024: {
@@ -1066,8 +1227,10 @@ const OVERRIDES = {
     evidenceClassification: 'partial',
     confidence: 'medium',
     methodologyNote: 'Round chooser UI — round-type grid.',
-    implementationRefs: ['src/App.jsx — round type choice'],
-    testRefs: ['mobile-bundled-dist-smoke'],
+    implementationRefs: [
+      'src/App.jsx:10899-10920 screen round-type-choice + RoundTypeChoiceGrid',
+    ],
+    testRefs: ['tests/e2e/playwright/mobile-bundled-dist-smoke.spec.js'],
     nextAction: 'Unskip Double Take path (TEST0004).',
     linksExistingTracker: ['TEST0004'],
   },
@@ -1075,28 +1238,37 @@ const OVERRIDES = {
     ...baseRow(false),
     evidenceClassification: 'partial',
     confidence: 'medium',
-    methodologyNote: 'Rules/settings screens in App.',
-    implementationRefs: ['src/App.jsx — rules', 'settings'],
-    testRefs: ['martin-smoke rules continue'],
+    methodologyNote:
+      'Rules + settings: `RulesSplashScreen` + `SettingsScreen` (6770+) with `SettingsToggleRow` (6722+).',
+    implementationRefs: [
+      'src/App.jsx:10892-10897 rules screen branch',
+      'src/App.jsx:6722-6767 SettingsToggleRow',
+      'src/App.jsx:6770+ SettingsScreen',
+    ],
+    testRefs: ['tests/e2e/playwright/martin-smoke.spec.js:53 rules-continue'],
     nextAction: 'Snapshot all rule variants.',
     linksExistingTracker: ['REQ0005'],
   },
   STRY0026: {
     ...baseRow(false),
     evidenceClassification: 'partial',
-    confidence: 'low',
-    methodologyNote: 'Host costumes — assets/scripts under host generation.',
-    implementationRefs: ['scripts/host:*', 'src/data/themeHosts.js'],
+    confidence: 'medium',
+    methodologyNote:
+      'Host personas: `getThemePersonas` / `themeHosts.js`; voice export helper `scripts/lib/hostVoiceExportLib.cjs`.',
+    implementationRefs: [
+      'src/data/themeHosts.js',
+      'scripts/lib/hostVoiceExportLib.cjs',
+    ],
     testRefs: [],
-    nextAction: 'Visual content QA.',
+    nextAction: 'Visual content QA vs theme packs.',
     linksExistingTracker: ['STRY0018'],
   },
   STRY0027: {
     ...baseRow(false),
     evidenceClassification: 'deferred',
-    confidence: 'low',
-    methodologyNote: 'Infomercial script — content, not code.',
-    implementationRefs: [],
+    confidence: 'medium',
+    methodologyNote: 'Infomercial script — marketing content; no script file in repo audit.',
+    implementationRefs: ['docs/store/play-listing.md — marketing copy only'],
     testRefs: [],
     nextAction: 'Defer to marketing.',
     linksExistingTracker: [],
@@ -1143,7 +1315,7 @@ const OVERRIDES = {
     evidenceClassification: 'deferred',
     confidence: 'medium',
     methodologyNote: 'Retrospective chat logging — process backlog.',
-    implementationRefs: [],
+    implementationRefs: ['docs/superpowers/plans/2026-11-06-jubba-full-audit.md — plan artifact'],
     testRefs: [],
     nextAction: 'Schedule during dev gap.',
     linksExistingTracker: [],
