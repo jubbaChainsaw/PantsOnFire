@@ -1,6 +1,7 @@
 node_modules
 dist-e2e-full
 dist-e2e-web
+dist-android
 test-results/
 playwright-report/
 .local-secrets/

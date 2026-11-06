@@ -2,12 +2,12 @@
 
 ## 0. Preconditions (honest)
 
-- **Superpowers** skill files (`using-superpowers/writing-plans`, etc.) are **not present** in this repo or the installed Cursor skills path; workflow below follows the *intent* of plan-first + verification, without claiming a missing skill executed.
+- **Superpowers plugin** is not installed on this agent; **skill bodies** are available in `SUPERPOWERS_SKILLS_BUNDLE.md` (user attachment) and a formal plan exists at `docs/superpowers/plans/2026-11-06-jubba-full-audit.md`.
 - **No production mutation**, no real-money flows, no Play/deploy/release in this audit.
 
 ## 1. Baseline inputs
 
-1. **Sanitized JubbaWorld inventory** (user-provided) — **pending**.  
+1. **JubbaWorld inventory + snapshot** — `jubbaworld-snapshot-2026-11-06.json` (+ inventory markdown copy).  
 2. Repo **requirements**: `README.md`, `docs/PRODUCT_REQUIREMENTS.md`, `docs/LOBBY_ARCHITECTURE.md`, `docs/ONLINE_SECURITY_MODEL.md`, `docs/ACCOUNT_AND_ENTITLEMENTS.md`, `docs/BUILD_PIPELINE.md`, security/playtest docs, store docs.  
 3. **Implementation map**: critical paths in `src/App.jsx`, `server/`, billing bridges, `tests/`, `.github/workflows/`.
 

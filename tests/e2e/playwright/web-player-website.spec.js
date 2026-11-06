@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 import { seedLocalAccount } from './helpers.js';
 
-const SHOTS = '/workspace/public/assets/ui/neon/apk-verify';
+const SHOTS = process.env.POF_AUDIT_SHOT_ROOT || '/workspace/public/assets/ui/neon/apk-verify';
 const HOST_BASE = 'http://127.0.0.1:4173';
 const WEB_BASE = 'http://127.0.0.1:4176';
 
@@ -25,9 +25,12 @@ test.describe('web player (join-only)', () => {
     await hostPage.locator('input').first().fill('Web Host');
     await hostPage.getByRole('button', { name: 'Generate Lobby Code' }).click();
     await expect(hostPage.getByText(/share this code/i)).toBeVisible({ timeout: 45_000 });
+    // Lobby code is rendered in PoF Display (.pof-countdown-digit), not .font-mono
     const code = String(
-      await hostPage.locator('.font-mono').first().textContent(),
-    ).trim();
+      await hostPage.locator('.pof-countdown-digit').first().textContent(),
+    )
+      .trim()
+      .replace(/\s+/g, '');
 
     await seedLocalAccount(guestPage, 'fibber');
     await guestPage.goto(`/?join=${code}`);

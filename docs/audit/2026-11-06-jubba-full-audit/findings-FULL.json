@@ -1,0 +1,122 @@
+{
+  "schemaVersion": 1,
+  "auditId": "POF-AUDIT-2026-11-06-JUBBA-FULL",
+  "status": "evidence_baseline_complete_deep_verification_ongoing",
+  "branch": "cursor/ionos-web-deploy-6e4c",
+  "pr": 111,
+  "baseCommit": "0b878f4",
+  "completedAtApproxUtc": "2026-11-06T19:00:00Z",
+  "superpowers": {
+    "bundleFile": "docs/audit/2026-11-06-jubba-full-audit/SUPERPOWERS_SKILLS_BUNDLE.md",
+    "appliedWorkflows": [
+      "writing-plans (plan + deliverables in docs/audit/)",
+      "systematic-debugging (E2E failure: wrong lobby code selector → fixed .pof-countdown-digit)",
+      "verification-before-completion (re-ran npm test, npm run test:e2e, mobile smoke after fix)",
+      "requesting-code-review (no separate reviewer agent; limitation noted)"
+    ],
+    "notLoadedAsPlugin": true
+  },
+  "jubbaworldApiLimits": {
+    "commentsHistory": "403/404 per snapshot meta — acceptance from description/checklist only",
+    "emptyDescriptions": 26,
+    "inferredAcceptanceLabel": "See traceability rows with acceptanceBasis=inferred_from_title_or_parent"
+  },
+  "matrix": {
+    "source": "docs/audit/2026-11-06-jubba-full-audit/traceability-FULL.json",
+    "jubbaWorldItems": 119,
+    "conversationRequirementRows": 10,
+    "machineCheck": {
+      "uniqueItemNumbers": 119,
+      "matchesSnapshotReportedTotal": true
+    },
+    "evidenceCounts": {
+      "verified": 1,
+      "partial": 45,
+      "untested": 72,
+      "deferred": 1
+    },
+    "trackerDoneVsEvidence": {
+      "trackerMarkedDone": 61,
+      "rowsClassifiedVerified": 1,
+      "trackerDoneButNotVerifiedByAuditHeuristic": 59,
+      "note": "Heuristic does not prove all 59 are false; it means no independent automated proof was mapped to that row in this pass."
+    }
+  },
+  "conversationRequirements": {
+    "count": 10,
+    "ids": [
+      "CONV-REQ-FONT-CHEWY",
+      "CONV-REQ-ALL-CAPS",
+      "CONV-REQ-GRAPHICS-APPROVED",
+      "CONV-REQ-PASS-PHONE-AND-ONLINE",
+      "CONV-REQ-VOICE-TURN-PHASE",
+      "CONV-REQ-REPORT-BLOCK-DELETE",
+      "CONV-REQ-AGE-13-PLUS",
+      "CONV-REQ-PROMPT-SOURCE-SELECTION",
+      "CONV-REQ-NO-LIVE-WITHOUT-APPROVAL",
+      "CONV-REQ-REVIEW-AS-PAGE"
+    ],
+    "mappingNote": "Each has a row in traceability-FULL.json → conversationRequirementRows"
+  },
+  "testsExecuted": {
+    "npm_test": { "passed": 49, "failed": 0 },
+    "npm_run_test_server": { "passed": 41, "failed": 0 },
+    "npm_run_lint_undef": { "passed": true },
+    "npm_run_test_e2e": {
+      "passed": 7,
+      "failed": 0,
+      "skipped": 1,
+      "fix": "tests/e2e/playwright/web-player-website.spec.js — lobby code locator"
+    },
+    "mobile_dist_smoke": {
+      "passed": 1,
+      "failed": 0,
+      "note": "Required dist-android build (gitignored); Vite logged ECONNREFUSED on /api/auth/status during preview"
+    }
+  },
+  "prioritizedGaps": [
+    {
+      "id": "GAP-DEEP-119",
+      "severity": "high",
+      "title": "72/119 tracker rows remain audit-heuristic untested",
+      "detail": "Keyword + POF-ref hints are not per-item code proof. Requires manual or targeted automation per epic."
+    },
+    {
+      "id": "GAP-CLIENT-GAME-LOGIC",
+      "severity": "high",
+      "title": "Client gameplay/scoring/round gen largely without unit tests",
+      "evidence": "docs/TEST_STRATEGY.md"
+    },
+    {
+      "id": "GAP-E2E-COVERAGE",
+      "severity": "medium",
+      "title": "Playwright covers smoke paths only; one test skipped (Double Take)",
+      "evidence": "tests/e2e/playwright/martin-smoke.spec.js"
+    },
+    {
+      "id": "GAP-ALL-CAPS-DIV",
+      "severity": "medium",
+      "title": "ALL CAPS incomplete for div/font-black titles",
+      "evidence": "src/pof-components.css — rule on h1-h3 only",
+      "conversationRef": "CONV-REQ-ALL-CAPS"
+    },
+    {
+      "id": "GAP-POF-DEC-001",
+      "severity": "medium",
+      "title": "Tracker WTSK0002 / POF-DEC-001 marked Done without final human decision",
+      "evidence": "traceability row + user instruction",
+      "recommendedTrackerStatus": "In progress or Backlog (not Done)"
+    },
+    {
+      "id": "GAP-VOICE-AND-A11Y",
+      "severity": "medium",
+      "title": "Voice / LiveKit / mic enforcement / accessibility not verified this audit",
+      "evidence": "No tests in npm test; device not used"
+    }
+  ],
+  "artifactPaths": {
+    "e2eScreenshots": "/opt/cursor/artifacts/jubba-audit-2026-11-06/e2e-shots/",
+    "storeGraphicsCopies": "/opt/cursor/artifacts/jubba-audit-2026-11-06/store-graphics/"
+  },
+  "honesty": "This audit delivers traceability mapping + test evidence + gap taxonomy. It does not certify every Done tracker item. Remaining work: parent/API updates per proposed payloads; optional line-by-line review for untested rows."
+}

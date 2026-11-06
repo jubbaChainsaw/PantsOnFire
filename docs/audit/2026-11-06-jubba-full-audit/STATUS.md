@@ -1,37 +1,36 @@
-# Jubba full requirements audit — status
+# Jubba full requirements audit — STATUS
 
 **Branch:** `cursor/ionos-web-deploy-6e4c` (PR #111)  
-**Started:** 2026-11-06 (UTC)  
-**State:** **IN PROGRESS — awaiting sanitized JubbaWorld inventory baseline**
+**Baseline snapshot:** `jubbaworld-snapshot-2026-11-06.json` (119 items, fetched 18:34Z per parent export)  
+**State:** **Evidence baseline delivered** — see honesty section below
 
-## Superpowers / skill loading
+## Superpowers
 
-Searched this repository and `/home/ubuntu/.cursor/skills-cursor` for paths or docs matching **Superpowers**, **`using-superpowers/writing-plans`**, **systematic-debugging**, or **requesting-code-review**. **No matching skill file or folder was found** in this environment, so those procedures are applied **by analogy** (plan-first, evidence-backed findings, verification before claiming completeness) rather than by executing a named Superpowers skill pack.
+Attached bundle: `SUPERPOWERS_SKILLS_BUNDLE.md` (same as user upload). **Plugin not installed** in this environment; workflows followed from that markdown: **writing-plans** → `docs/superpowers/plans/2026-11-06-jubba-full-audit.md`, **systematic-debugging** on E2E failure, **verification-before-completion** via test log.
 
-## Blockers to “final” audit
+## Deliverables (this folder)
 
-1. **Sanitized full JubbaWorld inventory** (user attachment) — **not received yet**.  
-2. Full **traceability matrix** (every tracker ID → evidence) is **not** complete until that inventory is merged with repo requirements.  
-3. **Display typography (ALL CAPS)** is acknowledged as **partially** implemented: `h1`–`h3` under `.pof-root` are uppercased; **many titles use `div` + `font-black`** and are **outside** that rule until explicitly extended (see proposed task draft JSON).
+| File | Purpose |
+|------|--------|
+| `traceability-FULL.json` | **129 rows:** 119 JW items + 10 conversation reqs |
+| `traceability-FULL.md` | Pointer + schema |
+| `findings-FULL.json` / `.md` | Counts, gaps, test log refs |
+| `AUDIT_TEST_LOG.md` | Commands + pass/fail/skip |
+| `proposed-tracker-updates.json` | Parent API — e.g. **POF-DEC-001** off Done |
+| `proposed-new-work-tasks.json` | New epics (no duplicates with POF-ENH-DISPLAY-CAPS) |
+| `jubbaworld-inventory-2026-11-06.md` | Human-readable inventory copy |
+| `SUPERPOWERS_SKILLS_BUNDLE.md` | Skill bodies |
 
-## Evidence gathered so far (this run)
+**Generator:** `scripts/audit/buildJubbaWorldTraceability.mjs`
 
-| Check | Command / source | Result | Notes |
-|-------|------------------|--------|--------|
-| Node unit + billing tests | `npm test` | **49 passed** | Server, billing, rate limits, JWT, install token, etc. (`tests/**/*.test.mjs`) |
-| Server-only subset | `npm run test:server` | **41 passed** | `tests/server/*.test.mjs` only |
-| Requirements baseline | `README.md`, `docs/PRODUCT_REQUIREMENTS.md`, `docs/TEST_STRATEGY.md`, `docs/FEATURE_INVENTORY.md`, `docs/ONLINE_SECURITY_MODEL.md`, etc. | **Read / sampled** | Full line-by-line mapping pending inventory |
-| CI workflows | `.github/workflows/*.yml` | **Reviewed (partial)** | e.g. `npm-test.yml` runs `npm test` on path-filtered PRs/pushes |
+## Honesty: what “complete” means here
 
-**Not run in this audit pass (honest gap):** Playwright E2E (`npm run test:e2e`), mobile dist smoke, Android APK workflow, production Stripe/RevenueCat, physical devices, full accessibility sweep, full game-loop manual session.
+- **Machine check:** `items.length === 119`, **unique `number` === 119**, plus **10** distinct conversation rows (**not** double-counted into 119).
+- **Not claimed:** Per-item line-by-line code proof for every Done defect/story (72 rows remain **`untested`** in heuristics until deep review).
+- **Tracker Done ≠ verified:** `findings-FULL.json` reports **59** items marked Done in tracker but classified **untested/partial** in matrix.
+- **POF-DEC-001 / WTSK0002:** Classified **`deferred`** — tracker Done **disputed** pending Jubba’s PR #112 decision.
 
-## Deliverables (when baseline received)
+## Evidence artifacts (outside repo)
 
-- `traceability-matrix-FINAL.json` + `.md` — every inventory ID × acceptance × files × tests × pass/partial/missing/blocked  
-- `findings-FULL.md` + `findings-FULL.json` — prioritized gaps, duplicates, stale items  
-- `proposed-tasks-DEDUPED.json` — stable `external_ref`, link existing IDs where applicable  
-- Evidence folder under `/opt/cursor/artifacts/…` as needed (screenshots, logs)
-
-## Next step
-
-Merge **sanitized JubbaWorld inventory** → complete matrix → mark audit complete or explicitly defer items with rationale.
+- E2E PNGs: `/opt/cursor/artifacts/jubba-audit-2026-11-06/e2e-shots/`
+- Store PNG copies: `/opt/cursor/artifacts/jubba-audit-2026-11-06/store-graphics/`
