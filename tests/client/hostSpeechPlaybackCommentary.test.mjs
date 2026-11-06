@@ -14,6 +14,7 @@ import {
 import { planLiarRevealSingularBanter } from '../../src/lib/modularHostBanterEngine.js';
 
 let playCalls;
+let pauseCalls;
 let roots = [];
 
 async function flushMicrotasks() {
@@ -33,6 +34,7 @@ test.beforeEach(() => {
   globalThis.sessionStorage = dom.window.sessionStorage;
 
   playCalls = [];
+  pauseCalls = [];
   globalThis.Audio = class {
     constructor() {
       this.preload = '';
@@ -43,7 +45,9 @@ test.beforeEach(() => {
       playCalls.push(this);
       return Promise.resolve();
     }
-    pause() {}
+    pause() {
+      pauseCalls.push(this);
+    }
     addEventListener() {}
     removeEventListener() {}
   };
@@ -68,7 +72,11 @@ function CommentaryHarness() {
       personaOnlyMode: false,
     }),
   );
-  useModularHostBanterQueue({ plan, themeName: 'Default', lineKeyPrefix: 'ct' });
+  const { segmentIndex, segmentCount } = useModularHostBanterQueue({
+    plan,
+    themeName: 'Default',
+    lineKeyPrefix: 'ct',
+  });
   useIanPosterHostVoicePlayback({
     enabled: true,
     line: 'Discussion time!',
@@ -78,17 +86,22 @@ function CommentaryHarness() {
     fallbackDurationMs: 5000,
   });
   return React.createElement(
-    'button',
-    {
-      type: 'button',
-      'data-testid': 'commentary-off',
-      onClick: () => setHostCommentaryEnabled(false),
-    },
-    'mute',
+    'div',
+    null,
+    React.createElement('span', { 'data-testid': 'banter-segment' }, `${segmentIndex}/${segmentCount}`),
+    React.createElement(
+      'button',
+      {
+        type: 'button',
+        'data-testid': 'commentary-off',
+        onClick: () => setHostCommentaryEnabled(false),
+      },
+      'mute',
+    ),
   );
 }
 
-test('commentary off stops new host Audio play() calls', async () => {
+test('commentary off pauses active host Audio, clears modular queue, and blocks new play()', async () => {
   const container = document.createElement('div');
   document.body.appendChild(container);
   const root = createRoot(container);
@@ -106,11 +119,26 @@ test('commentary off stops new host Audio play() calls', async () => {
   await flushMicrotasks();
   const before = playCalls.length;
   assert.ok(before >= 1, 'expected initial host playback');
+  const pauseCountBeforeMute = pauseCalls.length;
+  assert.match(
+    container.querySelector('[data-testid="banter-segment"]').textContent,
+    /^0\//,
+    'modular queue should start at first segment',
+  );
 
   await act(() => {
     container.querySelector('[data-testid="commentary-off"]').click();
   });
   await flushMicrotasks();
+  assert.ok(
+    pauseCalls.length > pauseCountBeforeMute,
+    'mute must pause at least one active host Audio element',
+  );
+  assert.equal(
+    container.querySelector('[data-testid="banter-segment"]').textContent,
+    '0/2',
+    'modular queue index must reset when commentary stops',
+  );
   assert.equal(
     playCalls.length,
     before,

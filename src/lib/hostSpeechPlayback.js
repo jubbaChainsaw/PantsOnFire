@@ -362,8 +362,15 @@ export function useModularHostBanterQueue({
     onFinished: handleSegmentFinished,
   });
 
+  const displaySubtitle =
+    Array.isArray(plan?.subtitleSegments) && plan.subtitleSegments.length
+      ? plan.subtitleSegments.join(' ')
+      : plan?.composedSubtitle || '';
+
   return {
-    composedSubtitle: plan?.composedSubtitle || '',
-    subtitleVisible: Boolean(plan?.composedSubtitle),
+    composedSubtitle: displaySubtitle,
+    subtitleVisible: Boolean(displaySubtitle),
+    segmentIndex,
+    segmentCount: segCount,
   };
 }

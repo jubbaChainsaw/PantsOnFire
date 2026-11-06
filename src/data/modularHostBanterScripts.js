@@ -1,12 +1,20 @@
 /**
  * t220u — Fixed script bank for modular host banter (prefix / suffix / name-free clips).
  * Parent ElevenLabs generation uses stable filenames; see docs/audio/additional-host-phrases-manifest.json
- * Design: docs/design/t220u-modular-name-banter-design.md (§7). `exportSpokenText` is the literal line for
- * parent TTS (Player placeholder); runtime uses `buildSpokenLine` / `buildExportSpokenText` in the engine.
+ * Design: docs/design/t220u-modular-name-banter-design.md (§7).
+ * `exportSpokenText` / `spokenText` are the literal fixed line for parent TTS per file — no name placeholders.
+ * Picker lines use separate persona name audio + these clips; subtitles use `buildComposedSubtitleLine`.
  */
 
 /**
- * @typedef {{ id: string; segmentRole: 'prefix'|'suffix'|'name_free'; filenameStem: string; spokenText?: string; exportSpokenText?: string; buildSpokenLine?: (name: string) => string }} ModularBanterScriptDef
+ * @typedef {{
+ *   id: string;
+ *   segmentRole: 'prefix'|'suffix'|'name_free';
+ *   filenameStem: string;
+ *   spokenText?: string;
+ *   exportSpokenText?: string;
+ *   buildComposedSubtitleLine?: (chooserName: string) => string;
+ * }} ModularBanterScriptDef
  */
 
 /** @type {ReadonlyArray<ModularBanterScriptDef>} */
@@ -15,20 +23,30 @@ export const MODULAR_BANTER_FIXED_SCRIPTS = Object.freeze([
     id: 'banter_picker_prefix_v1',
     segmentRole: 'prefix',
     filenameStem: 'banter_picker_prefix_v1',
-    exportSpokenText: "Player, you're choosing the chaos this round.",
-    buildSpokenLine: (chooserName) => {
+    spokenText: "You're choosing the chaos this round.",
+    exportSpokenText: "You're choosing the chaos this round.",
+    buildComposedSubtitleLine: (chooserName) => {
       const n = String(chooserName || '').trim();
       if (!n) return "You're choosing the chaos this round.";
       return `${n}, you're choosing the chaos this round.`;
     },
   },
   {
+    id: 'banter_picker_alright_lead_v2',
+    segmentRole: 'prefix',
+    filenameStem: 'banter_picker_alright_lead_v2',
+    spokenText: 'Alright —',
+    exportSpokenText: 'Alright —',
+  },
+  {
     id: 'banter_picker_prefix_v2',
     segmentRole: 'prefix',
     filenameStem: 'banter_picker_prefix_v2',
+    spokenText:
+      'Pick a mode, pick a category, try not to look guilty before we start.',
     exportSpokenText:
-      'Alright Player — pick a mode, pick a category, try not to look guilty before we start.',
-    buildSpokenLine: (chooserName) => {
+      'Pick a mode, pick a category, try not to look guilty before we start.',
+    buildComposedSubtitleLine: (chooserName) => {
       const n = String(chooserName || '').trim();
       if (!n) {
         return 'Pick a mode, pick a category, try not to look guilty before we start.';
@@ -40,11 +58,13 @@ export const MODULAR_BANTER_FIXED_SCRIPTS = Object.freeze([
     id: 'banter_picker_prefix_v3',
     segmentRole: 'prefix',
     filenameStem: 'banter_picker_prefix_v3',
-    exportSpokenText: 'The wheel of bad decisions stops with Player.',
-    buildSpokenLine: (chooserName) => {
+    spokenText: 'The wheel of bad decisions stops here.',
+    exportSpokenText: 'The wheel of bad decisions stops here.',
+    buildComposedSubtitleLine: (chooserName) => {
       const n = String(chooserName || '').trim();
       if (!n) return 'The wheel of bad decisions stops here.';
-      return `The wheel of bad decisions stops with ${n}.`;
+      /** Recorded fragment is name-free (“stops here.”); announce the name separately for accuracy. */
+      return `${n}. The wheel of bad decisions stops here.`;
     },
   },
   {

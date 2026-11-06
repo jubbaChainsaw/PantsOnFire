@@ -5,10 +5,123 @@
     "t220u",
     "t221u"
   ],
-  "generatedAt": "2026-11-06T22:04:40.490Z",
-  "corpusSha256": "df72695d966150aa4e21cd53a6d50ce166251d7c3100e4cd0378c84b94cd8dc4",
+  "frozenCorpusId": "df7269-modular-fragments-v1",
+  "parentReuseNote": "Compare spokenText per scriptId to prior bank (e.g. e639a9): reuse MP3 when words match; do not regenerate for capitalization or punctuation-only deltas unless audio must change.",
+  "generatedAt": "2026-11-06T22:20:43.215Z",
+  "corpusSha256": "e8b9c9c2365798927892c6c04cd4aa3c32dc82ddc37e38e2e6f20e31f8a72513",
+  "uniqueFragmentCount": 14,
+  "uniqueFragments": [
+    "Alright —",
+    "Called it.",
+    "Clean vote — the table actually agreed. Suspiciously organised.",
+    "Pick a mode, pick a category, try not to look guilty before we start.",
+    "Somehow the lie walked out wearing flip-flops. Tough scene.",
+    "That round had actual detective energy. Shocking, honestly.",
+    "That was a chaotic round. Beautiful, but chaotic.",
+    "That's a wrap — crown the chaos and run it back.",
+    "The fib survived — not a compliment, just a fact.",
+    "The liar is…",
+    "The liars are…",
+    "The wheel of bad decisions stops here.",
+    "Was bluffing the whole time.",
+    "You're choosing the chaos this round."
+  ],
+  "themeSlugSharedPaths": [
+    {
+      "themeSlug": "cops-and-robbers",
+      "themeNames": [
+        "Cops and Robbers",
+        "Cowboys",
+        "Gangsters"
+      ]
+    }
+  ],
+  "compositionByEvent": [
+    {
+      "eventId": "picker_turn",
+      "description": "Persona-only: v2 plays lead “Alright —” then persona name then body; v3 plays name then name-free “stops here.”; v1 name then body. Else one fragment; subtitle from buildComposedSubtitleLine.",
+      "segmentPattern": [
+        {
+          "order": 0,
+          "optional": true,
+          "kind": "fixed_script",
+          "scriptId": "banter_picker_alright_lead_v2",
+          "note": "Only persona + banter_picker_prefix_v2."
+        },
+        {
+          "order": 1,
+          "optional": true,
+          "kind": "persona_name",
+          "note": "Persona name clip (950 bank or theme file)."
+        },
+        {
+          "order": 2,
+          "kind": "fixed_script",
+          "scriptIdPrefix": "banter_picker_",
+          "excludeScriptId": "banter_picker_alright_lead_v2"
+        }
+      ],
+      "subtitleBuilder": "buildComposedSubtitleLine in modularHostBanterScripts.js"
+    },
+    {
+      "eventId": "liar_reveal_singular",
+      "segmentPattern": [
+        {
+          "order": 0,
+          "kind": "fixed_script",
+          "scriptId": "banter_reveal_liar_is_prefix_v1"
+        },
+        {
+          "order": 1,
+          "optional": true,
+          "kind": "persona_name",
+          "note": "Liar display name when personaOnlyMode."
+        },
+        {
+          "order": 2,
+          "kind": "fixed_script",
+          "scriptIdPattern": "banter_reveal_suffix_singular_*"
+        }
+      ]
+    },
+    {
+      "eventId": "liar_reveal_plural",
+      "segmentPattern": [
+        {
+          "order": 0,
+          "kind": "fixed_script",
+          "scriptId": "banter_reveal_plural_v1"
+        },
+        {
+          "order": 1,
+          "kind": "names",
+          "note": "Persona callout per liar when personaOnlyMode; else subtitle lists comma-separated display names only."
+        }
+      ]
+    },
+    {
+      "eventId": "result_banter",
+      "segmentPattern": [
+        {
+          "order": 0,
+          "kind": "fixed_script",
+          "scriptIdPattern": "banter_result_*"
+        }
+      ]
+    },
+    {
+      "eventId": "final_wrap",
+      "segmentPattern": [
+        {
+          "order": 0,
+          "kind": "fixed_script",
+          "scriptId": "banter_wrap_v1"
+        }
+      ]
+    }
+  ],
   "voiceNote": "Uses existing Ian Poster voice id from parent batch; no catalog name regeneration.",
-  "lineCount": 104,
+  "lineCount": 112,
   "lines": [
     {
       "lineId": "default:banter_picker_prefix_v1",
@@ -16,10 +129,21 @@
       "themeSlug": "default",
       "segmentRole": "prefix",
       "scriptId": "banter_picker_prefix_v1",
-      "spokenText": "Player, you're choosing the chaos this round.",
+      "spokenText": "You're choosing the chaos this round.",
       "primaryRelativePath": "public/assets/audio/host/default/tts/default_banter_banter_picker_prefix_v1.mp3",
       "stableFilename": "default_banter_banter_picker_prefix_v1.mp3",
-      "contentSha256": "41db365011cd098622e3f7416fe5f0dfaa72ceb68d4e43e081bd95f21778a16d"
+      "contentSha256": "b3e89c7945c5a26df7f77867fc3d36131af0d12c7e5abe61d4098c2b497c6f02"
+    },
+    {
+      "lineId": "default:banter_picker_alright_lead_v2",
+      "themeName": "Default",
+      "themeSlug": "default",
+      "segmentRole": "prefix",
+      "scriptId": "banter_picker_alright_lead_v2",
+      "spokenText": "Alright —",
+      "primaryRelativePath": "public/assets/audio/host/default/tts/default_banter_banter_picker_alright_lead_v2.mp3",
+      "stableFilename": "default_banter_banter_picker_alright_lead_v2.mp3",
+      "contentSha256": "d5049df8fc615cd2f1eff0ea28a9fd8e3ed31198361fd0ce9d6dabf2ce89757d"
     },
     {
       "lineId": "default:banter_picker_prefix_v2",
@@ -27,10 +151,10 @@
       "themeSlug": "default",
       "segmentRole": "prefix",
       "scriptId": "banter_picker_prefix_v2",
-      "spokenText": "Alright Player — pick a mode, pick a category, try not to look guilty before we start.",
+      "spokenText": "Pick a mode, pick a category, try not to look guilty before we start.",
       "primaryRelativePath": "public/assets/audio/host/default/tts/default_banter_banter_picker_prefix_v2.mp3",
       "stableFilename": "default_banter_banter_picker_prefix_v2.mp3",
-      "contentSha256": "50a8ea519d7abc56f1ea38df42bad470b6a48baa2ca503b6da49277f7a601184"
+      "contentSha256": "218b72127d2a07ec3a305b5959ccfc41dea187b307b0402d65d9dc4c325ba093"
     },
     {
       "lineId": "default:banter_picker_prefix_v3",
@@ -38,10 +162,10 @@
       "themeSlug": "default",
       "segmentRole": "prefix",
       "scriptId": "banter_picker_prefix_v3",
-      "spokenText": "The wheel of bad decisions stops with Player.",
+      "spokenText": "The wheel of bad decisions stops here.",
       "primaryRelativePath": "public/assets/audio/host/default/tts/default_banter_banter_picker_prefix_v3.mp3",
       "stableFilename": "default_banter_banter_picker_prefix_v3.mp3",
-      "contentSha256": "41fbc4ff666f946e2541ced62c9d1ffdc2732709695ab3340454a7fdd7b9b1c6"
+      "contentSha256": "192d7eb759079f14b18cb2abb75b90fd66f352084e8ed9ab5ab17b9bc6f80513"
     },
     {
       "lineId": "default:banter_reveal_suffix_singular_v1",
@@ -159,10 +283,21 @@
       "themeSlug": "murder-mystery",
       "segmentRole": "prefix",
       "scriptId": "banter_picker_prefix_v1",
-      "spokenText": "Player, you're choosing the chaos this round.",
+      "spokenText": "You're choosing the chaos this round.",
       "primaryRelativePath": "public/assets/audio/host/murder-mystery/tts/murder-mystery_banter_banter_picker_prefix_v1.mp3",
       "stableFilename": "murder-mystery_banter_banter_picker_prefix_v1.mp3",
-      "contentSha256": "41db365011cd098622e3f7416fe5f0dfaa72ceb68d4e43e081bd95f21778a16d"
+      "contentSha256": "b3e89c7945c5a26df7f77867fc3d36131af0d12c7e5abe61d4098c2b497c6f02"
+    },
+    {
+      "lineId": "murder-mystery:banter_picker_alright_lead_v2",
+      "themeName": "Murder Mystery",
+      "themeSlug": "murder-mystery",
+      "segmentRole": "prefix",
+      "scriptId": "banter_picker_alright_lead_v2",
+      "spokenText": "Alright —",
+      "primaryRelativePath": "public/assets/audio/host/murder-mystery/tts/murder-mystery_banter_banter_picker_alright_lead_v2.mp3",
+      "stableFilename": "murder-mystery_banter_banter_picker_alright_lead_v2.mp3",
+      "contentSha256": "d5049df8fc615cd2f1eff0ea28a9fd8e3ed31198361fd0ce9d6dabf2ce89757d"
     },
     {
       "lineId": "murder-mystery:banter_picker_prefix_v2",
@@ -170,10 +305,10 @@
       "themeSlug": "murder-mystery",
       "segmentRole": "prefix",
       "scriptId": "banter_picker_prefix_v2",
-      "spokenText": "Alright Player — pick a mode, pick a category, try not to look guilty before we start.",
+      "spokenText": "Pick a mode, pick a category, try not to look guilty before we start.",
       "primaryRelativePath": "public/assets/audio/host/murder-mystery/tts/murder-mystery_banter_banter_picker_prefix_v2.mp3",
       "stableFilename": "murder-mystery_banter_banter_picker_prefix_v2.mp3",
-      "contentSha256": "50a8ea519d7abc56f1ea38df42bad470b6a48baa2ca503b6da49277f7a601184"
+      "contentSha256": "218b72127d2a07ec3a305b5959ccfc41dea187b307b0402d65d9dc4c325ba093"
     },
     {
       "lineId": "murder-mystery:banter_picker_prefix_v3",
@@ -181,10 +316,10 @@
       "themeSlug": "murder-mystery",
       "segmentRole": "prefix",
       "scriptId": "banter_picker_prefix_v3",
-      "spokenText": "The wheel of bad decisions stops with Player.",
+      "spokenText": "The wheel of bad decisions stops here.",
       "primaryRelativePath": "public/assets/audio/host/murder-mystery/tts/murder-mystery_banter_banter_picker_prefix_v3.mp3",
       "stableFilename": "murder-mystery_banter_banter_picker_prefix_v3.mp3",
-      "contentSha256": "41fbc4ff666f946e2541ced62c9d1ffdc2732709695ab3340454a7fdd7b9b1c6"
+      "contentSha256": "192d7eb759079f14b18cb2abb75b90fd66f352084e8ed9ab5ab17b9bc6f80513"
     },
     {
       "lineId": "murder-mystery:banter_reveal_suffix_singular_v1",
@@ -302,10 +437,21 @@
       "themeSlug": "pirates",
       "segmentRole": "prefix",
       "scriptId": "banter_picker_prefix_v1",
-      "spokenText": "Player, you're choosing the chaos this round.",
+      "spokenText": "You're choosing the chaos this round.",
       "primaryRelativePath": "public/assets/audio/host/pirates/tts/pirates_banter_banter_picker_prefix_v1.mp3",
       "stableFilename": "pirates_banter_banter_picker_prefix_v1.mp3",
-      "contentSha256": "41db365011cd098622e3f7416fe5f0dfaa72ceb68d4e43e081bd95f21778a16d"
+      "contentSha256": "b3e89c7945c5a26df7f77867fc3d36131af0d12c7e5abe61d4098c2b497c6f02"
+    },
+    {
+      "lineId": "pirates:banter_picker_alright_lead_v2",
+      "themeName": "Pirates",
+      "themeSlug": "pirates",
+      "segmentRole": "prefix",
+      "scriptId": "banter_picker_alright_lead_v2",
+      "spokenText": "Alright —",
+      "primaryRelativePath": "public/assets/audio/host/pirates/tts/pirates_banter_banter_picker_alright_lead_v2.mp3",
+      "stableFilename": "pirates_banter_banter_picker_alright_lead_v2.mp3",
+      "contentSha256": "d5049df8fc615cd2f1eff0ea28a9fd8e3ed31198361fd0ce9d6dabf2ce89757d"
     },
     {
       "lineId": "pirates:banter_picker_prefix_v2",
@@ -313,10 +459,10 @@
       "themeSlug": "pirates",
       "segmentRole": "prefix",
       "scriptId": "banter_picker_prefix_v2",
-      "spokenText": "Alright Player — pick a mode, pick a category, try not to look guilty before we start.",
+      "spokenText": "Pick a mode, pick a category, try not to look guilty before we start.",
       "primaryRelativePath": "public/assets/audio/host/pirates/tts/pirates_banter_banter_picker_prefix_v2.mp3",
       "stableFilename": "pirates_banter_banter_picker_prefix_v2.mp3",
-      "contentSha256": "50a8ea519d7abc56f1ea38df42bad470b6a48baa2ca503b6da49277f7a601184"
+      "contentSha256": "218b72127d2a07ec3a305b5959ccfc41dea187b307b0402d65d9dc4c325ba093"
     },
     {
       "lineId": "pirates:banter_picker_prefix_v3",
@@ -324,10 +470,10 @@
       "themeSlug": "pirates",
       "segmentRole": "prefix",
       "scriptId": "banter_picker_prefix_v3",
-      "spokenText": "The wheel of bad decisions stops with Player.",
+      "spokenText": "The wheel of bad decisions stops here.",
       "primaryRelativePath": "public/assets/audio/host/pirates/tts/pirates_banter_banter_picker_prefix_v3.mp3",
       "stableFilename": "pirates_banter_banter_picker_prefix_v3.mp3",
-      "contentSha256": "41fbc4ff666f946e2541ced62c9d1ffdc2732709695ab3340454a7fdd7b9b1c6"
+      "contentSha256": "192d7eb759079f14b18cb2abb75b90fd66f352084e8ed9ab5ab17b9bc6f80513"
     },
     {
       "lineId": "pirates:banter_reveal_suffix_singular_v1",
@@ -445,10 +591,21 @@
       "themeSlug": "cops-and-robbers",
       "segmentRole": "prefix",
       "scriptId": "banter_picker_prefix_v1",
-      "spokenText": "Player, you're choosing the chaos this round.",
+      "spokenText": "You're choosing the chaos this round.",
       "primaryRelativePath": "public/assets/audio/host/cops-and-robbers/tts/cops-and-robbers_banter_banter_picker_prefix_v1.mp3",
       "stableFilename": "cops-and-robbers_banter_banter_picker_prefix_v1.mp3",
-      "contentSha256": "41db365011cd098622e3f7416fe5f0dfaa72ceb68d4e43e081bd95f21778a16d"
+      "contentSha256": "b3e89c7945c5a26df7f77867fc3d36131af0d12c7e5abe61d4098c2b497c6f02"
+    },
+    {
+      "lineId": "cops-and-robbers:banter_picker_alright_lead_v2",
+      "themeName": "Cops and Robbers",
+      "themeSlug": "cops-and-robbers",
+      "segmentRole": "prefix",
+      "scriptId": "banter_picker_alright_lead_v2",
+      "spokenText": "Alright —",
+      "primaryRelativePath": "public/assets/audio/host/cops-and-robbers/tts/cops-and-robbers_banter_banter_picker_alright_lead_v2.mp3",
+      "stableFilename": "cops-and-robbers_banter_banter_picker_alright_lead_v2.mp3",
+      "contentSha256": "d5049df8fc615cd2f1eff0ea28a9fd8e3ed31198361fd0ce9d6dabf2ce89757d"
     },
     {
       "lineId": "cops-and-robbers:banter_picker_prefix_v2",
@@ -456,10 +613,10 @@
       "themeSlug": "cops-and-robbers",
       "segmentRole": "prefix",
       "scriptId": "banter_picker_prefix_v2",
-      "spokenText": "Alright Player — pick a mode, pick a category, try not to look guilty before we start.",
+      "spokenText": "Pick a mode, pick a category, try not to look guilty before we start.",
       "primaryRelativePath": "public/assets/audio/host/cops-and-robbers/tts/cops-and-robbers_banter_banter_picker_prefix_v2.mp3",
       "stableFilename": "cops-and-robbers_banter_banter_picker_prefix_v2.mp3",
-      "contentSha256": "50a8ea519d7abc56f1ea38df42bad470b6a48baa2ca503b6da49277f7a601184"
+      "contentSha256": "218b72127d2a07ec3a305b5959ccfc41dea187b307b0402d65d9dc4c325ba093"
     },
     {
       "lineId": "cops-and-robbers:banter_picker_prefix_v3",
@@ -467,10 +624,10 @@
       "themeSlug": "cops-and-robbers",
       "segmentRole": "prefix",
       "scriptId": "banter_picker_prefix_v3",
-      "spokenText": "The wheel of bad decisions stops with Player.",
+      "spokenText": "The wheel of bad decisions stops here.",
       "primaryRelativePath": "public/assets/audio/host/cops-and-robbers/tts/cops-and-robbers_banter_banter_picker_prefix_v3.mp3",
       "stableFilename": "cops-and-robbers_banter_banter_picker_prefix_v3.mp3",
-      "contentSha256": "41fbc4ff666f946e2541ced62c9d1ffdc2732709695ab3340454a7fdd7b9b1c6"
+      "contentSha256": "192d7eb759079f14b18cb2abb75b90fd66f352084e8ed9ab5ab17b9bc6f80513"
     },
     {
       "lineId": "cops-and-robbers:banter_reveal_suffix_singular_v1",
@@ -588,10 +745,21 @@
       "themeSlug": "ghosts-and-ghouls",
       "segmentRole": "prefix",
       "scriptId": "banter_picker_prefix_v1",
-      "spokenText": "Player, you're choosing the chaos this round.",
+      "spokenText": "You're choosing the chaos this round.",
       "primaryRelativePath": "public/assets/audio/host/ghosts-and-ghouls/tts/ghosts-and-ghouls_banter_banter_picker_prefix_v1.mp3",
       "stableFilename": "ghosts-and-ghouls_banter_banter_picker_prefix_v1.mp3",
-      "contentSha256": "41db365011cd098622e3f7416fe5f0dfaa72ceb68d4e43e081bd95f21778a16d"
+      "contentSha256": "b3e89c7945c5a26df7f77867fc3d36131af0d12c7e5abe61d4098c2b497c6f02"
+    },
+    {
+      "lineId": "ghosts-and-ghouls:banter_picker_alright_lead_v2",
+      "themeName": "Ghosts and Ghouls",
+      "themeSlug": "ghosts-and-ghouls",
+      "segmentRole": "prefix",
+      "scriptId": "banter_picker_alright_lead_v2",
+      "spokenText": "Alright —",
+      "primaryRelativePath": "public/assets/audio/host/ghosts-and-ghouls/tts/ghosts-and-ghouls_banter_banter_picker_alright_lead_v2.mp3",
+      "stableFilename": "ghosts-and-ghouls_banter_banter_picker_alright_lead_v2.mp3",
+      "contentSha256": "d5049df8fc615cd2f1eff0ea28a9fd8e3ed31198361fd0ce9d6dabf2ce89757d"
     },
     {
       "lineId": "ghosts-and-ghouls:banter_picker_prefix_v2",
@@ -599,10 +767,10 @@
       "themeSlug": "ghosts-and-ghouls",
       "segmentRole": "prefix",
       "scriptId": "banter_picker_prefix_v2",
-      "spokenText": "Alright Player — pick a mode, pick a category, try not to look guilty before we start.",
+      "spokenText": "Pick a mode, pick a category, try not to look guilty before we start.",
       "primaryRelativePath": "public/assets/audio/host/ghosts-and-ghouls/tts/ghosts-and-ghouls_banter_banter_picker_prefix_v2.mp3",
       "stableFilename": "ghosts-and-ghouls_banter_banter_picker_prefix_v2.mp3",
-      "contentSha256": "50a8ea519d7abc56f1ea38df42bad470b6a48baa2ca503b6da49277f7a601184"
+      "contentSha256": "218b72127d2a07ec3a305b5959ccfc41dea187b307b0402d65d9dc4c325ba093"
     },
     {
       "lineId": "ghosts-and-ghouls:banter_picker_prefix_v3",
@@ -610,10 +778,10 @@
       "themeSlug": "ghosts-and-ghouls",
       "segmentRole": "prefix",
       "scriptId": "banter_picker_prefix_v3",
-      "spokenText": "The wheel of bad decisions stops with Player.",
+      "spokenText": "The wheel of bad decisions stops here.",
       "primaryRelativePath": "public/assets/audio/host/ghosts-and-ghouls/tts/ghosts-and-ghouls_banter_banter_picker_prefix_v3.mp3",
       "stableFilename": "ghosts-and-ghouls_banter_banter_picker_prefix_v3.mp3",
-      "contentSha256": "41fbc4ff666f946e2541ced62c9d1ffdc2732709695ab3340454a7fdd7b9b1c6"
+      "contentSha256": "192d7eb759079f14b18cb2abb75b90fd66f352084e8ed9ab5ab17b9bc6f80513"
     },
     {
       "lineId": "ghosts-and-ghouls:banter_reveal_suffix_singular_v1",
@@ -731,10 +899,21 @@
       "themeSlug": "cops-and-robbers",
       "segmentRole": "prefix",
       "scriptId": "banter_picker_prefix_v1",
-      "spokenText": "Player, you're choosing the chaos this round.",
+      "spokenText": "You're choosing the chaos this round.",
       "primaryRelativePath": "public/assets/audio/host/cops-and-robbers/tts/cops-and-robbers_banter_banter_picker_prefix_v1.mp3",
       "stableFilename": "cops-and-robbers_banter_banter_picker_prefix_v1.mp3",
-      "contentSha256": "41db365011cd098622e3f7416fe5f0dfaa72ceb68d4e43e081bd95f21778a16d"
+      "contentSha256": "b3e89c7945c5a26df7f77867fc3d36131af0d12c7e5abe61d4098c2b497c6f02"
+    },
+    {
+      "lineId": "cops-and-robbers:banter_picker_alright_lead_v2",
+      "themeName": "Cowboys",
+      "themeSlug": "cops-and-robbers",
+      "segmentRole": "prefix",
+      "scriptId": "banter_picker_alright_lead_v2",
+      "spokenText": "Alright —",
+      "primaryRelativePath": "public/assets/audio/host/cops-and-robbers/tts/cops-and-robbers_banter_banter_picker_alright_lead_v2.mp3",
+      "stableFilename": "cops-and-robbers_banter_banter_picker_alright_lead_v2.mp3",
+      "contentSha256": "d5049df8fc615cd2f1eff0ea28a9fd8e3ed31198361fd0ce9d6dabf2ce89757d"
     },
     {
       "lineId": "cops-and-robbers:banter_picker_prefix_v2",
@@ -742,10 +921,10 @@
       "themeSlug": "cops-and-robbers",
       "segmentRole": "prefix",
       "scriptId": "banter_picker_prefix_v2",
-      "spokenText": "Alright Player — pick a mode, pick a category, try not to look guilty before we start.",
+      "spokenText": "Pick a mode, pick a category, try not to look guilty before we start.",
       "primaryRelativePath": "public/assets/audio/host/cops-and-robbers/tts/cops-and-robbers_banter_banter_picker_prefix_v2.mp3",
       "stableFilename": "cops-and-robbers_banter_banter_picker_prefix_v2.mp3",
-      "contentSha256": "50a8ea519d7abc56f1ea38df42bad470b6a48baa2ca503b6da49277f7a601184"
+      "contentSha256": "218b72127d2a07ec3a305b5959ccfc41dea187b307b0402d65d9dc4c325ba093"
     },
     {
       "lineId": "cops-and-robbers:banter_picker_prefix_v3",
@@ -753,10 +932,10 @@
       "themeSlug": "cops-and-robbers",
       "segmentRole": "prefix",
       "scriptId": "banter_picker_prefix_v3",
-      "spokenText": "The wheel of bad decisions stops with Player.",
+      "spokenText": "The wheel of bad decisions stops here.",
       "primaryRelativePath": "public/assets/audio/host/cops-and-robbers/tts/cops-and-robbers_banter_banter_picker_prefix_v3.mp3",
       "stableFilename": "cops-and-robbers_banter_banter_picker_prefix_v3.mp3",
-      "contentSha256": "41fbc4ff666f946e2541ced62c9d1ffdc2732709695ab3340454a7fdd7b9b1c6"
+      "contentSha256": "192d7eb759079f14b18cb2abb75b90fd66f352084e8ed9ab5ab17b9bc6f80513"
     },
     {
       "lineId": "cops-and-robbers:banter_reveal_suffix_singular_v1",
@@ -874,10 +1053,21 @@
       "themeSlug": "cops-and-robbers",
       "segmentRole": "prefix",
       "scriptId": "banter_picker_prefix_v1",
-      "spokenText": "Player, you're choosing the chaos this round.",
+      "spokenText": "You're choosing the chaos this round.",
       "primaryRelativePath": "public/assets/audio/host/cops-and-robbers/tts/cops-and-robbers_banter_banter_picker_prefix_v1.mp3",
       "stableFilename": "cops-and-robbers_banter_banter_picker_prefix_v1.mp3",
-      "contentSha256": "41db365011cd098622e3f7416fe5f0dfaa72ceb68d4e43e081bd95f21778a16d"
+      "contentSha256": "b3e89c7945c5a26df7f77867fc3d36131af0d12c7e5abe61d4098c2b497c6f02"
+    },
+    {
+      "lineId": "cops-and-robbers:banter_picker_alright_lead_v2",
+      "themeName": "Gangsters",
+      "themeSlug": "cops-and-robbers",
+      "segmentRole": "prefix",
+      "scriptId": "banter_picker_alright_lead_v2",
+      "spokenText": "Alright —",
+      "primaryRelativePath": "public/assets/audio/host/cops-and-robbers/tts/cops-and-robbers_banter_banter_picker_alright_lead_v2.mp3",
+      "stableFilename": "cops-and-robbers_banter_banter_picker_alright_lead_v2.mp3",
+      "contentSha256": "d5049df8fc615cd2f1eff0ea28a9fd8e3ed31198361fd0ce9d6dabf2ce89757d"
     },
     {
       "lineId": "cops-and-robbers:banter_picker_prefix_v2",
@@ -885,10 +1075,10 @@
       "themeSlug": "cops-and-robbers",
       "segmentRole": "prefix",
       "scriptId": "banter_picker_prefix_v2",
-      "spokenText": "Alright Player — pick a mode, pick a category, try not to look guilty before we start.",
+      "spokenText": "Pick a mode, pick a category, try not to look guilty before we start.",
       "primaryRelativePath": "public/assets/audio/host/cops-and-robbers/tts/cops-and-robbers_banter_banter_picker_prefix_v2.mp3",
       "stableFilename": "cops-and-robbers_banter_banter_picker_prefix_v2.mp3",
-      "contentSha256": "50a8ea519d7abc56f1ea38df42bad470b6a48baa2ca503b6da49277f7a601184"
+      "contentSha256": "218b72127d2a07ec3a305b5959ccfc41dea187b307b0402d65d9dc4c325ba093"
     },
     {
       "lineId": "cops-and-robbers:banter_picker_prefix_v3",
@@ -896,10 +1086,10 @@
       "themeSlug": "cops-and-robbers",
       "segmentRole": "prefix",
       "scriptId": "banter_picker_prefix_v3",
-      "spokenText": "The wheel of bad decisions stops with Player.",
+      "spokenText": "The wheel of bad decisions stops here.",
       "primaryRelativePath": "public/assets/audio/host/cops-and-robbers/tts/cops-and-robbers_banter_banter_picker_prefix_v3.mp3",
       "stableFilename": "cops-and-robbers_banter_banter_picker_prefix_v3.mp3",
-      "contentSha256": "41fbc4ff666f946e2541ced62c9d1ffdc2732709695ab3340454a7fdd7b9b1c6"
+      "contentSha256": "192d7eb759079f14b18cb2abb75b90fd66f352084e8ed9ab5ab17b9bc6f80513"
     },
     {
       "lineId": "cops-and-robbers:banter_reveal_suffix_singular_v1",
@@ -1017,10 +1207,21 @@
       "themeSlug": "wrestlers",
       "segmentRole": "prefix",
       "scriptId": "banter_picker_prefix_v1",
-      "spokenText": "Player, you're choosing the chaos this round.",
+      "spokenText": "You're choosing the chaos this round.",
       "primaryRelativePath": "public/assets/audio/host/wrestlers/tts/wrestlers_banter_banter_picker_prefix_v1.mp3",
       "stableFilename": "wrestlers_banter_banter_picker_prefix_v1.mp3",
-      "contentSha256": "41db365011cd098622e3f7416fe5f0dfaa72ceb68d4e43e081bd95f21778a16d"
+      "contentSha256": "b3e89c7945c5a26df7f77867fc3d36131af0d12c7e5abe61d4098c2b497c6f02"
+    },
+    {
+      "lineId": "wrestlers:banter_picker_alright_lead_v2",
+      "themeName": "Wrestlers",
+      "themeSlug": "wrestlers",
+      "segmentRole": "prefix",
+      "scriptId": "banter_picker_alright_lead_v2",
+      "spokenText": "Alright —",
+      "primaryRelativePath": "public/assets/audio/host/wrestlers/tts/wrestlers_banter_banter_picker_alright_lead_v2.mp3",
+      "stableFilename": "wrestlers_banter_banter_picker_alright_lead_v2.mp3",
+      "contentSha256": "d5049df8fc615cd2f1eff0ea28a9fd8e3ed31198361fd0ce9d6dabf2ce89757d"
     },
     {
       "lineId": "wrestlers:banter_picker_prefix_v2",
@@ -1028,10 +1229,10 @@
       "themeSlug": "wrestlers",
       "segmentRole": "prefix",
       "scriptId": "banter_picker_prefix_v2",
-      "spokenText": "Alright Player — pick a mode, pick a category, try not to look guilty before we start.",
+      "spokenText": "Pick a mode, pick a category, try not to look guilty before we start.",
       "primaryRelativePath": "public/assets/audio/host/wrestlers/tts/wrestlers_banter_banter_picker_prefix_v2.mp3",
       "stableFilename": "wrestlers_banter_banter_picker_prefix_v2.mp3",
-      "contentSha256": "50a8ea519d7abc56f1ea38df42bad470b6a48baa2ca503b6da49277f7a601184"
+      "contentSha256": "218b72127d2a07ec3a305b5959ccfc41dea187b307b0402d65d9dc4c325ba093"
     },
     {
       "lineId": "wrestlers:banter_picker_prefix_v3",
@@ -1039,10 +1240,10 @@
       "themeSlug": "wrestlers",
       "segmentRole": "prefix",
       "scriptId": "banter_picker_prefix_v3",
-      "spokenText": "The wheel of bad decisions stops with Player.",
+      "spokenText": "The wheel of bad decisions stops here.",
       "primaryRelativePath": "public/assets/audio/host/wrestlers/tts/wrestlers_banter_banter_picker_prefix_v3.mp3",
       "stableFilename": "wrestlers_banter_banter_picker_prefix_v3.mp3",
-      "contentSha256": "41fbc4ff666f946e2541ced62c9d1ffdc2732709695ab3340454a7fdd7b9b1c6"
+      "contentSha256": "192d7eb759079f14b18cb2abb75b90fd66f352084e8ed9ab5ab17b9bc6f80513"
     },
     {
       "lineId": "wrestlers:banter_reveal_suffix_singular_v1",

@@ -65,6 +65,7 @@ test('plural liar reveal subtitle lists names; plan has prefix segment', (t) => 
   assert.ok(plan);
   assert.match(plan.composedSubtitle, /Sam/);
   assert.match(plan.composedSubtitle, /Jo/);
+  assert.deepEqual(plan.subtitleSegments, ['The liars are…', 'Sam, Jo']);
   assert.ok(plan.segments[0].line.includes('liars'));
   plan.onCommit();
   assert.equal(planLiarRevealPluralBanter({ themeName: 'Default', round, liars, personaOnlyMode: false }), null);

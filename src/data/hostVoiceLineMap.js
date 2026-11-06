@@ -17,6 +17,8 @@ import {
 export const HOST_TTS_BASE_PATH = '/assets/audio/host';
 export const DEFAULT_HOST_TTS_BASE_PATH = `${HOST_TTS_BASE_PATH}/default/tts`;
 export const DEFAULT_HOST_LEGACY_BASE_PATH = `${HOST_TTS_BASE_PATH}/default`;
+/** Primary ElevenLabs name clips (950); filenames match personaId `.mp3` — see handoff bundle. */
+export const PERSONA_HANDOFF_TTS_BASE_PATH = '/assets/audio/persona-handoff';
 
 function normalizeLine(value = '') {
   return String(value || '').replace(/\s+/g, ' ').trim().toLowerCase();
@@ -428,9 +430,12 @@ export function getPersonaCalloutFilenameForPlayer(themeName = 'Default', person
 }
 
 export function getPersonaCalloutSrcCandidates(themeName = 'Default', personaId = '') {
+  const id = String(personaId || '').trim();
+  const handoffSrc = id ? `${PERSONA_HANDOFF_TTS_BASE_PATH}/${id}.mp3` : '';
   const filename = getPersonaCalloutFilenameForPlayer(themeName, personaId);
-  if (!filename) return [];
-  return getHostVoiceBasePathsForTheme(themeName).map((base) => `${base}/${filename}`);
+  if (!filename) return handoffSrc ? [handoffSrc] : [];
+  const themed = getHostVoiceBasePathsForTheme(themeName).map((base) => `${base}/${filename}`);
+  return handoffSrc ? [handoffSrc, ...themed] : themed;
 }
 
 export function getHostVoiceFilenameForLine(line = '', themeName = 'Default') {
