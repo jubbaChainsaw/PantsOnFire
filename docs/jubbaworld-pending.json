@@ -32,6 +32,28 @@
     },
     {
       "type": "work_task",
+      "id": "POF-FIX-STORE-GRAPHICS-FONT",
+      "title": "Play Store graphics: Chewy path rendering",
+      "status": "done",
+      "description": "Jubba review: overlay text did not match Chewy — Sharp SVG rasterized @font-face WOFF/WOFF2 as generic fallback. Fixed by loading official Chewy TTF and glyph paths via opentype.js, black stroke, drop shadow; regenerated five PNGs. Added apache LICENSE; corrected font README.",
+      "files": [
+        "scripts/generatePlayStoreGraphics.mjs",
+        "package.json",
+        "package-lock.json",
+        "public/assets/fonts/chewy/Chewy-Regular.ttf",
+        "public/assets/fonts/chewy/LICENSE.txt",
+        "public/assets/fonts/chewy/README.md",
+        "docs/store/play-listing.md",
+        "docs/store/graphics/icon-512.png",
+        "docs/store/graphics/feature-1024x500.png",
+        "docs/store/graphics/screenshot-01-home.png",
+        "docs/store/graphics/screenshot-02-ingame.png",
+        "docs/store/graphics/screenshot-03-lobby.png"
+      ],
+      "commit": "31d858c"
+    },
+    {
+      "type": "work_task",
       "id": "POF-ENH-007",
       "title": "Play Store listing draft + graphics",
       "status": "done",

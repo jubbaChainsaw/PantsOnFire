@@ -64,14 +64,14 @@ Use one bullet per line in Play Console where character limits allow.
 
 ## Graphics
 
-Generated assets (Chewy-style outlined titles, neon brand colours):
+Generated assets: overlay captions and feature-banner titles use the **Chewy** face outlined in black with a soft drop shadow. Background artwork for the phone images is **marketing still** (wallpaper PNGs), **not** raw gameplay capture.
 
 | Asset | Path |
 |-------|------|
 | App icon 512×512 | `docs/store/graphics/icon-512.png` |
 | Feature graphic 1024×500 | `docs/store/graphics/feature-1024x500.png` |
-| Phone screenshot — home | `docs/store/graphics/screenshot-01-home.png` |
-| Phone screenshot — in-game | `docs/store/graphics/screenshot-02-ingame.png` |
-| Phone screenshot — online lobby | `docs/store/graphics/screenshot-03-lobby.png` |
+| Marketing still — home wallpaper + caption | `docs/store/graphics/screenshot-01-home.png` |
+| Marketing still — in-game wallpaper + caption | `docs/store/graphics/screenshot-02-ingame.png` |
+| Marketing still — lobby wallpaper + caption | `docs/store/graphics/screenshot-03-lobby.png` |
 
-Regenerate: `node scripts/generatePlayStoreGraphics.mjs`
+Regenerate: `node scripts/generatePlayStoreGraphics.mjs` (requires `Chewy-Regular.ttf` in `public/assets/fonts/chewy/`).
