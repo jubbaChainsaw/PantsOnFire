@@ -6,8 +6,8 @@
   ],
   "purpose": "Authoritative Ian Poster host line inventory for ElevenLabs regeneration (voice_id h3DRPfZTD0Z1BwDc142N). Includes existing bundled lines plus t214u proposed lines (Two Truths phases, discussion bridge, one-word template). Exact spoken text from src/data/hostVoiceLineMap.js; durationSeconds from ffprobe when file present.",
   "targetElevenLabsVoiceId": "h3DRPfZTD0Z1BwDc142N",
-  "generatedAt": "2026-11-06T21:08:28.913Z",
-  "gitCommit": "dca71e470818a351f4be0af5aa7d014b482f06da",
+  "generatedAt": "2026-11-06T21:31:26.547Z",
+  "gitCommit": "2cd15095c20fefdb2dd363d3cc118eee5c186094",
   "priorManifestBackupPath": "docs/audio/ian-poster-voice-refresh-manifest.json.bak",
   "filesystemChecksumsArtifact": "docs/audio/ian-poster-voice-refresh-files-checksums.json",
   "regenerationPlan": {

@@ -1105,6 +1105,11 @@ function buildStoreCore({
       lobby.activeRound.phase = 'twotruths-voting';
       lobby.activeRound.phaseUpdatedAt = nowIso();
     }
+    // Bump whenever input turn advances inside twotruths-input so clients that only listen to
+    // lobby snapshots (phase + phaseUpdatedAt signature) re-sync inputPlayerIndex.
+    if (round.phase === 'twotruths-input') {
+      round.phaseUpdatedAt = nowIso();
+    }
 
     const rotatedSessionToken = helpers.rotateSessionTokenForPlayer(lobby, normalizedPlayerId);
     await saveLobby(lobby);
@@ -1158,6 +1163,7 @@ function buildStoreCore({
       idx,
     );
     round.twoTruthsData.votesByVoterId = nextVotes;
+    round.phaseUpdatedAt = nowIso();
 
     if (isTwoTruthsVoteMatrixComplete(lobby.players, nextVotes)) {
       applyTwoTruthsVotingResolution(lobby, round);

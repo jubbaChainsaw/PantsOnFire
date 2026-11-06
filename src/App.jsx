@@ -9169,25 +9169,16 @@ export default function App() {
         } else if (snapshot.status === "started" && snapshot.activeRound) {
           const activeRound = snapshot.activeRound;
           const snapshotPhase = String(activeRound.phase || "").trim();
-          const localRound = roundSyncRef.current;
-          const localPhase = String(localRound?.phase || "").trim();
           const snapshotTurnIndex = Math.max(
             0,
             Number(activeRound.oneWordTurnIndex) || 0,
           );
-          const localTurnIndex = Math.max(
+          const snapshotTwoTruthsInputIdx = Math.max(
             0,
-            Number(localRound?.oneWordTurnIndex) || 0,
+            Number(activeRound.twoTruthsData?.inputPlayerIndex) || 0,
           );
-          const phaseChanged = snapshotPhase !== localPhase;
-          const oneWordTurnAdvanced =
-            snapshotPhase === "one-word" &&
-            snapshotTurnIndex !== localTurnIndex;
-          if (
-            onlineMode &&
-            (phaseChanged || oneWordTurnAdvanced)
-          ) {
-            const syncSignature = `${snapshotPhase}:${snapshotTurnIndex}:${activeRound.roundNumber || 0}:${activeRound.phaseUpdatedAt || ""}`;
+          if (onlineMode) {
+            const syncSignature = `${snapshotPhase}:${snapshotTurnIndex}:${activeRound.roundNumber || 0}:${activeRound.phaseUpdatedAt || ""}:${snapshotTwoTruthsInputIdx}`;
             if (onlineRoundLiveSyncRef.current !== syncSignature) {
               onlineRoundLiveSyncRef.current = syncSignature;
               void syncOnlineRoundFromSnapshot(
@@ -9337,8 +9328,11 @@ export default function App() {
     const snapshotPlayers = Array.isArray(snapshot.players)
       ? snapshot.players
       : [];
+    const gamePlayersFromSnapshot = snapshotPlayers.length
+      ? toGamePlayers(snapshotPlayers)
+      : [];
     if (snapshotPlayers.length) {
-      setPlayers(toGamePlayers(snapshotPlayers));
+      setPlayers(gamePlayersFromSnapshot);
     }
     const serverRound = snapshot.activeRound;
     const normalizedPhase =
@@ -9373,7 +9367,7 @@ export default function App() {
       setCategoryOptions(drawn.categoryOptions);
       setSelectedRoundType(null);
       setRound({
-        chooserId: players[0]?.id,
+        chooserId: gamePlayersFromSnapshot[0]?.id,
         roundNumber: 1,
       });
       setRoundNumber(1);
@@ -9406,7 +9400,7 @@ export default function App() {
     }
     if (normalizedPhase === "twotruths-voting") {
       setTwoTruthsVotesByVoterId(serverRound.twoTruthsData?.votesByVoterId || {});
-      setVotingPlayerOrder(shuffle(players.map((player) => player.id)));
+      setVotingPlayerOrder(shuffle(gamePlayersFromSnapshot.map((player) => player.id)));
       refreshCopy(["voting"]);
       setScreen("twotruths-voting");
       return serverRound;
@@ -9428,9 +9422,7 @@ export default function App() {
     }
     if (normalizedPhase === "voting") {
       setVotingPlayerOrder(
-        shuffle(
-          (Array.isArray(players) ? players : []).map((player) => player.id),
-        ),
+        shuffle(gamePlayersFromSnapshot.map((player) => player.id)),
       );
       refreshCopy(["voting"]);
       setScreen("voting");
