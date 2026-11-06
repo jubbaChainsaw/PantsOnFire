@@ -5,8 +5,8 @@
     "t220u",
     "t221u"
   ],
-  "generatedAt": "2026-11-06T21:48:51.760Z",
-  "gitCommit": "15f22aac1512426c0a3fc4dfb8dbeda024a89880",
+  "generatedAt": "2026-11-06T21:49:21.151Z",
+  "corpusSha256": "e639a9fbfce31226effa9274c63d347d5995622743b89289b34f189a6e01eb48",
   "voiceNote": "Uses existing Ian Poster voice id from parent batch; no catalog name regeneration.",
   "lineCount": 104,
   "lines": [

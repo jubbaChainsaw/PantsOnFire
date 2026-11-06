@@ -4,20 +4,11 @@
  */
 import { writeFileSync } from 'node:fs';
 import { createHash } from 'node:crypto';
-import { execSync } from 'node:child_process';
 import { MODULAR_BANTER_FIXED_SCRIPTS } from '../src/data/modularHostBanterScripts.js';
 import {
   getIanPosterThemeSlug,
   IAN_POSTER_VOICE_THEME_NAMES,
 } from '../src/data/ianPosterThemeVoice.js';
-
-function gitHead() {
-  try {
-    return execSync('git rev-parse HEAD', { encoding: 'utf8' }).trim();
-  } catch {
-    return '';
-  }
-}
 
 function stableFilename(themeName, stem) {
   const slug = getIanPosterThemeSlug(themeName);
@@ -26,6 +17,22 @@ function stableFilename(themeName, stem) {
 
 function sha256(s) {
   return createHash('sha256').update(s).digest('hex');
+}
+
+/** Stable across commits: hashes fixed script corpus + theme set only (not repo HEAD). */
+function modularBanterCorpusSha256() {
+  const themes = [...IAN_POSTER_VOICE_THEME_NAMES]
+    .map((name) => getIanPosterThemeSlug(name))
+    .sort();
+  const scripts = [...MODULAR_BANTER_FIXED_SCRIPTS]
+    .map((s) => ({
+      id: s.id,
+      filenameStem: s.filenameStem,
+      segmentRole: s.segmentRole,
+      spokenText: s.spokenText,
+    }))
+    .sort((a, b) => a.id.localeCompare(b.id));
+  return sha256(JSON.stringify({ themes, scripts }));
 }
 
 const lines = [];
@@ -52,7 +59,7 @@ const manifest = {
   purpose: 'incremental-modular-banter-t220u',
   taskRefs: ['t220u', 't221u'],
   generatedAt: new Date().toISOString(),
-  gitCommit: gitHead(),
+  corpusSha256: modularBanterCorpusSha256(),
   voiceNote: 'Uses existing Ian Poster voice id from parent batch; no catalog name regeneration.',
   lineCount: lines.length,
   lines,
