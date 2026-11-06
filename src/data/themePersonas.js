@@ -1033,6 +1033,14 @@ const THEME_PERSONA_POOLS = {
   Victorian: MURDER_MYSTERY_THEME_PERSONAS,
 };
 
+/**
+ * Every theme key with a persona pool (curated, DLC JSON, procedural, or alias like Victorian).
+ * Sorted for deterministic exports.
+ */
+export function listPersonaPoolThemeNames() {
+  return Object.keys(THEME_PERSONA_POOLS).slice().sort((a, b) => a.localeCompare(b));
+}
+
 export function getThemePersonas(themeName = 'Default') {
   const canonicalThemeName = toCanonicalThemeName(themeName);
   if (Array.isArray(THEME_PERSONA_POOLS[themeName])) return THEME_PERSONA_POOLS[themeName];

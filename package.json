@@ -40,6 +40,8 @@
     "host:install-theme-host-packs": "node scripts/installThemeHostPacks.cjs",
     "host:install-mapped-videos": "node scripts/installMappedHostVideos.cjs",
     "host:sync-generated-media": "node scripts/syncGeneratedHostMediaFromDisk.cjs",
+    "audio:export-ian-poster-manifest": "node scripts/exportIanPosterVoiceManifest.mjs",
+    "analysis:export-persona-name-cost": "node scripts/exportPersonaNameCostAnalysis.mjs",
     "media:theme-card-webp": "node scripts/generateThemeCardWebp.cjs",
     "media:double-take-card-webp": "node scripts/generateDoubleTakeCardWebp.cjs",
     "export:default-host-ssml": "node scripts/exportDefaultHostSsmlCsv.cjs",
