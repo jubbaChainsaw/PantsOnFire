@@ -21,12 +21,13 @@
         "tests/e2e/playwright/store-neon.spec.js",
         ".gitignore"
       ],
-      "commit": "f73c735f2f0e6cda6e14890d06d55b79952606c2",
+      "commit": "0e1c36adce560d7118c43e2735cc42f6f4121e70",
       "commits": [
         "cbef5d48c4805833b2f74fdecb0acc2ddc434064",
         "9fb745f749700ecdf684cad8678cedea4a0e5131",
         "22508a64e4bbc513b79015080466a9e1ef6c6ba8",
-        "f73c735f2f0e6cda6e14890d06d55b79952606c2"
+        "f73c735f2f0e6cda6e14890d06d55b79952606c2",
+        "0e1c36adce560d7118c43e2735cc42f6f4121e70"
       ]
     },
     {

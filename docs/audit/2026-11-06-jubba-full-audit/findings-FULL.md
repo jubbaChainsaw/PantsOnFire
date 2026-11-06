@@ -1,7 +1,13 @@
 # Jubba full audit — findings (evidence baseline)
 
 **Branch:** `cursor/ionos-web-deploy-6e4c` — **PR #111**  
-**Commits (audit):** `cbef5d48c4805833b2f74fdecb0acc2ddc434064` (deliverables + E2E fix), `9fb745f749700ecdf684cad8678cedea4a0e5131` (`jubbaworld-pending` entry), `22508a64e4bbc513b79015080466a9e1ef6c6ba8` (findings SHA notes), `f73c735f2f0e6cda6e14890d06d55b79952606c2` (final commit list)  
+**Audit deliverable commits** (see also `findings-FULL.json` → `auditDeliverableCommits`):
+
+1. `cbef5d48c4805833b2f74fdecb0acc2ddc434064` — snapshot, traceability, findings, generator, Superpowers bundle copy, E2E selector fix, `.gitignore` dist-android  
+2. `9fb745f749700ecdf684cad8678cedea4a0e5131` — `docs/jubbaworld-pending.json` pointer entry  
+3. `22508a64e4bbc513b79015080466a9e1ef6c6ba8` — record SHAs in findings  
+4. `f73c735f2f0e6cda6e14890d06d55b79952606c2` — append commit to pending list  
+5. `0e1c36adce560d7118c43e2735cc42f6f4121e70` — canonical multi-commit list in pending + findings  
 **Status:** **Evidence baseline complete** — per-item **deep code proof** for all **119** rows is **not** claimed; **72** rows remain **`untested`** under audit heuristics (see JSON).
 
 ## Superpowers (attached bundle)
