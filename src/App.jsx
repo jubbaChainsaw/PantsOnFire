@@ -211,7 +211,7 @@ import {
 } from "./lib/twoTruthsOneFire.js";
 import { buildOnlineRoundLiveSyncSignature } from "./lib/onlineRoundLiveSync.js";
 import { onlinePhaseAllowsPartyVoice } from "./lib/onlineVoicePolicy.js";
-import { shouldPlayBundledHostBanter } from "./lib/hostBanterPlaybackPolicy.js";
+import { shouldPlayAmbientBundledHostBanter } from "./lib/hostBanterPlaybackPolicy.js";
 import NeonTwoTruthsInputScreen from "./components/neon/NeonTwoTruthsInputScreen.jsx";
 import NeonTwoTruthsVotingScreen from "./components/neon/NeonTwoTruthsVotingScreen.jsx";
 import NeonTwoTruthsRevealScreen from "./components/neon/NeonTwoTruthsRevealScreen.jsx";
@@ -7816,9 +7816,11 @@ export default function App() {
   const [roundTypeOptions, setRoundTypeOptions] = useState([]);
   const [selectedRoundType, setSelectedRoundType] = useState(null);
   const [round, setRound] = useState(null);
-  const bundledHostBanterAllowed = useMemo(
+  /** Modular + instructional host voice always eligible; party-mic phases gate only ambient stings. */
+  const bundledHostBanterAllowed = true;
+  const ambientHostBanterAllowed = useMemo(
     () =>
-      shouldPlayBundledHostBanter({
+      shouldPlayAmbientBundledHostBanter({
         onlineMode,
         screen,
         roundPhase: round?.phase,
@@ -11506,7 +11508,7 @@ export default function App() {
       {screen === "twotruths-input" && round && (
         <>
         <TwoTruthsPhaseHostVoice
-          enabled={bundledHostBanterAllowed}
+          enabled={ambientHostBanterAllowed}
           themeName={canonicalThemeName}
           round={round}
           screen="twotruths-input"
@@ -11531,7 +11533,7 @@ export default function App() {
       {screen === "twotruths-voting" && round && (
         <>
         <TwoTruthsPhaseHostVoice
-          enabled={bundledHostBanterAllowed}
+          enabled={ambientHostBanterAllowed}
           themeName={canonicalThemeName}
           round={round}
           screen="twotruths-voting"
@@ -11558,7 +11560,7 @@ export default function App() {
       {screen === "twotruths-reveal" && round && (
         <>
         <TwoTruthsPhaseHostVoice
-          enabled={bundledHostBanterAllowed}
+          enabled={ambientHostBanterAllowed}
           themeName={canonicalThemeName}
           round={round}
           screen="twotruths-reveal"
@@ -11755,7 +11757,7 @@ export default function App() {
       {screen === "discussion" && round && (
         <>
           <DiscussionTimeHostVoice
-            enabled={discussionFromOneWordHostCue && bundledHostBanterAllowed}
+            enabled={discussionFromOneWordHostCue && ambientHostBanterAllowed}
             themeName={canonicalThemeName}
           />
           <DiscussionScreen

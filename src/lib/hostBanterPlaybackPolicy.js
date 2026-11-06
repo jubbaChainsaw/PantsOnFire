@@ -4,17 +4,25 @@
  * Host-only actions (phase advance, etc.) stay separate in App — this is playback eligibility only.
  */
 
-/** Phases/screens where party voice or one-word mic is hot; skip ambient Ian banter. */
-const BLOCK_HOST_BANTER = new Set(['discussion', 'one-word']);
+/** Phases/screens where party voice or one-word mic is hot; skip ambient / optional Ian banter only. */
+const BLOCK_AMBIENT_HOST_BANTER = new Set(['discussion', 'one-word']);
 
 /**
+ * Stinger + modular clip queues — still allowed during voice-hot phases (instructional voice).
+ */
+export function shouldPlayBundledHostBanter() {
+  return true;
+}
+
+/**
+ * Optional ambience (e.g. phase sting, Two Truths narration): skip when party mic is hot.
  * @param {object} [opts]
  * @param {boolean} [opts.onlineMode]
  * @param {string} [opts.screen] App screen id
  * @param {string} [opts.roundPhase] Server round.phase when online
  * @param {boolean} [opts.skipPartyVoiceHotPhases] default true — discussion / one-word
  */
-export function shouldPlayBundledHostBanter({
+export function shouldPlayAmbientBundledHostBanter({
   onlineMode = false,
   screen = '',
   roundPhase = '',
@@ -23,8 +31,8 @@ export function shouldPlayBundledHostBanter({
   void onlineMode;
   if (!skipPartyVoiceHotPhases) return true;
   const phase = String(roundPhase || '').trim();
-  if (phase && BLOCK_HOST_BANTER.has(phase)) return false;
+  if (phase && BLOCK_AMBIENT_HOST_BANTER.has(phase)) return false;
   const scr = String(screen || '').trim();
-  if (BLOCK_HOST_BANTER.has(scr)) return false;
+  if (BLOCK_AMBIENT_HOST_BANTER.has(scr)) return false;
   return true;
 }
