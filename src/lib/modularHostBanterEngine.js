@@ -144,26 +144,37 @@ export function planPickerTurnBanter({
     chooserName
   ) {
     const nameCandidates = getPersonaCalloutSrcCandidates(themeName, chooser.personaId);
-    segments.push({
-      line: chooserName,
-      subtitleSegment: chooserName,
-      audioSrcCandidates: nameCandidates,
-      fallbackDurationMs: 1800,
-    });
-    if (prefixChoice.id === 'banter_picker_prefix_v2' && alrightV2Script) {
-      segments.push({
-        line: alrightV2Spoken,
-        subtitleSegment: alrightV2Spoken,
-        audioSrcCandidates: getModularBanterSrcCandidates(themeName, alrightV2File),
-        fallbackDurationMs: 600,
-      });
-    }
-    segments.push({
+    const bodySeg = {
       line: fixedSpoken,
       subtitleSegment: fixedSpoken,
       audioSrcCandidates: getModularBanterSrcCandidates(themeName, filename),
       fallbackDurationMs: 2800,
-    });
+    };
+    const nameSeg = {
+      line: chooserName,
+      subtitleSegment: chooserName,
+      audioSrcCandidates: nameCandidates,
+      fallbackDurationMs: 1800,
+    };
+    if (prefixChoice.id === 'banter_picker_prefix_v2' && alrightV2Script) {
+      /** Audio: lead → NAME → suffix body (subtitle remains “Alright {name} — …”). */
+      segments.push(
+        {
+          line: alrightV2Spoken,
+          subtitleSegment: alrightV2Spoken,
+          audioSrcCandidates: getModularBanterSrcCandidates(themeName, alrightV2File),
+          fallbackDurationMs: 600,
+        },
+        nameSeg,
+        bodySeg,
+      );
+    } else if (prefixChoice.id === 'banter_picker_prefix_v3') {
+      /** Audio: NAME → name-free “stops here.” clip (subtitle: “{name}. … stops here.”). */
+      segments.push(nameSeg, bodySeg);
+    } else {
+      /** v1 and any future variants: NAME → fragment */
+      segments.push(nameSeg, bodySeg);
+    }
   } else {
     segments.push({
       line: fixedSpoken,

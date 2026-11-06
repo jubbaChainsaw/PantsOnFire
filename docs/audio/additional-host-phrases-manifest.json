@@ -7,7 +7,7 @@
   ],
   "frozenCorpusId": "df7269-modular-fragments-v1",
   "parentReuseNote": "Compare spokenText per scriptId to prior bank (e.g. e639a9): reuse MP3 when words match; do not regenerate for capitalization or punctuation-only deltas unless audio must change.",
-  "generatedAt": "2026-11-06T22:16:41.628Z",
+  "generatedAt": "2026-11-06T22:20:43.215Z",
   "corpusSha256": "e8b9c9c2365798927892c6c04cd4aa3c32dc82ddc37e38e2e6f20e31f8a72513",
   "uniqueFragmentCount": 14,
   "uniqueFragments": [
@@ -39,20 +39,20 @@
   "compositionByEvent": [
     {
       "eventId": "picker_turn",
-      "description": "Persona-only: persona name MP3, optional \"Alright —\" lead when variant is banter_picker_prefix_v2, then fixed picker fragment. Else: one fragment; subtitle may prepend display name.",
+      "description": "Persona-only: v2 plays lead “Alright —” then persona name then body; v3 plays name then name-free “stops here.”; v1 name then body. Else one fragment; subtitle from buildComposedSubtitleLine.",
       "segmentPattern": [
         {
           "order": 0,
           "optional": true,
-          "kind": "persona_name",
-          "note": "Only when personaOnlyMode and chooser has personaId."
+          "kind": "fixed_script",
+          "scriptId": "banter_picker_alright_lead_v2",
+          "note": "Only persona + banter_picker_prefix_v2."
         },
         {
           "order": 1,
           "optional": true,
-          "kind": "fixed_script",
-          "scriptId": "banter_picker_alright_lead_v2",
-          "note": "Only when personaOnlyMode and selected variant is banter_picker_prefix_v2."
+          "kind": "persona_name",
+          "note": "Persona name clip (950 bank or theme file)."
         },
         {
           "order": 2,
