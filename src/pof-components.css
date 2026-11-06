@@ -99,11 +99,14 @@
 .pof-field{width:100%;border-radius:1rem;background:rgba(6,2,22,.85);border:2px solid rgba(34,211,238,.75);box-shadow:0 0 10px rgba(34,211,238,.45),inset 0 0 8px rgba(34,211,238,.15);color:#fff;padding:.7rem .9rem;font-family:'PoF Display',sans-serif;font-size:1.2rem;letter-spacing:.06em;text-align:center;outline:none}
 .pof-field:focus{border-color:#ff2bd6;box-shadow:0 0 16px rgba(255,43,214,.75)}
 .pof-select{appearance:none;-webkit-appearance:none;cursor:pointer;padding-right:2.6rem;text-align:left}
-.pof-chip{font-family:'PoF Display',sans-serif;letter-spacing:.06em;font-size:1.15rem;border-radius:.9rem;padding:.55rem .8rem;color:#fff;background:rgba(6,2,22,.8);border:2px solid rgba(34,211,238,.55);box-shadow:0 0 8px rgba(34,211,238,.3)}
+.pof-chip{font-family:'PoF Display',sans-serif;letter-spacing:.06em;font-size:1.15rem;border-radius:.9rem;padding:.55rem .8rem;color:#fff;background:rgba(6,2,22,.8);border:2px solid rgba(34,211,238,.55);box-shadow:0 0 8px rgba(34,211,238,.3);text-transform:uppercase}
 .pof-sq{display:flex;align-items:center;justify-content:center;height:2.4rem;width:2.4rem;border-radius:.8rem;background:rgba(6,2,22,.85);border:2px solid rgba(255,43,214,.7);box-shadow:0 0 10px rgba(255,43,214,.45);color:#fff}
 .pof-sq.cyan{border-color:rgba(34,211,238,.75);box-shadow:0 0 10px rgba(34,211,238,.45)}
 .pof-root h1,.pof-root h2,.pof-root h3,.pof-root .font-black{font-family:'PoF Display',Inter,sans-serif;font-style:italic;letter-spacing:.05em}
+/* Display headings: all-caps (Jubba); use .pof-preserve-heading-case for mixed-case (e.g. player names). */
+.pof-root :where(h1,h2,h3):not(.pof-preserve-heading-case){text-transform:uppercase}
 .pof-heading{font-family:'PoF Display',Inter,sans-serif;font-style:italic;text-transform:uppercase;letter-spacing:.05em}
+.pof-heading.pof-preserve-heading-case{text-transform:none}
 /* PoF Display omits a clean “?” — use UI font for punctuation in headings */
 .pof-display-punct{font-family:Inter,system-ui,sans-serif;font-style:normal;font-weight:800;text-transform:none;letter-spacing:0}
 .content-pack-prompt-copy,.content-pack-prompt-copy .content-pack-prompt-body{text-align:center}

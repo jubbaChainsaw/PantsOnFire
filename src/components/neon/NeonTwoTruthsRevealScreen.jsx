@@ -46,7 +46,9 @@ export default function NeonTwoTruthsRevealScreen({
               data-testid={`twotruths-reveal-${player.id}`}
             >
               <div className="flex items-center justify-between gap-2">
-                <div className="pof-heading text-lg text-cyan-200">{player.name}</div>
+                <div className="pof-heading pof-preserve-heading-case text-lg text-cyan-200">
+                  {player.name}
+                </div>
                 <div className="pof-heading text-sm text-yellow-300">+{gain}</div>
               </div>
               {burnedOut ? (

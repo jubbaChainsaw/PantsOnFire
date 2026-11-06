@@ -73,14 +73,21 @@ export default function NeonTwoTruthsInputScreen({
             <NeonTimerBar secondsLeft={secondsLeft} totalSeconds={totalSeconds} />
           </div>
         )}
-        <h2
-          className="pof-heading text-center text-2xl text-yellow-300"
-          data-testid="twotruths-pass-heading"
-        >
-          {onlineMode && localPlayerId === player.id
-            ? 'Your turn'
-            : `Pass the phone to ${player.name}`}
-        </h2>
+        {onlineMode && localPlayerId === player.id ? (
+          <h2
+            className="pof-heading text-center text-2xl text-yellow-300"
+            data-testid="twotruths-pass-heading"
+          >
+            Your turn
+          </h2>
+        ) : (
+          <h2
+            className="pof-heading pof-preserve-heading-case text-center text-2xl text-yellow-300"
+            data-testid="twotruths-pass-heading"
+          >
+            Pass the phone to {player.name}
+          </h2>
+        )}
         {passLine && (
           <div className="pof-body rounded-2xl border border-fuchsia-200/35 bg-fuchsia-500/25 px-4 py-2 text-center text-sm font-semibold text-white/90">
             {passLine}

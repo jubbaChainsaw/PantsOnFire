@@ -239,7 +239,9 @@ export default function NeonStoreThemesPanel({
               </span>
             ) : null}
             <div className="absolute bottom-0 left-0 right-0 p-3 text-left">
-              <div className="pof-heading text-2xl text-fuchsia-100">{item.title}</div>
+              <div className="pof-heading pof-preserve-heading-case text-2xl text-fuchsia-100">
+                {item.title}
+              </div>
               <p className="pof-desc mt-0.5 text-[0.7rem] text-white/75">{item.tagline}</p>
               {!item.isOwned && !disableDlcDemo ? (
                 <div className="mt-2">
@@ -326,7 +328,7 @@ export default function NeonStoreThemesPanel({
                 testId="store-theme-card-art"
               />
               <div className="p-2 text-left">
-                <div className="pof-heading text-[0.72rem] leading-tight text-white">
+                <div className="pof-heading pof-preserve-heading-case text-[0.72rem] leading-tight text-white">
                   {theme.name}
                 </div>
                 {theme.isMystery ? (

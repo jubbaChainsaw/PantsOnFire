@@ -5349,7 +5349,7 @@ function RevealScreen({
     <TopFrame theme={theme} allowScroll={false}>
       <div className="mx-auto flex h-[calc(100dvh-2rem)] w-full max-w-3xl flex-col">
         <div className="flex-1 px-3 py-3 sm:px-4 sm:py-4 text-center">
-          <h2 className="text-2xl sm:text-3xl font-black mt-1 text-yellow-300 leading-tight">
+          <h2 className="pof-preserve-heading-case text-2xl sm:text-3xl font-black mt-1 text-yellow-300 leading-tight">
             {onlineMode
               ? `Reveal for ${localPlayerName || player.name}`
               : `Pass the phone to ${player.name}`}
@@ -5997,7 +5997,7 @@ function VotingScreen({
                 key={voter.id}
                 className="rounded-[1.75rem] p-4 border-white/10 bg-black/20"
               >
-                <div className="font-black text-lg">{voter.name}</div>
+                <div className="pof-preserve-heading-case font-black text-lg">{voter.name}</div>
                 <div className="pof-ui-muted mt-1 text-sm font-medium">
                   Who do they vote for?
                 </div>
@@ -6388,7 +6388,7 @@ function ResultsScreen({
                           themeName={theme}
                         />
                         <div
-                          className={`text-lg sm:text-xl font-black leading-tight ${isLiar ? "text-[#ffc0ab]" : "text-white"}`}
+                          className={`pof-preserve-heading-case text-lg sm:text-xl font-black leading-tight ${isLiar ? "text-[#ffc0ab]" : "text-white"}`}
                         >
                           {player.name}
                         </div>
@@ -6439,7 +6439,7 @@ function ResultsScreen({
                             initialsClass="text-[0.5rem]"
                             themeName={theme}
                           />
-                          <div className="text-sm font-black uppercase text-white">
+                          <div className="pof-preserve-heading-case text-sm font-black text-white">
                             {player.name}
                           </div>
                         </div>
@@ -6477,7 +6477,7 @@ function ResultsScreen({
                         />
                         <div>
                           <div className="text-[0.7rem] sm:text-xs font-black uppercase tracking-[0.08em] text-white/55">{`Place ${index + 1}`}</div>
-                          <div className="mt-0.5 text-lg sm:text-xl font-black uppercase leading-tight text-white">
+                          <div className="pof-preserve-heading-case mt-0.5 text-lg sm:text-xl font-black leading-tight text-white">
                             {player.name}
                           </div>
                         </div>
@@ -6537,7 +6537,7 @@ function FinalScreen({ players, onRestart, line, theme, unlockToast = false }) {
           <div className="text-xs uppercase tracking-[0.3em] text-white/50">
             Match complete
           </div>
-          <h2 className="mt-3 text-5xl font-black text-yellow-300">
+          <h2 className="pof-preserve-heading-case mt-3 text-5xl font-black text-yellow-300">
             Winner: {winner?.name}
           </h2>
           <p className="mt-3 text-white/75">{line}</p>
@@ -6556,7 +6556,7 @@ function FinalScreen({ players, onRestart, line, theme, unlockToast = false }) {
                   />
                   <div className="text-sm text-white/55">{`Place ${index + 1}`}</div>
                 </div>
-                <div className="mt-2 text-2xl font-black">{player.name}</div>
+                <div className="pof-preserve-heading-case mt-2 text-2xl font-black">{player.name}</div>
                 <div className="mt-3 text-4xl font-black">{player.score}</div>
               </GlassPanel>
             ))}
@@ -10787,7 +10787,7 @@ export default function App() {
               <div className="text-xs uppercase tracking-[0.3em] text-white/55">
                 Joined Lobby
               </div>
-              <h2 className="text-4xl font-black mt-3 text-cyan-200">
+              <h2 className="pof-preserve-heading-case text-4xl font-black mt-3 text-cyan-200">
                 Code: {lobbyCode || "------"}
               </h2>
               <p className="text-white/75 mt-3">
@@ -10933,7 +10933,7 @@ export default function App() {
               className="shrink-0 px-2 pb-1 pt-[calc(var(--pof-safe-top)+2.75rem)] text-center sm:pt-[calc(var(--pof-safe-top)+2.25rem)]"
               data-testid="category-choice-header"
             >
-              <div className="pof-ui-muted text-xs font-semibold uppercase tracking-[0.3em] pl-14 sm:pl-0">
+              <div className="pof-preserve-heading-case pof-ui-muted text-xs font-semibold uppercase tracking-[0.3em] pl-14 sm:pl-0">
                 Round owner: {players[currentRoundOwnerIndex]?.name}
               </div>
               <h2 className="mt-3 text-4xl font-black text-yellow-300 [text-shadow:0_4px_16px_rgba(0,0,0,0.65)]">

@@ -103,7 +103,7 @@ function TierCard({
     >
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div className="text-left">
-          <div className="pof-heading text-xl text-white">
+          <div className="pof-heading pof-preserve-heading-case text-xl text-white">
             {tier.name}
             {isCurrent ? (
               <span className="ml-2 text-xs font-normal tracking-widest text-yellow-200">
@@ -284,7 +284,7 @@ export default function NeonStoreScreen({
             title="Your access tier"
           >
             <Crown className="h-3.5 w-3.5 shrink-0 text-amber-200" />
-            <span className="truncate">{currentTierName}</span>
+            <span className="truncate pof-preserve-heading-case">{currentTierName}</span>
           </span>
         </header>
 
@@ -399,7 +399,9 @@ export default function NeonStoreScreen({
             onToggle={() => toggleSection('addons')}
           >
             <div className="rounded-2xl border border-white/10 bg-white/5 p-4 text-left">
-              <div className="pof-heading text-lg text-fuchsia-100">{ADDON_TWIST_TRUTH.name}</div>
+              <div className="pof-heading pof-preserve-heading-case text-lg text-fuchsia-100">
+                {ADDON_TWIST_TRUTH.name}
+              </div>
               <p className="pof-desc mt-2 text-sm text-white/75">{ADDON_TWIST_TRUTH.description}</p>
               <div className="mt-3 flex items-center justify-between gap-3">
                 <span className="pof-desc text-lg font-semibold text-yellow-300">

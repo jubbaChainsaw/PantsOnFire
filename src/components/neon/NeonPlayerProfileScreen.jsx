@@ -31,7 +31,7 @@ const TABS = [
 function StatTile({ label, value }) {
   return (
     <div className="rounded-2xl border border-white/10 bg-black/30 p-3 text-center">
-      <div className="pof-heading text-2xl text-yellow-200">{value}</div>
+      <div className="pof-heading pof-preserve-heading-case text-2xl text-yellow-200">{value}</div>
       <div className="mt-1 text-[0.65rem] uppercase tracking-[0.18em] text-white/55">
         {label}
       </div>
@@ -215,7 +215,9 @@ export default function NeonPlayerProfileScreen({
                     className="rounded-2xl border border-white/10 bg-black/30 px-3 py-2 text-sm text-white/85"
                   >
                     <div className="flex flex-wrap items-center justify-between gap-2">
-                      <span className="pof-heading text-cyan-100">{game.themeName}</span>
+                      <span className="pof-heading pof-preserve-heading-case text-cyan-100">
+                        {game.themeName}
+                      </span>
                       <span className="text-xs text-white/50">
                         {new Date(game.dateIso).toLocaleString()}
                       </span>

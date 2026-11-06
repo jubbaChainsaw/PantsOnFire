@@ -126,7 +126,9 @@ export function OneWordRoundPanel({
       <div className="text-xs font-bold uppercase tracking-[0.2em] text-cyan-200/90">
         One word round
       </div>
-      <h2 className="text-2xl font-black text-yellow-200">{headline}</h2>
+      <h2 className="pof-preserve-heading-case text-2xl font-black text-yellow-200">
+        {headline}
+      </h2>
       <p className="text-sm font-medium text-white/90">{hintLine}</p>
       {onlineMode && secondsLeft != null && (
         <div className="text-xs font-semibold text-cyan-100/80">

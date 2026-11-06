@@ -99,7 +99,9 @@ export default function NeonTwoTruthsVotingScreen({
                 <GlassPanel
                   className="mt-5 rounded-2xl border-white/10 bg-black/20 p-4"
                 >
-                  <div className="pof-heading text-lg text-cyan-200">{author.name}</div>
+                  <div className="pof-heading pof-preserve-heading-case text-lg text-cyan-200">
+                    {author.name}
+                  </div>
                   <div className="mt-3 grid gap-2">
                     {deck.items.map((text, index) => (
                       <button

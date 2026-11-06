@@ -5,6 +5,30 @@
   "entries": [
     {
       "type": "work_task",
+      "id": "POF-ENH-DISPLAY-CAPS",
+      "title": "Display typography: ALL CAPS for headings, nav, store art",
+      "status": "done",
+      "description": "Jubba: PoF Display headings h1–h3 in .pof-root uppercase by default; .pof-preserve-heading-case opts out for player names, lobby codes, tier/product/theme display names, and similar. Tailwind Button gets uppercase. Play Store generator uppercases Chewy caption lines; regenerated screenshots. npm test + vite build green.",
+      "files": [
+        "src/pof-components.css",
+        "src/components/ui/button.jsx",
+        "src/App.jsx",
+        "src/components/OneWordRoundScreen.jsx",
+        "src/components/neon/NeonTwoTruthsInputScreen.jsx",
+        "src/components/neon/NeonTwoTruthsRevealScreen.jsx",
+        "src/components/neon/NeonTwoTruthsVotingScreen.jsx",
+        "src/components/neon/NeonPlayerProfileScreen.jsx",
+        "src/components/neon/NeonStoreScreen.jsx",
+        "src/components/neon/NeonStoreThemesPanel.jsx",
+        "scripts/generatePlayStoreGraphics.mjs",
+        "docs/store/graphics/screenshot-01-home.png",
+        "docs/store/graphics/screenshot-02-ingame.png",
+        "docs/store/graphics/screenshot-03-lobby.png"
+      ],
+      "commit": "d297f5175958f7e0027f80245d1ef942bd039f43"
+    },
+    {
+      "type": "work_task",
       "id": "POF-ENH-005",
       "title": "CI: npm test job on PR/push",
       "status": "done",

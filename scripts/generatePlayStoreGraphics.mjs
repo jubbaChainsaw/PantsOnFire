@@ -45,12 +45,13 @@ function chewyTextSvgLayer({
 
   const paths = [];
   lines.forEach((line, i) => {
-    const p = font.getPath(line, 0, 0, fontSize);
+    const lineCaps = String(line || '').toUpperCase();
+    const p = font.getPath(lineCaps, 0, 0, fontSize);
     const bb = p.getBoundingBox();
     const pathW = bb.x2 - bb.x1;
     const offsetX = (width - pathW) / 2 - bb.x1;
     const yBaseline = height * (yStart + i * lineGap);
-    const g = font.getPath(line, offsetX, yBaseline, fontSize);
+    const g = font.getPath(lineCaps, offsetX, yBaseline, fontSize);
     const d = g.toPathData(2);
     if (!d) return;
     // Drop shadow (soft dark offset) behind stroke+fill
