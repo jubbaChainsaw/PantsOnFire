@@ -2,6 +2,7 @@ import { test, expect } from '@playwright/test';
 
 function seedLocalStorage() {
   localStorage.setItem('pof-content-packs-prompt-dismissed-v1', 'true');
+  localStorage.setItem('pof-e2e-force-round-type', 'pairs');
   localStorage.setItem(
     'imposter-account-session-v2',
     JSON.stringify({
@@ -38,7 +39,7 @@ test.describe('Martin smoke — local game flow', () => {
     await expect(page.getByTestId('achievement-row-referral-fever-dream-2')).toBeVisible();
   });
 
-  test.skip('Double Take round (intro flow)', async ({ page }) => {
+  test('Double Take round (intro flow)', async ({ page }) => {
     test.setTimeout(180_000);
     await page.addInitScript(seedLocalStorage);
     await page.goto('/');
@@ -56,9 +57,8 @@ test.describe('Martin smoke — local game flow', () => {
       timeout: 60_000,
     });
     await page.getByTestId('round-type-pairs').click({ timeout: 30_000 });
-    await page.getByTestId('choose-category-random').click({ timeout: 30_000 }).catch(async () => {
-      await page.locator('[data-testid^="category-"]').first().click();
-    });
+    // Double Take uses a global pool — category grid is skipped via useEffect auto-pick.
+    await page.getByTestId('host-intro-visual').waitFor({ state: 'visible', timeout: 60_000 });
     await page.getByTestId('host-intro-skip').click({ timeout: 30_000 }).catch(() => {});
     await page.getByTestId('reveal-ready').waitFor({ state: 'visible', timeout: 60_000 });
     await page.getByTestId('reveal-ready').click();

@@ -45,6 +45,16 @@ async function readyAllAndStart(store, code, members) {
   return started;
 }
 
+/** Match production flow: after startLobby the active round is lobby-pending until host configures mode. */
+async function configurePromptHotSeatRound(store, code, members) {
+  const host = members[0];
+  const configured = await store.configureOnlineRound(code, host.clientId, host.sessionToken, {
+    roundTypeId: 'prompt',
+  });
+  assert.equal(configured.error, undefined, `configureOnlineRound failed: ${configured.error}`);
+  host.sessionToken = configured.sessionToken;
+}
+
 test('createLobby issues server-generated code and strong session token', async () => {
   const store = makeStore();
   const created = await store.createLobby({
@@ -153,6 +163,8 @@ test('start requires the host session token and generates a round with one liar'
 
   const started = await store.startLobby(code, 'client-host', members[0].sessionToken);
   assert.equal(started.error, undefined);
+  members[0].sessionToken = started.sessionToken;
+  await configurePromptHotSeatRound(store, code, members);
   const lobby = await store.getLobby(code);
   assert.equal(lobby.status, 'started');
   const round = lobby.activeRound;
@@ -169,6 +181,7 @@ test('public snapshots never leak liar identity or prompts before reveal', async
   const store = makeStore();
   const { code, members } = await makeLobbyWithPlayers(store, 3);
   await readyAllAndStart(store, code, members);
+  await configurePromptHotSeatRound(store, code, members);
   const lobby = await store.getLobby(code);
   const snapshot = toClientSnapshot(lobby);
   const publicRound = snapshot.activeRound;
@@ -185,6 +198,7 @@ test('private round view requires the matching session token', async () => {
   const store = makeStore();
   const { code, members } = await makeLobbyWithPlayers(store, 3);
   await readyAllAndStart(store, code, members);
+  await configurePromptHotSeatRound(store, code, members);
   const member = members[1];
   const other = members[2];
 
@@ -206,6 +220,7 @@ test('advanceRoundPhase is host-only after the lobby has started', async () => {
   const store = makeStore();
   const { code, members } = await makeLobbyWithPlayers(store, 3);
   await readyAllAndStart(store, code, members);
+  await configurePromptHotSeatRound(store, code, members);
   const host = members[0];
   const guest = members[1];
 
@@ -230,6 +245,7 @@ test('voting flow: validation, server scoring, and reveal-phase disclosure', asy
   const store = makeStore();
   const { code, members } = await makeLobbyWithPlayers(store, 3);
   await readyAllAndStart(store, code, members);
+  await configurePromptHotSeatRound(store, code, members);
 
   const advance = async (member) => {
     const result = await store.advanceRoundPhase(code, member.player.id, member.sessionToken);
@@ -302,6 +318,78 @@ test('voting flow: validation, server scoring, and reveal-phase disclosure', asy
   assert.deepEqual(snapshot.activeRound.imposterIds, [liarId]);
 });
 
+test('online Two Truths: configure, submit, vote matrix, host reveal advance', async () => {
+  const store = makeStore();
+  const { code, members } = await makeLobbyWithPlayers(store, 3);
+  await readyAllAndStart(store, code, members);
+  const host = members[0];
+
+  const configured = await store.configureOnlineRound(code, host.clientId, host.sessionToken, {
+    roundTypeId: 'twotruths',
+    categoryId: 'sports',
+  });
+  assert.equal(configured.error, undefined);
+  host.sessionToken = configured.sessionToken;
+  let lobby = await store.getLobby(code);
+  assert.equal(lobby.activeRound.roundTypeId, 'twotruths');
+  assert.equal(lobby.activeRound.phase, 'host-intro');
+
+  const snap0 = toClientSnapshot(lobby);
+  assert.equal(snap0.activeRound.twoTruthsData?.submissionsByPlayerId, undefined);
+
+  let advance = await store.advanceRoundPhase(code, host.player.id, host.sessionToken);
+  assert.equal(advance.error, undefined);
+  assert.equal(advance.round?.phase, 'twotruths-input');
+  host.sessionToken = advance.sessionToken;
+
+  const mkSub = (label) => ({
+    items: [`${label}a`, `${label}b`, `${label}c`],
+    lieIndex: 1,
+    burnedOut: false,
+    timedOut: false,
+  });
+
+  for (const member of members) {
+    const sub = await store.submitTwoTruthsSubmission(
+      code,
+      member.player.id,
+      member.sessionToken,
+      mkSub(member.player.name),
+    );
+    assert.equal(sub.error, undefined, `submit ${member.player.name}`);
+    member.sessionToken = sub.sessionToken;
+  }
+  lobby = await store.getLobby(code);
+  assert.equal(lobby.activeRound.phase, 'twotruths-voting');
+  const pub = toClientSnapshot(lobby);
+  assert.ok(pub.activeRound.twoTruthsData?.presentationsByPlayerId);
+  assert.equal(pub.activeRound.twoTruthsData?.submissionsByPlayerId, undefined);
+
+  for (const voter of members) {
+    for (const author of members) {
+      if (author.player.id === voter.player.id) continue;
+      const deck = lobby.activeRound.twoTruthsData.presentationsByPlayerId[author.player.id];
+      const wrong = deck.items.findIndex((_, i) => i !== deck.lieIndex);
+      const v = await store.submitTwoTruthsAuthorVote(
+        code,
+        voter.player.id,
+        voter.sessionToken,
+        author.player.id,
+        wrong,
+      );
+      assert.equal(v.error, undefined, `vote ${voter.player.id} on ${author.player.id}`);
+      voter.sessionToken = v.sessionToken;
+    }
+  }
+  lobby = await store.getLobby(code);
+  assert.equal(lobby.activeRound.phase, 'twotruths-reveal');
+  assert.ok(lobby.activeRound.resolution);
+
+  advance = await store.advanceRoundPhase(code, host.player.id, host.sessionToken);
+  assert.equal(advance.error, undefined);
+  assert.equal(advance.round?.phase, 'results');
+});
+
 test('resume rotates the session token and invalidates the old one', async () => {
   const store = makeStore();
   const { code, members } = await makeLobbyWithPlayers(store, 3);
@@ -328,6 +416,7 @@ test('completeHostedOnlineGame requires linked host auth and a finished match', 
   const { code, members } = await makeLobbyWithPlayers(store, 3);
   const host = members[0];
   await readyAllAndStart(store, code, members);
+  await configurePromptHotSeatRound(store, code, members);
 
   const missingAuth = await store.completeHostedOnlineGame(
     code,
@@ -377,6 +466,15 @@ test('completeHostedOnlineGame requires linked host auth and a finished match', 
   );
   assert.equal(started.error, undefined);
   authHost.sessionToken = started.sessionToken;
+
+  const configured = await store.configureOnlineRound(
+    authCode,
+    authHost.clientId,
+    authHost.sessionToken,
+    { roundTypeId: 'prompt' },
+  );
+  assert.equal(configured.error, undefined);
+  authHost.sessionToken = configured.sessionToken;
 
   const notDone = await store.completeHostedOnlineGame(
     authCode,

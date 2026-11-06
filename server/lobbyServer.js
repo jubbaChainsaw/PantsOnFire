@@ -678,6 +678,196 @@ app.post('/api/lobbies/:code/start', async (req, res) => {
   });
 });
 
+app.post('/api/lobbies/:code/round/configure', async (req, res) => {
+  if (!assertMayHostLobby(req, res)) return;
+  const code = normalizeCode(req.params.code);
+  const hostClientId = String(req.body?.hostClientId || '');
+  const sessionToken = String(req.body?.sessionToken || '');
+  const payload = req.body?.round && typeof req.body.round === 'object' ? req.body.round : req.body || {};
+  const result = await store.configureOnlineRound(code, hostClientId, sessionToken, payload);
+  if (result.error === 'not-found') {
+    res.status(404).json({ error: 'lobby-not-found' });
+    return;
+  }
+  if (result.error === 'lobby-not-started') {
+    res.status(409).json({ error: 'lobby-not-started' });
+    return;
+  }
+  if (result.error === 'lobby-ended') {
+    res.status(409).json({
+      error: 'lobby-ended',
+      lobby: toClientSnapshot(result.lobby || null),
+    });
+    return;
+  }
+  if (result.error === 'host-only') {
+    res.status(403).json({ error: 'host-only' });
+    return;
+  }
+  if (result.error === 'host-session-token-required') {
+    res.status(400).json({ error: 'host-session-token-required' });
+    return;
+  }
+  if (result.error === 'token-rotation-required') {
+    res.status(401).json({ error: 'token-rotation-required' });
+    return;
+  }
+  if (result.error === 'session-token-expired') {
+    res.status(401).json({ error: 'session-token-expired' });
+    return;
+  }
+  if (result.error === 'round-already-configured') {
+    res.status(409).json({ error: 'round-already-configured' });
+    return;
+  }
+  if (result.error === 'round-generation-failed') {
+    res.status(500).json({ error: 'round-generation-failed' });
+    return;
+  }
+  if (result.error === 'lock-timeout') {
+    res.status(503).json({ error: 'lobby-busy' });
+    return;
+  }
+  broadcastSnapshot(code, result.lobby);
+  res.json({
+    lobby: toClientSnapshot(result.lobby),
+    round: result.round || null,
+    rotatedSessionToken: result.sessionToken || '',
+  });
+});
+
+app.post('/api/lobbies/:code/round/two-truths/submit', async (req, res) => {
+  const code = normalizeCode(req.params.code);
+  const playerId = String(req.body?.playerId || '');
+  const sessionToken = String(req.body?.sessionToken || '');
+  const submission = req.body?.submission && typeof req.body.submission === 'object' ? req.body.submission : {};
+  const result = await store.submitTwoTruthsSubmission(code, playerId, sessionToken, submission);
+  if (result.error === 'not-found') {
+    res.status(404).json({ error: 'lobby-not-found' });
+    return;
+  }
+  if (result.error === 'lobby-not-started') {
+    res.status(409).json({ error: 'lobby-not-started' });
+    return;
+  }
+  if (result.error === 'lobby-ended') {
+    res.status(409).json({
+      error: 'lobby-ended',
+      lobby: toClientSnapshot(result.lobby || null),
+    });
+    return;
+  }
+  if (result.error === 'round-not-found') {
+    res.status(404).json({ error: 'round-not-found' });
+    return;
+  }
+  if (result.error === 'player-id-required') {
+    res.status(400).json({ error: 'player-id-required' });
+    return;
+  }
+  if (result.error === 'invalid-session-token' || result.error === 'session-token-expired') {
+    res.status(401).json({ error: result.error });
+    return;
+  }
+  if (result.error === 'not-two-truths-round') {
+    res.status(409).json({ error: 'not-two-truths-round' });
+    return;
+  }
+  if (result.error === 'twotruths-input-not-active') {
+    res.status(409).json({ error: 'twotruths-input-not-active' });
+    return;
+  }
+  if (result.error === 'not-your-turn') {
+    res.status(409).json({ error: 'not-your-turn' });
+    return;
+  }
+  if (result.error === 'twotruths-invalid-items' || result.error === 'twotruths-invalid-lie-index') {
+    res.status(400).json({ error: result.error });
+    return;
+  }
+  if (result.error === 'lock-timeout') {
+    res.status(503).json({ error: 'lobby-busy' });
+    return;
+  }
+  if (result.lobby) {
+    broadcastSnapshot(code, result.lobby);
+  }
+  res.json({
+    lobby: toClientSnapshot(result.lobby),
+    round: result.round || null,
+    rotatedSessionToken: result.sessionToken || '',
+  });
+});
+
+app.post('/api/lobbies/:code/round/two-truths/vote', async (req, res) => {
+  const code = normalizeCode(req.params.code);
+  const playerId = String(req.body?.playerId || '');
+  const sessionToken = String(req.body?.sessionToken || '');
+  const authorId = String(req.body?.authorId || '');
+  const lieIndex = req.body?.lieIndex;
+  const result = await store.submitTwoTruthsAuthorVote(code, playerId, sessionToken, authorId, lieIndex);
+  if (result.error === 'not-found') {
+    res.status(404).json({ error: 'lobby-not-found' });
+    return;
+  }
+  if (result.error === 'lobby-not-started') {
+    res.status(409).json({ error: 'lobby-not-started' });
+    return;
+  }
+  if (result.error === 'lobby-ended') {
+    res.status(409).json({
+      error: 'lobby-ended',
+      lobby: toClientSnapshot(result.lobby || null),
+    });
+    return;
+  }
+  if (result.error === 'round-not-found') {
+    res.status(404).json({ error: 'round-not-found' });
+    return;
+  }
+  if (result.error === 'player-id-required') {
+    res.status(400).json({ error: 'player-id-required' });
+    return;
+  }
+  if (result.error === 'vote-target-required') {
+    res.status(400).json({ error: 'vote-target-required' });
+    return;
+  }
+  if (result.error === 'vote-target-invalid') {
+    res.status(409).json({ error: 'invalid-vote-target' });
+    return;
+  }
+  if (result.error === 'invalid-session-token' || result.error === 'session-token-expired') {
+    res.status(401).json({ error: result.error });
+    return;
+  }
+  if (result.error === 'not-two-truths-round') {
+    res.status(409).json({ error: 'not-two-truths-round' });
+    return;
+  }
+  if (result.error === 'twotruths-voting-not-active') {
+    res.status(409).json({ error: 'twotruths-voting-not-active' });
+    return;
+  }
+  if (result.error === 'twotruths-invalid-lie-index') {
+    res.status(400).json({ error: result.error });
+    return;
+  }
+  if (result.error === 'lock-timeout') {
+    res.status(503).json({ error: 'lobby-busy' });
+    return;
+  }
+  if (result.lobby) {
+    broadcastSnapshot(code, result.lobby);
+  }
+  res.json({
+    lobby: toClientSnapshot(result.lobby),
+    round: result.round || null,
+    votingComplete: Boolean(result.votingComplete),
+    rotatedSessionToken: result.sessionToken || '',
+  });
+});
+
 app.post('/api/lobbies/:code/ready', async (req, res) => {
   const code = normalizeCode(req.params.code);
   const playerId = String(req.body?.playerId || '');

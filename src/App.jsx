@@ -214,7 +214,11 @@ import NeonTwoTruthsVotingScreen from "./components/neon/NeonTwoTruthsVotingScre
 import NeonTwoTruthsRevealScreen from "./components/neon/NeonTwoTruthsRevealScreen.jsx";
 import DoubleTakeSquareRevealCard from "./components/neon/DoubleTakeSquareRevealCard.jsx";
 import { PICTURE_DLC_MANIFESTS } from "./data/pictureDlcManifests";
-import { getHostVoiceSrcCandidatesForLine, buildHostIntroSpeechSteps } from "./data/hostVoiceLineMap";
+import {
+  getHostVoiceSrcCandidatesForLine,
+  buildHostIntroSpeechSteps,
+  TWO_TRUTHS_HOST_NARRATION,
+} from "./data/hostVoiceLineMap";
 import {
   useIanPosterHostVoicePlayback,
   useHostSpeechAutoAdvance,
@@ -233,7 +237,10 @@ import {
   createLobbyOnServer,
   createOnlinePlayer,
   advanceRoundPhaseOnServer,
+  configureRoundOnServer,
   submitRoundVotesOnServer,
+  submitTwoTruthsAuthorVoteOnServer,
+  submitTwoTruthsSubmissionOnServer,
   joinLobbyOnServer,
   leaveLobbyOnServer,
   readLobbySnapshot,
@@ -303,10 +310,40 @@ const E2E_FORCE_ROUND_TYPE = String(
   import.meta.env.VITE_E2E_FORCE_ROUND_TYPE || "",
 ).trim();
 
+function getE2eForcedRoundTypeId() {
+  if (typeof window !== "undefined") {
+    const fromStorage = window.localStorage?.getItem(
+      "pof-e2e-force-round-type",
+    );
+    if (fromStorage) return String(fromStorage || "").trim();
+  }
+  return E2E_FORCE_ROUND_TYPE;
+}
+
+/** E2E / harness only: cap lobby size so multi-context Playwright stays within MIN_PLAYERS. */
+function readE2eOnlineLobbyMaxPlayers() {
+  const envRaw = String(import.meta.env.VITE_E2E_ONLINE_MAX_PLAYERS || "").trim();
+  const envNum = Number(envRaw);
+  if (Number.isFinite(envNum) && envNum >= MIN_PLAYERS && envNum <= MAX_PLAYERS) {
+    return Math.floor(envNum);
+  }
+  if (typeof window !== "undefined") {
+    const fromStorage = window.localStorage?.getItem(
+      "pof-e2e-online-max-players",
+    );
+    const n = Number(String(fromStorage || "").trim());
+    if (Number.isFinite(n) && n >= MIN_PLAYERS && n <= MAX_PLAYERS) {
+      return Math.floor(n);
+    }
+  }
+  return null;
+}
+
 function withE2eRoundTypeDraw(drawn) {
-  if (!E2E_FORCE_ROUND_TYPE) return drawn;
+  const forcedId = getE2eForcedRoundTypeId();
+  if (!forcedId) return drawn;
   const match = PASS_THE_PHONE_ROUND_TYPES.find(
-    (type) => type.id === E2E_FORCE_ROUND_TYPE,
+    (type) => type.id === forcedId,
   );
   if (!match) return drawn;
   return { ...drawn, roundTypeOptions: [match] };
@@ -334,6 +371,7 @@ const INTRO_THEME_BGM_SCREENS = new Set([
   "online-join",
   "online-lobby-created",
   "online-lobby-waiting",
+  "online-match-waiting",
   "game-intro",
 ]);
 const UI_ICON_BOXERS_RED_SRC = "/assets/images/ui-icons/boxers-red.png";
@@ -360,6 +398,7 @@ const ONLINE_VOICE_ACTIVE_SCREENS = new Set([
 const ONLINE_CONNECTION_ACTIVE_SCREENS = new Set([
   "online-lobby-created",
   "online-lobby-waiting",
+  "online-match-waiting",
   "rules",
   "host-intro",
   "reveal",
@@ -376,6 +415,7 @@ const ONLINE_CONNECTION_ACTIVE_SCREENS = new Set([
 const ONLINE_IN_SESSION_LEAVE_SCREENS = new Set([
   "game-intro",
   "rules",
+  "online-match-waiting",
   "host-intro",
   "reveal",
   "one-word",
@@ -391,6 +431,7 @@ const ONLINE_IN_SESSION_LEAVE_SCREENS = new Set([
 const ONLINE_PARTY_CHAT_ACTIVE_SCREENS = new Set([
   "online-lobby-created",
   "online-lobby-waiting",
+  "online-match-waiting",
   "game-intro",
   "rules",
   "host-intro",
@@ -408,6 +449,7 @@ const ONLINE_PARTY_CHAT_ACTIVE_SCREENS = new Set([
 const LOCAL_GAME_PAUSE_SCREENS = new Set([
   "game-intro",
   "rules",
+  "online-match-waiting",
   "host-intro",
   "category-choice",
   "round-type-choice",
@@ -432,6 +474,7 @@ const DESKTOP_LANDSCAPE_SCREENS = new Set([
   "online-join",
   "online-lobby-created",
   "online-lobby-waiting",
+  "online-match-waiting",
 ]);
 const NO_CATEGORY_SELECTION_ROUND_TYPE_IDS = new Set(["noise", "nameblame", "pairs"]);
 const IN_GAME_PERSONA_BIO_MAX = 140;
@@ -3801,6 +3844,7 @@ function OnlineLobbySetupScreen({
               <div className="mt-2 flex gap-2">
                 <Input
                   value={hostName}
+                  data-testid="online-setup-host-name"
                   onChange={(event) => setHostName(event.target.value)}
                   className="rounded-2xl bg-white/5 border border-white/10 text-white"
                 />
@@ -3849,6 +3893,7 @@ function OnlineLobbySetupScreen({
                 min={MIN_PLAYERS}
                 max={MAX_PLAYERS}
                 value={maxPlayers}
+                data-testid="online-setup-max-players"
                 onChange={(event) => {
                   const next = Number(event.target.value);
                   if (!Number.isFinite(next)) return;
@@ -3980,6 +4025,7 @@ function OnlineLobbySetupScreen({
               className="rounded-[1.4rem] bg-yellow-300 text-zinc-950 border-2 border-white px-6 py-2"
               disabled={!canContinue}
               onClick={onContinue}
+              data-testid="online-setup-generate-code"
             >
               Generate Lobby Code
             </Button>
@@ -4215,6 +4261,7 @@ function OnlineJoinLobbyScreen({
                 </Label>
                 <input
                   value={joinCode}
+                  data-testid="online-join-code-input"
                   onChange={(event) =>
                     setJoinCode(event.target.value.toUpperCase())
                   }
@@ -4241,6 +4288,7 @@ function OnlineJoinLobbyScreen({
                   <div className="mt-2 flex gap-2">
                     <input
                       value={playerName}
+                      data-testid="online-join-player-name"
                       onChange={(event) => setPlayerName(event.target.value)}
                       className="pof-field min-w-0 flex-1 text-left font-sans text-base tracking-normal"
                     />
@@ -4271,6 +4319,7 @@ function OnlineJoinLobbyScreen({
                 className="pof-btn pof-btn-fire pof-btn-sm pof-focus sm:flex-1"
                 disabled={!canContinueCode}
                 onClick={onContinueCode}
+                data-testid="online-join-code-continue"
               >
                 Continue
               </button>
@@ -4280,6 +4329,7 @@ function OnlineJoinLobbyScreen({
                 className="pof-btn pof-btn-fire pof-btn-sm pof-focus sm:flex-1"
                 disabled={!canJoin}
                 onClick={onJoin}
+                data-testid="online-join-submit"
               >
                 Join Game
               </button>
@@ -4316,6 +4366,7 @@ function OnlineJoinLobbyScreen({
                 <Label className="text-white/80">Lobby code</Label>
                 <Input
                   value={joinCode}
+                  data-testid="online-join-code-input"
                   onChange={(event) =>
                     setJoinCode(event.target.value.toUpperCase())
                   }
@@ -4338,6 +4389,7 @@ function OnlineJoinLobbyScreen({
                   <div className="mt-2 flex gap-2">
                     <Input
                       value={playerName}
+                      data-testid="online-join-player-name"
                       onChange={(event) => setPlayerName(event.target.value)}
                       className="rounded-2xl bg-white/5 border border-white/10 text-white"
                     />
@@ -4364,6 +4416,7 @@ function OnlineJoinLobbyScreen({
                 className="rounded-[1.4rem] bg-yellow-300 text-zinc-950 border-2 border-white px-6 py-2"
                 disabled={!canContinueCode}
                 onClick={onContinueCode}
+                data-testid="online-join-code-continue"
               >
                 Continue
               </Button>
@@ -4372,6 +4425,7 @@ function OnlineJoinLobbyScreen({
                 className="rounded-[1.4rem] bg-yellow-300 text-zinc-950 border-2 border-white px-6 py-2"
                 disabled={!canJoin}
                 onClick={onJoin}
+                data-testid="online-join-submit"
               >
                 Join Game
               </Button>
@@ -4441,7 +4495,10 @@ function OnlineLobbyCodeScreen({
             </span>
           </p>
           <div className="mt-6 rounded-[1.8rem] border border-cyan-300/40 bg-cyan-500/10 p-5 flex items-center justify-between gap-4">
-            <div className="pof-countdown-digit text-4xl tracking-widest text-cyan-100">
+            <div
+              className="pof-countdown-digit text-4xl tracking-widest text-cyan-100"
+              data-testid="online-lobby-code"
+            >
               {lobbyCode || "------"}
             </div>
             <Button
@@ -4573,6 +4630,7 @@ function OnlineLobbyCodeScreen({
               className="rounded-[1.4rem] bg-emerald-400 text-zinc-950 border-2 border-white px-6 py-2"
               onClick={onToggleReady}
               disabled={!onlineJoinedPlayerId}
+              data-testid="online-lobby-toggle-ready"
             >
               {localPlayerReady ? "Ready ✓" : "I'm Ready"}
             </Button>
@@ -4580,6 +4638,7 @@ function OnlineLobbyCodeScreen({
               className="rounded-[1.4rem] bg-yellow-300 text-zinc-950 border-2 border-white px-6 py-2"
               disabled={!canStart}
               onClick={onStartMatch}
+              data-testid="online-lobby-start-match"
             >
               {lobbyStatus === "started" ? "Resume Match" : "Let's Start"}
             </Button>
@@ -6333,7 +6392,10 @@ function ResultsScreen({
 
   return (
     <TopFrame theme={theme} allowScroll={resultsStage !== "details"}>
-      <div className="mx-auto flex w-full max-w-5xl flex-col">
+      <div
+        className="mx-auto flex w-full max-w-5xl flex-col"
+        data-testid="results-screen-root"
+      >
         <GlassPanel className="rounded-[2.3rem] border-white/15 bg-black/25 p-4 sm:p-6">
           {resultsStage === "summary" ? (
             <div className="flex flex-col">
@@ -7374,6 +7436,47 @@ function DiscussionTimeHostVoice({ enabled, themeName }) {
   });
   return null;
 }
+
+/**
+ * Two Truths phase narration — plays when entering each sub-phase (Ian Poster themes).
+ * Voting uses the transition line (covers shuffle + vote intent); alt votingIntro remains in manifest for generation.
+ */
+function TwoTruthsPhaseHostVoice({ enabled, themeName, round, screen }) {
+  const line = useMemo(() => {
+    if (!enabled || !round) return "";
+    const phase = String(round.phase || "").trim();
+    if (screen === "twotruths-input" && phase === "twotruths-input") {
+      return TWO_TRUTHS_HOST_NARRATION.inputIntro;
+    }
+    if (screen === "twotruths-voting" && phase === "twotruths-voting") {
+      return TWO_TRUTHS_HOST_NARRATION.transitionToVoting;
+    }
+    if (screen === "twotruths-reveal" && phase === "twotruths-reveal") {
+      return TWO_TRUTHS_HOST_NARRATION.revealIntro;
+    }
+    return "";
+  }, [enabled, round, screen]);
+
+  const audioSrcCandidates = useMemo(
+    () => getHostVoiceSrcCandidatesForLine(line, themeName),
+    [line, themeName],
+  );
+
+  const lineKey = useMemo(() => {
+    const id = round?.id || "noround";
+    return `twotruths-host-${id}-${screen}-${String(round?.phase || "")}`;
+  }, [round?.id, round?.phase, screen]);
+
+  useIanPosterHostVoicePlayback({
+    enabled: Boolean(line) && isIanPosterVoiceTheme(themeName),
+    line,
+    lineKey,
+    themeName,
+    audioSrcCandidates,
+    fallbackDurationMs: 3200,
+  });
+  return null;
+}
 export default function App() {
   const {
     loading: authLoading,
@@ -7523,8 +7626,10 @@ export default function App() {
   const [onlineLobbyStatus, setOnlineLobbyStatus] = useState("idle");
   const [onlineLobbyError, setOnlineLobbyError] = useState("");
   const [onlineJoinedPlayerId, setOnlineJoinedPlayerId] = useState("");
-  const [onlineLobbyMaxPlayers, setOnlineLobbyMaxPlayers] =
-    useState(MAX_PLAYERS);
+  const [onlineLobbyMaxPlayers, setOnlineLobbyMaxPlayers] = useState(() => {
+    const capped = readE2eOnlineLobbyMaxPlayers();
+    return capped != null ? capped : MAX_PLAYERS;
+  });
   const [onlineJoinStep, setOnlineJoinStep] = useState("code");
   const [onlineJoinPreview, setOnlineJoinPreview] = useState(null);
   const [partyChatOpen, setPartyChatOpen] = useState(false);
@@ -9207,6 +9312,23 @@ export default function App() {
     }
   }
 
+  function applyRotatedOnlineSession(rotatedSessionToken, sessionSnapshot) {
+    if (
+      !rotatedSessionToken ||
+      rotatedSessionToken === sessionSnapshot?.sessionToken
+    ) {
+      return sessionSnapshot;
+    }
+    const nextSession = {
+      ...(sessionSnapshot || {}),
+      sessionToken: rotatedSessionToken,
+    };
+    onlineSessionRef.current = nextSession;
+    setStoredOnlineSession(nextSession);
+    onlineTransportRef.current?.updateSessionToken(nextSession.sessionToken);
+    return nextSession;
+  }
+
   async function syncOnlineRoundFromSnapshot(
     snapshot,
     { openHostIntro = false } = {},
@@ -9241,6 +9363,23 @@ export default function App() {
         sessionToken: sessionSnapshot.sessionToken,
       });
     }
+    if (normalizedPhase === "lobby-pending") {
+      if (onlineMode && onlineRole !== "host") {
+        setScreen("online-match-waiting");
+        return serverRound;
+      }
+      const drawn = withE2eRoundTypeDraw(drawTurnOptions(activeCategories));
+      setRoundTypeOptions(drawn.roundTypeOptions);
+      setCategoryOptions(drawn.categoryOptions);
+      setSelectedRoundType(null);
+      setRound({
+        chooserId: players[0]?.id,
+        roundNumber: 1,
+      });
+      setRoundNumber(1);
+      setScreen("round-type-choice");
+      return serverRound;
+    }
     if (openHostIntro || normalizedPhase === "host-intro") {
       refreshCopy(["passPhone", "revealNormal", "revealLiar"]);
       setCopyState((cur) => ({
@@ -9256,7 +9395,12 @@ export default function App() {
     }
     if (normalizedPhase === "twotruths-input") {
       refreshCopy(["passPhone"]);
-      setTwoTruthsInputIndex(0);
+      setTwoTruthsInputIndex(
+        Math.max(
+          0,
+          Number(serverRound.twoTruthsData?.inputPlayerIndex) || 0,
+        ),
+      );
       setScreen("twotruths-input");
       return serverRound;
     }
@@ -9290,6 +9434,11 @@ export default function App() {
       );
       refreshCopy(["voting"]);
       setScreen("voting");
+      return serverRound;
+    }
+    if (normalizedPhase === "twotruths-reveal") {
+      playSfx(IMPOSTER_FOUND_SFX_SRC, { volume: 0.78 });
+      setScreen("twotruths-reveal");
       return serverRound;
     }
     if (normalizedPhase === "liar-reveal") {
@@ -9349,20 +9498,10 @@ export default function App() {
         playerId,
         sessionToken,
       });
-      if (
-        result?.rotatedSessionToken &&
-        result.rotatedSessionToken !== sessionToken
-      ) {
-        const nextSession = {
-          ...(sessionSnapshot || {}),
-          sessionToken: result.rotatedSessionToken,
-        };
-        onlineSessionRef.current = nextSession;
-        setStoredOnlineSession(nextSession);
-        onlineTransportRef.current?.updateSessionToken(
-          nextSession.sessionToken,
-        );
-      }
+      applyRotatedOnlineSession(
+        result?.rotatedSessionToken,
+        sessionSnapshot,
+      );
       setOnlineLobbyError("");
       if (result?.lobby?.activeRound) {
         return await syncOnlineRoundFromSnapshot(result.lobby, {
@@ -9603,9 +9742,45 @@ export default function App() {
     setScreen("twotruths-voting");
   }
 
-  function handleTwoTruthsPlayerSubmission(submission) {
+  async function handleTwoTruthsPlayerSubmission(submission) {
     const player = players[twoTruthsInputIndex];
     if (!player?.id || !round) return;
+    if (onlineMode && lobbyCode) {
+      const sessionSnapshot = onlineSessionRef.current;
+      const sessionToken = sessionSnapshot?.sessionToken || "";
+      const playerId = sessionSnapshot?.playerId || onlineJoinedPlayerId;
+      if (!sessionToken || !playerId) {
+        setOnlineLobbyError("Session expired. Rejoin lobby to continue.");
+        return;
+      }
+      try {
+        const result = await submitTwoTruthsSubmissionOnServer(lobbyCode, {
+          playerId,
+          sessionToken,
+          submission,
+        });
+        applyRotatedOnlineSession(
+          result?.rotatedSessionToken,
+          sessionSnapshot,
+        );
+        setOnlineLobbyError("");
+        if (result?.lobby?.activeRound) {
+          await syncOnlineRoundFromSnapshot(
+            {
+              ...result.lobby,
+              code: result.lobby.code || lobbyCode,
+              players: result.lobby.players || [],
+            },
+            { openHostIntro: false },
+          );
+        }
+      } catch (error) {
+        setOnlineLobbyError(
+          mapLobbyErrorToMessage(error, "Unable to submit your lines."),
+        );
+      }
+      return;
+    }
     const nextSubmissions = {
       ...(round.twoTruthsData?.submissionsByPlayerId || {}),
       [player.id]: submission,
@@ -9676,6 +9851,53 @@ export default function App() {
       selectedTypeForRound !== "picture"
     )
       return;
+    if (onlineMode && onlineRole !== "host") {
+      return;
+    }
+    if (onlineMode && onlineRole === "host" && lobbyCode) {
+      const sessionSnapshot = onlineSessionRef.current;
+      const hostSessionToken = sessionSnapshot?.sessionToken || "";
+      if (!hostSessionToken) {
+        setOnlineLobbyError(
+          "Host session token missing. Please leave and recreate the lobby.",
+        );
+        return;
+      }
+      void (async () => {
+        try {
+          const result = await configureRoundOnServer(lobbyCode, {
+            hostClientId: onlineClientId,
+            sessionToken: hostSessionToken,
+            roundTypeId: selectedTypeForRound,
+            categoryId: category.id,
+            promptKey: "",
+          });
+          applyRotatedOnlineSession(
+            result?.rotatedSessionToken,
+            sessionSnapshot,
+          );
+          setOnlineLobbyError("");
+          if (result?.lobby?.activeRound) {
+            await syncOnlineRoundFromSnapshot(
+              {
+                ...result.lobby,
+                code: result.lobby.code || lobbyCode,
+                players: result.lobby.players || [],
+              },
+              { openHostIntro: true },
+            );
+          }
+        } catch (error) {
+          setOnlineLobbyError(
+            mapLobbyErrorToMessage(
+              error,
+              "Unable to configure this round on the server.",
+            ),
+          );
+        }
+      })();
+      return;
+    }
     const built = buildLocalRound(
       players,
       category,
@@ -9742,8 +9964,80 @@ export default function App() {
       categoryRouletteRunningRef.current = false;
     }
   }
+
+  async function submitOnlineTwoTruthsVotes() {
+    if (!onlineMode || !lobbyCode || !round) return null;
+    const sessionSnapshot = onlineSessionRef.current;
+    const playerId = sessionSnapshot?.playerId || onlineJoinedPlayerId;
+    let sessionToken = sessionSnapshot?.sessionToken || "";
+    if (!playerId || !sessionToken) {
+      setOnlineLobbyError("Session expired. Rejoin lobby to continue.");
+      return null;
+    }
+    const presentations = round?.twoTruthsData?.presentationsByPlayerId || {};
+    const authors = players.filter((p) => {
+      const deck = presentations[p.id];
+      return deck && !deck.burnedOut && deck.items?.length === 3;
+    });
+    const myVotes = twoTruthsVotesByVoterId[playerId] || {};
+    setOnlineVoteSubmissionPending(true);
+    try {
+      let lastLobby = null;
+      for (const author of authors) {
+        if (author.id === playerId) continue;
+        const lieIdx = myVotes[author.id];
+        if (lieIdx === undefined || lieIdx === null) {
+          setOnlineLobbyError("Pick a lie for every list before submitting.");
+          return null;
+        }
+        const result = await submitTwoTruthsAuthorVoteOnServer(lobbyCode, {
+          playerId,
+          sessionToken,
+          authorId: author.id,
+          lieIndex: lieIdx,
+        });
+        applyRotatedOnlineSession(
+          result?.rotatedSessionToken,
+          onlineSessionRef.current,
+        );
+        sessionToken =
+          onlineSessionRef.current?.sessionToken || sessionToken;
+        setOnlineLobbyError("");
+        if (result?.lobby?.activeRound) {
+          lastLobby = result.lobby;
+          await syncOnlineRoundFromSnapshot(
+            {
+              ...result.lobby,
+              code: result.lobby.code || lobbyCode,
+              players: result.lobby.players || [],
+            },
+            { openHostIntro: false },
+          );
+        }
+        if (result?.votingComplete) {
+          return result.lobby?.activeRound || null;
+        }
+      }
+      return lastLobby?.activeRound || null;
+    } catch (error) {
+      setOnlineLobbyError(
+        mapLobbyErrorToMessage(error, "Unable to submit votes right now."),
+      );
+      return null;
+    } finally {
+      setOnlineVoteSubmissionPending(false);
+    }
+  }
+
   async function revealResults() {
     if (round?.roundTypeId === "twotruths") {
+      if (onlineMode) {
+        const syncedRound = await submitOnlineTwoTruthsVotes();
+        if (syncedRound?.resolution) {
+          playSfx(IMPOSTER_FOUND_SFX_SRC, { volume: 0.78 });
+        }
+        return;
+      }
       const resolution = calculateRoundResolutionLocal(
         players,
         round,
@@ -10421,7 +10715,7 @@ export default function App() {
     setImposterCaught(false);
     setRecentPromptKeys([]);
     refreshCopy(["home", "onlineLobby"]);
-    setOnlineLobbyMaxPlayers(MAX_PLAYERS);
+    setOnlineLobbyMaxPlayers(readE2eOnlineLobbyMaxPlayers() ?? MAX_PLAYERS);
     setOnlinePhasePending(false);
     setOnlineVoteSubmissionPending(false);
     setOnlinePrivatePrompt(null);
@@ -10853,6 +11147,7 @@ export default function App() {
                   disabled={
                     !onlineJoinedPlayerId || onlineLobbyStatus === "started"
                   }
+                  data-testid="online-lobby-toggle-ready"
                 >
                   {onlineLobbyPlayers.find(
                     (player) => player.id === onlineJoinedPlayerId,
@@ -10874,6 +11169,45 @@ export default function App() {
                   }}
                 >
                   Leave Lobby
+                </Button>
+              </div>
+            </GlassPanel>
+          </div>
+        </TopFrame>
+      )}
+      {screen === "online-match-waiting" && (
+        <TopFrame theme={canonicalThemeName}>
+          <div className="mx-auto max-w-3xl space-y-6 px-2">
+            <GlassPanel className="rounded-[2.5rem] border-cyan-400/25 bg-black/25 p-8 text-center">
+              <div className="pof-heading text-xs tracking-[0.3em] text-cyan-200/85">
+                Online match
+              </div>
+              <h2
+                className="pof-heading mt-4 text-3xl text-yellow-300 sm:text-4xl"
+                data-testid="online-match-waiting-heading"
+              >
+                Waiting for host
+              </h2>
+              <p className="pof-body mt-4 text-sm text-white/80">
+                The host is choosing this round&apos;s mode and category.
+              </p>
+              {lobbyCode ? (
+                <p className="pof-body mt-2 text-xs text-cyan-100/75">
+                  Lobby{" "}
+                  <span className="font-mono tracking-[0.2em] text-cyan-200">
+                    {lobbyCode}
+                  </span>
+                </p>
+              ) : null}
+              <div className="mt-8 flex justify-center">
+                <Button
+                  type="button"
+                  className="rounded-[1.4rem] border border-white/15 bg-white/5 px-6 py-2 text-white"
+                  onClick={() => {
+                    void leaveOnlineLobby({ nextScreen: "online-join" });
+                  }}
+                >
+                  Leave session
                 </Button>
               </div>
             </GlassPanel>
@@ -10997,6 +11331,10 @@ export default function App() {
           onContinue={() => {
             if (round.roundTypeId === "twotruths") {
               setTwoTruthsInputIndex(0);
+              if (onlineMode) {
+                void runOnlinePhaseAdvance();
+                return;
+              }
               setScreen("twotruths-input");
               return;
             }
@@ -11011,6 +11349,13 @@ export default function App() {
         />
       )}
       {screen === "twotruths-input" && round && (
+        <>
+        <TwoTruthsPhaseHostVoice
+          enabled
+          themeName={canonicalThemeName}
+          round={round}
+          screen="twotruths-input"
+        />
         <NeonTwoTruthsInputScreen
           players={players}
           round={round}
@@ -11026,8 +11371,16 @@ export default function App() {
           Input={Input}
           Label={Label}
         />
+        </>
       )}
       {screen === "twotruths-voting" && round && (
+        <>
+        <TwoTruthsPhaseHostVoice
+          enabled
+          themeName={canonicalThemeName}
+          round={round}
+          screen="twotruths-voting"
+        />
         <NeonTwoTruthsVotingScreen
           players={players}
           round={round}
@@ -11045,8 +11398,16 @@ export default function App() {
           Progress={Progress}
           ScoreStrip={ScoreStrip}
         />
+        </>
       )}
       {screen === "twotruths-reveal" && round && (
+        <>
+        <TwoTruthsPhaseHostVoice
+          enabled
+          themeName={canonicalThemeName}
+          round={round}
+          screen="twotruths-reveal"
+        />
         <NeonTwoTruthsRevealScreen
           players={players}
           round={round}
@@ -11059,6 +11420,7 @@ export default function App() {
           Button={Button}
           playSfx={() => playSfx(IMPOSTER_FOUND_SFX_SRC, { volume: 0.7 })}
         />
+        </>
       )}
       {screen === "reveal" && round && (
         <BrandedScreen

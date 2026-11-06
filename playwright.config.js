@@ -18,7 +18,7 @@ export default defineConfig({
     },
     {
       command:
-        'VITE_E2E_FAST_TIMERS=1 npx vite build --outDir dist-e2e-full && npx vite preview --outDir dist-e2e-full --host 127.0.0.1 --port 4173',
+        'VITE_E2E_FAST_TIMERS=1 VITE_E2E_ONLINE_MAX_PLAYERS=3 npx vite build --outDir dist-e2e-full && npx vite preview --outDir dist-e2e-full --host 127.0.0.1 --port 4173',
       port: 4173,
       reuseExistingServer: true,
       timeout: 300_000,
@@ -34,7 +34,16 @@ export default defineConfig({
   projects: [
     {
       name: 'chromium',
-      testIgnore: ['**/mobile-full-game-flow.spec.js', '**/web-player-website.spec.js'],
+      testIgnore: [
+        '**/mobile-full-game-flow.spec.js',
+        '**/web-player-website.spec.js',
+        '**/online-twotruths-multiplayer.spec.js',
+      ],
+      use: { ...devices['Desktop Chrome'] },
+    },
+    {
+      name: 'chromium-multi',
+      testMatch: '**/online-twotruths-multiplayer.spec.js',
       use: { ...devices['Desktop Chrome'] },
     },
     {

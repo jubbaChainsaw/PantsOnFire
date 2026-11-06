@@ -140,6 +140,28 @@ export async function startLobbyOnServer(lobbyCode, { hostClientId, sessionToken
   };
 }
 
+export async function configureRoundOnServer(
+  lobbyCode,
+  { hostClientId, sessionToken, roundTypeId, categoryId = '', promptKey = '' } = {},
+) {
+  const normalizedCode = normalizeCode(lobbyCode);
+  const payload = await requestJson(`/lobbies/${encodeURIComponent(normalizedCode)}/round/configure`, {
+    method: 'POST',
+    body: {
+      hostClientId,
+      sessionToken,
+      roundTypeId: String(roundTypeId || '').trim(),
+      categoryId: String(categoryId || '').trim(),
+      promptKey: String(promptKey || '').trim(),
+    },
+  });
+  return {
+    lobby: payload?.lobby || null,
+    round: payload?.round || null,
+    rotatedSessionToken: payload?.rotatedSessionToken || '',
+  };
+}
+
 export async function setLobbyReadyOnServer(lobbyCode, { playerId, sessionToken, ready } = {}) {
   const normalizedCode = normalizeCode(lobbyCode);
   const payload = await requestJson(`/lobbies/${encodeURIComponent(normalizedCode)}/ready`, {
@@ -243,6 +265,45 @@ export async function submitRoundVotesOnServer(
     rotatedSessionToken: payload?.rotatedSessionToken || '',
     votingComplete: Boolean(payload?.votingComplete),
     results: payload?.results || null,
+  };
+}
+
+export async function submitTwoTruthsSubmissionOnServer(
+  lobbyCode,
+  { playerId, sessionToken, submission } = {},
+) {
+  const normalizedCode = normalizeCode(lobbyCode);
+  const payload = await requestJson(
+    `/lobbies/${encodeURIComponent(normalizedCode)}/round/two-truths/submit`,
+    {
+      method: 'POST',
+      body: { playerId, sessionToken, submission: submission || {} },
+    },
+  );
+  return {
+    lobby: payload?.lobby || null,
+    round: payload?.round || null,
+    rotatedSessionToken: payload?.rotatedSessionToken || '',
+  };
+}
+
+export async function submitTwoTruthsAuthorVoteOnServer(
+  lobbyCode,
+  { playerId, sessionToken, authorId, lieIndex } = {},
+) {
+  const normalizedCode = normalizeCode(lobbyCode);
+  const payload = await requestJson(
+    `/lobbies/${encodeURIComponent(normalizedCode)}/round/two-truths/vote`,
+    {
+      method: 'POST',
+      body: { playerId, sessionToken, authorId, lieIndex },
+    },
+  );
+  return {
+    lobby: payload?.lobby || null,
+    round: payload?.round || null,
+    votingComplete: Boolean(payload?.votingComplete),
+    rotatedSessionToken: payload?.rotatedSessionToken || '',
   };
 }
 

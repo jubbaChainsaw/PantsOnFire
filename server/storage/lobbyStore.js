@@ -6,6 +6,15 @@ import {
   initializeOneWordPhase,
   maybeTimeoutOneWordTurn,
 } from '../oneWordRound.js';
+import {
+  allPlayersSubmittedTwoTruths,
+  applyTwoTruthsVotingResolution,
+  buildTwoTruthsAuthoritativeRound,
+  finalizeTwoTruthsPresentations,
+  isTwoTruthsVoteMatrixComplete,
+  mergeTwoTruthsAuthorVote,
+  sanitizeTwoTruthsPublicRound,
+} from '../twoTruthsOnline.js';
 
 const LOBBY_CODE_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 const LOBBY_CODE_LENGTH = 6;
@@ -16,7 +25,7 @@ const DEFAULT_LOBBY_IDLE_TTL_MS = Math.max(
   1000 * 60 * 30,
   Number(process.env.LOBBY_IDLE_TTL_MS || 1000 * 60 * 60 * 24) || 1000 * 60 * 60 * 24
 );
-const ROUND_REVEAL_PHASES = new Set(['liar-reveal', 'results', 'final']);
+const ROUND_REVEAL_PHASES = new Set(['liar-reveal', 'results', 'final', 'twotruths-reveal']);
 const DEFAULT_LOBBY_SETTINGS = {
   themeName: 'Default',
   mode: 'classic',
@@ -274,7 +283,12 @@ function scoreRoundServer(players, round, votesByPlayerId = {}) {
 
 function normalizeRoundPhase(rawPhase, roundTypeId = 'prompt') {
   const phase = String(rawPhase || '').trim();
+  const rt = String(roundTypeId || 'prompt').trim();
+  if (phase === 'lobby-pending') return 'lobby-pending';
   if (phase === 'host-intro') return 'host-intro';
+  if (phase === 'twotruths-input') return 'twotruths-input';
+  if (phase === 'twotruths-voting') return 'twotruths-voting';
+  if (phase === 'twotruths-reveal') return 'twotruths-reveal';
   if (phase === 'reveal') return 'reveal';
   if (phase === 'one-word') return 'one-word';
   if (phase === 'discussion') return 'discussion';
@@ -282,10 +296,17 @@ function normalizeRoundPhase(rawPhase, roundTypeId = 'prompt') {
   if (phase === 'liar-reveal') return 'liar-reveal';
   if (phase === 'results') return 'results';
   if (phase === 'final') return 'final';
+  if (rt === 'twotruths') return 'host-intro';
   return 'host-intro';
 }
 
 function getNextRoundPhase(currentPhase, roundTypeId = 'prompt') {
+  const rt = String(roundTypeId || 'prompt').trim();
+  if (rt === 'twotruths') {
+    if (currentPhase === 'host-intro') return 'twotruths-input';
+    if (currentPhase === 'twotruths-reveal') return 'results';
+    return null;
+  }
   if (currentPhase === 'host-intro') return 'reveal';
   if (currentPhase === 'reveal') return 'one-word';
   if (currentPhase === 'one-word') return 'discussion';
@@ -313,7 +334,7 @@ function isOnlineGameComplete(lobby) {
     lobby.activeRound.phase,
     lobby.activeRound.roundTypeId,
   );
-  return ['liar-reveal', 'results', 'final'].includes(phase);
+  return ['liar-reveal', 'twotruths-reveal', 'results', 'final'].includes(phase);
 }
 
 function normalizeVotes(votesByPlayerId, players = []) {
@@ -420,26 +441,64 @@ function toPublicRound(round) {
     imposterPrompt,
     commonPrompt,
     pairsRevealImages,
+    twoTruthsData,
     ...publicRound
   } = round;
+  const phase = normalizeRoundPhase(round.phase, round.roundTypeId);
+  const base = { ...publicRound, phase };
+  if (String(round.roundTypeId || '') === 'twotruths') {
+    return sanitizeTwoTruthsPublicRound({
+      ...base,
+      commonPrompt,
+      imposterIds,
+      imposterPrompt,
+      twoTruthsData,
+    });
+  }
   // Liar identity and the real/imposter prompt pair stay server-side until the
   // round reaches a reveal phase; before that they would leak who the liar is
   // to anyone watching lobby snapshots.
-  const phase = normalizeRoundPhase(round.phase, round.roundTypeId);
   if (ROUND_REVEAL_PHASES.has(phase)) {
     return {
-      ...publicRound,
+      ...base,
       imposterIds: Array.isArray(imposterIds) ? [...imposterIds] : [],
       imposterPrompt: imposterPrompt ?? null,
       commonPrompt: commonPrompt ?? null,
       pairsRevealImages: pairsRevealImages ?? null,
     };
   }
-  return publicRound;
+  return base;
 }
 
 function toPrivateRoundForPlayer(round, playerId) {
   if (!round || !playerId) return null;
+  const phase = normalizeRoundPhase(round.phase, round.roundTypeId);
+  if (String(round.roundTypeId || '') === 'twotruths') {
+    const submissions = round.twoTruthsData?.submissionsByPlayerId || {};
+    const mySubmission = submissions[playerId] ?? null;
+    const promptText = round.commonPrompt || round.twoTruthsData?.promptText || '';
+    return {
+      roundId: round.id,
+      roundNumber: round.roundNumber,
+      prompt: promptText,
+      mediaSrc: null,
+      isImposter: false,
+      hint: round.hint,
+      bannedWords: Array.isArray(round.bannedWords) ? round.bannedWords : [],
+      roundTypeId: round.roundTypeId,
+      roundTypeName: round.roundTypeName,
+      categoryLabel: round.categoryLabel,
+      categoryEmoji: round.categoryEmoji,
+      phase,
+      voteCompletionCount: Number(round.voteCompletionCount || 0),
+      voteTargetCount: Number(round.voteTargetCount || 0),
+      currentVoteTargetId: String(round.votesByPlayerId?.[playerId] || ''),
+      twoTruths: {
+        mySubmission,
+        inputPlayerIndex: Number(round.twoTruthsData?.inputPlayerIndex) || 0,
+      },
+    };
+  }
   const prompt = round.promptsByPlayerId?.[playerId];
   if (!prompt) return null;
   return {
@@ -454,7 +513,7 @@ function toPrivateRoundForPlayer(round, playerId) {
     roundTypeName: round.roundTypeName,
     categoryLabel: round.categoryLabel,
     categoryEmoji: round.categoryEmoji,
-    phase: normalizeRoundPhase(round.phase, round.roundTypeId),
+    phase,
     voteCompletionCount: Number(round.voteCompletionCount || 0),
     voteTargetCount: Number(round.voteTargetCount || 0),
     currentVoteTargetId: String(round.votesByPlayerId?.[playerId] || ''),
@@ -872,13 +931,15 @@ function buildStoreCore({
       lobby.endedWinnerScore = 0;
     }
     if (!lobby.activeRound) {
-      const firstRound = buildAuthoritativeRound(lobby.players, 1, lobby.recentPromptKeys || []);
-      if (!firstRound) return { error: 'round-generation-failed' };
-      lobby.activeRound = firstRound;
-      lobby.roundCounter = 1;
-      lobby.recentPromptKeys = [...(lobby.recentPromptKeys || []), firstRound.promptKey]
-        .filter(Boolean)
-        .slice(-MAX_RECENT_PROMPT_KEYS);
+      lobby.activeRound = {
+        id: randomId('round'),
+        createdAt: nowIso(),
+        roundNumber: 0,
+        roundTypeId: 'lobby-pending',
+        phase: 'lobby-pending',
+        phaseUpdatedAt: nowIso(),
+      };
+      lobby.roundCounter = 0;
     }
     const rotatedHostToken = helpers.rotateSessionTokenForPlayer(lobby, hostPlayer.id);
     await saveLobby(lobby);
@@ -901,18 +962,24 @@ function buildStoreCore({
       return { error: 'session-token-expired' };
     }
     if (hostValidation.error) return { error: hostValidation.error };
-    if (lobby.activeRound && !['results', 'final'].includes(normalizeRoundPhase(lobby.activeRound.phase, lobby.activeRound.roundTypeId))) {
-      return { error: 'round-not-finished' };
+    if (lobby.activeRound) {
+      const p = normalizeRoundPhase(lobby.activeRound.phase, lobby.activeRound.roundTypeId);
+      if (!['results', 'final', 'twotruths-reveal'].includes(p)) {
+        return { error: 'round-not-finished' };
+      }
     }
 
     const nextRoundNumber = Math.max(1, Number(lobby.roundCounter || 0) + 1);
-    const nextRound = buildAuthoritativeRound(lobby.players, nextRoundNumber, lobby.recentPromptKeys || []);
-    if (!nextRound) return { error: 'round-generation-failed' };
+    const nextRound = {
+      id: randomId('round'),
+      createdAt: nowIso(),
+      roundNumber: nextRoundNumber,
+      roundTypeId: 'lobby-pending',
+      phase: 'lobby-pending',
+      phaseUpdatedAt: nowIso(),
+    };
     lobby.activeRound = nextRound;
     lobby.roundCounter = nextRoundNumber;
-    lobby.recentPromptKeys = [...(lobby.recentPromptKeys || []), nextRound.promptKey]
-      .filter(Boolean)
-      .slice(-MAX_RECENT_PROMPT_KEYS);
 
     const rotatedHostToken = helpers.rotateSessionTokenForPlayer(lobby, hostPlayer.id);
     await saveLobby(lobby);
@@ -920,6 +987,189 @@ function buildStoreCore({
       lobby,
       round: toPublicRound(nextRound),
       sessionToken: rotatedHostToken,
+    };
+  }
+
+  async function configureOnlineRound(code, hostClientId, sessionToken = '', payload = {}) {
+    const lobby = await getLobby(code);
+    if (!lobby) return { error: 'not-found' };
+    if (lobby.status === 'ended') return { error: 'lobby-ended' };
+    if (lobby.status !== 'started') return { error: 'lobby-not-started' };
+    if (lobby.hostClientId !== hostClientId) return { error: 'host-only' };
+    const hostPlayer = lobby.players.find((player) => player.isHost);
+    if (!hostPlayer) return { error: 'host-only' };
+    const hostValidation = validatePlayerSession(lobby, sessionToken, hostPlayer.id);
+    if (hostValidation.error === 'session-token-required') return { error: 'host-session-token-required' };
+    if (hostValidation.error === 'invalid-session-token') return { error: 'token-rotation-required' };
+    if (hostValidation.error === 'session-token-expired') {
+      await saveLobby(lobby);
+      return { error: 'session-token-expired' };
+    }
+    if (hostValidation.error) return { error: hostValidation.error };
+
+    const active = lobby.activeRound;
+    if (!active || normalizeRoundPhase(active.phase, active.roundTypeId) !== 'lobby-pending') {
+      return { error: 'round-already-configured' };
+    }
+    const roundTypeId = String(payload.roundTypeId || '').trim() || 'prompt';
+    const categoryId = String(payload.categoryId || 'sports').trim() || 'sports';
+    const preferredPromptKey = String(payload.promptKey || '').trim();
+    const rc = Number(lobby.roundCounter);
+    const roundNumber = Number.isFinite(rc) && rc >= 1 ? rc : 1;
+
+    let nextRound = null;
+    if (roundTypeId === 'twotruths') {
+      nextRound = buildTwoTruthsAuthoritativeRound(
+        lobby.players,
+        roundNumber,
+        lobby.recentPromptKeys || [],
+        categoryId,
+        preferredPromptKey,
+      );
+    } else {
+      nextRound = buildAuthoritativeRound(lobby.players, roundNumber, lobby.recentPromptKeys || []);
+    }
+    if (!nextRound) return { error: 'round-generation-failed' };
+    lobby.activeRound = nextRound;
+    lobby.roundCounter = roundNumber;
+    lobby.recentPromptKeys = [...(lobby.recentPromptKeys || []), nextRound.promptKey]
+      .filter(Boolean)
+      .slice(-MAX_RECENT_PROMPT_KEYS);
+    const rotatedHostToken = helpers.rotateSessionTokenForPlayer(lobby, hostPlayer.id);
+    await saveLobby(lobby);
+    return {
+      lobby,
+      round: toPublicRound(nextRound),
+      sessionToken: rotatedHostToken,
+    };
+  }
+
+  async function submitTwoTruthsSubmission(code, playerId, sessionToken = '', submission = {}) {
+    const lobby = await getLobby(code);
+    if (!lobby) return { error: 'not-found' };
+    if (lobby.status === 'ended') return { error: 'lobby-ended' };
+    if (lobby.status !== 'started') return { error: 'lobby-not-started' };
+    if (!lobby.activeRound) return { error: 'round-not-found' };
+    const normalizedPlayerId = String(playerId || '').trim();
+    if (!normalizedPlayerId) return { error: 'player-id-required' };
+    const validation = validatePlayerSession(lobby, sessionToken, normalizedPlayerId);
+    if (validation.error === 'session-token-expired') {
+      await saveLobby(lobby);
+      return { error: 'session-token-expired' };
+    }
+    if (validation.error) return { error: validation.error };
+
+    const round = lobby.activeRound;
+    round.phase = normalizeRoundPhase(round.phase, round.roundTypeId);
+    if (round.roundTypeId !== 'twotruths') return { error: 'not-two-truths-round' };
+    if (round.phase !== 'twotruths-input') return { error: 'twotruths-input-not-active' };
+
+    const players = lobby.players;
+    const idx = Math.max(0, Number(round.twoTruthsData?.inputPlayerIndex) || 0);
+    const expected = players[idx];
+    if (!expected || expected.id !== normalizedPlayerId) return { error: 'not-your-turn' };
+
+    const sub = submission && typeof submission === 'object' ? submission : {};
+    const items = Array.isArray(sub.items) ? sub.items.map((t) => String(t || '').trim()).slice(0, 3) : [];
+    const lieRaw = sub.lieIndex;
+    const lieIdx = Number(lieRaw);
+    if (items.length !== 3 || !items.every(Boolean)) return { error: 'twotruths-invalid-items' };
+    if (!Number.isFinite(lieIdx) || lieIdx < 0 || lieIdx > 2) return { error: 'twotruths-invalid-lie-index' };
+    if (sub.burnedOut) return { error: 'twotruths-invalid-items' };
+
+    const baseData = round.twoTruthsData || {};
+    const nextSubs = {
+      ...(baseData.submissionsByPlayerId || {}),
+      [normalizedPlayerId]: {
+        items,
+        lieIndex: lieIdx,
+        timedOut: Boolean(sub.timedOut),
+        burnedOut: false,
+      },
+    };
+    if (idx < players.length - 1) {
+      round.twoTruthsData = {
+        ...baseData,
+        submissionsByPlayerId: nextSubs,
+        inputPlayerIndex: idx + 1,
+      };
+    } else {
+      round.twoTruthsData = {
+        ...baseData,
+        submissionsByPlayerId: nextSubs,
+        inputPlayerIndex: idx,
+        votesByVoterId: {},
+      };
+      const withPres = finalizeTwoTruthsPresentations(lobby.activeRound);
+      lobby.activeRound = withPres;
+      lobby.activeRound.phase = 'twotruths-voting';
+      lobby.activeRound.phaseUpdatedAt = nowIso();
+    }
+
+    const rotatedSessionToken = helpers.rotateSessionTokenForPlayer(lobby, normalizedPlayerId);
+    await saveLobby(lobby);
+    return {
+      lobby,
+      round: toPublicRound(lobby.activeRound),
+      sessionToken: rotatedSessionToken,
+    };
+  }
+
+  async function submitTwoTruthsAuthorVote(
+    code,
+    playerId,
+    sessionToken = '',
+    authorId = '',
+    lieIndex = 0,
+  ) {
+    const lobby = await getLobby(code);
+    if (!lobby) return { error: 'not-found' };
+    if (lobby.status === 'ended') return { error: 'lobby-ended' };
+    if (lobby.status !== 'started') return { error: 'lobby-not-started' };
+    if (!lobby.activeRound) return { error: 'round-not-found' };
+    const normalizedPlayerId = String(playerId || '').trim();
+    const normalizedAuthorId = String(authorId || '').trim();
+    if (!normalizedPlayerId) return { error: 'player-id-required' };
+    if (!normalizedAuthorId) return { error: 'vote-target-required' };
+    if (normalizedAuthorId === normalizedPlayerId) return { error: 'vote-target-invalid' };
+    const validation = validatePlayerSession(lobby, sessionToken, normalizedPlayerId);
+    if (validation.error === 'session-token-expired') {
+      await saveLobby(lobby);
+      return { error: 'session-token-expired' };
+    }
+    if (validation.error) return { error: validation.error };
+
+    const round = lobby.activeRound;
+    round.phase = normalizeRoundPhase(round.phase, round.roundTypeId);
+    if (round.roundTypeId !== 'twotruths') return { error: 'not-two-truths-round' };
+    if (round.phase !== 'twotruths-voting') return { error: 'twotruths-voting-not-active' };
+
+    const playerIds = new Set(lobby.players.map((player) => player.id));
+    if (!playerIds.has(normalizedAuthorId)) return { error: 'vote-target-invalid' };
+
+    const idx = Number(lieIndex);
+    if (!Number.isFinite(idx) || idx < 0 || idx > 2) return { error: 'twotruths-invalid-lie-index' };
+
+    round.twoTruthsData = round.twoTruthsData || {};
+    const nextVotes = mergeTwoTruthsAuthorVote(
+      round.twoTruthsData.votesByVoterId || {},
+      normalizedPlayerId,
+      normalizedAuthorId,
+      idx,
+    );
+    round.twoTruthsData.votesByVoterId = nextVotes;
+
+    if (isTwoTruthsVoteMatrixComplete(lobby.players, nextVotes)) {
+      applyTwoTruthsVotingResolution(lobby, round);
+    }
+
+    const rotatedSessionToken = helpers.rotateSessionTokenForPlayer(lobby, normalizedPlayerId);
+    await saveLobby(lobby);
+    return {
+      lobby,
+      round: toPublicRound(lobby.activeRound),
+      votingComplete: Boolean(round.resolution),
+      sessionToken: rotatedSessionToken,
     };
   }
 
@@ -941,6 +1191,55 @@ function buildStoreCore({
 
     const round = lobby.activeRound;
     round.phase = normalizeRoundPhase(round.phase, round.roundTypeId);
+
+    if (String(round.roundTypeId || '') === 'twotruths') {
+      if (round.phase === 'twotruths-input') {
+        if (!allPlayersSubmittedTwoTruths(round, lobby.players)) {
+          return { error: 'twotruths-submissions-incomplete' };
+        }
+        let working = { ...round };
+        working = finalizeTwoTruthsPresentations(working);
+        working.phase = 'twotruths-voting';
+        working.phaseUpdatedAt = nowIso();
+        working.twoTruthsData = {
+          ...(working.twoTruthsData || {}),
+          votesByVoterId: {},
+        };
+        lobby.activeRound = working;
+      } else if (round.phase === 'twotruths-voting') {
+        if (!isTwoTruthsVoteMatrixComplete(lobby.players, round.twoTruthsData?.votesByVoterId || {})) {
+          return { error: 'voting-incomplete' };
+        }
+        if (!round.resolution) {
+          applyTwoTruthsVotingResolution(lobby, round);
+        }
+      } else if (round.phase === 'twotruths-reveal') {
+        round.phase = 'results';
+        round.phaseUpdatedAt = nowIso();
+      } else {
+        const nextPhase = getNextRoundPhase(round.phase, round.roundTypeId);
+        if (!nextPhase) return { error: 'invalid-round-phase' };
+        round.phase = nextPhase;
+        round.phaseUpdatedAt = nowIso();
+        if (nextPhase === 'one-word') {
+          initializeOneWordPhase(round, lobby.players);
+        }
+        if (nextPhase === 'voting') {
+          round.votesByPlayerId = {};
+          round.voteCompletionCount = 0;
+          round.voteTargetCount = lobby.players.length;
+          round.resolution = null;
+        }
+      }
+      const rotatedSessionToken = helpers.rotateSessionTokenForPlayer(lobby, normalizedPlayerId);
+      await saveLobby(lobby);
+      return {
+        lobby,
+        round: toPublicRound(lobby.activeRound),
+        sessionToken: rotatedSessionToken,
+      };
+    }
+
     if (round.phase === 'voting') {
       const normalizedVotes = normalizeVotes(round.votesByPlayerId, lobby.players);
       round.votesByPlayerId = normalizedVotes;
@@ -1163,9 +1462,12 @@ function buildStoreCore({
     removePlayer,
     resumePlayer,
     startLobby,
+    configureOnlineRound,
     advanceRoundPhase,
     submitOneWordTurn,
     submitRoundVote,
+    submitTwoTruthsSubmission,
+    submitTwoTruthsAuthorVote,
     createNextRound,
     getCurrentRound,
     getPlayerRoundView,

@@ -1,5 +1,5 @@
-import { toCanonicalThemeName } from './themeAliases';
-import { CORE_THEME_NAMES } from './themeCatalog';
+import { toCanonicalThemeName } from './themeAliases.js';
+import { CORE_THEME_NAMES } from './themeCatalog.js';
 import {
   DLC_HOST_VOICE_PACKS,
   DLC_THEME_VOICE_SLUG_BY_NAME,

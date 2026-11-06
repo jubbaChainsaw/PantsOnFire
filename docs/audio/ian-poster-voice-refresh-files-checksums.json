@@ -1,0 +1,3737 @@
+{
+  "schemaVersion": 1,
+  "companionOf": "docs/audio/ian-poster-voice-refresh-manifest.json",
+  "generatedAt": "2026-11-06T21:08:28.913Z",
+  "description": "SHA-256 for every .mp3 under public/assets/audio/host (Ian Poster host voice tree + co-located files). Large list split from main manifest for reviewability.",
+  "counts": {
+    "mp3Files": 745,
+    "totalBytes": 87288507
+  },
+  "files": [
+    {
+      "path": "public/assets/audio/host/cops-and-robbers/tts/cops-and-robbers_caught_01.mp3",
+      "bytes": 63573,
+      "checksumSha256": "0a45cc4f5cf1f1f0d423eccb67dc00546247bf71163ac594d47031bf733ddf3a"
+    },
+    {
+      "path": "public/assets/audio/host/cops-and-robbers/tts/cops-and-robbers_caught_02.mp3",
+      "bytes": 67753,
+      "checksumSha256": "b46514662f320500cd8a3c3b583b4dbf715f77bf7f53f122a8dec60ef2b2624e"
+    },
+    {
+      "path": "public/assets/audio/host/cops-and-robbers/tts/cops-and-robbers_chooser_01.mp3",
+      "bytes": 69425,
+      "checksumSha256": "7a3ba98a26161b58eb7c185b6f605d1e973a12d87f18298672385879cdedeb45"
+    },
+    {
+      "path": "public/assets/audio/host/cops-and-robbers/tts/cops-and-robbers_chooser_02.mp3",
+      "bytes": 67335,
+      "checksumSha256": "423b96e4327ddd1ade597e682498828b986dd2f45cae2dc1f75b9cea8d052aab"
+    },
+    {
+      "path": "public/assets/audio/host/cops-and-robbers/tts/cops-and-robbers_discussion_01.mp3",
+      "bytes": 58976,
+      "checksumSha256": "b61ebb74c271743d8faba868021ce40008854423fbbb28d17ca20d5c400c42dc"
+    },
+    {
+      "path": "public/assets/audio/host/cops-and-robbers/tts/cops-and-robbers_discussion_02.mp3",
+      "bytes": 67335,
+      "checksumSha256": "4d2098cbc78022ce857cae050b79d2f0f03cd08c75e7fd883ee5daddca1a2160"
+    },
+    {
+      "path": "public/assets/audio/host/cops-and-robbers/tts/cops-and-robbers_escaped_01.mp3",
+      "bytes": 58976,
+      "checksumSha256": "587f113594ac656850920d1621afd5539df29cb64fa22b6d740c4c5230efebd8"
+    },
+    {
+      "path": "public/assets/audio/host/cops-and-robbers/tts/cops-and-robbers_escaped_02.mp3",
+      "bytes": 65663,
+      "checksumSha256": "916089b78c691fed3012158329cbec0bd86ff7c75c4d475f0cc5848cc81dbda3"
+    },
+    {
+      "path": "public/assets/audio/host/cops-and-robbers/tts/cops-and-robbers_home_01.mp3",
+      "bytes": 64827,
+      "checksumSha256": "c54e403301dddc2e096b09c50d29adfd467b58be4c19ff1393c10f9f446700fb"
+    },
+    {
+      "path": "public/assets/audio/host/cops-and-robbers/tts/cops-and-robbers_home_02.mp3",
+      "bytes": 54378,
+      "checksumSha256": "4670815ba5935e573910b859213f9fef720e7b6be328804f29e49444c4d55195"
+    },
+    {
+      "path": "public/assets/audio/host/cops-and-robbers/tts/cops-and-robbers_intro_closing.mp3",
+      "bytes": 94084,
+      "checksumSha256": "64ae62b87a3c41c12cabaaadfb865c36edb879760c7514af98c0912bb6b18e2a"
+    },
+    {
+      "path": "public/assets/audio/host/cops-and-robbers/tts/cops-and-robbers_intro_greeting_afternoon.mp3",
+      "bytes": 105787,
+      "checksumSha256": "1d9f9cfdc71582ae61960ccda9fe8f582b651c2840cdce84c1304248ed96ec98"
+    },
+    {
+      "path": "public/assets/audio/host/cops-and-robbers/tts/cops-and-robbers_intro_greeting_anytime.mp3",
+      "bytes": 92413,
+      "checksumSha256": "483a161e0d18565bcd22e6bd94ee44551175f036733a500ff82c55d49488d506"
+    },
+    {
+      "path": "public/assets/audio/host/cops-and-robbers/tts/cops-and-robbers_intro_greeting_evening.mp3",
+      "bytes": 94502,
+      "checksumSha256": "501f842a5a52b1c2e717a8c8b7489dabea232fde0c4c1d8335ec10416ec723f0"
+    },
+    {
+      "path": "public/assets/audio/host/cops-and-robbers/tts/cops-and-robbers_intro_greeting_morning.mp3",
+      "bytes": 94502,
+      "checksumSha256": "dc97a2ef9cb1f5e36362fc352d05bae5ce2e56b7303343eaeffe29a9fac5a3e3"
+    },
+    {
+      "path": "public/assets/audio/host/cops-and-robbers/tts/cops-and-robbers_intro_hook_01.mp3",
+      "bytes": 72351,
+      "checksumSha256": "3e943b1bd234bee34b75cc874f75601e5ae8f7d5c041cfc29c2bd5f47a1f87be"
+    },
+    {
+      "path": "public/assets/audio/host/cops-and-robbers/tts/cops-and-robbers_intro_hook_02.mp3",
+      "bytes": 79874,
+      "checksumSha256": "d53e52079b6ac49dfe8f6fe982d22dc1b2cc903f7a32eb49f010006e7934f821"
+    },
+    {
+      "path": "public/assets/audio/host/cops-and-robbers/tts/cops-and-robbers_intro_hook_03.mp3",
+      "bytes": 64827,
+      "checksumSha256": "ceb0bdcf5581e6b75ee62dd7477ddad5b432dfe2900bc5c740ae6bebcbd45737"
+    },
+    {
+      "path": "public/assets/audio/host/cops-and-robbers/tts/cops-and-robbers_intro_hook_04.mp3",
+      "bytes": 84471,
+      "checksumSha256": "2176d8c05ebaa4bbd5993707a44100f0bcd6b90696f57d348e1601d2e937203d"
+    },
+    {
+      "path": "public/assets/audio/host/cops-and-robbers/tts/cops-and-robbers_intro_host_name.mp3",
+      "bytes": 66499,
+      "checksumSha256": "7f34ff3b4f89bb15ad818ba0e8cedade9a64f98dd631557a474b63704232cde7"
+    },
+    {
+      "path": "public/assets/audio/host/cops-and-robbers/tts/cops-and-robbers_intro_online_prompt.mp3",
+      "bytes": 75276,
+      "checksumSha256": "79542ae85f2d7da313711216fd0dd5cf697c13ade71bcb6200d3095cf608745d"
+    },
+    {
+      "path": "public/assets/audio/host/cops-and-robbers/tts/cops-and-robbers_intro_pass_prompt.mp3",
+      "bytes": 56886,
+      "checksumSha256": "a897e3f31ad14e0cbba481546e7ff799e058fa52bac03b8056c361c62d87fad4"
+    },
+    {
+      "path": "public/assets/audio/host/cops-and-robbers/tts/cops-and-robbers_intro_rounds_10_players_10.mp3",
+      "bytes": 116236,
+      "checksumSha256": "cf5200dabc606d3131105cf2f7b6b8b54d911baebd51a3b4b243d93fc51d3429"
+    },
+    {
+      "path": "public/assets/audio/host/cops-and-robbers/tts/cops-and-robbers_intro_rounds_10_players_5.mp3",
+      "bytes": 115400,
+      "checksumSha256": "8ac17f38631a4bec6df6d74402ea3d7475840a77ac5f5fe384505d0db0b0950d"
+    },
+    {
+      "path": "public/assets/audio/host/cops-and-robbers/tts/cops-and-robbers_intro_rounds_11_players_11.mp3",
+      "bytes": 116236,
+      "checksumSha256": "7aac3a35c89e05e4fb4520c14c041df9e1bb9e36f093b3b65d56e50d0efa357d"
+    },
+    {
+      "path": "public/assets/audio/host/cops-and-robbers/tts/cops-and-robbers_intro_rounds_12_players_12.mp3",
+      "bytes": 121252,
+      "checksumSha256": "125b88f95cc4f83df3b67518e36ebd547af09dd3b73ffa2690f0b891fd85ed51"
+    },
+    {
+      "path": "public/assets/audio/host/cops-and-robbers/tts/cops-and-robbers_intro_rounds_12_players_4.mp3",
+      "bytes": 114146,
+      "checksumSha256": "29d490c1c6b59bcad7a6302b9a735dfda4566e4c537849485dfaadd1737ee3d2"
+    },
+    {
+      "path": "public/assets/audio/host/cops-and-robbers/tts/cops-and-robbers_intro_rounds_12_players_6.mp3",
+      "bytes": 120834,
+      "checksumSha256": "1f8a7a2cff2d59ffcbb47ddb261d362e8105b3f785870cd0aa0ac010b4c36d1b"
+    },
+    {
+      "path": "public/assets/audio/host/cops-and-robbers/tts/cops-and-robbers_intro_rounds_14_players_7.mp3",
+      "bytes": 121252,
+      "checksumSha256": "6f9efcd5de358eeab1566d523efb65c20ecdf27ffb27b85ddbc12d5eb4286524"
+    },
+    {
+      "path": "public/assets/audio/host/cops-and-robbers/tts/cops-and-robbers_intro_rounds_15_players_5.mp3",
+      "bytes": 119998,
+      "checksumSha256": "b3c26d79907a854dccd99ccd6e116b75809f11222045f161587241c7362d4d0d"
+    },
+    {
+      "path": "public/assets/audio/host/cops-and-robbers/tts/cops-and-robbers_intro_rounds_16_players_8.mp3",
+      "bytes": 114146,
+      "checksumSha256": "94929f1421325741dd7733015809d41e11b7afb481846d3b5f475e84514860fc"
+    },
+    {
+      "path": "public/assets/audio/host/cops-and-robbers/tts/cops-and-robbers_intro_rounds_18_players_6.mp3",
+      "bytes": 121252,
+      "checksumSha256": "e6bef7b346d0dd2a8aeedb82f7a74887c87be43f542deb615106d8746b303248"
+    },
+    {
+      "path": "public/assets/audio/host/cops-and-robbers/tts/cops-and-robbers_intro_rounds_18_players_9.mp3",
+      "bytes": 120834,
+      "checksumSha256": "392201a52d8365ce442ecd658397d2f3497e4556f1750cfde95d4886d6d23a19"
+    },
+    {
+      "path": "public/assets/audio/host/cops-and-robbers/tts/cops-and-robbers_intro_rounds_20_players_10.mp3",
+      "bytes": 111639,
+      "checksumSha256": "dfa34e77d36da4ec83876875275119cd9a6666debbc5958a9fde26643279650d"
+    },
+    {
+      "path": "public/assets/audio/host/cops-and-robbers/tts/cops-and-robbers_intro_rounds_21_players_7.mp3",
+      "bytes": 141314,
+      "checksumSha256": "1afcc3e6c16649eafd4b0298b78405457aee4220833dd512b57619668df993c4"
+    },
+    {
+      "path": "public/assets/audio/host/cops-and-robbers/tts/cops-and-robbers_intro_rounds_22_players_11.mp3",
+      "bytes": 119998,
+      "checksumSha256": "5867f0e4801a9fa4c06a15a56dc02a45100f21b328954423b7ec44f13474079d"
+    },
+    {
+      "path": "public/assets/audio/host/cops-and-robbers/tts/cops-and-robbers_intro_rounds_24_players_12.mp3",
+      "bytes": 133373,
+      "checksumSha256": "beb1a65920eb99bd54e50bc8a43b844fedb32ce161a2583c7c2db92ca63ab52c"
+    },
+    {
+      "path": "public/assets/audio/host/cops-and-robbers/tts/cops-and-robbers_intro_rounds_24_players_8.mp3",
+      "bytes": 120834,
+      "checksumSha256": "ddf0ffc51763fcb8bfcad9f990f52645d7b3d0fb77a6d685d6cd93c08f46a5d1"
+    },
+    {
+      "path": "public/assets/audio/host/cops-and-robbers/tts/cops-and-robbers_intro_rounds_27_players_9.mp3",
+      "bytes": 125013,
+      "checksumSha256": "d60911fe966606d9e08deb3bf68bf4160a511e6545e0b7c270f16f7ca981f0ee"
+    },
+    {
+      "path": "public/assets/audio/host/cops-and-robbers/tts/cops-and-robbers_intro_rounds_3_players_3.mp3",
+      "bytes": 106623,
+      "checksumSha256": "dec9be2a1fceac9dba3433b8ccf09070d0980fbb86148b3b591dbe941e205bb7"
+    },
+    {
+      "path": "public/assets/audio/host/cops-and-robbers/tts/cops-and-robbers_intro_rounds_30_players_10.mp3",
+      "bytes": 114146,
+      "checksumSha256": "aea68710789180f41b640be377f3c1eab8f44f85d424960de8222e7103233695"
+    },
+    {
+      "path": "public/assets/audio/host/cops-and-robbers/tts/cops-and-robbers_intro_rounds_33_players_11.mp3",
+      "bytes": 129611,
+      "checksumSha256": "cd6545d641a0ee554d30c0df46fd4ebd5c63fcf02c4e0065dcb5ec3575665812"
+    },
+    {
+      "path": "public/assets/audio/host/cops-and-robbers/tts/cops-and-robbers_intro_rounds_36_players_12.mp3",
+      "bytes": 121252,
+      "checksumSha256": "6e08585023bb7b48d9b17017498f2208ff6fd27bd3c6d52602390c8ede48361f"
+    },
+    {
+      "path": "public/assets/audio/host/cops-and-robbers/tts/cops-and-robbers_intro_rounds_4_players_4.mp3",
+      "bytes": 113311,
+      "checksumSha256": "eb2dc1d34244a69a0d613e8a6966ecbfae6df5b59b56b458d98b02b04c8447ae"
+    },
+    {
+      "path": "public/assets/audio/host/cops-and-robbers/tts/cops-and-robbers_intro_rounds_5_players_5.mp3",
+      "bytes": 117072,
+      "checksumSha256": "104d67e88ee9fd689ede810ae5f9ca3b70fa93f3a0fe0e77448ac8242404d3f5"
+    },
+    {
+      "path": "public/assets/audio/host/cops-and-robbers/tts/cops-and-robbers_intro_rounds_6_players_3.mp3",
+      "bytes": 119998,
+      "checksumSha256": "fbb3729858bd1f82b118b128101fac670dd643f666ef093f1861f834afec1f55"
+    },
+    {
+      "path": "public/assets/audio/host/cops-and-robbers/tts/cops-and-robbers_intro_rounds_6_players_6.mp3",
+      "bytes": 134208,
+      "checksumSha256": "b43a5535a457284485968bcf9341009e3341ea3131c801eecfd8417e73e0632b"
+    },
+    {
+      "path": "public/assets/audio/host/cops-and-robbers/tts/cops-and-robbers_intro_rounds_7_players_7.mp3",
+      "bytes": 122924,
+      "checksumSha256": "35bacb71f6438c5c8399769ee84ebea5668ed767565f27b93757dd6a76c114bc"
+    },
+    {
+      "path": "public/assets/audio/host/cops-and-robbers/tts/cops-and-robbers_intro_rounds_8_players_4.mp3",
+      "bytes": 131283,
+      "checksumSha256": "d713f9e99ab060d5876d0154556d37d867f0cc1ed0593ccd18ffaa242a8949dd"
+    },
+    {
+      "path": "public/assets/audio/host/cops-and-robbers/tts/cops-and-robbers_intro_rounds_8_players_8.mp3",
+      "bytes": 110385,
+      "checksumSha256": "93bfcdb1087f11fcc9139c316d4efc9e4d37b1d6db2b2ccd86495b2f27d5c090"
+    },
+    {
+      "path": "public/assets/audio/host/cops-and-robbers/tts/cops-and-robbers_intro_rounds_9_players_3.mp3",
+      "bytes": 117072,
+      "checksumSha256": "85e295d0bac16a50b0bad0e9b63b559217b0d6f33617828e14c4557a1150d756"
+    },
+    {
+      "path": "public/assets/audio/host/cops-and-robbers/tts/cops-and-robbers_intro_rounds_9_players_9.mp3",
+      "bytes": 122924,
+      "checksumSha256": "20b175b4989440658e868585cab75e42c72d3f65485db25970b0cf3c7131fde2"
+    },
+    {
+      "path": "public/assets/audio/host/cops-and-robbers/tts/cops-and-robbers_onlineLobby_01.mp3",
+      "bytes": 71515,
+      "checksumSha256": "f6d2184945fd097da7ff8047eff97a69ae7b79017bb3b8b30213d4751eb180a4"
+    },
+    {
+      "path": "public/assets/audio/host/cops-and-robbers/tts/cops-and-robbers_passPhone_01.mp3",
+      "bytes": 59812,
+      "checksumSha256": "d1901842ef94d867949295feeca0ca21da0bfc9e50e96094fd7b48d56a4eb816"
+    },
+    {
+      "path": "public/assets/audio/host/cops-and-robbers/tts/cops-and-robbers_passPhone_02.mp3",
+      "bytes": 63573,
+      "checksumSha256": "e058458227c8052292fa085efc454dfe99ec35f67acd5f5176774091ceee766d"
+    },
+    {
+      "path": "public/assets/audio/host/cops-and-robbers/tts/cops-and-robbers_revealLiar_01.mp3",
+      "bytes": 57722,
+      "checksumSha256": "9b30b84ca69e77255a58f774e02bba234fe9c79475510c1a84686870c39f0f53"
+    },
+    {
+      "path": "public/assets/audio/host/cops-and-robbers/tts/cops-and-robbers_revealLiar_02.mp3",
+      "bytes": 74022,
+      "checksumSha256": "ff21dca1b21c508d2ef74b354d31f6ea8b959f135eee4520f6a001fef8409726"
+    },
+    {
+      "path": "public/assets/audio/host/cops-and-robbers/tts/cops-and-robbers_revealNormal_01.mp3",
+      "bytes": 67335,
+      "checksumSha256": "99cfa9ecd068677f3e912c6ad85bc38f985c5a22217162a9400c0c92d1083cd7"
+    },
+    {
+      "path": "public/assets/audio/host/cops-and-robbers/tts/cops-and-robbers_revealNormal_02.mp3",
+      "bytes": 61066,
+      "checksumSha256": "1e628e7cec288c031871a1e41c332178c922d9c02f98ba965c2b50c3084f4871"
+    },
+    {
+      "path": "public/assets/audio/host/cops-and-robbers/tts/cops-and-robbers_setup_01.mp3",
+      "bytes": 71515,
+      "checksumSha256": "f55a991f87a4c921b46dcc736310efbe4b946c53f17904c29a5bfae75096063a"
+    },
+    {
+      "path": "public/assets/audio/host/cops-and-robbers/tts/cops-and-robbers_setup_02.mp3",
+      "bytes": 71097,
+      "checksumSha256": "8b8d999132efc6d0dbd17573d3c9da4be9c6f9f9371da4d73ba42ba3fd2a1ccd"
+    },
+    {
+      "path": "public/assets/audio/host/cops-and-robbers/tts/cops-and-robbers_stinger_chain_v1.mp3",
+      "bytes": 94502,
+      "checksumSha256": "38234ed04f3dd1daea757011086cf92cd1345e886d93ccb865039f2208fb8c02"
+    },
+    {
+      "path": "public/assets/audio/host/cops-and-robbers/tts/cops-and-robbers_stinger_chain_v2.mp3",
+      "bytes": 102026,
+      "checksumSha256": "a3451bf88fecc23cb20c1787307af00a4376b8ed9e3e569382b1555db71acb14"
+    },
+    {
+      "path": "public/assets/audio/host/cops-and-robbers/tts/cops-and-robbers_stinger_chain_v3.mp3",
+      "bytes": 76112,
+      "checksumSha256": "923acc266993b492b0957f344af1b51efb62aab1b42b518205016330270b0180"
+    },
+    {
+      "path": "public/assets/audio/host/cops-and-robbers/tts/cops-and-robbers_stinger_nameblame_v1.mp3",
+      "bytes": 98264,
+      "checksumSha256": "2c3299f0154d77b1371fa73bde8fd3311e723aad01d7e668aa3320e19d165dc3"
+    },
+    {
+      "path": "public/assets/audio/host/cops-and-robbers/tts/cops-and-robbers_stinger_nameblame_v2.mp3",
+      "bytes": 103697,
+      "checksumSha256": "de8b6da3198ca21c19eb976fcd6786c04c626b1be92353d80bdca5ee0d856967"
+    },
+    {
+      "path": "public/assets/audio/host/cops-and-robbers/tts/cops-and-robbers_stinger_nameblame_v3.mp3",
+      "bytes": 78202,
+      "checksumSha256": "ad5d902ccfc79029df51da26cecb918e2316b75dab911b640becb732b80a8e1e"
+    },
+    {
+      "path": "public/assets/audio/host/cops-and-robbers/tts/cops-and-robbers_stinger_noise_v1.mp3",
+      "bytes": 90323,
+      "checksumSha256": "00efd2fc100d37b633ec69440e3e10b5a192ef57d63528e56f9204991a8cac66"
+    },
+    {
+      "path": "public/assets/audio/host/cops-and-robbers/tts/cops-and-robbers_stinger_noise_v2.mp3",
+      "bytes": 101190,
+      "checksumSha256": "a13170976922ea66ea1f0d7006c577f22b6612f5f4048ba032f2da6ea3fdf0be"
+    },
+    {
+      "path": "public/assets/audio/host/cops-and-robbers/tts/cops-and-robbers_stinger_noise_v3.mp3",
+      "bytes": 76112,
+      "checksumSha256": "0dfa4aae26ec25a14f09ee6bf05a35ffa5663b8ef6a59cb003531e2a747aa746"
+    },
+    {
+      "path": "public/assets/audio/host/cops-and-robbers/tts/cops-and-robbers_stinger_offtopic_v1.mp3",
+      "bytes": 94084,
+      "checksumSha256": "60043e5eb24644b889a61c6db8b9e21c1374ece8cf9dbeb4c7eeb9fed526d1ad"
+    },
+    {
+      "path": "public/assets/audio/host/cops-and-robbers/tts/cops-and-robbers_stinger_offtopic_v2.mp3",
+      "bytes": 91159,
+      "checksumSha256": "4794cedf55e5f0baebd1dbb289da9750373bb7ae47b7a0a4b3b8070acb4a9b7b"
+    },
+    {
+      "path": "public/assets/audio/host/cops-and-robbers/tts/cops-and-robbers_stinger_offtopic_v3.mp3",
+      "bytes": 74440,
+      "checksumSha256": "d771c6cd302d98bec234d5eedd216e3d9443b2017b2d9e3c564bf9aae3dbdb45"
+    },
+    {
+      "path": "public/assets/audio/host/cops-and-robbers/tts/cops-and-robbers_stinger_opinion_v1.mp3",
+      "bytes": 100772,
+      "checksumSha256": "f080cfe56b8b07c1ed96a91366755e40bc59280f94078ba383c47da77d9cc6a1"
+    },
+    {
+      "path": "public/assets/audio/host/cops-and-robbers/tts/cops-and-robbers_stinger_opinion_v2.mp3",
+      "bytes": 95338,
+      "checksumSha256": "03513b7371ee2f7861a924bd0e75a41d9fec198dd99bce21a3f38ac6ae0a6359"
+    },
+    {
+      "path": "public/assets/audio/host/cops-and-robbers/tts/cops-and-robbers_stinger_opinion_v3.mp3",
+      "bytes": 78202,
+      "checksumSha256": "bcc4d99aa2a392d6830ed673f55bb7fc9b4e77955ee25d65eebccc1704cb7ec0"
+    },
+    {
+      "path": "public/assets/audio/host/cops-and-robbers/tts/cops-and-robbers_stinger_pairs_v1.mp3",
+      "bytes": 97009,
+      "checksumSha256": "740744ff1b38a98d6544d59d4013c177b7dc72c492e664b23c2a9e122804a507"
+    },
+    {
+      "path": "public/assets/audio/host/cops-and-robbers/tts/cops-and-robbers_stinger_pairs_v2.mp3",
+      "bytes": 94083,
+      "checksumSha256": "b07aab1248a9a6a7d3ccd73631dcff73491a066d1543c82d54c6930a66c17e70"
+    },
+    {
+      "path": "public/assets/audio/host/cops-and-robbers/tts/cops-and-robbers_stinger_pairs_v3.mp3",
+      "bytes": 76111,
+      "checksumSha256": "3bbc4268ec893c38eac046ef072aa33c8ff4578cac6c872df5c76c9635094bd3"
+    },
+    {
+      "path": "public/assets/audio/host/cops-and-robbers/tts/cops-and-robbers_stinger_picture_v1.mp3",
+      "bytes": 98264,
+      "checksumSha256": "78efc17efa2559c3de5640b86337dfd981af6ecd913c3a29f1bbd458c41ca6d1"
+    },
+    {
+      "path": "public/assets/audio/host/cops-and-robbers/tts/cops-and-robbers_stinger_picture_v2.mp3",
+      "bytes": 102862,
+      "checksumSha256": "bf3af042d7a60f812cd34ef266b72bcd909bb7da62803d4f92776b262f998175"
+    },
+    {
+      "path": "public/assets/audio/host/cops-and-robbers/tts/cops-and-robbers_stinger_picture_v3.mp3",
+      "bytes": 77784,
+      "checksumSha256": "1f760b6d25cb015d990f51a81f63d5f4c9343ce3c7a67ba142266ff93d657b07"
+    },
+    {
+      "path": "public/assets/audio/host/cops-and-robbers/tts/cops-and-robbers_stinger_prompt_v1.mp3",
+      "bytes": 97846,
+      "checksumSha256": "48a2047a8645b0c882a28c6043f1a945715a92f7a43887036943e7739f46d8ff"
+    },
+    {
+      "path": "public/assets/audio/host/cops-and-robbers/tts/cops-and-robbers_stinger_prompt_v2.mp3",
+      "bytes": 91159,
+      "checksumSha256": "feda2fdd7629a3d42ff1f51054ded527fe73af14aa4a9d6cd08b578035dfd10a"
+    },
+    {
+      "path": "public/assets/audio/host/cops-and-robbers/tts/cops-and-robbers_stinger_prompt_v3.mp3",
+      "bytes": 75276,
+      "checksumSha256": "ca9ed3a0e62409fef34f9be5eeebd08bdc8be28871d327c1f9b70f1bca6fced7"
+    },
+    {
+      "path": "public/assets/audio/host/cops-and-robbers/tts/cops-and-robbers_stinger_twotruths_v1.mp3",
+      "bytes": 110384,
+      "checksumSha256": "c923bc5b3d8c28ab75dbd64527782e839aec937806f2a8a43c531f5065f65c07"
+    },
+    {
+      "path": "public/assets/audio/host/cops-and-robbers/tts/cops-and-robbers_stinger_twotruths_v2.mp3",
+      "bytes": 94083,
+      "checksumSha256": "5bfb26edfd3bd607b7ff82e0b028a73bdee2fae27a00b9f7574ae9332dd012c7"
+    },
+    {
+      "path": "public/assets/audio/host/cops-and-robbers/tts/cops-and-robbers_stinger_twotruths_v3.mp3",
+      "bytes": 83634,
+      "checksumSha256": "61622d5d50058d6501e439a72d15c935209376836fa3c55659fab24b3f562ba5"
+    },
+    {
+      "path": "public/assets/audio/host/cops-and-robbers/tts/cops-and-robbers_voting_01.mp3",
+      "bytes": 48527,
+      "checksumSha256": "9bae79216f22ebbd835bfe44a4df64a81dbdcb11dea8a70ada5696ff00d446a1"
+    },
+    {
+      "path": "public/assets/audio/host/cops-and-robbers/tts/cops-and-robbers_voting_02.mp3",
+      "bytes": 60648,
+      "checksumSha256": "f55e417e75bf5de86adc30cffa45e11d81d5fb9cab458d5a6456ffc3842e8eba"
+    },
+    {
+      "path": "public/assets/audio/host/cops-and-robbers/tts/cops-and-robbers_winner_01.mp3",
+      "bytes": 56886,
+      "checksumSha256": "445d31273c44b891fcdefb9cf5e621c0273c39466923514ad9ddcdfd50b8463e"
+    },
+    {
+      "path": "public/assets/audio/host/cops-and-robbers/tts/cops-and-robbers_winner_02.mp3",
+      "bytes": 63573,
+      "checksumSha256": "80594ec80f88987d1d3b3e77dec43fe0cadccc5a1b10432d406d329dfe209e87"
+    },
+    {
+      "path": "public/assets/audio/host/cowboys/tts/cowboys_caught_01.mp3",
+      "bytes": 108713,
+      "checksumSha256": "fcbf72a0101fd132fa5a0fe4db5af4b7fcfeac9eb0946e7052a925d6ea2d84b4"
+    },
+    {
+      "path": "public/assets/audio/host/cowboys/tts/cowboys_caught_02.mp3",
+      "bytes": 87397,
+      "checksumSha256": "4c4c8f42a40b7318aa44f05a9b3d2d202b87a9331babbb6b824b590037de0759"
+    },
+    {
+      "path": "public/assets/audio/host/cowboys/tts/cowboys_chooser_01.mp3",
+      "bytes": 107459,
+      "checksumSha256": "b912b0a69f7d66fd1c1775e2050159d7a153bcc3886196c0a52411daf5ed555d"
+    },
+    {
+      "path": "public/assets/audio/host/cowboys/tts/cowboys_chooser_02.mp3",
+      "bytes": 95338,
+      "checksumSha256": "0d5595b8f66e7e64f4ceff5b59f4bcb4297de6c6e56ccf988067662cd5d02556"
+    },
+    {
+      "path": "public/assets/audio/host/cowboys/tts/cowboys_discussion_01.mp3",
+      "bytes": 81964,
+      "checksumSha256": "8cede51d32acb3215a67333c0acd9085f740ee6e05c0da3641479aa81402a332"
+    },
+    {
+      "path": "public/assets/audio/host/cowboys/tts/cowboys_discussion_02.mp3",
+      "bytes": 111639,
+      "checksumSha256": "fd7fe7cbe5ff29cc12848c156eef534d4c7db58e6da18e5c68bc526c84733449"
+    },
+    {
+      "path": "public/assets/audio/host/cowboys/tts/cowboys_escaped_01.mp3",
+      "bytes": 111221,
+      "checksumSha256": "5e26751ad48d0a46bba82f795df0fb0aee4dc728b24fa7f8aaf8c26bb2e6e86a"
+    },
+    {
+      "path": "public/assets/audio/host/cowboys/tts/cowboys_escaped_02.mp3",
+      "bytes": 97010,
+      "checksumSha256": "dd0c570a155ff4742748296a8d7906c5ac13566890cd2581895f9f481d62a206"
+    },
+    {
+      "path": "public/assets/audio/host/cowboys/tts/cowboys_home_01.mp3",
+      "bytes": 134626,
+      "checksumSha256": "a8948d3f457ee956862e49481ff370e67975a847db3371cacfb3fc29afff8bc8"
+    },
+    {
+      "path": "public/assets/audio/host/cowboys/tts/cowboys_home_02.mp3",
+      "bytes": 95338,
+      "checksumSha256": "6e661754f3d4cdda25f0d73676b2438dee4b97d166a047f7a3dc2e13597cd21a"
+    },
+    {
+      "path": "public/assets/audio/host/cowboys/tts/cowboys_intro_closing.mp3",
+      "bytes": 122924,
+      "checksumSha256": "cd1fdb5fb3cc2f60f145e6931655ceae524089aabde61d512d169714dc697400"
+    },
+    {
+      "path": "public/assets/audio/host/cowboys/tts/cowboys_intro_greeting_afternoon.mp3",
+      "bytes": 122088,
+      "checksumSha256": "cd0bdc195c00b47490570dfaf2cb989321c9785f40d1f79047e8a060ffe89445"
+    },
+    {
+      "path": "public/assets/audio/host/cowboys/tts/cowboys_intro_greeting_anytime.mp3",
+      "bytes": 118326,
+      "checksumSha256": "0cff0010258944923ac9a52dd69747106eda423b53062a11150275cdabdd8b6f"
+    },
+    {
+      "path": "public/assets/audio/host/cowboys/tts/cowboys_intro_greeting_evening.mp3",
+      "bytes": 116236,
+      "checksumSha256": "3d7bc996ecc9c221c270d50188e3bc1a0544bf8fea6f0dd5e6cc8e53369b6f36"
+    },
+    {
+      "path": "public/assets/audio/host/cowboys/tts/cowboys_intro_greeting_morning.mp3",
+      "bytes": 119162,
+      "checksumSha256": "c3ab362140256682a0e52439c7f26efd8a7d43272c0d2317d87d68e2161cf49c"
+    },
+    {
+      "path": "public/assets/audio/host/cowboys/tts/cowboys_intro_hook_01.mp3",
+      "bytes": 117908,
+      "checksumSha256": "9f85882f711dd17cfa1fe6003e4165c066f54f68ac60685448165f216b95d241"
+    },
+    {
+      "path": "public/assets/audio/host/cowboys/tts/cowboys_intro_hook_02.mp3",
+      "bytes": 124595,
+      "checksumSha256": "5a473656ee698d987b002cc2e1ed08d3ae680b0939df0eaa3d40b55401f4355d"
+    },
+    {
+      "path": "public/assets/audio/host/cowboys/tts/cowboys_intro_hook_03.mp3",
+      "bytes": 100772,
+      "checksumSha256": "95c0a8b0d5d489aafdbd9107b53417a8c3b7597581a040e9136e25556110f172"
+    },
+    {
+      "path": "public/assets/audio/host/cowboys/tts/cowboys_intro_hook_04.mp3",
+      "bytes": 99936,
+      "checksumSha256": "198353c1316966ae72988740ef4236fe416d5ad39c2bad86e4a40cedd1b6d194"
+    },
+    {
+      "path": "public/assets/audio/host/cowboys/tts/cowboys_intro_host_name.mp3",
+      "bytes": 91577,
+      "checksumSha256": "d09925a94db609a8f26334a853ed4f6bde190a8653df577abb1ccfec628a480d"
+    },
+    {
+      "path": "public/assets/audio/host/cowboys/tts/cowboys_intro_online_prompt.mp3",
+      "bytes": 109549,
+      "checksumSha256": "047b939239aab49613122e981d860dee73e31bb0c083c0d5fcf5065bc86d44db"
+    },
+    {
+      "path": "public/assets/audio/host/cowboys/tts/cowboys_intro_pass_prompt.mp3",
+      "bytes": 111639,
+      "checksumSha256": "533dae2e5148ba0d8cbeabc7296595427e4add2107e692d68c830676dfdc02c8"
+    },
+    {
+      "path": "public/assets/audio/host/cowboys/tts/cowboys_intro_rounds_10_players_10.mp3",
+      "bytes": 149673,
+      "checksumSha256": "1697b86e96670d627e31a8dd21eabbf391afff793b4d02d0e5cc0fc95f76b72d"
+    },
+    {
+      "path": "public/assets/audio/host/cowboys/tts/cowboys_intro_rounds_10_players_5.mp3",
+      "bytes": 164719,
+      "checksumSha256": "377ff86e9aa0dcbe9a9f80cd83c3a57e3934cdc1d66fbd6f2ebeda71e0eb218d"
+    },
+    {
+      "path": "public/assets/audio/host/cowboys/tts/cowboys_intro_rounds_11_players_11.mp3",
+      "bytes": 188961,
+      "checksumSha256": "fed87d04d022151cda0f00419945d841fd3a9c9a255a05642f7feb9f389a7926"
+    },
+    {
+      "path": "public/assets/audio/host/cowboys/tts/cowboys_intro_rounds_12_players_12.mp3",
+      "bytes": 152599,
+      "checksumSha256": "8a842f787c9b659780440462b33c6c5d82ffe9310afd4aef2d7ec81b931ba126"
+    },
+    {
+      "path": "public/assets/audio/host/cowboys/tts/cowboys_intro_rounds_12_players_4.mp3",
+      "bytes": 173497,
+      "checksumSha256": "43de26cf803b612f914f70473d0e1d3fab276d9062c15f2d40c3580f4ec31465"
+    },
+    {
+      "path": "public/assets/audio/host/cowboys/tts/cowboys_intro_rounds_12_players_6.mp3",
+      "bytes": 148837,
+      "checksumSha256": "fcb5e00a90d68ed564744f3cdb4f045400b7acae2a50de6e541532d5e2b965ba"
+    },
+    {
+      "path": "public/assets/audio/host/cowboys/tts/cowboys_intro_rounds_14_players_7.mp3",
+      "bytes": 198156,
+      "checksumSha256": "d02f409abe3a46d2baf2f27ba81ea2409b3c63100fb218eae614961b9803b360"
+    },
+    {
+      "path": "public/assets/audio/host/cowboys/tts/cowboys_intro_rounds_15_players_5.mp3",
+      "bytes": 181438,
+      "checksumSha256": "ed01783faa6a75f7ff1a4a0a390c528a35944ec0ac4b9d9156fd53060b1da4d4"
+    },
+    {
+      "path": "public/assets/audio/host/cowboys/tts/cowboys_intro_rounds_16_players_8.mp3",
+      "bytes": 166809,
+      "checksumSha256": "194497863d37580dbf854082c4d417cba47eb1b4887392b13b555c63c0c627c7"
+    },
+    {
+      "path": "public/assets/audio/host/cowboys/tts/cowboys_intro_rounds_18_players_6.mp3",
+      "bytes": 172661,
+      "checksumSha256": "2e30ba578b5f4a8679ee2d1bb25879c7e6cb7daed2274743ccdcc52771b975b2"
+    },
+    {
+      "path": "public/assets/audio/host/cowboys/tts/cowboys_intro_rounds_18_players_9.mp3",
+      "bytes": 167645,
+      "checksumSha256": "4fd8e93875fb344cdcbf460b75123ae70e336f6eb11d6b55054f6e4e1831eae0"
+    },
+    {
+      "path": "public/assets/audio/host/cowboys/tts/cowboys_intro_rounds_20_players_10.mp3",
+      "bytes": 142986,
+      "checksumSha256": "cdebab9f934d00934c6fe008cc5b5a48771d890e35562cb34d84b9b5525cd6d3"
+    },
+    {
+      "path": "public/assets/audio/host/cowboys/tts/cowboys_intro_rounds_21_players_7.mp3",
+      "bytes": 164719,
+      "checksumSha256": "087c25bbd17e259799d1c788eea8d7ad1439683699efbac61c35321dfdabf86f"
+    },
+    {
+      "path": "public/assets/audio/host/cowboys/tts/cowboys_intro_rounds_22_players_11.mp3",
+      "bytes": 160122,
+      "checksumSha256": "4e963170ee96c771bb1706e75d07fe642dacb3809a5007f43be52189fddf0d2f"
+    },
+    {
+      "path": "public/assets/audio/host/cowboys/tts/cowboys_intro_rounds_24_players_12.mp3",
+      "bytes": 163048,
+      "checksumSha256": "a6f004b6bff8973b59bd48985bbd9c153cc59d390d1551b65c577b04e98d4368"
+    },
+    {
+      "path": "public/assets/audio/host/cowboys/tts/cowboys_intro_rounds_24_players_8.mp3",
+      "bytes": 159286,
+      "checksumSha256": "e70ae58b0f4ff3df10a9937307d81f1fd7d7faed4440fd7fc6d43d1a6f1ec21d"
+    },
+    {
+      "path": "public/assets/audio/host/cowboys/tts/cowboys_intro_rounds_27_players_9.mp3",
+      "bytes": 172661,
+      "checksumSha256": "1b3d6d300e7316a2ea376b25597f2c07c8d3d35fc3642754082df1da00103f09"
+    },
+    {
+      "path": "public/assets/audio/host/cowboys/tts/cowboys_intro_rounds_3_players_3.mp3",
+      "bytes": 174751,
+      "checksumSha256": "da3949ff801b40e9bc7f35c088fc9243d6b178722dbe5f747ff085f9db320d88"
+    },
+    {
+      "path": "public/assets/audio/host/cowboys/tts/cowboys_intro_rounds_30_players_10.mp3",
+      "bytes": 154688,
+      "checksumSha256": "1938daa14a08f8d1cc602d1d575a12b1cff8f0340b3913fb56808f58f9c8bb29"
+    },
+    {
+      "path": "public/assets/audio/host/cowboys/tts/cowboys_intro_rounds_33_players_11.mp3",
+      "bytes": 167645,
+      "checksumSha256": "4967552137b05d96bf9fef4f6f53ffce7a4384bab1dc6a7c2dfa724303e81d06"
+    },
+    {
+      "path": "public/assets/audio/host/cowboys/tts/cowboys_intro_rounds_36_players_12.mp3",
+      "bytes": 174751,
+      "checksumSha256": "ce3a3d3724acabb1321720d79871c9b9ce9d9994f697ac5e47e1c5a8e4edd006"
+    },
+    {
+      "path": "public/assets/audio/host/cowboys/tts/cowboys_intro_rounds_4_players_4.mp3",
+      "bytes": 174333,
+      "checksumSha256": "cc802d34de8f91ecaeecdbf0deec99eff338da8b00cc7bae4c18d0663499bc25"
+    },
+    {
+      "path": "public/assets/audio/host/cowboys/tts/cowboys_intro_rounds_5_players_5.mp3",
+      "bytes": 167645,
+      "checksumSha256": "93d04799a653153bffebdcff85898446d002c7e8912d1ec4008396a331d50d26"
+    },
+    {
+      "path": "public/assets/audio/host/cowboys/tts/cowboys_intro_rounds_6_players_3.mp3",
+      "bytes": 150509,
+      "checksumSha256": "afdbe24b722db2ad372bec348c34e34ebfb2a5c0af91514ecfa079c5027eb582"
+    },
+    {
+      "path": "public/assets/audio/host/cowboys/tts/cowboys_intro_rounds_6_players_6.mp3",
+      "bytes": 155524,
+      "checksumSha256": "0aefe5ddb3460ca6d0dfbd8f4a67905bb2920583483d7c40da87c7dd83eb8c33"
+    },
+    {
+      "path": "public/assets/audio/host/cowboys/tts/cowboys_intro_rounds_7_players_7.mp3",
+      "bytes": 158450,
+      "checksumSha256": "35d6fe33f2f13581dff33cb663873cfabafef8b508941c5c668df3c5cd7b45bf"
+    },
+    {
+      "path": "public/assets/audio/host/cowboys/tts/cowboys_intro_rounds_8_players_4.mp3",
+      "bytes": 163884,
+      "checksumSha256": "3aeeee5a42b0c7d21e2de6fadd65627ed921d939d057b6be1304ebb99df0008f"
+    },
+    {
+      "path": "public/assets/audio/host/cowboys/tts/cowboys_intro_rounds_8_players_8.mp3",
+      "bytes": 156360,
+      "checksumSha256": "80d92eef6c6454c72b549fc6fe07b36d0c642cef41d5b7999fda2b084b775fea"
+    },
+    {
+      "path": "public/assets/audio/host/cowboys/tts/cowboys_intro_rounds_9_players_3.mp3",
+      "bytes": 147583,
+      "checksumSha256": "0c847abee66908dc646d6f187b1489168572b4bf0f3255a9bc169bbe727b483d"
+    },
+    {
+      "path": "public/assets/audio/host/cowboys/tts/cowboys_intro_rounds_9_players_9.mp3",
+      "bytes": 174751,
+      "checksumSha256": "2d12f2fa2fb3cbfad9118cec1d1e8f784fa9d9cd0fae82880798e11d1c76083b"
+    },
+    {
+      "path": "public/assets/audio/host/cowboys/tts/cowboys_onlineLobby_01.mp3",
+      "bytes": 107459,
+      "checksumSha256": "4c6c7464ae7a8754e4342968655685f4c464e79406ab666c9a8e3e7372e9ef5b"
+    },
+    {
+      "path": "public/assets/audio/host/cowboys/tts/cowboys_passPhone_01.mp3",
+      "bytes": 117908,
+      "checksumSha256": "098065e03c255795c36885861eb1254dcc82c9207e74f29b7e8dd7754c491850"
+    },
+    {
+      "path": "public/assets/audio/host/cowboys/tts/cowboys_passPhone_02.mp3",
+      "bytes": 64409,
+      "checksumSha256": "09cb428db9f9d454ca848a7827679dcc9ac45566e8ca65542f5d7d9074d8dc0a"
+    },
+    {
+      "path": "public/assets/audio/host/cowboys/tts/cowboys_revealLiar_01.mp3",
+      "bytes": 124595,
+      "checksumSha256": "293faca6be893fc4e0e4d3af66065943b24331d3d4f2f9607980c3b007d10704"
+    },
+    {
+      "path": "public/assets/audio/host/cowboys/tts/cowboys_revealLiar_02.mp3",
+      "bytes": 127939,
+      "checksumSha256": "c0658c1d266b2f623ba8953c58203d8e240d015a570b50ddf4e003299b328ba8"
+    },
+    {
+      "path": "public/assets/audio/host/cowboys/tts/cowboys_revealNormal_01.mp3",
+      "bytes": 122088,
+      "checksumSha256": "4f1060e765b7ad9dd2b4adb2b748a4fce17ffb2cd904cf986a8bbc4cb4ec9ed0"
+    },
+    {
+      "path": "public/assets/audio/host/cowboys/tts/cowboys_revealNormal_02.mp3",
+      "bytes": 105787,
+      "checksumSha256": "f91afd4bb04d7bf37c6229b11cb32ba312ced8f0c8dabd57b8a617d9c36c439c"
+    },
+    {
+      "path": "public/assets/audio/host/cowboys/tts/cowboys_setup_01.mp3",
+      "bytes": 97010,
+      "checksumSha256": "e51b36176801ded2915949b7ce2361b730d7cf77f6128bb4432102bb0c6daed0"
+    },
+    {
+      "path": "public/assets/audio/host/cowboys/tts/cowboys_setup_02.mp3",
+      "bytes": 87815,
+      "checksumSha256": "ab23510f20594e727776f3743c63c994a0dd6936be9732b4a6be5d0761d0b407"
+    },
+    {
+      "path": "public/assets/audio/host/cowboys/tts/cowboys_stinger_chain_v1.mp3",
+      "bytes": 115400,
+      "checksumSha256": "c34c5676674fede163aef6a08ed35959d77df0b581715313085309806ccfff26"
+    },
+    {
+      "path": "public/assets/audio/host/cowboys/tts/cowboys_stinger_chain_v2.mp3",
+      "bytes": 142986,
+      "checksumSha256": "646624d675ce3b8a6ae6bc261a4ab068b995569f2f4016fd4ae6a7f4a1e84339"
+    },
+    {
+      "path": "public/assets/audio/host/cowboys/tts/cowboys_stinger_chain_v3.mp3",
+      "bytes": 114146,
+      "checksumSha256": "90a455d58f63fa41f64149ef5cd5dfd78365caf5ac2f9490769d672be089c96f"
+    },
+    {
+      "path": "public/assets/audio/host/cowboys/tts/cowboys_stinger_nameblame_v1.mp3",
+      "bytes": 140896,
+      "checksumSha256": "5f8fb1edbfb6857e3f44a1ec6ee925b7d336e5eee5c354f89f47f354691fb657"
+    },
+    {
+      "path": "public/assets/audio/host/cowboys/tts/cowboys_stinger_nameblame_v2.mp3",
+      "bytes": 137134,
+      "checksumSha256": "8e66f3a1a008cf5924e548f0ddf85442b888dd673368c8917a6f3bf67572cdf0"
+    },
+    {
+      "path": "public/assets/audio/host/cowboys/tts/cowboys_stinger_nameblame_v3.mp3",
+      "bytes": 120834,
+      "checksumSha256": "d74f5e3eb1c476c86de8731b2b58acd9fc6473d95e1d0aeb464ba8c04365f611"
+    },
+    {
+      "path": "public/assets/audio/host/cowboys/tts/cowboys_stinger_noise_v1.mp3",
+      "bytes": 117072,
+      "checksumSha256": "d019f4fc135657b71d94be1864ac81d6a01bd1f476254ad694abff8959e27107"
+    },
+    {
+      "path": "public/assets/audio/host/cowboys/tts/cowboys_stinger_noise_v2.mp3",
+      "bytes": 134626,
+      "checksumSha256": "afef09bec0129f4b38a1f1efeebc3741356f19b140a1ec4e996f70d11789da1f"
+    },
+    {
+      "path": "public/assets/audio/host/cowboys/tts/cowboys_stinger_noise_v3.mp3",
+      "bytes": 125013,
+      "checksumSha256": "151e815ec530a201ec7f822787195c35950c6f5365b99cd288f2d903178a5db8"
+    },
+    {
+      "path": "public/assets/audio/host/cowboys/tts/cowboys_stinger_offtopic_v1.mp3",
+      "bytes": 140896,
+      "checksumSha256": "8aa47a674a01648541577a7600193c6004a0aacd32f45cba3e57751155f6da06"
+    },
+    {
+      "path": "public/assets/audio/host/cowboys/tts/cowboys_stinger_offtopic_v2.mp3",
+      "bytes": 128775,
+      "checksumSha256": "cb68ebe5c9c1c2f4d35735472b9fcfe0fec3e47ba475eb38687e9be86ffa0027"
+    },
+    {
+      "path": "public/assets/audio/host/cowboys/tts/cowboys_stinger_offtopic_v3.mp3",
+      "bytes": 119998,
+      "checksumSha256": "477fb635d22a689b940873b747c2e01c1bfa2f3f854d1158b8cf45a49db809df"
+    },
+    {
+      "path": "public/assets/audio/host/cowboys/tts/cowboys_stinger_opinion_v1.mp3",
+      "bytes": 140896,
+      "checksumSha256": "a3ab26df8103fb9d7b658c4543b3dd464d8ac1eecd93cac334c400b0a07da0d7"
+    },
+    {
+      "path": "public/assets/audio/host/cowboys/tts/cowboys_stinger_opinion_v2.mp3",
+      "bytes": 154271,
+      "checksumSha256": "47f6d9f5f433fc73f079cb0db00b601fe797e9558e926415829b39936b686fc7"
+    },
+    {
+      "path": "public/assets/audio/host/cowboys/tts/cowboys_stinger_opinion_v3.mp3",
+      "bytes": 130447,
+      "checksumSha256": "2f4c025cfd5b4ebf24a316a54b4516e4c388eaa79afb0260c2ebe45d93edb220"
+    },
+    {
+      "path": "public/assets/audio/host/cowboys/tts/cowboys_stinger_picture_v1.mp3",
+      "bytes": 128775,
+      "checksumSha256": "77cb8bab7c6dac5a59c04bf8938148c6efe23eff454b700bea61e4ae96d930c9"
+    },
+    {
+      "path": "public/assets/audio/host/cowboys/tts/cowboys_stinger_picture_v2.mp3",
+      "bytes": 138388,
+      "checksumSha256": "7af95b62f6e550d14e906ce81e3f3dc23884487ac4cb064c6e6214ceef9f77e1"
+    },
+    {
+      "path": "public/assets/audio/host/cowboys/tts/cowboys_stinger_picture_v3.mp3",
+      "bytes": 116236,
+      "checksumSha256": "3a15a83c6e6478415042eba7882feb162206502ed5e8ef317337434c025a7b9f"
+    },
+    {
+      "path": "public/assets/audio/host/cowboys/tts/cowboys_stinger_prompt_v1.mp3",
+      "bytes": 118326,
+      "checksumSha256": "cb03fd48baa8231dcf805b6054add077b7fcac94cae8e6806b9b0d2df63c27aa"
+    },
+    {
+      "path": "public/assets/audio/host/cowboys/tts/cowboys_stinger_prompt_v2.mp3",
+      "bytes": 141314,
+      "checksumSha256": "7dc8d9143eb2d303c61e3a1525fff94ab4a83cc0a3949f37a4e1860044559658"
+    },
+    {
+      "path": "public/assets/audio/host/cowboys/tts/cowboys_stinger_prompt_v3.mp3",
+      "bytes": 114564,
+      "checksumSha256": "d35a98f17ae63ea8b738c956bc8285981e92d3b2a678c58f45afb8584697ac33"
+    },
+    {
+      "path": "public/assets/audio/host/cowboys/tts/cowboys_voting_01.mp3",
+      "bytes": 82799,
+      "checksumSha256": "ebc555f9cae5fa61b486079cc93a2334179fd1d4d12bb4421d345dc8a9254322"
+    },
+    {
+      "path": "public/assets/audio/host/cowboys/tts/cowboys_voting_02.mp3",
+      "bytes": 98264,
+      "checksumSha256": "3aac0bd6bc63f34319dc3d5da82d6631957cf379eecf3b6210f16dacd455098d"
+    },
+    {
+      "path": "public/assets/audio/host/cowboys/tts/cowboys_winner_01.mp3",
+      "bytes": 84889,
+      "checksumSha256": "1c2122f850bd95819deccc03591db769f1608a2ac600d411f011c1740f18f15f"
+    },
+    {
+      "path": "public/assets/audio/host/cowboys/tts/cowboys_winner_02.mp3",
+      "bytes": 131283,
+      "checksumSha256": "ff35ec325154025385e4edd452e64e83d6b46df07894f23b7a00261dca0b0f76"
+    },
+    {
+      "path": "public/assets/audio/host/default/tts/default_caught_01.mp3",
+      "bytes": 79038,
+      "checksumSha256": "fa4556bf827345ec6348fba11b0ef2d6dfeb03f6bc74d9624ec8e6e8083efce3"
+    },
+    {
+      "path": "public/assets/audio/host/default/tts/default_caught_02.mp3",
+      "bytes": 72351,
+      "checksumSha256": "b0cb67a55031b8cda76787a5cff91b4c2b69b17f2d15588ffafb380b5b12413c"
+    },
+    {
+      "path": "public/assets/audio/host/default/tts/default_caught_03.mp3",
+      "bytes": 69425,
+      "checksumSha256": "7504861227f38379c7dfce50cc6c15836b3a05d7ceba1a38ad8722ab266b3fec"
+    },
+    {
+      "path": "public/assets/audio/host/default/tts/default_caught_04.mp3",
+      "bytes": 79874,
+      "checksumSha256": "2514635a2c42b117844a03c4f884b8d858fe275fd681e272abb40371e7192214"
+    },
+    {
+      "path": "public/assets/audio/host/default/tts/default_chooser_01.mp3",
+      "bytes": 89487,
+      "checksumSha256": "a37ada02d75dcdaf3600620192a59b00cadec402603bb503c7575ba73f82dd6c"
+    },
+    {
+      "path": "public/assets/audio/host/default/tts/default_chooser_02.mp3",
+      "bytes": 78202,
+      "checksumSha256": "0e16a533f404a53c3b2f09c84bbd206fb5b90477dffe2270027d3ca8b1866498"
+    },
+    {
+      "path": "public/assets/audio/host/default/tts/default_chooser_03.mp3",
+      "bytes": 73186,
+      "checksumSha256": "d85b54bce7f6010959eade0c1653d93c480cb4ef53f44b1f8ce3438e73afd77c"
+    },
+    {
+      "path": "public/assets/audio/host/default/tts/default_chooser_04.mp3",
+      "bytes": 71515,
+      "checksumSha256": "47b5100d41ea808d62108ef723efdb9c8ce1e7f1f893a38b62c0670d2dd42984"
+    },
+    {
+      "path": "public/assets/audio/host/default/tts/default_discussion_01.mp3",
+      "bytes": 74440,
+      "checksumSha256": "6e3e6e3977e59c97f97897067d2d16f63ea646d53862fe10ddeb31a09253fc11"
+    },
+    {
+      "path": "public/assets/audio/host/default/tts/default_discussion_02.mp3",
+      "bytes": 74440,
+      "checksumSha256": "36c0fb3692bec9284a3e890ff99c4582544d1a1d26812cef0239458b20108a10"
+    },
+    {
+      "path": "public/assets/audio/host/default/tts/default_discussion_03.mp3",
+      "bytes": 86561,
+      "checksumSha256": "e90dafda9df7a98ac68c95c2bf6dcc4a5560c210bbe8e50388ed8554d9660a89"
+    },
+    {
+      "path": "public/assets/audio/host/default/tts/default_discussion_04.mp3",
+      "bytes": 97010,
+      "checksumSha256": "a41b4d9a2934af10ecc1fe9cd4644b5ee22c11c7043ccadca49416e554780ea0"
+    },
+    {
+      "path": "public/assets/audio/host/default/tts/default_escaped_01.mp3",
+      "bytes": 78202,
+      "checksumSha256": "9b810874f44b71ce33f2c5f20551b5f963e87a96b9844ca8d0287b9a1743b19a"
+    },
+    {
+      "path": "public/assets/audio/host/default/tts/default_escaped_02.mp3",
+      "bytes": 86561,
+      "checksumSha256": "8c73b17efee3b7a8eb1f98c252e8fa86afec71424b66e9b4115ea88bc0bf348c"
+    },
+    {
+      "path": "public/assets/audio/host/default/tts/default_escaped_03.mp3",
+      "bytes": 79038,
+      "checksumSha256": "3b58a1c47c73ffd3d783ef4a833e757429bd8ed1a62a665501f59f4598b544e5"
+    },
+    {
+      "path": "public/assets/audio/host/default/tts/default_escaped_04.mp3",
+      "bytes": 96174,
+      "checksumSha256": "a3e5e2006ed5fdf340e6a3aa44bdbdf6b210ba43d8ec9eea82ba57cbf092fd29"
+    },
+    {
+      "path": "public/assets/audio/host/default/tts/default_home_01.mp3",
+      "bytes": 85725,
+      "checksumSha256": "662b969bbcfc5052a6921ea8af931cad1c4f4945c1374bb6d35328b3591bb7da"
+    },
+    {
+      "path": "public/assets/audio/host/default/tts/default_home_02.mp3",
+      "bytes": 80710,
+      "checksumSha256": "3f13778bd84c29a1abfb507077add6b1cc60dd82a62935571104910c8129a8d5"
+    },
+    {
+      "path": "public/assets/audio/host/default/tts/default_home_03.mp3",
+      "bytes": 89487,
+      "checksumSha256": "15f6ed97b4ee7477ffcca88e35f14872f1bcd82df68e3148f2dfbde1200b84dc"
+    },
+    {
+      "path": "public/assets/audio/host/default/tts/default_home_04.mp3",
+      "bytes": 88651,
+      "checksumSha256": "201bcb91b27c47003472dabe2fce37a9c10ded7efdbbbba74c3a58cf2be91fa8"
+    },
+    {
+      "path": "public/assets/audio/host/default/tts/default_home_05.mp3",
+      "bytes": 75276,
+      "checksumSha256": "54cd165c5f31e55f17af448a3439471e2d4f20cca1a80598e529efaf54c131a5"
+    },
+    {
+      "path": "public/assets/audio/host/default/tts/default_intro_closing.mp3",
+      "bytes": 117072,
+      "checksumSha256": "79154befe4ebaf44ec46f1af801770681ff39cc2b7b97148038cfff3cbd57079"
+    },
+    {
+      "path": "public/assets/audio/host/default/tts/default_intro_greeting_afternoon.mp3",
+      "bytes": 87815,
+      "checksumSha256": "b02c46e022633c033a2acde0f263f4f9dc162543999f77ba4e274601a3f234fa"
+    },
+    {
+      "path": "public/assets/audio/host/default/tts/default_intro_greeting_anytime.mp3",
+      "bytes": 79874,
+      "checksumSha256": "93bd7d6a414e9ac4c2a2275c201d57245d565bb127f60995e20fc4c72ee5589d"
+    },
+    {
+      "path": "public/assets/audio/host/default/tts/default_intro_greeting_evening.mp3",
+      "bytes": 84471,
+      "checksumSha256": "ba956cdf233c12d6dd6805198bdb296d7f6cff1b0ea55e9ca5745bfa1558c977"
+    },
+    {
+      "path": "public/assets/audio/host/default/tts/default_intro_greeting_morning.mp3",
+      "bytes": 105787,
+      "checksumSha256": "c784dc681700c29f70eb69799f8dd34a60d442596bcc329febfd62dd839f0216"
+    },
+    {
+      "path": "public/assets/audio/host/default/tts/default_intro_hook_01.mp3",
+      "bytes": 100772,
+      "checksumSha256": "a08de5d3dd23d04266b18b7055d11b4fd61bde472803af59fe4110d30e9d0b6f"
+    },
+    {
+      "path": "public/assets/audio/host/default/tts/default_intro_hook_02.mp3",
+      "bytes": 87815,
+      "checksumSha256": "c9af783a229d1eb78af2eb72e335d4510ed84a8cddafd68423d76924c5e4ef3c"
+    },
+    {
+      "path": "public/assets/audio/host/default/tts/default_intro_hook_03.mp3",
+      "bytes": 93248,
+      "checksumSha256": "de3d65ac90a1fecab4b6e93033bba6e14e60707fc2e47742a2cb7f1169de2936"
+    },
+    {
+      "path": "public/assets/audio/host/default/tts/default_intro_hook_04.mp3",
+      "bytes": 100772,
+      "checksumSha256": "37bce58e533a577b1de92280959c2b23cf63f3c76dfbca450eecf709c1a27b88"
+    },
+    {
+      "path": "public/assets/audio/host/default/tts/default_intro_host_name.mp3",
+      "bytes": 77784,
+      "checksumSha256": "c8310c2b9ea442f55be94f326293a33dbdb32cb5b515ed41e18998be3f7c26e6"
+    },
+    {
+      "path": "public/assets/audio/host/default/tts/default_intro_online_prompt.mp3",
+      "bytes": 82799,
+      "checksumSha256": "21d39dd655a3886f9ac8d817a5f5dff331803624cbc6db28cfe8cfaa7f65ecf2"
+    },
+    {
+      "path": "public/assets/audio/host/default/tts/default_intro_pass_prompt.mp3",
+      "bytes": 76948,
+      "checksumSha256": "d1f7b71056e803106b12d5d5c040fd82e644df572154d345c76862f0dbbab00e"
+    },
+    {
+      "path": "public/assets/audio/host/default/tts/default_intro_rounds_10_players_10.mp3",
+      "bytes": 117908,
+      "checksumSha256": "c69f0414b07ae9769c9e06a09012175bc55282e47c29f6a48d6460ec65e6a555"
+    },
+    {
+      "path": "public/assets/audio/host/default/tts/default_intro_rounds_10_players_5.mp3",
+      "bytes": 123759,
+      "checksumSha256": "61158213f7b4be179747b5663c7c63a991405194fdedf64c77e4729c606b8170"
+    },
+    {
+      "path": "public/assets/audio/host/default/tts/default_intro_rounds_11_players_11.mp3",
+      "bytes": 149673,
+      "checksumSha256": "dc79f8a5292e1ac412f04934f65769b97478b74b1c73a6882b443ff0d7c2b8c6"
+    },
+    {
+      "path": "public/assets/audio/host/default/tts/default_intro_rounds_12_players_12.mp3",
+      "bytes": 161376,
+      "checksumSha256": "7d31de327ea01a55fd022602e3ef73072de86f1036bb94e034bf3aba1e8526a9"
+    },
+    {
+      "path": "public/assets/audio/host/default/tts/default_intro_rounds_12_players_4.mp3",
+      "bytes": 132537,
+      "checksumSha256": "d07b4daf823905c660d8966056917a9ad255e1fc683dd5741ceff193fd499f63"
+    },
+    {
+      "path": "public/assets/audio/host/default/tts/default_intro_rounds_12_players_6.mp3",
+      "bytes": 131283,
+      "checksumSha256": "a5603f98ef4529114b5450ab42a41dbff78c76a6a47f8e50e8f81a1ddffdf09d"
+    },
+    {
+      "path": "public/assets/audio/host/default/tts/default_intro_rounds_14_players_7.mp3",
+      "bytes": 125849,
+      "checksumSha256": "004039e9dbb485f420ea47ecff4e4b1573835946d6be63d75a3bd5456c9d407e"
+    },
+    {
+      "path": "public/assets/audio/host/default/tts/default_intro_rounds_15_players_5.mp3",
+      "bytes": 123759,
+      "checksumSha256": "9da8501efb55ff21fdc1cc344244d1f8006835505d32de876f80628009ecc6d9"
+    },
+    {
+      "path": "public/assets/audio/host/default/tts/default_intro_rounds_16_players_8.mp3",
+      "bytes": 123759,
+      "checksumSha256": "8e244c94bec98e3c1e545021c913eb37905ed5003019cae9a51ed2d959ea3f1a"
+    },
+    {
+      "path": "public/assets/audio/host/default/tts/default_intro_rounds_18_players_6.mp3",
+      "bytes": 164719,
+      "checksumSha256": "e4352b4d46825e8b8ff19bdce21e3b9a931b7257cf4fcff2eaf10d8c7419e6f9"
+    },
+    {
+      "path": "public/assets/audio/host/default/tts/default_intro_rounds_18_players_9.mp3",
+      "bytes": 156360,
+      "checksumSha256": "0234c735d5cb03de4eec6e7c23a6ec8adcb003d9f71ffb766155a06206018546"
+    },
+    {
+      "path": "public/assets/audio/host/default/tts/default_intro_rounds_20_players_10.mp3",
+      "bytes": 134626,
+      "checksumSha256": "cd382cb1f2cb78b0bc85cda28873744350b03cd76642a63f5bbf240cf204a338"
+    },
+    {
+      "path": "public/assets/audio/host/default/tts/default_intro_rounds_21_players_7.mp3",
+      "bytes": 167645,
+      "checksumSha256": "9ae7529c38dfb94d31030b5532c97de6a3af7d42e53a0e1aa45021c0f7773995"
+    },
+    {
+      "path": "public/assets/audio/host/default/tts/default_intro_rounds_22_players_11.mp3",
+      "bytes": 134626,
+      "checksumSha256": "5b77690b4b1e0a48e773eb64770e365fb886a1384d3d7fffb0d552dcbc8151e0"
+    },
+    {
+      "path": "public/assets/audio/host/default/tts/default_intro_rounds_24_players_12.mp3",
+      "bytes": 138388,
+      "checksumSha256": "24e61958fc478fcf04944713acf9706f1a1354ffc76e33e91726046fbc8fc5c9"
+    },
+    {
+      "path": "public/assets/audio/host/default/tts/default_intro_rounds_24_players_8.mp3",
+      "bytes": 137970,
+      "checksumSha256": "ff351732c6c84796b2a59e6b1c41f2ae8e1d5fbed04dd804529ddba3caa44a70"
+    },
+    {
+      "path": "public/assets/audio/host/default/tts/default_intro_rounds_27_players_9.mp3",
+      "bytes": 172661,
+      "checksumSha256": "a9b5459c1d30b971e759defd1643565b19c32c9129a5b9d73a6c4fcfc8e54a44"
+    },
+    {
+      "path": "public/assets/audio/host/default/tts/default_intro_rounds_3_players_3.mp3",
+      "bytes": 126685,
+      "checksumSha256": "5a9def9a2437b98f078b6eb4ad2f5c9d5718b02692512877c62e43b98893ac7c"
+    },
+    {
+      "path": "public/assets/audio/host/default/tts/default_intro_rounds_30_players_10.mp3",
+      "bytes": 146747,
+      "checksumSha256": "f445a8718c7c052f30433176ba9cef322006fdab9f081b6128a1ac49ed204776"
+    },
+    {
+      "path": "public/assets/audio/host/default/tts/default_intro_rounds_33_players_11.mp3",
+      "bytes": 136298,
+      "checksumSha256": "6dfc405ef918b11288ffdaa90f79d979a462381c03be926231a7101fb8da8c47"
+    },
+    {
+      "path": "public/assets/audio/host/default/tts/default_intro_rounds_36_players_12.mp3",
+      "bytes": 154271,
+      "checksumSha256": "ff5dbd8e2cbd4a90e2eeace685243a855b394dd2878529a23358179304bc6b8c"
+    },
+    {
+      "path": "public/assets/audio/host/default/tts/default_intro_rounds_4_players_4.mp3",
+      "bytes": 148001,
+      "checksumSha256": "f87c80cb355cbd17a2b4226f1fb8ca3823051736f0a224daa5b14079c5676129"
+    },
+    {
+      "path": "public/assets/audio/host/default/tts/default_intro_rounds_5_players_5.mp3",
+      "bytes": 123759,
+      "checksumSha256": "9ce7c7faf740919776393165f6017db407201d5ea8e23c33383c5317af08999e"
+    },
+    {
+      "path": "public/assets/audio/host/default/tts/default_intro_rounds_6_players_3.mp3",
+      "bytes": 123759,
+      "checksumSha256": "fdbfe3d21eeeb0c575bf630b14dff10b203a702f61c936ef87a12858d4b34a9b"
+    },
+    {
+      "path": "public/assets/audio/host/default/tts/default_intro_rounds_6_players_6.mp3",
+      "bytes": 131701,
+      "checksumSha256": "9a7cc87c0d99675f83dab72fff2ff7be53b236bcc63902c0b93587a0279df522"
+    },
+    {
+      "path": "public/assets/audio/host/default/tts/default_intro_rounds_7_players_7.mp3",
+      "bytes": 143822,
+      "checksumSha256": "b3cb392588554706e66eb7524276b2bea14ab9f619e36d97d1f757e4a1ec35d2"
+    },
+    {
+      "path": "public/assets/audio/host/default/tts/default_intro_rounds_8_players_4.mp3",
+      "bytes": 122088,
+      "checksumSha256": "87d0846db3eb7f1e830e650a8aef4d99d8a02b2bcdcb2ca0308fdd59adf4e6b1"
+    },
+    {
+      "path": "public/assets/audio/host/default/tts/default_intro_rounds_8_players_8.mp3",
+      "bytes": 114146,
+      "checksumSha256": "d344588068b3c5fbdcfdb289f5a56ef7a5a87363955c1dcecee8a55826a92358"
+    },
+    {
+      "path": "public/assets/audio/host/default/tts/default_intro_rounds_9_players_3.mp3",
+      "bytes": 125849,
+      "checksumSha256": "ee5f433cf429c46e36d5a5e8986b65b3a1152a0e58232fa98bbe375026b3fd13"
+    },
+    {
+      "path": "public/assets/audio/host/default/tts/default_intro_rounds_9_players_9.mp3",
+      "bytes": 146747,
+      "checksumSha256": "0e4ce028403bcc88cfd5bc405f79a9afeb4d65f72c7964954898874f2482ba61"
+    },
+    {
+      "path": "public/assets/audio/host/default/tts/default_onlineLobby_01.mp3",
+      "bytes": 114146,
+      "checksumSha256": "888bb096044921f4a01f2447aedfc4db104fab33cd6b8c9e574ab382d7ff4ef8"
+    },
+    {
+      "path": "public/assets/audio/host/default/tts/default_onlineLobby_02.mp3",
+      "bytes": 108713,
+      "checksumSha256": "fe20b9d6430aee07d6766064bc4363aace07c9e830742344f96f8bee19b59735"
+    },
+    {
+      "path": "public/assets/audio/host/default/tts/default_onlineLobby_03.mp3",
+      "bytes": 97010,
+      "checksumSha256": "bb36614a4d40ca243b7afb64f635959af5ba61309d6c950f71c76642e8d2ddff"
+    },
+    {
+      "path": "public/assets/audio/host/default/tts/default_onlineLobby_04.mp3",
+      "bytes": 108713,
+      "checksumSha256": "d7a21d972079862e7c24ffbd30832df7dac78f06bda55c162313230da7c6e305"
+    },
+    {
+      "path": "public/assets/audio/host/default/tts/default_passPhone_01.mp3",
+      "bytes": 72351,
+      "checksumSha256": "f25f61474487077cb5a6f9d042fbade9e58c41b252484f340a9eee31870b733f"
+    },
+    {
+      "path": "public/assets/audio/host/default/tts/default_passPhone_02.mp3",
+      "bytes": 68589,
+      "checksumSha256": "09a0d9f1a9b6a04bb452acd5340e22588350ebe0538dab2a38c262d2377ecf40"
+    },
+    {
+      "path": "public/assets/audio/host/default/tts/default_passPhone_03.mp3",
+      "bytes": 83635,
+      "checksumSha256": "c1f69011bb79612a368628427cbdb3bb62d9060b454662939e543eeb9da28230"
+    },
+    {
+      "path": "public/assets/audio/host/default/tts/default_passPhone_04.mp3",
+      "bytes": 74440,
+      "checksumSha256": "a2f4cc54782c1df4830caad76319d1d502859a4781bf69323215047284910163"
+    },
+    {
+      "path": "public/assets/audio/host/default/tts/default_revealLiar_01.mp3",
+      "bytes": 102862,
+      "checksumSha256": "3a91ed17583e0fa0837f2b56defa8267bd746f07ab72f4d71b2a28d2045dc27a"
+    },
+    {
+      "path": "public/assets/audio/host/default/tts/default_revealLiar_02.mp3",
+      "bytes": 64409,
+      "checksumSha256": "e9562e75c7d7a0ba9bac36df95d0b492eaa00947982adcadcca160da8c11ed21"
+    },
+    {
+      "path": "public/assets/audio/host/default/tts/default_revealLiar_03.mp3",
+      "bytes": 80710,
+      "checksumSha256": "8231a14a7f015d7cc5e068b7127cfc69dc5c574059f4e9c36c1352573a5b9f1b"
+    },
+    {
+      "path": "public/assets/audio/host/default/tts/default_revealLiar_04.mp3",
+      "bytes": 111639,
+      "checksumSha256": "ce0bfcbfc5c1a9cd8fadcfedb7b0dbbaceaa0372c3d678f5e87aeb1c0b9e50b1"
+    },
+    {
+      "path": "public/assets/audio/host/default/tts/default_revealNormal_01.mp3",
+      "bytes": 74022,
+      "checksumSha256": "d10fa84c5dd4175bc83b3afa5873d7ccd22228214e605651b1a4382bc297adfa"
+    },
+    {
+      "path": "public/assets/audio/host/default/tts/default_revealNormal_02.mp3",
+      "bytes": 64409,
+      "checksumSha256": "3956c53361c49e9517cb1a335dedcfce5a0ccce44882b6af7a692d8ccf91700c"
+    },
+    {
+      "path": "public/assets/audio/host/default/tts/default_revealNormal_03.mp3",
+      "bytes": 64409,
+      "checksumSha256": "71400e4ea119c3f8ffd47a2c92cfab741a4e455995c2fdbdffc4cf586ff1d221"
+    },
+    {
+      "path": "public/assets/audio/host/default/tts/default_revealNormal_04.mp3",
+      "bytes": 84889,
+      "checksumSha256": "fcc10d37502b69655ab29b9dcd563b0bbb48b668653656ddec0b13c7b3228e88"
+    },
+    {
+      "path": "public/assets/audio/host/default/tts/default_setup_01.mp3",
+      "bytes": 84889,
+      "checksumSha256": "0577e6667fa2408d5b3e4aafe2074ed4b85318ffb487d464e3a94d575e312838"
+    },
+    {
+      "path": "public/assets/audio/host/default/tts/default_setup_02.mp3",
+      "bytes": 79038,
+      "checksumSha256": "80215355c195b0666b22122f8525f18b559553fa5dc8a274668fd26a3edf4d4e"
+    },
+    {
+      "path": "public/assets/audio/host/default/tts/default_setup_03.mp3",
+      "bytes": 78202,
+      "checksumSha256": "037706576a4c9cbe91da90341a7409c6c637d907a863dbef542f0b81fe104549"
+    },
+    {
+      "path": "public/assets/audio/host/default/tts/default_setup_04.mp3",
+      "bytes": 84471,
+      "checksumSha256": "06ebeedb8b79d7e8d3f9833fc0cec621052131bbf62b92f01fbfb2adfc5c4e2f"
+    },
+    {
+      "path": "public/assets/audio/host/default/tts/default_stinger_chain_v1.mp3",
+      "bytes": 102862,
+      "checksumSha256": "9c820510168c5aee9e4d10b0f35d66171883630a72ecb04c2d962e3be3998b19"
+    },
+    {
+      "path": "public/assets/audio/host/default/tts/default_stinger_chain_v2.mp3",
+      "bytes": 115400,
+      "checksumSha256": "e7cdc434c72006bccb6867f58aaf683460e23ccd7769e1a06d6aef3a4e8dfa65"
+    },
+    {
+      "path": "public/assets/audio/host/default/tts/default_stinger_chain_v3.mp3",
+      "bytes": 117908,
+      "checksumSha256": "206bf88fbab278bd10d6e74cdfbdb9f8011889ecb389b749d34a9522c32d4930"
+    },
+    {
+      "path": "public/assets/audio/host/default/tts/default_stinger_nameblame_v1.mp3",
+      "bytes": 110385,
+      "checksumSha256": "50f7c300a803f25fa298355d1bd0d12944a35b8a415296cdf3b428f031ee129f"
+    },
+    {
+      "path": "public/assets/audio/host/default/tts/default_stinger_nameblame_v2.mp3",
+      "bytes": 113311,
+      "checksumSha256": "7ea0f4850c31240d11d903f63109c20d84c9276ceb879e77ea70b6500f0fce14"
+    },
+    {
+      "path": "public/assets/audio/host/default/tts/default_stinger_nameblame_v3.mp3",
+      "bytes": 117908,
+      "checksumSha256": "f18436f7663e37ff3ee40276fd6a49f43e70cb0c56d9463473b1e9cc8a9de85e"
+    },
+    {
+      "path": "public/assets/audio/host/default/tts/default_stinger_noise_v1.mp3",
+      "bytes": 112475,
+      "checksumSha256": "734ee94f2ddacf248827d1e946669f31fae7535c8fde190de8c52c01521af46b"
+    },
+    {
+      "path": "public/assets/audio/host/default/tts/default_stinger_noise_v2.mp3",
+      "bytes": 117072,
+      "checksumSha256": "5f74c9624abfb0e08863d8218f8b5641add6f71f71823267beb624726e4ceb4d"
+    },
+    {
+      "path": "public/assets/audio/host/default/tts/default_stinger_noise_v3.mp3",
+      "bytes": 148837,
+      "checksumSha256": "9717808b5089732096a54f3c931f58b757b7401f9e1f82e08560b3240d58a9ef"
+    },
+    {
+      "path": "public/assets/audio/host/default/tts/default_stinger_offtopic_v1.mp3",
+      "bytes": 148837,
+      "checksumSha256": "184d8fd7eb4278a1fbbcaa77cc8e23e04ebc62d34b482f681de1192a51504d9f"
+    },
+    {
+      "path": "public/assets/audio/host/default/tts/default_stinger_offtopic_v2.mp3",
+      "bytes": 122088,
+      "checksumSha256": "0e301f4b736a959acb0af36923d7004e6b7dc8c8cc8def3bde46d869a35f87ad"
+    },
+    {
+      "path": "public/assets/audio/host/default/tts/default_stinger_offtopic_v3.mp3",
+      "bytes": 119998,
+      "checksumSha256": "fac6effc6da8af4035f172886081c635a2e4d50ec34e54b49b14b4ef143659bf"
+    },
+    {
+      "path": "public/assets/audio/host/default/tts/default_stinger_opinion_v1.mp3",
+      "bytes": 142150,
+      "checksumSha256": "113f3a8efcdee095b5a6833b3da2a1cc6d859d1ca479689ea0ea63c27f2bf7d6"
+    },
+    {
+      "path": "public/assets/audio/host/default/tts/default_stinger_opinion_v2.mp3",
+      "bytes": 117908,
+      "checksumSha256": "7631a81aeded9e99988ce18383394ff3e410fe5ec49c325f8424b2824af8d9cf"
+    },
+    {
+      "path": "public/assets/audio/host/default/tts/default_stinger_opinion_v3.mp3",
+      "bytes": 156360,
+      "checksumSha256": "1655951b007751a53d23b99938181baa3e5f9d632dd965ac55a54135443eb991"
+    },
+    {
+      "path": "public/assets/audio/host/default/tts/default_stinger_pairs_v1.mp3",
+      "bytes": 110384,
+      "checksumSha256": "1a46a2d5b2abd1fecec82e828f498359c7926e81cdae94bdf81e5f052ace7594"
+    },
+    {
+      "path": "public/assets/audio/host/default/tts/default_stinger_pairs_v2.mp3",
+      "bytes": 117907,
+      "checksumSha256": "b9047d735cc39f4af0026e6a4ee8acbef0f8b4f114ee4d881325e1e0af4ae113"
+    },
+    {
+      "path": "public/assets/audio/host/default/tts/default_stinger_pairs_v3.mp3",
+      "bytes": 161375,
+      "checksumSha256": "f59b236be903499f3b4af7aa104fd2a40c11ce654c1a04f109b14f52552ad208"
+    },
+    {
+      "path": "public/assets/audio/host/default/tts/default_stinger_picture_v1.mp3",
+      "bytes": 105787,
+      "checksumSha256": "ecf12d24b075c94e1bc0c279e462b9af17697e6ff1e4bcae970d2679af50e0f7"
+    },
+    {
+      "path": "public/assets/audio/host/default/tts/default_stinger_picture_v2.mp3",
+      "bytes": 111221,
+      "checksumSha256": "71c7f244fa25a362f5caff30e759fe1faee62fd5da854066acd7d9b5d7c3a045"
+    },
+    {
+      "path": "public/assets/audio/host/default/tts/default_stinger_picture_v3.mp3",
+      "bytes": 160958,
+      "checksumSha256": "f92f4ada486586a30ee1d0a0618394de54f5bf4f17a5e2ed0f788941273f78f2"
+    },
+    {
+      "path": "public/assets/audio/host/default/tts/default_stinger_prompt_v1.mp3",
+      "bytes": 137970,
+      "checksumSha256": "68a71916f71393c0295be106129cd598ec0834d4ce407d2eaea616468573a551"
+    },
+    {
+      "path": "public/assets/audio/host/default/tts/default_stinger_prompt_v2.mp3",
+      "bytes": 102862,
+      "checksumSha256": "5c3db90a957f9bc6a6865969131898614edb14410e73291481acad609690e932"
+    },
+    {
+      "path": "public/assets/audio/host/default/tts/default_stinger_prompt_v3.mp3",
+      "bytes": 111221,
+      "checksumSha256": "07024d2e81dce4c9606bee65985566492cb8d160c1c2a47276d51c63fc68f4cb"
+    },
+    {
+      "path": "public/assets/audio/host/default/tts/default_stinger_twotruths_v1.mp3",
+      "bytes": 137133,
+      "checksumSha256": "507c4de9609d1636fd26e9ce87b73ccb83e61c842e3246fdcaac2c81b5bdcf08"
+    },
+    {
+      "path": "public/assets/audio/host/default/tts/default_stinger_twotruths_v2.mp3",
+      "bytes": 122923,
+      "checksumSha256": "ceebca64d1f1d9fcf7834b60661d45d7fee524991ae946e7ecfd31495660cee6"
+    },
+    {
+      "path": "public/assets/audio/host/default/tts/default_stinger_twotruths_v3.mp3",
+      "bytes": 119161,
+      "checksumSha256": "b7cfa8537280a972a837d3a2afc3d2a82664594ec805c47163e5c36b83b204bd"
+    },
+    {
+      "path": "public/assets/audio/host/default/tts/default_voting_01.mp3",
+      "bytes": 90323,
+      "checksumSha256": "9d0a81831feafc30bd2ae55e336cd150e17aecfd6d407c1ad77a101c68ac8c51"
+    },
+    {
+      "path": "public/assets/audio/host/default/tts/default_voting_02.mp3",
+      "bytes": 76112,
+      "checksumSha256": "24d815ac8944513a32959976deb49263c8d5d1ee670d8fc9fcd7c27bc4065935"
+    },
+    {
+      "path": "public/assets/audio/host/default/tts/default_voting_03.mp3",
+      "bytes": 86561,
+      "checksumSha256": "1029960c5c4d37e8f3b60246138a10c2960eb9228df8b6bf7fae7d719dbd6424"
+    },
+    {
+      "path": "public/assets/audio/host/default/tts/default_voting_04.mp3",
+      "bytes": 81964,
+      "checksumSha256": "35bea6eb22340e565e86ccd413604071fa7c63d0c39db01f7e4eae34ce7d391a"
+    },
+    {
+      "path": "public/assets/audio/host/default/tts/default_winner_01.mp3",
+      "bytes": 95338,
+      "checksumSha256": "0f229e90b6704365b75e62dafb8aee038718eb223be4d49cf322aec3004e037a"
+    },
+    {
+      "path": "public/assets/audio/host/default/tts/default_winner_02.mp3",
+      "bytes": 70261,
+      "checksumSha256": "f56f5ee6c91ed757d7ba80a0d3416ebe1526157d89422c8c77be1309bc6ecb52"
+    },
+    {
+      "path": "public/assets/audio/host/default/tts/default_winner_03.mp3",
+      "bytes": 85725,
+      "checksumSha256": "c6d21d068a61761eccbbd9798d8032d22f5f5b93c5cebb6098744a000c936990"
+    },
+    {
+      "path": "public/assets/audio/host/default/tts/default_winner_04.mp3",
+      "bytes": 81128,
+      "checksumSha256": "d980fdfc19d9a8570e0ba9ce236cce9ed2393e10d40e5a579479860820aefa3a"
+    },
+    {
+      "path": "public/assets/audio/host/gangsters/tts/gangsters_caught_01.mp3",
+      "bytes": 61902,
+      "checksumSha256": "6d86dceb8270f1efb282bec90d3febbb4411d75f2020b68f33cc1a9e6a827ce1"
+    },
+    {
+      "path": "public/assets/audio/host/gangsters/tts/gangsters_caught_02.mp3",
+      "bytes": 57722,
+      "checksumSha256": "113ab744885ae9d930c0e6ca8eb256058caf65ffd270a31885b22d69277a6cc1"
+    },
+    {
+      "path": "public/assets/audio/host/gangsters/tts/gangsters_chooser_01.mp3",
+      "bytes": 84471,
+      "checksumSha256": "0f6afa5d2c118672b5b419076e5b8fb64dfb697e12c77a3dce43c814f851ef96"
+    },
+    {
+      "path": "public/assets/audio/host/gangsters/tts/gangsters_chooser_02.mp3",
+      "bytes": 91159,
+      "checksumSha256": "7675177c44e11d2abdc37a6d89613619aaaa51acb4d8cd0377f4b54f0a444cd5"
+    },
+    {
+      "path": "public/assets/audio/host/gangsters/tts/gangsters_discussion_01.mp3",
+      "bytes": 73186,
+      "checksumSha256": "2a9de0735e6be0ffe90905f9cc1253b306ecb36e5cf0dd0dca91ab6d1069e84d"
+    },
+    {
+      "path": "public/assets/audio/host/gangsters/tts/gangsters_discussion_02.mp3",
+      "bytes": 64827,
+      "checksumSha256": "83a6be18b7ade0091677b8e7347fceec7a831495faf18c2cd90d8f143aa660ef"
+    },
+    {
+      "path": "public/assets/audio/host/gangsters/tts/gangsters_escaped_01.mp3",
+      "bytes": 86561,
+      "checksumSha256": "94747ea87ceb7d46d4b27b5305cc4af370b4a4696dbc297ab048b3475d96eb99"
+    },
+    {
+      "path": "public/assets/audio/host/gangsters/tts/gangsters_escaped_02.mp3",
+      "bytes": 67335,
+      "checksumSha256": "0b1516e603ce7090919b8e38ce7ae6b6aaea227c2c866a2129ba4b5c27f4d293"
+    },
+    {
+      "path": "public/assets/audio/host/gangsters/tts/gangsters_home_01.mp3",
+      "bytes": 99100,
+      "checksumSha256": "ab046af092c9aa2ac0a0ee0ae8c6297e3aca7c486f92406bc293b86444e54429"
+    },
+    {
+      "path": "public/assets/audio/host/gangsters/tts/gangsters_home_02.mp3",
+      "bytes": 101190,
+      "checksumSha256": "744f598cc17c9f9fcd3bf855a2051c2a28bc2c3a86ecb893058b4143d086a90e"
+    },
+    {
+      "path": "public/assets/audio/host/gangsters/tts/gangsters_intro_closing.mp3",
+      "bytes": 102026,
+      "checksumSha256": "237d8193f4ae9bd3f658d8db33648922a4d57b783248c67e8eaf5254591ba3aa"
+    },
+    {
+      "path": "public/assets/audio/host/gangsters/tts/gangsters_intro_greeting_afternoon.mp3",
+      "bytes": 123759,
+      "checksumSha256": "3562b579e53030537e5047ac1ca12ae0cb4ae6a92dfb37f8d2537e95d9885795"
+    },
+    {
+      "path": "public/assets/audio/host/gangsters/tts/gangsters_intro_greeting_anytime.mp3",
+      "bytes": 113311,
+      "checksumSha256": "4ab46536d0d36519fec5f89d38f34f5dda294b72de2b2f8a4682ff7fe1677cf8"
+    },
+    {
+      "path": "public/assets/audio/host/gangsters/tts/gangsters_intro_greeting_evening.mp3",
+      "bytes": 122088,
+      "checksumSha256": "8f9e184e9dfd5e04b3a9b3696489e12cef29c436c06f6267caf15eb7aff491c6"
+    },
+    {
+      "path": "public/assets/audio/host/gangsters/tts/gangsters_intro_greeting_morning.mp3",
+      "bytes": 107459,
+      "checksumSha256": "1432c79fdb30ed477d0da563c5434a4ea1884b2fe2e00e1cf472a483245abec8"
+    },
+    {
+      "path": "public/assets/audio/host/gangsters/tts/gangsters_intro_hook_01.mp3",
+      "bytes": 83635,
+      "checksumSha256": "961188e82d266e87802ed410ab3401662963b0dbbe1672a238c0eeabcca01243"
+    },
+    {
+      "path": "public/assets/audio/host/gangsters/tts/gangsters_intro_hook_02.mp3",
+      "bytes": 85725,
+      "checksumSha256": "9ec95be7778dd0f12647cdf111f117b1c3c928929b48437ab3c18d7d1e5f1f55"
+    },
+    {
+      "path": "public/assets/audio/host/gangsters/tts/gangsters_intro_hook_03.mp3",
+      "bytes": 74440,
+      "checksumSha256": "19ff3abd1bb323dd0ff915732606aac19fa0adb8722937e619893b7b2dc16dad"
+    },
+    {
+      "path": "public/assets/audio/host/gangsters/tts/gangsters_intro_hook_04.mp3",
+      "bytes": 106623,
+      "checksumSha256": "472e3e84fe74284b2fa757fee5af8bb9a3f9f0108f1eb67af7f0c4d8f7b7a62d"
+    },
+    {
+      "path": "public/assets/audio/host/gangsters/tts/gangsters_intro_host_name.mp3",
+      "bytes": 91577,
+      "checksumSha256": "bdd6834e321a89122f740c35bd31119dd48f6b1f335b575825e0f063325415d3"
+    },
+    {
+      "path": "public/assets/audio/host/gangsters/tts/gangsters_intro_online_prompt.mp3",
+      "bytes": 92413,
+      "checksumSha256": "88e00c3f74afc937bea3befe76ca4441ae97280c739556ce12e9c70a41b3ae96"
+    },
+    {
+      "path": "public/assets/audio/host/gangsters/tts/gangsters_intro_pass_prompt.mp3",
+      "bytes": 70261,
+      "checksumSha256": "b610dbdb1cc90a4a769f986a60f9404ca473c9530dffefe874749e23f1315e26"
+    },
+    {
+      "path": "public/assets/audio/host/gangsters/tts/gangsters_intro_rounds_10_players_10.mp3",
+      "bytes": 132537,
+      "checksumSha256": "0a95b07a8c9f5808335fcdc1ec75d81cc3a10ce1006e4b7869a9f1c60b2b32b7"
+    },
+    {
+      "path": "public/assets/audio/host/gangsters/tts/gangsters_intro_rounds_10_players_5.mp3",
+      "bytes": 127521,
+      "checksumSha256": "410119431701c0f45454224ac277361f6e158c4406cf5acc822fbc70ba3fe57f"
+    },
+    {
+      "path": "public/assets/audio/host/gangsters/tts/gangsters_intro_rounds_11_players_11.mp3",
+      "bytes": 131283,
+      "checksumSha256": "89e9be24496514d3f0d0e3831800377dfdd256d5b6194de3f6bc52b6377469c6"
+    },
+    {
+      "path": "public/assets/audio/host/gangsters/tts/gangsters_intro_rounds_12_players_12.mp3",
+      "bytes": 127939,
+      "checksumSha256": "d54df694dabd900962de67005921964165aac1e4770245001eff9bc23813097a"
+    },
+    {
+      "path": "public/assets/audio/host/gangsters/tts/gangsters_intro_rounds_12_players_4.mp3",
+      "bytes": 123759,
+      "checksumSha256": "8360da603c6d09d8122b61bd270505df93951f1e20371d8fe8fd9bd9364113dc"
+    },
+    {
+      "path": "public/assets/audio/host/gangsters/tts/gangsters_intro_rounds_12_players_6.mp3",
+      "bytes": 129611,
+      "checksumSha256": "683722d66eec0d7bfdf8243b6ce71639cdd965953e275f2a80e3475447230f19"
+    },
+    {
+      "path": "public/assets/audio/host/gangsters/tts/gangsters_intro_rounds_14_players_7.mp3",
+      "bytes": 139224,
+      "checksumSha256": "ea42ede1c0bddcfdf81c95dbee0249e5ba4c12c0153ca021d35a31824d4771c9"
+    },
+    {
+      "path": "public/assets/audio/host/gangsters/tts/gangsters_intro_rounds_15_players_5.mp3",
+      "bytes": 137134,
+      "checksumSha256": "0b88ace7ca9abe1f83d7eaaf88f5d48904a4cd8a6b9f4b9915c8b7096086ecc2"
+    },
+    {
+      "path": "public/assets/audio/host/gangsters/tts/gangsters_intro_rounds_16_players_8.mp3",
+      "bytes": 127521,
+      "checksumSha256": "c7f4dc318f0f41047317a92f451af1f6ddcbba85480f65c0f80a629c92a18cae"
+    },
+    {
+      "path": "public/assets/audio/host/gangsters/tts/gangsters_intro_rounds_18_players_6.mp3",
+      "bytes": 127939,
+      "checksumSha256": "5353f630688fe9758c2878dd0953c414ecc93695d66b055a890d1f07897dfa04"
+    },
+    {
+      "path": "public/assets/audio/host/gangsters/tts/gangsters_intro_rounds_18_players_9.mp3",
+      "bytes": 132537,
+      "checksumSha256": "48ec82c6a74ab81766d23ea3b8dc58ef4939ff56b7c5c7e615c6aa28e06c52e6"
+    },
+    {
+      "path": "public/assets/audio/host/gangsters/tts/gangsters_intro_rounds_20_players_10.mp3",
+      "bytes": 130447,
+      "checksumSha256": "0af07078751b4f2b07bd885e60303481fcac7274c3b534eba5df2bb895693266"
+    },
+    {
+      "path": "public/assets/audio/host/gangsters/tts/gangsters_intro_rounds_21_players_7.mp3",
+      "bytes": 140060,
+      "checksumSha256": "ca2df63884bc9a66f954d5f09cc70f7aa1c9fc4e668a21fb2f5a779d1ab888cf"
+    },
+    {
+      "path": "public/assets/audio/host/gangsters/tts/gangsters_intro_rounds_22_players_11.mp3",
+      "bytes": 138388,
+      "checksumSha256": "5c916ed084ef589225a47b5b1be2a6fc7db4da1aa739a18e6803b3dbf5803619"
+    },
+    {
+      "path": "public/assets/audio/host/gangsters/tts/gangsters_intro_rounds_24_players_12.mp3",
+      "bytes": 123759,
+      "checksumSha256": "8b76218caf295879067fb89eb6ac7e717d998d20a2a82e35955c9d54cd57cb71"
+    },
+    {
+      "path": "public/assets/audio/host/gangsters/tts/gangsters_intro_rounds_24_players_8.mp3",
+      "bytes": 134626,
+      "checksumSha256": "dec27217f6cee91c0334a2b32c90dabe3fb1d1b79ceb1495d19efe9ee8010b0b"
+    },
+    {
+      "path": "public/assets/audio/host/gangsters/tts/gangsters_intro_rounds_27_players_9.mp3",
+      "bytes": 129611,
+      "checksumSha256": "f87a4909a874d8e94f02e9c209017ab1b7b75c9b6a4e383e02005d133bd45af7"
+    },
+    {
+      "path": "public/assets/audio/host/gangsters/tts/gangsters_intro_rounds_3_players_3.mp3",
+      "bytes": 123759,
+      "checksumSha256": "8bde89123d66f395c7d3851efe13644de73f7ceedde78d08fade04eb1c92e0e1"
+    },
+    {
+      "path": "public/assets/audio/host/gangsters/tts/gangsters_intro_rounds_30_players_10.mp3",
+      "bytes": 135462,
+      "checksumSha256": "d3c3cc4527a3f9220b6c7586753ef20b38a23d935cb44f81617860e860ddf762"
+    },
+    {
+      "path": "public/assets/audio/host/gangsters/tts/gangsters_intro_rounds_33_players_11.mp3",
+      "bytes": 142150,
+      "checksumSha256": "49aad125f6aaadad1444432bb2974462298772c9cf51fc71259291e709ef0327"
+    },
+    {
+      "path": "public/assets/audio/host/gangsters/tts/gangsters_intro_rounds_36_players_12.mp3",
+      "bytes": 140060,
+      "checksumSha256": "bf80f7db0f63731738886a6ee1548ac42a5f9d7d504a2668eb8724216eb57d06"
+    },
+    {
+      "path": "public/assets/audio/host/gangsters/tts/gangsters_intro_rounds_4_players_4.mp3",
+      "bytes": 131283,
+      "checksumSha256": "cf7dc9c9aa151db743631fc1ad934779077887edcf09244a4084e316fcee7b13"
+    },
+    {
+      "path": "public/assets/audio/host/gangsters/tts/gangsters_intro_rounds_5_players_5.mp3",
+      "bytes": 142150,
+      "checksumSha256": "7ff3ed3e8a4f9fa26fd699665f87c4f92e0323b13cdaab679952fe3924b6cbad"
+    },
+    {
+      "path": "public/assets/audio/host/gangsters/tts/gangsters_intro_rounds_6_players_3.mp3",
+      "bytes": 123759,
+      "checksumSha256": "e1dfddb5f8a5bcf550f23e8120a944bf8d77b9f82781b0e660ffade693af7283"
+    },
+    {
+      "path": "public/assets/audio/host/gangsters/tts/gangsters_intro_rounds_6_players_6.mp3",
+      "bytes": 123759,
+      "checksumSha256": "7ee44cab1d379ebcf783dd37e92d7643f5a160018d533d7b1e81a6b75eaf02ab"
+    },
+    {
+      "path": "public/assets/audio/host/gangsters/tts/gangsters_intro_rounds_7_players_7.mp3",
+      "bytes": 137134,
+      "checksumSha256": "2f67872005dfe85340a31499acfa052c8af9b0eff0e9a3d5193fdc51a407af42"
+    },
+    {
+      "path": "public/assets/audio/host/gangsters/tts/gangsters_intro_rounds_8_players_4.mp3",
+      "bytes": 129611,
+      "checksumSha256": "34d198b17e449ab7c77aff2411d748dc4a51e88cabfeaae46b2b84d47b8c9648"
+    },
+    {
+      "path": "public/assets/audio/host/gangsters/tts/gangsters_intro_rounds_8_players_8.mp3",
+      "bytes": 127939,
+      "checksumSha256": "925ee64fae96e38a420ddae822c8fe5368ddadb7aa74017f40685bef328582c0"
+    },
+    {
+      "path": "public/assets/audio/host/gangsters/tts/gangsters_intro_rounds_9_players_3.mp3",
+      "bytes": 136298,
+      "checksumSha256": "0e9941ecf1a7e983a9d7d76dbc56048925f0aa603137cb0d53c604f45c2c6f73"
+    },
+    {
+      "path": "public/assets/audio/host/gangsters/tts/gangsters_intro_rounds_9_players_9.mp3",
+      "bytes": 133373,
+      "checksumSha256": "10ad0fc8241f5d2d9042c6d5843c354728a26c70680ba9267a4b74bfb9afae09"
+    },
+    {
+      "path": "public/assets/audio/host/gangsters/tts/gangsters_onlineLobby_01.mp3",
+      "bytes": 81128,
+      "checksumSha256": "98259905ed7793cf36391864bfff32da6b21c182e6c81f12bfe9c87dd6784d25"
+    },
+    {
+      "path": "public/assets/audio/host/gangsters/tts/gangsters_passPhone_01.mp3",
+      "bytes": 84471,
+      "checksumSha256": "241a3f86ba3d6634bedbb40d2cd4570167bd3c22624f43d46528bf1ec49fe9aa"
+    },
+    {
+      "path": "public/assets/audio/host/gangsters/tts/gangsters_passPhone_02.mp3",
+      "bytes": 64827,
+      "checksumSha256": "81aa11752199334981d13b336efd225ad2d3cb9529068ad24d956a10f932406a"
+    },
+    {
+      "path": "public/assets/audio/host/gangsters/tts/gangsters_revealLiar_01.mp3",
+      "bytes": 87815,
+      "checksumSha256": "8ab1a035e7c0a2b27b7b8cb537feee2d041e5e7ca9a07cc519c93049131271e9"
+    },
+    {
+      "path": "public/assets/audio/host/gangsters/tts/gangsters_revealLiar_02.mp3",
+      "bytes": 85725,
+      "checksumSha256": "cbad0c2c236f8c3459ba840649b6adf7044e92d4f9122a879fa740d48506a541"
+    },
+    {
+      "path": "public/assets/audio/host/gangsters/tts/gangsters_revealNormal_01.mp3",
+      "bytes": 74440,
+      "checksumSha256": "256d8a7290f9813a0aab364ab85fc05dcb364614ddbf54088eb791af3565369f"
+    },
+    {
+      "path": "public/assets/audio/host/gangsters/tts/gangsters_revealNormal_02.mp3",
+      "bytes": 79874,
+      "checksumSha256": "b9427512849ca667d5c8fbbc1e4d75156a1ae27ab422571b4a141d155411b0dc"
+    },
+    {
+      "path": "public/assets/audio/host/gangsters/tts/gangsters_setup_01.mp3",
+      "bytes": 81128,
+      "checksumSha256": "193c088c66fecd6cb497992f7dd49dcc028bea147b48429b7fcb29a43423c07b"
+    },
+    {
+      "path": "public/assets/audio/host/gangsters/tts/gangsters_setup_02.mp3",
+      "bytes": 97010,
+      "checksumSha256": "d85a2e23e0250ff9671d5a92a736dd3466ee16ece9901e681f3f9bdd7e183750"
+    },
+    {
+      "path": "public/assets/audio/host/gangsters/tts/gangsters_stinger_chain_v1.mp3",
+      "bytes": 104951,
+      "checksumSha256": "e476537aa946effa770e1c9c48087da4b2665e12aa2f513d360ee21eee498a1f"
+    },
+    {
+      "path": "public/assets/audio/host/gangsters/tts/gangsters_stinger_chain_v2.mp3",
+      "bytes": 114146,
+      "checksumSha256": "f53a9730297a2be6ea36a3d95d9732cc625dd45703c0976a022771a311d7b204"
+    },
+    {
+      "path": "public/assets/audio/host/gangsters/tts/gangsters_stinger_chain_v3.mp3",
+      "bytes": 108713,
+      "checksumSha256": "0897db1416b47e8c80a1e286807fcfa059c29a1b63a9964e01f8ce7346f4d79a"
+    },
+    {
+      "path": "public/assets/audio/host/gangsters/tts/gangsters_stinger_nameblame_v1.mp3",
+      "bytes": 98264,
+      "checksumSha256": "8b9d57ee42313de047ebaa4a2ea818113eb655e3f53951ca8f09a33a1aee5070"
+    },
+    {
+      "path": "public/assets/audio/host/gangsters/tts/gangsters_stinger_nameblame_v2.mp3",
+      "bytes": 95338,
+      "checksumSha256": "beae11c6869f6225593876bd3369dabc7300b71c24d5116c13151fef0aa8a548"
+    },
+    {
+      "path": "public/assets/audio/host/gangsters/tts/gangsters_stinger_nameblame_v3.mp3",
+      "bytes": 134626,
+      "checksumSha256": "7105516a960fe65c6ab3608bf1c42f11428db0b08b3b690df762fb27092d2c2e"
+    },
+    {
+      "path": "public/assets/audio/host/gangsters/tts/gangsters_stinger_noise_v1.mp3",
+      "bytes": 86561,
+      "checksumSha256": "4a5180472834a37664d06ebff1e0cb65180a69f132b52d809698394f637d9d18"
+    },
+    {
+      "path": "public/assets/audio/host/gangsters/tts/gangsters_stinger_noise_v2.mp3",
+      "bytes": 95338,
+      "checksumSha256": "2d03eb6c5415fb83f0bb1339d397f6ffb3f4716247b4eb05bb56488c5f86ec94"
+    },
+    {
+      "path": "public/assets/audio/host/gangsters/tts/gangsters_stinger_noise_v3.mp3",
+      "bytes": 111639,
+      "checksumSha256": "7194e1f812b3b12ceeb1b9534f8d51232c47d4ee683256d30040c4205a555c0e"
+    },
+    {
+      "path": "public/assets/audio/host/gangsters/tts/gangsters_stinger_offtopic_v1.mp3",
+      "bytes": 119998,
+      "checksumSha256": "6fda1b095d5bf85c0d043fd0961b0fca467d5bdc824ee56227d44d5219e5ccf0"
+    },
+    {
+      "path": "public/assets/audio/host/gangsters/tts/gangsters_stinger_offtopic_v2.mp3",
+      "bytes": 110385,
+      "checksumSha256": "4893d1ff1ad5ae74bc6d2f36b97bee4c1a8819f8ca876e8df7795b00ca2f1fb7"
+    },
+    {
+      "path": "public/assets/audio/host/gangsters/tts/gangsters_stinger_offtopic_v3.mp3",
+      "bytes": 110385,
+      "checksumSha256": "8fdcec13c75c944cac2c531d6afef50cc3a23c69f784ddc179b18f3e9a6c906a"
+    },
+    {
+      "path": "public/assets/audio/host/gangsters/tts/gangsters_stinger_opinion_v1.mp3",
+      "bytes": 106623,
+      "checksumSha256": "191f95ef78943cf3df8147d28d7e838c07c8869f25ec6b84400ddd2255e83ce7"
+    },
+    {
+      "path": "public/assets/audio/host/gangsters/tts/gangsters_stinger_opinion_v2.mp3",
+      "bytes": 95338,
+      "checksumSha256": "5964085d16e3dff38da48619e74193fbaee05d822e0026e4f3de3cc942b131c5"
+    },
+    {
+      "path": "public/assets/audio/host/gangsters/tts/gangsters_stinger_opinion_v3.mp3",
+      "bytes": 107459,
+      "checksumSha256": "39895fd9e985a5beecb504b42a06c39167432605edf0f16b8ad8ee04712fcf7b"
+    },
+    {
+      "path": "public/assets/audio/host/gangsters/tts/gangsters_stinger_picture_v1.mp3",
+      "bytes": 98264,
+      "checksumSha256": "44e46d8537139f7a90081df9b09f56b9ab67c927709bed13420aa5e53e73d544"
+    },
+    {
+      "path": "public/assets/audio/host/gangsters/tts/gangsters_stinger_picture_v2.mp3",
+      "bytes": 94502,
+      "checksumSha256": "ff159f4aca34530bfec416e58d59f54d3f2688c5c3cb32befbc6a5b85169284c"
+    },
+    {
+      "path": "public/assets/audio/host/gangsters/tts/gangsters_stinger_picture_v3.mp3",
+      "bytes": 104533,
+      "checksumSha256": "9b642772a4ca0aa1464e4b01ba6ccba3bf5cffc51c840500785762916ee803b5"
+    },
+    {
+      "path": "public/assets/audio/host/gangsters/tts/gangsters_stinger_prompt_v1.mp3",
+      "bytes": 87397,
+      "checksumSha256": "48c090f3aa82a088c9e9c74c7c03bcbf358b53ba8d0e57cfcac95b57c25d02ac"
+    },
+    {
+      "path": "public/assets/audio/host/gangsters/tts/gangsters_stinger_prompt_v2.mp3",
+      "bytes": 107877,
+      "checksumSha256": "9d3b1204c9dfb327d3d7c8f97c2c3ea4a3690ac6ad0a01f579ac165afbc5def2"
+    },
+    {
+      "path": "public/assets/audio/host/gangsters/tts/gangsters_stinger_prompt_v3.mp3",
+      "bytes": 105787,
+      "checksumSha256": "82f42b2a491c9ae7487b785095fea694955d9b042465937b905f545d6a7ab5b1"
+    },
+    {
+      "path": "public/assets/audio/host/gangsters/tts/gangsters_voting_01.mp3",
+      "bytes": 58140,
+      "checksumSha256": "22fb5e07e52dc99edece78781ac832bcebc466e19767e5d2b3d6a4d4a8d92893"
+    },
+    {
+      "path": "public/assets/audio/host/gangsters/tts/gangsters_voting_02.mp3",
+      "bytes": 67753,
+      "checksumSha256": "ffc73082cb044de11353cc4e8c122ebf42929338041ec5646c4ce0897bf519a7"
+    },
+    {
+      "path": "public/assets/audio/host/gangsters/tts/gangsters_winner_01.mp3",
+      "bytes": 82799,
+      "checksumSha256": "2350ce242eff5ba028707c74bd8bfc3ec1c0a3af7afe923489f71baf77230c95"
+    },
+    {
+      "path": "public/assets/audio/host/gangsters/tts/gangsters_winner_02.mp3",
+      "bytes": 79874,
+      "checksumSha256": "2a66f9f0d097ad762ae9928e17671615cd2d6752dcf968c91c01dd2cf23b28cb"
+    },
+    {
+      "path": "public/assets/audio/host/ghosts-and-ghouls/tts/ghosts-and-ghouls_caught_01.mp3",
+      "bytes": 107877,
+      "checksumSha256": "cfab3c569240852c8eaa451bb7f262563b23686b0b4cd30170b4bce655ee64a1"
+    },
+    {
+      "path": "public/assets/audio/host/ghosts-and-ghouls/tts/ghosts-and-ghouls_caught_02.mp3",
+      "bytes": 107459,
+      "checksumSha256": "27bbe9b49e37164e61192f40f05b0db98e6e2eae2073b9b27e79b2793d00c10b"
+    },
+    {
+      "path": "public/assets/audio/host/ghosts-and-ghouls/tts/ghosts-and-ghouls_chooser_01.mp3",
+      "bytes": 85725,
+      "checksumSha256": "e71d9d7c48f49ca02dcff71f2783dff3a2ee305e2e9f7a4e45cd3e589d177e06"
+    },
+    {
+      "path": "public/assets/audio/host/ghosts-and-ghouls/tts/ghosts-and-ghouls_chooser_02.mp3",
+      "bytes": 111221,
+      "checksumSha256": "b5aec3677a1c69ec56183b8bfc3b08a1512147cc3fc60379a44a5ad8400f3bdd"
+    },
+    {
+      "path": "public/assets/audio/host/ghosts-and-ghouls/tts/ghosts-and-ghouls_discussion_01.mp3",
+      "bytes": 111221,
+      "checksumSha256": "2cd1781fb39470ea5396e4ad76d87838d4417d07bdd5c254cf29b36b6757eac7"
+    },
+    {
+      "path": "public/assets/audio/host/ghosts-and-ghouls/tts/ghosts-and-ghouls_discussion_02.mp3",
+      "bytes": 114564,
+      "checksumSha256": "faa989526b74dee7015f5d091ee9bedc0d76c79e6e21ad00dd2d4cc11d7c1925"
+    },
+    {
+      "path": "public/assets/audio/host/ghosts-and-ghouls/tts/ghosts-and-ghouls_escaped_01.mp3",
+      "bytes": 139224,
+      "checksumSha256": "174bf5125592567e3b8a21e7a43efc503564d26e3acb86944dd3f0c0bc04728c"
+    },
+    {
+      "path": "public/assets/audio/host/ghosts-and-ghouls/tts/ghosts-and-ghouls_escaped_02.mp3",
+      "bytes": 116236,
+      "checksumSha256": "b03e07ff25a9c4dd314f8db3a5a29783a221c63ba495ab5f2b5df064b4b55d4a"
+    },
+    {
+      "path": "public/assets/audio/host/ghosts-and-ghouls/tts/ghosts-and-ghouls_home_01.mp3",
+      "bytes": 148001,
+      "checksumSha256": "a5e651019cad24c56fe5424abbe4102172e4b6657e4d41e491acc5cf6a29ea74"
+    },
+    {
+      "path": "public/assets/audio/host/ghosts-and-ghouls/tts/ghosts-and-ghouls_home_02.mp3",
+      "bytes": 135462,
+      "checksumSha256": "6851a447c9f1879b251c4e898eb9991858edbbee299d4baa03857e188841e1c1"
+    },
+    {
+      "path": "public/assets/audio/host/ghosts-and-ghouls/tts/ghosts-and-ghouls_intro_closing.mp3",
+      "bytes": 207769,
+      "checksumSha256": "592d26ac8b77eca241b0cc6bcfbbf2b92e4087349d3074002a376e31ee8b4458"
+    },
+    {
+      "path": "public/assets/audio/host/ghosts-and-ghouls/tts/ghosts-and-ghouls_intro_greeting_afternoon.mp3",
+      "bytes": 185199,
+      "checksumSha256": "a83da0d9e26d20d4ce9cee1757aed5876a795362bdf6d9a435d0d795de13a650"
+    },
+    {
+      "path": "public/assets/audio/host/ghosts-and-ghouls/tts/ghosts-and-ghouls_intro_greeting_anytime.mp3",
+      "bytes": 224070,
+      "checksumSha256": "db4882e00bbdca510bff23a2de0d73de57049d96f110b06966d4505fe15f2b6c"
+    },
+    {
+      "path": "public/assets/audio/host/ghosts-and-ghouls/tts/ghosts-and-ghouls_intro_greeting_evening.mp3",
+      "bytes": 184782,
+      "checksumSha256": "0c67c2a66deaefeab8938de2aaaa760deb70e8b907b208456c5c49e2b17d1407"
+    },
+    {
+      "path": "public/assets/audio/host/ghosts-and-ghouls/tts/ghosts-and-ghouls_intro_greeting_morning.mp3",
+      "bytes": 173497,
+      "checksumSha256": "93981e0e7b488e4a64762f213e938b4339ebd2557c85a3feab772a2fb744e80c"
+    },
+    {
+      "path": "public/assets/audio/host/ghosts-and-ghouls/tts/ghosts-and-ghouls_intro_hook_01.mp3",
+      "bytes": 193559,
+      "checksumSha256": "4e6edf645be8d7cb41f1da04519fdeeb75d199409403f418c5618897b1ef68f6"
+    },
+    {
+      "path": "public/assets/audio/host/ghosts-and-ghouls/tts/ghosts-and-ghouls_intro_hook_02.mp3",
+      "bytes": 134208,
+      "checksumSha256": "1eb492ca27bf5117cdcb4a1b921e267a367870af05abe9bb7c81540b1d0f0f8e"
+    },
+    {
+      "path": "public/assets/audio/host/ghosts-and-ghouls/tts/ghosts-and-ghouls_intro_hook_03.mp3",
+      "bytes": 145911,
+      "checksumSha256": "dc1e567af342d55f55a27a3f8a9b419f66a235bdefc920fa501a8cb2c062970a"
+    },
+    {
+      "path": "public/assets/audio/host/ghosts-and-ghouls/tts/ghosts-and-ghouls_intro_hook_04.mp3",
+      "bytes": 137970,
+      "checksumSha256": "dd269adf006f034f6ad30e86eba280a8c2ab98a118a562dfda6487b129cae923"
+    },
+    {
+      "path": "public/assets/audio/host/ghosts-and-ghouls/tts/ghosts-and-ghouls_intro_host_name.mp3",
+      "bytes": 188125,
+      "checksumSha256": "5673f0be03cdbbc5b155c4036c6c73ddd19c9bb61e6587502039d2b6af364b26"
+    },
+    {
+      "path": "public/assets/audio/host/ghosts-and-ghouls/tts/ghosts-and-ghouls_intro_online_prompt.mp3",
+      "bytes": 153435,
+      "checksumSha256": "dd9ba4d8e5fd9a27145c9857e8849120c789dc0cc80011283b72ff7bba1cbc33"
+    },
+    {
+      "path": "public/assets/audio/host/ghosts-and-ghouls/tts/ghosts-and-ghouls_intro_pass_prompt.mp3",
+      "bytes": 133373,
+      "checksumSha256": "81396c6f4e46d082a8f3f94f7d1da89a17eed116200efa4e8c6b20db7706ce89"
+    },
+    {
+      "path": "public/assets/audio/host/ghosts-and-ghouls/tts/ghosts-and-ghouls_intro_rounds_10_players_10.mp3",
+      "bytes": 204008,
+      "checksumSha256": "af6b1e690917099b4daaf87a63482bf18c24044d0eb514857932353a9e2104f3"
+    },
+    {
+      "path": "public/assets/audio/host/ghosts-and-ghouls/tts/ghosts-and-ghouls_intro_rounds_10_players_5.mp3",
+      "bytes": 216546,
+      "checksumSha256": "a0b51ff32ac74da7aa2672b28e2fdd355686bd803a780ea114609964f942cf80"
+    },
+    {
+      "path": "public/assets/audio/host/ghosts-and-ghouls/tts/ghosts-and-ghouls_intro_rounds_11_players_11.mp3",
+      "bytes": 210695,
+      "checksumSha256": "f6fc4218c0d91bd53c66ae04852ec55d1d070288f721f4f46ca055154fa0a1b2"
+    },
+    {
+      "path": "public/assets/audio/host/ghosts-and-ghouls/tts/ghosts-and-ghouls_intro_rounds_12_players_12.mp3",
+      "bytes": 208187,
+      "checksumSha256": "52c4a2e9b233d66d08a158514ca2b19cfa7ed5b36a57568ae1433329edeb9555"
+    },
+    {
+      "path": "public/assets/audio/host/ghosts-and-ghouls/tts/ghosts-and-ghouls_intro_rounds_12_players_4.mp3",
+      "bytes": 227831,
+      "checksumSha256": "4fcfe0350698e0bb081c72885aba2b539baf3fd61f1957de2b0f06818d5bf10c"
+    },
+    {
+      "path": "public/assets/audio/host/ghosts-and-ghouls/tts/ghosts-and-ghouls_intro_rounds_12_players_6.mp3",
+      "bytes": 222398,
+      "checksumSha256": "8e6c56bde16a55ed4957f77430f7203616200e450397268035fc97262f41b1f6"
+    },
+    {
+      "path": "public/assets/audio/host/ghosts-and-ghouls/tts/ghosts-and-ghouls_intro_rounds_14_players_7.mp3",
+      "bytes": 278404,
+      "checksumSha256": "b59841d40c44846fae69f5f0c4fa533bb437a37ddf7e2d41e9a6eec0fa3411a1"
+    },
+    {
+      "path": "public/assets/audio/host/ghosts-and-ghouls/tts/ghosts-and-ghouls_intro_rounds_15_players_5.mp3",
+      "bytes": 199410,
+      "checksumSha256": "680baee154551777d5f665ab5d86297f25476fe704085042184ac23226461c0a"
+    },
+    {
+      "path": "public/assets/audio/host/ghosts-and-ghouls/tts/ghosts-and-ghouls_intro_rounds_16_players_8.mp3",
+      "bytes": 253745,
+      "checksumSha256": "eca0eb28c750bf1167d8899b4f8af17c0f336fc2d52591f7fe8767e798f71ab5"
+    },
+    {
+      "path": "public/assets/audio/host/ghosts-and-ghouls/tts/ghosts-and-ghouls_intro_rounds_18_players_6.mp3",
+      "bytes": 214875,
+      "checksumSha256": "25e034614957e387640262bcf644abfae7fd88268f1b813c7467b17ea45d20ab"
+    },
+    {
+      "path": "public/assets/audio/host/ghosts-and-ghouls/tts/ghosts-and-ghouls_intro_rounds_18_players_9.mp3",
+      "bytes": 302646,
+      "checksumSha256": "5cb95d419bfce23d7bf7cba529877a2f9ef9b3b0874c1091d1754e6cf3c5f2fc"
+    },
+    {
+      "path": "public/assets/audio/host/ghosts-and-ghouls/tts/ghosts-and-ghouls_intro_rounds_20_players_10.mp3",
+      "bytes": 241206,
+      "checksumSha256": "21123a094df4a2b3f8ef523322ca1c97256c3b88d4e091c163cbea52da3ad2ad"
+    },
+    {
+      "path": "public/assets/audio/host/ghosts-and-ghouls/tts/ghosts-and-ghouls_intro_rounds_21_players_7.mp3",
+      "bytes": 232011,
+      "checksumSha256": "0e691525037c89e66ce3d0607bfef709224e0eeb2fb21af3cfe89f4c29ed314e"
+    },
+    {
+      "path": "public/assets/audio/host/ghosts-and-ghouls/tts/ghosts-and-ghouls_intro_rounds_22_players_11.mp3",
+      "bytes": 227831,
+      "checksumSha256": "7098b91802588c5d5a7d83147688073d75cec8c3fa967ed6c5e38ed7c5d2ea9a"
+    },
+    {
+      "path": "public/assets/audio/host/ghosts-and-ghouls/tts/ghosts-and-ghouls_intro_rounds_24_players_12.mp3",
+      "bytes": 211531,
+      "checksumSha256": "832347558ff8928350eff50b72bf34bd60369b47db51dc9c16ca007ea78095a5"
+    },
+    {
+      "path": "public/assets/audio/host/ghosts-and-ghouls/tts/ghosts-and-ghouls_intro_rounds_24_players_8.mp3",
+      "bytes": 221144,
+      "checksumSha256": "b6e011ff272adb69b2b7dbefaf8b23c0de1a4fb27e6fdf32674bd7a459bf384b"
+    },
+    {
+      "path": "public/assets/audio/host/ghosts-and-ghouls/tts/ghosts-and-ghouls_intro_rounds_27_players_9.mp3",
+      "bytes": 238280,
+      "checksumSha256": "c9564b8a080f7c11a67b5b26ead102d7fa29e12bc68f34d6ad5d338fdee59a6c"
+    },
+    {
+      "path": "public/assets/audio/host/ghosts-and-ghouls/tts/ghosts-and-ghouls_intro_rounds_3_players_3.mp3",
+      "bytes": 218636,
+      "checksumSha256": "587740fa58355c14ec51f7ec4ae4f804a6a0c64caae5618c226588f435995b9f"
+    },
+    {
+      "path": "public/assets/audio/host/ghosts-and-ghouls/tts/ghosts-and-ghouls_intro_rounds_30_players_10.mp3",
+      "bytes": 238698,
+      "checksumSha256": "3a8988f526d8f0d864892407d94c8481d75366b5060dd3e3a276a9c927848ad8"
+    },
+    {
+      "path": "public/assets/audio/host/ghosts-and-ghouls/tts/ghosts-and-ghouls_intro_rounds_33_players_11.mp3",
+      "bytes": 221144,
+      "checksumSha256": "4cc77a33a94bd6862a64354fd22263d6b02d83d9968afb41d4fb3127695cc18f"
+    },
+    {
+      "path": "public/assets/audio/host/ghosts-and-ghouls/tts/ghosts-and-ghouls_intro_rounds_36_players_12.mp3",
+      "bytes": 214875,
+      "checksumSha256": "484404d32e89bf17d5f13aa81396d7a6ac5ad734c0e9960505449051689751e6"
+    },
+    {
+      "path": "public/assets/audio/host/ghosts-and-ghouls/tts/ghosts-and-ghouls_intro_rounds_4_players_4.mp3",
+      "bytes": 242460,
+      "checksumSha256": "f2bc87257f1060a12dde9511baaddb311c61502388d636f908572767449ef854"
+    },
+    {
+      "path": "public/assets/audio/host/ghosts-and-ghouls/tts/ghosts-and-ghouls_intro_rounds_5_players_5.mp3",
+      "bytes": 207769,
+      "checksumSha256": "df6a92e3cd4eb0f5d3ed866189f846510e56b99a089e6185681a99e3da06b068"
+    },
+    {
+      "path": "public/assets/audio/host/ghosts-and-ghouls/tts/ghosts-and-ghouls_intro_rounds_6_players_3.mp3",
+      "bytes": 247893,
+      "checksumSha256": "bcc6f20dca46f048535bbe9a00890d2710349f8c0c219736e8e67758108bf875"
+    },
+    {
+      "path": "public/assets/audio/host/ghosts-and-ghouls/tts/ghosts-and-ghouls_intro_rounds_6_players_6.mp3",
+      "bytes": 206097,
+      "checksumSha256": "f494d5339d782219144296c2183bc637b76013a711f777a5977d676285e26f2d"
+    },
+    {
+      "path": "public/assets/audio/host/ghosts-and-ghouls/tts/ghosts-and-ghouls_intro_rounds_7_players_7.mp3",
+      "bytes": 214875,
+      "checksumSha256": "a4596dc957ed2c214ebed181f0c7f55a24250de664dc261f69334843ad94c675"
+    },
+    {
+      "path": "public/assets/audio/host/ghosts-and-ghouls/tts/ghosts-and-ghouls_intro_rounds_8_players_4.mp3",
+      "bytes": 238280,
+      "checksumSha256": "39a2b2be672d558ee52a0f4b89579d65009d9204dd865e33ba8a52ee1c206334"
+    },
+    {
+      "path": "public/assets/audio/host/ghosts-and-ghouls/tts/ghosts-and-ghouls_intro_rounds_8_players_8.mp3",
+      "bytes": 267955,
+      "checksumSha256": "4f0b57b588fbd610837946deae17359c4567ef420e8da2ed63ab9baecbac9ad6"
+    },
+    {
+      "path": "public/assets/audio/host/ghosts-and-ghouls/tts/ghosts-and-ghouls_intro_rounds_9_players_3.mp3",
+      "bytes": 213621,
+      "checksumSha256": "1f8692a4c934b995079a8657329d5b1d8d34ca9282fd8884e212c758ff09035c"
+    },
+    {
+      "path": "public/assets/audio/host/ghosts-and-ghouls/tts/ghosts-and-ghouls_intro_rounds_9_players_9.mp3",
+      "bytes": 220308,
+      "checksumSha256": "4ac2340b1f4fb05196dd9b491d73b3cd7ac2088385058fede1a87a5ef2e77e50"
+    },
+    {
+      "path": "public/assets/audio/host/ghosts-and-ghouls/tts/ghosts-and-ghouls_onlineLobby_01.mp3",
+      "bytes": 130447,
+      "checksumSha256": "977de26f1afebf8bd9d7d17349abe17d7d2f88a7b8accb3c90a63e96333af8af"
+    },
+    {
+      "path": "public/assets/audio/host/ghosts-and-ghouls/tts/ghosts-and-ghouls_passPhone_01.mp3",
+      "bytes": 145911,
+      "checksumSha256": "04d889ed0441f2e1cb80f77eb940b81fd99195239065370ab856b379c29b0493"
+    },
+    {
+      "path": "public/assets/audio/host/ghosts-and-ghouls/tts/ghosts-and-ghouls_passPhone_02.mp3",
+      "bytes": 115400,
+      "checksumSha256": "55431a63366179eb7c39d58c7a3c96708dbb0fd8f1d3671f1500e7a1c0e67538"
+    },
+    {
+      "path": "public/assets/audio/host/ghosts-and-ghouls/tts/ghosts-and-ghouls_revealLiar_01.mp3",
+      "bytes": 105787,
+      "checksumSha256": "144371c6c418b19ee4b56d74651dfbefbe390c06919025e5d740b7c7ff0d319a"
+    },
+    {
+      "path": "public/assets/audio/host/ghosts-and-ghouls/tts/ghosts-and-ghouls_revealLiar_02.mp3",
+      "bytes": 145911,
+      "checksumSha256": "8c462c1509202230620d9807279afc7615ec8f0282a7b51e408889248d911c51"
+    },
+    {
+      "path": "public/assets/audio/host/ghosts-and-ghouls/tts/ghosts-and-ghouls_revealNormal_01.mp3",
+      "bytes": 148001,
+      "checksumSha256": "f82afeb782f55d088a3066468be06ddf137763a706288e88605acfa8ced46e62"
+    },
+    {
+      "path": "public/assets/audio/host/ghosts-and-ghouls/tts/ghosts-and-ghouls_revealNormal_02.mp3",
+      "bytes": 127521,
+      "checksumSha256": "33ce9d1aabb5f91d4c45bf7552576aaaab2773909f0aa533c7918d5aff2c12a3"
+    },
+    {
+      "path": "public/assets/audio/host/ghosts-and-ghouls/tts/ghosts-and-ghouls_setup_01.mp3",
+      "bytes": 167645,
+      "checksumSha256": "5c972956b2b0ac3aef4afdf7c644b1417e1dcc764c7966678d63dbe36bb6d382"
+    },
+    {
+      "path": "public/assets/audio/host/ghosts-and-ghouls/tts/ghosts-and-ghouls_setup_02.mp3",
+      "bytes": 117072,
+      "checksumSha256": "8ea5504e94fbb7e1134cf1bfffa9ccef8867aa791a2089c9285b13f155d4c27b"
+    },
+    {
+      "path": "public/assets/audio/host/ghosts-and-ghouls/tts/ghosts-and-ghouls_stinger_chain_v1.mp3",
+      "bytes": 207769,
+      "checksumSha256": "9af238255c90439e003ed69a3c2f3398471324ea43eedf232677abffd6588408"
+    },
+    {
+      "path": "public/assets/audio/host/ghosts-and-ghouls/tts/ghosts-and-ghouls_stinger_chain_v2.mp3",
+      "bytes": 194813,
+      "checksumSha256": "458ca436edf5577add62d32b699a5674ccec02c17f6dd824724b9f641e07de79"
+    },
+    {
+      "path": "public/assets/audio/host/ghosts-and-ghouls/tts/ghosts-and-ghouls_stinger_chain_v3.mp3",
+      "bytes": 161376,
+      "checksumSha256": "34e6123c37e9ba53ffbb9bca7dfe739b85514cc3a357cb5706ab038e2db96524"
+    },
+    {
+      "path": "public/assets/audio/host/ghosts-and-ghouls/tts/ghosts-and-ghouls_stinger_nameblame_v1.mp3",
+      "bytes": 191469,
+      "checksumSha256": "03662597cb2cec7768f3abaa74667595837d7bb8e45d356f523481a55d20c601"
+    },
+    {
+      "path": "public/assets/audio/host/ghosts-and-ghouls/tts/ghosts-and-ghouls_stinger_nameblame_v2.mp3",
+      "bytes": 196484,
+      "checksumSha256": "6d9c2ea0e8753c0184cb1435e790b4914f643d96e21cdedc1bdb526de9cbd0ae"
+    },
+    {
+      "path": "public/assets/audio/host/ghosts-and-ghouls/tts/ghosts-and-ghouls_stinger_nameblame_v3.mp3",
+      "bytes": 165137,
+      "checksumSha256": "9fc0f97cf56e4a8a75aa8426a83cae8f34969fdefe7eb5af17c7c245ba37969b"
+    },
+    {
+      "path": "public/assets/audio/host/ghosts-and-ghouls/tts/ghosts-and-ghouls_stinger_noise_v1.mp3",
+      "bytes": 190633,
+      "checksumSha256": "986340fb2b7d6f3f1d78485d51e022ee2d30c30598e4397bdbd26742a02a39f4"
+    },
+    {
+      "path": "public/assets/audio/host/ghosts-and-ghouls/tts/ghosts-and-ghouls_stinger_noise_v2.mp3",
+      "bytes": 189797,
+      "checksumSha256": "cffd82c2553c12c81d61841a1c198fc13fd12cf9bd3a4485dea0492b192866f8"
+    },
+    {
+      "path": "public/assets/audio/host/ghosts-and-ghouls/tts/ghosts-and-ghouls_stinger_noise_v3.mp3",
+      "bytes": 194813,
+      "checksumSha256": "1164b471fc54d649a32c569a7259e1e03ce295519a069d15195c7452dac7bdc1"
+    },
+    {
+      "path": "public/assets/audio/host/ghosts-and-ghouls/tts/ghosts-and-ghouls_stinger_offtopic_v1.mp3",
+      "bytes": 258760,
+      "checksumSha256": "8330403c8c6631460649eb23226214e8ebd6e526a0d34ad2b0a8626ed68011df"
+    },
+    {
+      "path": "public/assets/audio/host/ghosts-and-ghouls/tts/ghosts-and-ghouls_stinger_offtopic_v2.mp3",
+      "bytes": 193559,
+      "checksumSha256": "ab9ed8a359238f6ba13c406c748cb823fbe81f985f16c0a577e6a728f1dc9498"
+    },
+    {
+      "path": "public/assets/audio/host/ghosts-and-ghouls/tts/ghosts-and-ghouls_stinger_offtopic_v3.mp3",
+      "bytes": 164719,
+      "checksumSha256": "0ae24ae4dee47129c733c3517dd1a1a1acbe71e81d8d16798f47ce58df6d8550"
+    },
+    {
+      "path": "public/assets/audio/host/ghosts-and-ghouls/tts/ghosts-and-ghouls_stinger_opinion_v1.mp3",
+      "bytes": 204844,
+      "checksumSha256": "ae6b76aebd7fea4ba04323624a9c351859feb3a45ed2d864a69109c31ca9938a"
+    },
+    {
+      "path": "public/assets/audio/host/ghosts-and-ghouls/tts/ghosts-and-ghouls_stinger_opinion_v2.mp3",
+      "bytes": 202336,
+      "checksumSha256": "fa1e475932e18e1b39157be2aa222fa5feadde5c9c77fdfb2caa48c7f4f78769"
+    },
+    {
+      "path": "public/assets/audio/host/ghosts-and-ghouls/tts/ghosts-and-ghouls_stinger_opinion_v3.mp3",
+      "bytes": 151345,
+      "checksumSha256": "3beb9b0a648ae710731d04c440b12529c4a664184d61bc0a0aedb64ab5390899"
+    },
+    {
+      "path": "public/assets/audio/host/ghosts-and-ghouls/tts/ghosts-and-ghouls_stinger_pairs_v1.mp3",
+      "bytes": 222397,
+      "checksumSha256": "d40aac49ef0f03f91218064970473d711e37b20ad682ce2f52a6f8bd5c8f881f"
+    },
+    {
+      "path": "public/assets/audio/host/ghosts-and-ghouls/tts/ghosts-and-ghouls_stinger_pairs_v2.mp3",
+      "bytes": 186870,
+      "checksumSha256": "a137f3df8b14bb46a58033b43b711fe3b52848cfa54240190814cbf1789f59b3"
+    },
+    {
+      "path": "public/assets/audio/host/ghosts-and-ghouls/tts/ghosts-and-ghouls_stinger_pairs_v3.mp3",
+      "bytes": 154270,
+      "checksumSha256": "6fc28b3e8609f1c35a2b4eceb8fe28c2f5c36f0f74bf315e5dc36dbf07f7c9cd"
+    },
+    {
+      "path": "public/assets/audio/host/ghosts-and-ghouls/tts/ghosts-and-ghouls_stinger_picture_v1.mp3",
+      "bytes": 192723,
+      "checksumSha256": "ad4c3647761ef4f50f13592170798f96c16bef3bc733046dd70c4f7ea476c5fe"
+    },
+    {
+      "path": "public/assets/audio/host/ghosts-and-ghouls/tts/ghosts-and-ghouls_stinger_picture_v2.mp3",
+      "bytes": 191887,
+      "checksumSha256": "2d3e6eb8e868d2c79065bacbb069112dd4c9cda60d17ac4369048c56343bfa52"
+    },
+    {
+      "path": "public/assets/audio/host/ghosts-and-ghouls/tts/ghosts-and-ghouls_stinger_picture_v3.mp3",
+      "bytes": 188961,
+      "checksumSha256": "b07603eaa8254732882c653b07498689db0b8c5994000b94781f0ae259c02622"
+    },
+    {
+      "path": "public/assets/audio/host/ghosts-and-ghouls/tts/ghosts-and-ghouls_stinger_prompt_v1.mp3",
+      "bytes": 191887,
+      "checksumSha256": "f4f6f521da874b8819b42dcc8116c49829b488a4aedbf828056fdc5b10c65ac3"
+    },
+    {
+      "path": "public/assets/audio/host/ghosts-and-ghouls/tts/ghosts-and-ghouls_stinger_prompt_v2.mp3",
+      "bytes": 201082,
+      "checksumSha256": "c59bb8fe4fbe4bc8a1c967a9b099498f22880394fb4d2e1c73e67b403c3789a0"
+    },
+    {
+      "path": "public/assets/audio/host/ghosts-and-ghouls/tts/ghosts-and-ghouls_stinger_prompt_v3.mp3",
+      "bytes": 184782,
+      "checksumSha256": "89aaacda71839386496b6e364da098990f6620250252a7c43269d6e45762bdb5"
+    },
+    {
+      "path": "public/assets/audio/host/ghosts-and-ghouls/tts/ghosts-and-ghouls_stinger_twotruths_v1.mp3",
+      "bytes": 269208,
+      "checksumSha256": "faf91bae908011046c84caa087c61ac3f330682da50cde641679e1d86af2ae11"
+    },
+    {
+      "path": "public/assets/audio/host/ghosts-and-ghouls/tts/ghosts-and-ghouls_stinger_twotruths_v2.mp3",
+      "bytes": 207768,
+      "checksumSha256": "eb5361092eacea4010b62c795afae729a3f8265fff26820a6ff769c561587644"
+    },
+    {
+      "path": "public/assets/audio/host/ghosts-and-ghouls/tts/ghosts-and-ghouls_stinger_twotruths_v3.mp3",
+      "bytes": 162211,
+      "checksumSha256": "208055c4985bddaca3a26cb3635282ea4bd85701f02ae516aa5b1f63afb94eaf"
+    },
+    {
+      "path": "public/assets/audio/host/ghosts-and-ghouls/tts/ghosts-and-ghouls_voting_01.mp3",
+      "bytes": 99100,
+      "checksumSha256": "afe0990ed4adcb14ed97b67b23fffef6fa32dfe483767cce842ce90b7c5239fd"
+    },
+    {
+      "path": "public/assets/audio/host/ghosts-and-ghouls/tts/ghosts-and-ghouls_voting_02.mp3",
+      "bytes": 114146,
+      "checksumSha256": "120325b1722766aa4683d911ef4721eadd6e751aaf94d50cccc7889a3ba0d5b4"
+    },
+    {
+      "path": "public/assets/audio/host/ghosts-and-ghouls/tts/ghosts-and-ghouls_winner_01.mp3",
+      "bytes": 125849,
+      "checksumSha256": "369b6246464735d2c1339aff34005876c7a57a3b6d93933e8456d8cf94e587f0"
+    },
+    {
+      "path": "public/assets/audio/host/ghosts-and-ghouls/tts/ghosts-and-ghouls_winner_02.mp3",
+      "bytes": 147583,
+      "checksumSha256": "086a7f52b78b5a1620328b970d2dc22eea4690721dd7e262acf322e50b656880"
+    },
+    {
+      "path": "public/assets/audio/host/murder-mystery/tts/murder-mystery_caught_01.mp3",
+      "bytes": 67335,
+      "checksumSha256": "f71fc7b09e434bcc38e9f22f653124143de84f16827d2b33083a9c4dacb7c455"
+    },
+    {
+      "path": "public/assets/audio/host/murder-mystery/tts/murder-mystery_caught_02.mp3",
+      "bytes": 79874,
+      "checksumSha256": "5bbc5b26f9b05016c20aadb9e0945ed17bded14663c643348ba4f368eebacd3c"
+    },
+    {
+      "path": "public/assets/audio/host/murder-mystery/tts/murder-mystery_chooser_01.mp3",
+      "bytes": 74440,
+      "checksumSha256": "b76a5a092b16f231bbf58983a588e97eb3938cc4fe6820aa3e840a44463b7b2a"
+    },
+    {
+      "path": "public/assets/audio/host/murder-mystery/tts/murder-mystery_chooser_02.mp3",
+      "bytes": 69425,
+      "checksumSha256": "2610d89fec420677d4f8e2cc7a5405a70012618a2a6df5200f3bf80d9c6e638b"
+    },
+    {
+      "path": "public/assets/audio/host/murder-mystery/tts/murder-mystery_discussion_01.mp3",
+      "bytes": 64827,
+      "checksumSha256": "bf72d96689d3725c0210fc173c577f480e3f02483baef1fc80f44c36e263f524"
+    },
+    {
+      "path": "public/assets/audio/host/murder-mystery/tts/murder-mystery_discussion_02.mp3",
+      "bytes": 67335,
+      "checksumSha256": "947a1eec0c674e4a8560241d0cb321df2925d31305d141a64c697cb8c929210e"
+    },
+    {
+      "path": "public/assets/audio/host/murder-mystery/tts/murder-mystery_escaped_01.mp3",
+      "bytes": 77784,
+      "checksumSha256": "295be04af65b4171c6862b66bbd61a3750b7099c43e0be9ce26a10ba412df8ae"
+    },
+    {
+      "path": "public/assets/audio/host/murder-mystery/tts/murder-mystery_escaped_02.mp3",
+      "bytes": 65663,
+      "checksumSha256": "16495c30eb0cc85ba246c6787cb20ec11194e2b490d85e58fd003cfb2597082a"
+    },
+    {
+      "path": "public/assets/audio/host/murder-mystery/tts/murder-mystery_home_01.mp3",
+      "bytes": 62737,
+      "checksumSha256": "ecf4d5fa4bbe2d1edafe0cc0b66949c3887bbbd542c0f9e449156c3da930131a"
+    },
+    {
+      "path": "public/assets/audio/host/murder-mystery/tts/murder-mystery_home_02.mp3",
+      "bytes": 68589,
+      "checksumSha256": "810b720e3d857bb79f859159cb9c961f104add18902f0ed2fc1ba84e284629dd"
+    },
+    {
+      "path": "public/assets/audio/host/murder-mystery/tts/murder-mystery_home_03.mp3",
+      "bytes": 71515,
+      "checksumSha256": "2c68bc47e49b3b9432624149e2433f3b6f7fc1e59b2f05025f03184d3661745a"
+    },
+    {
+      "path": "public/assets/audio/host/murder-mystery/tts/murder-mystery_intro_closing.mp3",
+      "bytes": 99100,
+      "checksumSha256": "15bdd124a7fd64d2a703bdfae5ffc60472e310cd6fb3769706b153e477ee8723"
+    },
+    {
+      "path": "public/assets/audio/host/murder-mystery/tts/murder-mystery_intro_greeting_afternoon.mp3",
+      "bytes": 100772,
+      "checksumSha256": "47c4e672c1758261bb610946f76bc5c293ae0702c56a6d74494aaa13492fa3f5"
+    },
+    {
+      "path": "public/assets/audio/host/murder-mystery/tts/murder-mystery_intro_greeting_anytime.mp3",
+      "bytes": 98264,
+      "checksumSha256": "2bbfca8675f6c49954ce6ff9273d1b33c23f4e94436853b61608836242866db2"
+    },
+    {
+      "path": "public/assets/audio/host/murder-mystery/tts/murder-mystery_intro_greeting_evening.mp3",
+      "bytes": 92413,
+      "checksumSha256": "f92645776d4847d0bb5f4b882ec07b317b33921d200c3b44f7390213058a5422"
+    },
+    {
+      "path": "public/assets/audio/host/murder-mystery/tts/murder-mystery_intro_greeting_morning.mp3",
+      "bytes": 92413,
+      "checksumSha256": "bacbc89e480cd3f86455e8684de09447c0cc28efba3da071b52af78745551594"
+    },
+    {
+      "path": "public/assets/audio/host/murder-mystery/tts/murder-mystery_intro_hook_01.mp3",
+      "bytes": 81964,
+      "checksumSha256": "89b50eb39fcbc2600e76fc449e5e37325c0c76a85d1faea73bdfdc64515d2bdd"
+    },
+    {
+      "path": "public/assets/audio/host/murder-mystery/tts/murder-mystery_intro_hook_02.mp3",
+      "bytes": 80710,
+      "checksumSha256": "84052bf3f98c470742b46adcaa6e3526c2b2b612fbd8eca16e4f6f9370b717dc"
+    },
+    {
+      "path": "public/assets/audio/host/murder-mystery/tts/murder-mystery_intro_hook_03.mp3",
+      "bytes": 93248,
+      "checksumSha256": "c95530b27005307190c5aec0a7aef6f54382a0723e7a860e70aae11c7aacccbf"
+    },
+    {
+      "path": "public/assets/audio/host/murder-mystery/tts/murder-mystery_intro_hook_04.mp3",
+      "bytes": 101190,
+      "checksumSha256": "ce7c2ddfde808ea178aee91d12d711278cf1f365baa21f4e5f4079dedd8a6b10"
+    },
+    {
+      "path": "public/assets/audio/host/murder-mystery/tts/murder-mystery_intro_host_name.mp3",
+      "bytes": 90323,
+      "checksumSha256": "b5e6657841b326b021280f5a63e188a69a28e2599e54e81709765354002b48c7"
+    },
+    {
+      "path": "public/assets/audio/host/murder-mystery/tts/murder-mystery_intro_online_prompt.mp3",
+      "bytes": 89487,
+      "checksumSha256": "1aaec1602c776088a7ced2fe3982aed96c7954bb2e14d894ced1296a33c45ef4"
+    },
+    {
+      "path": "public/assets/audio/host/murder-mystery/tts/murder-mystery_intro_pass_prompt.mp3",
+      "bytes": 77784,
+      "checksumSha256": "5104ce4001d26b7e8401766e8d9f4f6d990f63f99d0a9293cb96ab1022b46234"
+    },
+    {
+      "path": "public/assets/audio/host/murder-mystery/tts/murder-mystery_intro_rounds_10_players_10.mp3",
+      "bytes": 126685,
+      "checksumSha256": "906f70353761511bc22a0c62fa1975697ad40d5278c65743e058a0e20d78a4a5"
+    },
+    {
+      "path": "public/assets/audio/host/murder-mystery/tts/murder-mystery_intro_rounds_10_players_5.mp3",
+      "bytes": 121252,
+      "checksumSha256": "1ff1fc7336857105ec9b66e4523c423613697f6299745f1ccbcf4a804aaf687c"
+    },
+    {
+      "path": "public/assets/audio/host/murder-mystery/tts/murder-mystery_intro_rounds_11_players_11.mp3",
+      "bytes": 127521,
+      "checksumSha256": "68af7b0bc9cceadfd513b4ce434a91657508a41cac755b4872de21520eadf071"
+    },
+    {
+      "path": "public/assets/audio/host/murder-mystery/tts/murder-mystery_intro_rounds_12_players_12.mp3",
+      "bytes": 121252,
+      "checksumSha256": "2e51717acd4adb4443c6ed7ede6642af740d8f41780ee0b9187ddd14ee09bfb7"
+    },
+    {
+      "path": "public/assets/audio/host/murder-mystery/tts/murder-mystery_intro_rounds_12_players_4.mp3",
+      "bytes": 120834,
+      "checksumSha256": "0e7f49722f80aacdd86e15b5eea421c2ef72dae0d79e2afae43b525c7d1e75f7"
+    },
+    {
+      "path": "public/assets/audio/host/murder-mystery/tts/murder-mystery_intro_rounds_12_players_6.mp3",
+      "bytes": 121252,
+      "checksumSha256": "0b31858e197cad18951920c5d97a26d95d61d9ac535e816f984dc0b59e2774e0"
+    },
+    {
+      "path": "public/assets/audio/host/murder-mystery/tts/murder-mystery_intro_rounds_14_players_7.mp3",
+      "bytes": 127521,
+      "checksumSha256": "49ff06a5e9cac6f7e381481578b1856d92d158354c7898662307933504c6095d"
+    },
+    {
+      "path": "public/assets/audio/host/murder-mystery/tts/murder-mystery_intro_rounds_15_players_5.mp3",
+      "bytes": 123759,
+      "checksumSha256": "9cc0b5d7651c7222ed5b3e9e9886efa8fc1e1fb3e4621ab5feff389627735153"
+    },
+    {
+      "path": "public/assets/audio/host/murder-mystery/tts/murder-mystery_intro_rounds_16_players_8.mp3",
+      "bytes": 114146,
+      "checksumSha256": "43915599487013dbee8b837a22ec7debe6b17a11bd8b3bff2967cdba038f8aa6"
+    },
+    {
+      "path": "public/assets/audio/host/murder-mystery/tts/murder-mystery_intro_rounds_18_players_6.mp3",
+      "bytes": 124595,
+      "checksumSha256": "b6dd54851256ac15af76511836d77ff71c01fd99c213954e320c96d1035cdee7"
+    },
+    {
+      "path": "public/assets/audio/host/murder-mystery/tts/murder-mystery_intro_rounds_18_players_9.mp3",
+      "bytes": 120834,
+      "checksumSha256": "3303e50ced98184646858cbcc899175bc1bd6e15623d5c5be2fc4ee7035f51a6"
+    },
+    {
+      "path": "public/assets/audio/host/murder-mystery/tts/murder-mystery_intro_rounds_20_players_10.mp3",
+      "bytes": 125013,
+      "checksumSha256": "f9902ac4c38701900c995188107a86c703679b501908f8ce9498f7e0381493d8"
+    },
+    {
+      "path": "public/assets/audio/host/murder-mystery/tts/murder-mystery_intro_rounds_21_players_7.mp3",
+      "bytes": 119998,
+      "checksumSha256": "4d194deeba02106c04ac375332f27bacf22101d82d43216545141fcdfc6981c1"
+    },
+    {
+      "path": "public/assets/audio/host/murder-mystery/tts/murder-mystery_intro_rounds_22_players_11.mp3",
+      "bytes": 126685,
+      "checksumSha256": "022fc6f8fd976f10a49d3b99d7f7110084a9832bf0f581d737927f09a1a17225"
+    },
+    {
+      "path": "public/assets/audio/host/murder-mystery/tts/murder-mystery_intro_rounds_24_players_12.mp3",
+      "bytes": 112475,
+      "checksumSha256": "9e6db574c725a8f46690d32dcae83cf0e56810f883bc9b38089e668c10b41cb6"
+    },
+    {
+      "path": "public/assets/audio/host/murder-mystery/tts/murder-mystery_intro_rounds_24_players_8.mp3",
+      "bytes": 117072,
+      "checksumSha256": "ff46b670d8e7174f8c9190d208b659bfb6d4671378275caa8bd425e0325b5f76"
+    },
+    {
+      "path": "public/assets/audio/host/murder-mystery/tts/murder-mystery_intro_rounds_27_players_9.mp3",
+      "bytes": 117908,
+      "checksumSha256": "85bf3f7c12d5883b22a3004ab2204be0e93d9fcfece495ebbe652f0cf51c938c"
+    },
+    {
+      "path": "public/assets/audio/host/murder-mystery/tts/murder-mystery_intro_rounds_3_players_3.mp3",
+      "bytes": 114564,
+      "checksumSha256": "9bec09fd857b37c835cd0a404011a06b7b37e2de0ad8e9d955e7dbd1d3060b85"
+    },
+    {
+      "path": "public/assets/audio/host/murder-mystery/tts/murder-mystery_intro_rounds_30_players_10.mp3",
+      "bytes": 117072,
+      "checksumSha256": "2824b8e7626b2f782eaf9108e9adf1ccabda4ea7d51181468824d92548c57e02"
+    },
+    {
+      "path": "public/assets/audio/host/murder-mystery/tts/murder-mystery_intro_rounds_33_players_11.mp3",
+      "bytes": 121252,
+      "checksumSha256": "079a980f5249fb11372857d08ec5e89a95595eaebd8839e8b4fcb6a919322b43"
+    },
+    {
+      "path": "public/assets/audio/host/murder-mystery/tts/murder-mystery_intro_rounds_36_players_12.mp3",
+      "bytes": 129611,
+      "checksumSha256": "8a8c5aacfa6146194806c006dcbe5031bc8164905c060560fa356267824a3cfc"
+    },
+    {
+      "path": "public/assets/audio/host/murder-mystery/tts/murder-mystery_intro_rounds_4_players_4.mp3",
+      "bytes": 131701,
+      "checksumSha256": "fe23427f0f81895e121e4fd5336d61d01ea0389dbb8ddfc30e7dc7c71d6efb61"
+    },
+    {
+      "path": "public/assets/audio/host/murder-mystery/tts/murder-mystery_intro_rounds_5_players_5.mp3",
+      "bytes": 127939,
+      "checksumSha256": "08ca6b0ebd497a51541e59e2787f9ed46d7e8623948805038eaad10d1f51c43c"
+    },
+    {
+      "path": "public/assets/audio/host/murder-mystery/tts/murder-mystery_intro_rounds_6_players_3.mp3",
+      "bytes": 118326,
+      "checksumSha256": "1de90db263ca141b86704e9fe8f33ff56e56542be3e2b0991b013ca8caf87f3b"
+    },
+    {
+      "path": "public/assets/audio/host/murder-mystery/tts/murder-mystery_intro_rounds_6_players_6.mp3",
+      "bytes": 124595,
+      "checksumSha256": "191d5afb1a516335e021308d040b61a1dc44d2300d77daee3f51958865ac2be1"
+    },
+    {
+      "path": "public/assets/audio/host/murder-mystery/tts/murder-mystery_intro_rounds_7_players_7.mp3",
+      "bytes": 137970,
+      "checksumSha256": "67582c6e7b0b0dbe792892334688cac0a4cc4dc552fe98d651ff0cb256ebf642"
+    },
+    {
+      "path": "public/assets/audio/host/murder-mystery/tts/murder-mystery_intro_rounds_8_players_4.mp3",
+      "bytes": 117072,
+      "checksumSha256": "735aec97114d5f3530203c27ae6292d3a799b21fa8768a2901138402adfd7ad9"
+    },
+    {
+      "path": "public/assets/audio/host/murder-mystery/tts/murder-mystery_intro_rounds_8_players_8.mp3",
+      "bytes": 118326,
+      "checksumSha256": "d60a81a19d078417badeef21ea31add7ab22c08b5074b3272509eb2e6704c114"
+    },
+    {
+      "path": "public/assets/audio/host/murder-mystery/tts/murder-mystery_intro_rounds_9_players_3.mp3",
+      "bytes": 132537,
+      "checksumSha256": "8aa542de0b1a1c52e7c06c7bb559aad9679fb86226eb16dcbb8ab82c709a0388"
+    },
+    {
+      "path": "public/assets/audio/host/murder-mystery/tts/murder-mystery_intro_rounds_9_players_9.mp3",
+      "bytes": 118326,
+      "checksumSha256": "d77459732312680fd5e74255b417c924523ada5d7c99b558746fc4befa1dc842"
+    },
+    {
+      "path": "public/assets/audio/host/murder-mystery/tts/murder-mystery_onlineLobby_01.mp3",
+      "bytes": 80710,
+      "checksumSha256": "319aee173e96d6b33543a6eba94b4709aa969fd974b139245d308ab231659948"
+    },
+    {
+      "path": "public/assets/audio/host/murder-mystery/tts/murder-mystery_passPhone_01.mp3",
+      "bytes": 64827,
+      "checksumSha256": "bfd4fa53a987ec79b1160fe13d251a61585d286ead98f31bdf114eb4201e84f6"
+    },
+    {
+      "path": "public/assets/audio/host/murder-mystery/tts/murder-mystery_passPhone_02.mp3",
+      "bytes": 67753,
+      "checksumSha256": "4f14408af6fc6e43ac53d4c5d8977a77850c454151f605b7c7f681028e734ea2"
+    },
+    {
+      "path": "public/assets/audio/host/murder-mystery/tts/murder-mystery_revealLiar_01.mp3",
+      "bytes": 95338,
+      "checksumSha256": "b5f4539b209778a2dfac7b9f421f08896cce05cc1e24157942ca3ae4c3161d55"
+    },
+    {
+      "path": "public/assets/audio/host/murder-mystery/tts/murder-mystery_revealLiar_02.mp3",
+      "bytes": 64409,
+      "checksumSha256": "373804fe1974fe6e427ca91b02e51e7e41eeedf4979ac7f7a0c21fdf536e0609"
+    },
+    {
+      "path": "public/assets/audio/host/murder-mystery/tts/murder-mystery_revealNormal_01.mp3",
+      "bytes": 74022,
+      "checksumSha256": "4e622c0c2834e8d93a70ed5c260e50769a651e3f60176c9853c368fcaf7077b1"
+    },
+    {
+      "path": "public/assets/audio/host/murder-mystery/tts/murder-mystery_revealNormal_02.mp3",
+      "bytes": 69425,
+      "checksumSha256": "c15c2bf16b6fd6e918cc8227ce0252a5bb321dd72f36bf311e86b770b57912e4"
+    },
+    {
+      "path": "public/assets/audio/host/murder-mystery/tts/murder-mystery_setup_01.mp3",
+      "bytes": 77784,
+      "checksumSha256": "9d504dbcfe78f0075706a27bc1bcba53b14e0c6baaed12103678492b94dfb896"
+    },
+    {
+      "path": "public/assets/audio/host/murder-mystery/tts/murder-mystery_setup_02.mp3",
+      "bytes": 81128,
+      "checksumSha256": "1382b65c33ca33f1f18b0ea12195e4aedfa67582866d397d9de213ae00af283a"
+    },
+    {
+      "path": "public/assets/audio/host/murder-mystery/tts/murder-mystery_stinger_chain_v1.mp3",
+      "bytes": 101190,
+      "checksumSha256": "b4f022d8f27826d23480ebcbeefd639d6d7e1b2fb055166e9b08a690b33fa878"
+    },
+    {
+      "path": "public/assets/audio/host/murder-mystery/tts/murder-mystery_stinger_chain_v2.mp3",
+      "bytes": 91577,
+      "checksumSha256": "09f910c8c476ca6e5fff8c3472952cd7df1258894424b011d83c62e8096aacd5"
+    },
+    {
+      "path": "public/assets/audio/host/murder-mystery/tts/murder-mystery_stinger_chain_v3.mp3",
+      "bytes": 104951,
+      "checksumSha256": "cb3dd5aa0f1724b4a59b399d25c9706d8da443c5833f5b27e4daf077dcea64f2"
+    },
+    {
+      "path": "public/assets/audio/host/murder-mystery/tts/murder-mystery_stinger_nameblame_v1.mp3",
+      "bytes": 98264,
+      "checksumSha256": "c34a1862ff480ddebe944add0a9841864dbd35876bc2172efedf2f33a7977f0a"
+    },
+    {
+      "path": "public/assets/audio/host/murder-mystery/tts/murder-mystery_stinger_nameblame_v2.mp3",
+      "bytes": 94502,
+      "checksumSha256": "bd5831b95ddf362086b48710cd4f83a76f489f9ffbb4c47bd3ec2aa97468d525"
+    },
+    {
+      "path": "public/assets/audio/host/murder-mystery/tts/murder-mystery_stinger_nameblame_v3.mp3",
+      "bytes": 109549,
+      "checksumSha256": "4ba20276370c26c81a3d2786f398d28488c685879ad1006376fb8fe2fca170bf"
+    },
+    {
+      "path": "public/assets/audio/host/murder-mystery/tts/murder-mystery_stinger_noise_v1.mp3",
+      "bytes": 100772,
+      "checksumSha256": "20860ead70daf4e599c31490677e9e647a2d19be197c6d67dd27ff099ef7445f"
+    },
+    {
+      "path": "public/assets/audio/host/murder-mystery/tts/murder-mystery_stinger_noise_v2.mp3",
+      "bytes": 89487,
+      "checksumSha256": "a0bd256acc65c33e0b236cfa128068128f88a4b134e060b91f25172891deeb4b"
+    },
+    {
+      "path": "public/assets/audio/host/murder-mystery/tts/murder-mystery_stinger_noise_v3.mp3",
+      "bytes": 106623,
+      "checksumSha256": "c371f356bd3aba47139a09b5f045b013064658b74f25f6e2ace8c172755382b6"
+    },
+    {
+      "path": "public/assets/audio/host/murder-mystery/tts/murder-mystery_stinger_offtopic_v1.mp3",
+      "bytes": 96174,
+      "checksumSha256": "be767bea596c9775789e99418a5ad597e046cc0dc98f2f9d591d295d99dcea35"
+    },
+    {
+      "path": "public/assets/audio/host/murder-mystery/tts/murder-mystery_stinger_offtopic_v2.mp3",
+      "bytes": 97010,
+      "checksumSha256": "d4d511dfa487f99f8ab4c2e245428a93ff049f102716e30d5b496cb69224c9bd"
+    },
+    {
+      "path": "public/assets/audio/host/murder-mystery/tts/murder-mystery_stinger_offtopic_v3.mp3",
+      "bytes": 98264,
+      "checksumSha256": "2dbc7da238d74654d5321cfa42f3c939c89b3418025435d8af3f7487be1a7597"
+    },
+    {
+      "path": "public/assets/audio/host/murder-mystery/tts/murder-mystery_stinger_opinion_v1.mp3",
+      "bytes": 105787,
+      "checksumSha256": "c523c7e12d953b4df1b5dccba6f11c0bb00a638622196b2ce4f71ceef11d3ef1"
+    },
+    {
+      "path": "public/assets/audio/host/murder-mystery/tts/murder-mystery_stinger_opinion_v2.mp3",
+      "bytes": 97846,
+      "checksumSha256": "8917d2825d4f1a49416a832135f719096ffb1dcab45dbc4e74e9a8a351ae6c7e"
+    },
+    {
+      "path": "public/assets/audio/host/murder-mystery/tts/murder-mystery_stinger_opinion_v3.mp3",
+      "bytes": 95338,
+      "checksumSha256": "072e265e629f89e14c269e34d5c2592363a883ca445e338e088b15f985c3b55a"
+    },
+    {
+      "path": "public/assets/audio/host/murder-mystery/tts/murder-mystery_stinger_pairs_v1.mp3",
+      "bytes": 106622,
+      "checksumSha256": "d83ebcd4902ebc56b1e56c7729a9c286a32dc378b2de7d3ffff4a2d2e116a517"
+    },
+    {
+      "path": "public/assets/audio/host/murder-mystery/tts/murder-mystery_stinger_pairs_v2.mp3",
+      "bytes": 102861,
+      "checksumSha256": "d7c7c2b839d9248af94b2649c5e7d10dd768ad3ff6ea0466aac6e3edd597d731"
+    },
+    {
+      "path": "public/assets/audio/host/murder-mystery/tts/murder-mystery_stinger_pairs_v3.mp3",
+      "bytes": 95337,
+      "checksumSha256": "95f849e85a18e900b448999d69d20df4eb51f7fee2a3517c06f3cf431a494892"
+    },
+    {
+      "path": "public/assets/audio/host/murder-mystery/tts/murder-mystery_stinger_picture_v1.mp3",
+      "bytes": 107459,
+      "checksumSha256": "bc12ba340d4e6d5b780637a285fc43d6dc0bcb45757c8a3a56a48181f162778b"
+    },
+    {
+      "path": "public/assets/audio/host/murder-mystery/tts/murder-mystery_stinger_picture_v2.mp3",
+      "bytes": 99100,
+      "checksumSha256": "4689f28eb33014fd71a5b03ae5c6e9d736e654617c17304016b03167d26c0a8e"
+    },
+    {
+      "path": "public/assets/audio/host/murder-mystery/tts/murder-mystery_stinger_picture_v3.mp3",
+      "bytes": 102026,
+      "checksumSha256": "4efc95b849c2ae95359d86ba7c36390fe38185df1f9961358811f72bbc5ac923"
+    },
+    {
+      "path": "public/assets/audio/host/murder-mystery/tts/murder-mystery_stinger_prompt_v1.mp3",
+      "bytes": 94502,
+      "checksumSha256": "e2a83127c5c735d55141c5ce7c00fe4c55c6301fa5fa75a358979da97f75036e"
+    },
+    {
+      "path": "public/assets/audio/host/murder-mystery/tts/murder-mystery_stinger_prompt_v2.mp3",
+      "bytes": 94502,
+      "checksumSha256": "b614a02817d79fd3f2562efb3a0ce5fbb6bb47a328ed3ab74a78ee04ea3b5718"
+    },
+    {
+      "path": "public/assets/audio/host/murder-mystery/tts/murder-mystery_stinger_prompt_v3.mp3",
+      "bytes": 110385,
+      "checksumSha256": "a8ec9877883e3d349f263923abda63c293d2834bb9f58ecf05a9e0aedf07313e"
+    },
+    {
+      "path": "public/assets/audio/host/murder-mystery/tts/murder-mystery_stinger_twotruths_v1.mp3",
+      "bytes": 109548,
+      "checksumSha256": "fcb3ebdb01f9067422462d0c309216d1b51de6c2f66812693769c36caed6df15"
+    },
+    {
+      "path": "public/assets/audio/host/murder-mystery/tts/murder-mystery_stinger_twotruths_v2.mp3",
+      "bytes": 93247,
+      "checksumSha256": "2884631468925858c04a3c0baea7eee915ede70c60a99b19fe6047677ac3987f"
+    },
+    {
+      "path": "public/assets/audio/host/murder-mystery/tts/murder-mystery_stinger_twotruths_v3.mp3",
+      "bytes": 96173,
+      "checksumSha256": "5173c41721d1a0c9f87ec829531b817fd620c0f4f8fd22274083de25d116189f"
+    },
+    {
+      "path": "public/assets/audio/host/murder-mystery/tts/murder-mystery_voting_01.mp3",
+      "bytes": 61066,
+      "checksumSha256": "abec6926ceea18a8acb497c24fc6a83e358f8c0cfb60d79226995ed1c2697427"
+    },
+    {
+      "path": "public/assets/audio/host/murder-mystery/tts/murder-mystery_voting_02.mp3",
+      "bytes": 70261,
+      "checksumSha256": "0b7c3eb38bc71a3299cda4193c1f70eb10281f6360055201ea65118c63ef22aa"
+    },
+    {
+      "path": "public/assets/audio/host/murder-mystery/tts/murder-mystery_winner_01.mp3",
+      "bytes": 73186,
+      "checksumSha256": "6e4a29ea6778396f66f81c5446d9cea2ee4a180388ad3ae4154d5a37a555805a"
+    },
+    {
+      "path": "public/assets/audio/host/murder-mystery/tts/murder-mystery_winner_02.mp3",
+      "bytes": 68589,
+      "checksumSha256": "4c49bfd00385a4e2b3cc6ac82b2b4ba6f0f109c14d4126ee3acc71a1c826a446"
+    },
+    {
+      "path": "public/assets/audio/host/pirates/tts/pirates_caught_01.mp3",
+      "bytes": 86561,
+      "checksumSha256": "87c986e8fb79f6e1447ada70d4c73d630daa4026e55b76f11a8e26e1493fda8f"
+    },
+    {
+      "path": "public/assets/audio/host/pirates/tts/pirates_caught_02.mp3",
+      "bytes": 79874,
+      "checksumSha256": "10c1875fed4e8773ea4ff547c2c0d10efa21df966f689be18a5105e6db78a48a"
+    },
+    {
+      "path": "public/assets/audio/host/pirates/tts/pirates_chooser_01.mp3",
+      "bytes": 84889,
+      "checksumSha256": "7bd3f06e236f6d2e013f7bf13786e069de9c7c58057f742a5a3e15f30ffb311f"
+    },
+    {
+      "path": "public/assets/audio/host/pirates/tts/pirates_chooser_02.mp3",
+      "bytes": 83635,
+      "checksumSha256": "68380a2c0640497d182bef7afa107e14a8a050ddaf2298d7fadbe74b4314d37c"
+    },
+    {
+      "path": "public/assets/audio/host/pirates/tts/pirates_discussion_01.mp3",
+      "bytes": 87815,
+      "checksumSha256": "e66fe668dd8d178f911c63b929e8229fd2a2540e40b21aceb836813609eb9806"
+    },
+    {
+      "path": "public/assets/audio/host/pirates/tts/pirates_discussion_02.mp3",
+      "bytes": 93248,
+      "checksumSha256": "58a309997c1b27bfa6378c3e2fd4c52c5fc9680fc908140c8802e27cb2d50673"
+    },
+    {
+      "path": "public/assets/audio/host/pirates/tts/pirates_escaped_01.mp3",
+      "bytes": 94502,
+      "checksumSha256": "745dacd6833891a0e5d9ce9157a65d6f4cb7a1428a1b409b8fe9310f1972973c"
+    },
+    {
+      "path": "public/assets/audio/host/pirates/tts/pirates_escaped_02.mp3",
+      "bytes": 78202,
+      "checksumSha256": "8b322e6f414381dd116a5d7ea676d50d1eeba6e01f571930c2156e4ad3378707"
+    },
+    {
+      "path": "public/assets/audio/host/pirates/tts/pirates_home_01.mp3",
+      "bytes": 89487,
+      "checksumSha256": "96c09dcccc04f53691cd2d0b13cfbcb720e533eec13c09dc330a3f76bfd4804d"
+    },
+    {
+      "path": "public/assets/audio/host/pirates/tts/pirates_home_02.mp3",
+      "bytes": 103697,
+      "checksumSha256": "925e61aa5083c35e60d919d88bbe392c748f7d89aca5d9f81f91960fe01e8a57"
+    },
+    {
+      "path": "public/assets/audio/host/pirates/tts/pirates_intro_closing.mp3",
+      "bytes": 127521,
+      "checksumSha256": "32e7cc945357548914ee2077e3a63cbf273ede07d6693cad4cebf8a361551bde"
+    },
+    {
+      "path": "public/assets/audio/host/pirates/tts/pirates_intro_greeting_afternoon.mp3",
+      "bytes": 137134,
+      "checksumSha256": "671069513e0190d8ddc7fb110250a05bbc788a6c0286336341c9bdceba9189bd"
+    },
+    {
+      "path": "public/assets/audio/host/pirates/tts/pirates_intro_greeting_anytime.mp3",
+      "bytes": 115400,
+      "checksumSha256": "bf736f2aa7f8e57b8635617c33ce1fb767d792737f6160f8e5862982756cb32d"
+    },
+    {
+      "path": "public/assets/audio/host/pirates/tts/pirates_intro_greeting_evening.mp3",
+      "bytes": 131283,
+      "checksumSha256": "624393e7e9b79d039e99a24a4446f9c9b13e59f282159567522aff240eed8cd8"
+    },
+    {
+      "path": "public/assets/audio/host/pirates/tts/pirates_intro_greeting_morning.mp3",
+      "bytes": 118326,
+      "checksumSha256": "f4b965d63dc0a6c7725ae2dee3db74ff66e24c790c083cf8bec88855f7881f93"
+    },
+    {
+      "path": "public/assets/audio/host/pirates/tts/pirates_intro_hook_01.mp3",
+      "bytes": 122088,
+      "checksumSha256": "f51b3b57a290bd0f0a476b7dadbebb3f0a7093f19bf837468d7013e40d2ca853"
+    },
+    {
+      "path": "public/assets/audio/host/pirates/tts/pirates_intro_hook_02.mp3",
+      "bytes": 112475,
+      "checksumSha256": "69ecf4b73d3f2b4cb28a4a44c1215b0c170f26dfe3d03521c26e8e0ca7db2c35"
+    },
+    {
+      "path": "public/assets/audio/host/pirates/tts/pirates_intro_hook_03.mp3",
+      "bytes": 91159,
+      "checksumSha256": "f6de4b28352de6a46b2845454d37bf382b929fbb920581bc4c80665e53cc161a"
+    },
+    {
+      "path": "public/assets/audio/host/pirates/tts/pirates_intro_hook_04.mp3",
+      "bytes": 105787,
+      "checksumSha256": "d1067997bf01694a80b1c7974c61733ed81de68b2e5e4229ba41dac6085fd5cf"
+    },
+    {
+      "path": "public/assets/audio/host/pirates/tts/pirates_intro_host_name.mp3",
+      "bytes": 99936,
+      "checksumSha256": "7d7d32b85502e847f3592d3f265880f95a418f740d3d1c3770d5a39a0fd12188"
+    },
+    {
+      "path": "public/assets/audio/host/pirates/tts/pirates_intro_online_prompt.mp3",
+      "bytes": 106623,
+      "checksumSha256": "255a62168d985a9db18961e80908210c2190ba0ea3f24ed9237d3a6b57442846"
+    },
+    {
+      "path": "public/assets/audio/host/pirates/tts/pirates_intro_pass_prompt.mp3",
+      "bytes": 106623,
+      "checksumSha256": "f52bc8ba76dd3ca243f9e456ca543cd12a7aa337b937cf31ff5f902edc20abdb"
+    },
+    {
+      "path": "public/assets/audio/host/pirates/tts/pirates_intro_rounds_10_players_10.mp3",
+      "bytes": 129611,
+      "checksumSha256": "0ea1ca8f2a47104fff438f85b072012a0c1b7f3365d2e8b43c3bf68024920d4e"
+    },
+    {
+      "path": "public/assets/audio/host/pirates/tts/pirates_intro_rounds_10_players_5.mp3",
+      "bytes": 136298,
+      "checksumSha256": "a554a6ca103afb388551547114616886df939ea14e62a776b689d1e1e70f4f4c"
+    },
+    {
+      "path": "public/assets/audio/host/pirates/tts/pirates_intro_rounds_11_players_11.mp3",
+      "bytes": 145911,
+      "checksumSha256": "0f383e26cfa9a27a88906bc09cce10a0d4523f7df263e913b6ae91ee09c1d4eb"
+    },
+    {
+      "path": "public/assets/audio/host/pirates/tts/pirates_intro_rounds_12_players_12.mp3",
+      "bytes": 150509,
+      "checksumSha256": "064d9c000647aa9a0d4c715d555f4a8d62f4fdb6359e6d551f467a4bc76d7c0e"
+    },
+    {
+      "path": "public/assets/audio/host/pirates/tts/pirates_intro_rounds_12_players_4.mp3",
+      "bytes": 142986,
+      "checksumSha256": "bc9f12e16aca3f5400963276a84af8d6099e3fb119b252901d027b7f3dece306"
+    },
+    {
+      "path": "public/assets/audio/host/pirates/tts/pirates_intro_rounds_12_players_6.mp3",
+      "bytes": 132537,
+      "checksumSha256": "bc3261db3cc7408fcd5cc7f6cb4f6c8e369d3db1b100b5075c5b819f0432fd7e"
+    },
+    {
+      "path": "public/assets/audio/host/pirates/tts/pirates_intro_rounds_14_players_7.mp3",
+      "bytes": 153435,
+      "checksumSha256": "74eb3246f7ab42eb9c0391342bb258c6acf3dd185b7c0d97e9cd95749fc09159"
+    },
+    {
+      "path": "public/assets/audio/host/pirates/tts/pirates_intro_rounds_15_players_5.mp3",
+      "bytes": 137970,
+      "checksumSha256": "7a923177b658da45dfbe2e0f89d0789fcc8272040a59042313c409575d6c39dd"
+    },
+    {
+      "path": "public/assets/audio/host/pirates/tts/pirates_intro_rounds_16_players_8.mp3",
+      "bytes": 134208,
+      "checksumSha256": "2c30a6cc74ae81c0859b37f05529647a8409ff4d29082b1b2dbda6cc7cc8426e"
+    },
+    {
+      "path": "public/assets/audio/host/pirates/tts/pirates_intro_rounds_18_players_6.mp3",
+      "bytes": 136298,
+      "checksumSha256": "0691147df1d8d40492328eef529e60f89bc0ca5721d3c541f6b295c6ae3ec6f3"
+    },
+    {
+      "path": "public/assets/audio/host/pirates/tts/pirates_intro_rounds_18_players_9.mp3",
+      "bytes": 142986,
+      "checksumSha256": "4e615ca26c0fc7c0bb71e064bfc6330cc4c20b3b072e400a8940c6dccb95982f"
+    },
+    {
+      "path": "public/assets/audio/host/pirates/tts/pirates_intro_rounds_20_players_10.mp3",
+      "bytes": 159286,
+      "checksumSha256": "281bfc6a62300fb8c7a40ea93c124dee453b9197372b6bb97f0363075095715a"
+    },
+    {
+      "path": "public/assets/audio/host/pirates/tts/pirates_intro_rounds_21_players_7.mp3",
+      "bytes": 146747,
+      "checksumSha256": "6400e1bc7f5dd71c71fe2a449e41420daf72bf215214bfd79bfdb5a2440e05a7"
+    },
+    {
+      "path": "public/assets/audio/host/pirates/tts/pirates_intro_rounds_22_players_11.mp3",
+      "bytes": 146747,
+      "checksumSha256": "b1032a4c7dfe0d880af26d507f30ea1f3b429008c152e1c17620895f1fddf472"
+    },
+    {
+      "path": "public/assets/audio/host/pirates/tts/pirates_intro_rounds_24_players_12.mp3",
+      "bytes": 150509,
+      "checksumSha256": "597e6d0a6632ed5988e2a04804a38db9718a55c5d6b7b30532887f0f3ad32525"
+    },
+    {
+      "path": "public/assets/audio/host/pirates/tts/pirates_intro_rounds_24_players_8.mp3",
+      "bytes": 154688,
+      "checksumSha256": "606331d5f4c3471002e5573a38d485a267e9a01d640eb3390a63a98866fe991e"
+    },
+    {
+      "path": "public/assets/audio/host/pirates/tts/pirates_intro_rounds_27_players_9.mp3",
+      "bytes": 149673,
+      "checksumSha256": "e476c03e1c93063be254800eb4f6b62a00ccd59d85d7835cffa7b98b758a6d82"
+    },
+    {
+      "path": "public/assets/audio/host/pirates/tts/pirates_intro_rounds_3_players_3.mp3",
+      "bytes": 139224,
+      "checksumSha256": "7fd27058e82851bdf2646821c2c21aae6fa5087ab716df09b15e651c6da0c840"
+    },
+    {
+      "path": "public/assets/audio/host/pirates/tts/pirates_intro_rounds_30_players_10.mp3",
+      "bytes": 136298,
+      "checksumSha256": "5f190b91f0edbd0c8f1fb509073695371095f9a0fd9a1e0ceaa1fadd4691f088"
+    },
+    {
+      "path": "public/assets/audio/host/pirates/tts/pirates_intro_rounds_33_players_11.mp3",
+      "bytes": 162212,
+      "checksumSha256": "1772d196031fe9a040fd7ab8a47aa13ec7fca8ad89dd4e7cc6823044166cb3ab"
+    },
+    {
+      "path": "public/assets/audio/host/pirates/tts/pirates_intro_rounds_36_players_12.mp3",
+      "bytes": 148837,
+      "checksumSha256": "c91142365a2ceb80a45ba63377d09f15f9767883cba86cfb6c53b5c90230907e"
+    },
+    {
+      "path": "public/assets/audio/host/pirates/tts/pirates_intro_rounds_4_players_4.mp3",
+      "bytes": 147583,
+      "checksumSha256": "c6b17b6cedb4015b9f23f7c9f7012dcb947697ccf3ca6c6e0f7a6b88069d47b8"
+    },
+    {
+      "path": "public/assets/audio/host/pirates/tts/pirates_intro_rounds_5_players_5.mp3",
+      "bytes": 141314,
+      "checksumSha256": "753088d4d801f1e8fe4bff57f1a6f880fcf7a1008e1492e41149078893932dc5"
+    },
+    {
+      "path": "public/assets/audio/host/pirates/tts/pirates_intro_rounds_6_players_3.mp3",
+      "bytes": 140060,
+      "checksumSha256": "f34bf604bf74c676ea67298244a93b36046ebe0f1122afce370505ab1180403b"
+    },
+    {
+      "path": "public/assets/audio/host/pirates/tts/pirates_intro_rounds_6_players_6.mp3",
+      "bytes": 142986,
+      "checksumSha256": "c139d44918ddde3ee2e8ba34a755f775be68f046025dd1608dcbf42e8f6241ae"
+    },
+    {
+      "path": "public/assets/audio/host/pirates/tts/pirates_intro_rounds_7_players_7.mp3",
+      "bytes": 145911,
+      "checksumSha256": "d2a4ed0f46b3577cf8c2466b7e42c4da15b2c56d6b2c0eb598ee0927efc1465d"
+    },
+    {
+      "path": "public/assets/audio/host/pirates/tts/pirates_intro_rounds_8_players_4.mp3",
+      "bytes": 143822,
+      "checksumSha256": "fbe72eac7fcb616c6940aad054fb8b7e6588587a00010b6de6820cb34b4b2f9b"
+    },
+    {
+      "path": "public/assets/audio/host/pirates/tts/pirates_intro_rounds_8_players_8.mp3",
+      "bytes": 131283,
+      "checksumSha256": "4a07642f5135c5fb12702f7c36b194d684fb2b25b96a55206f366656e7f521b6"
+    },
+    {
+      "path": "public/assets/audio/host/pirates/tts/pirates_intro_rounds_9_players_3.mp3",
+      "bytes": 145075,
+      "checksumSha256": "460bd82a379c0a61584cb13d88a2490b2593d409fa9282d8d6ff1a9ceed863b9"
+    },
+    {
+      "path": "public/assets/audio/host/pirates/tts/pirates_intro_rounds_9_players_9.mp3",
+      "bytes": 158450,
+      "checksumSha256": "1eca18e725175f466e7abbecf07475a78122d65be966e789b86dbec55417cc9a"
+    },
+    {
+      "path": "public/assets/audio/host/pirates/tts/pirates_onlineLobby_01.mp3",
+      "bytes": 109549,
+      "checksumSha256": "cc431deb875f032dd1902e2645baf3ece5ee65f359935ee4799015c509f2a772"
+    },
+    {
+      "path": "public/assets/audio/host/pirates/tts/pirates_passPhone_01.mp3",
+      "bytes": 91577,
+      "checksumSha256": "c47e2641f2d5643e0a6726b0488427aa3816546e52775b60d1641258c7b2f11e"
+    },
+    {
+      "path": "public/assets/audio/host/pirates/tts/pirates_passPhone_02.mp3",
+      "bytes": 92413,
+      "checksumSha256": "5c73b9201415d75b2d51a8c70fb2289ac84add252316ad3e9680632e9e4fe44d"
+    },
+    {
+      "path": "public/assets/audio/host/pirates/tts/pirates_revealLiar_01.mp3",
+      "bytes": 98264,
+      "checksumSha256": "399a6981f4d0240cb84d77b3ae66d77777399f506d116a09bb455728c376fbc4"
+    },
+    {
+      "path": "public/assets/audio/host/pirates/tts/pirates_revealLiar_02.mp3",
+      "bytes": 103697,
+      "checksumSha256": "ac51f81b193d09883525f5b032bfbe41e87a795ee97ef5f435a6b72df25cc802"
+    },
+    {
+      "path": "public/assets/audio/host/pirates/tts/pirates_revealNormal_01.mp3",
+      "bytes": 107459,
+      "checksumSha256": "fb230daba2a4fa7dbecc3e18d91f29c014500b28801fb0303c13617058a34337"
+    },
+    {
+      "path": "public/assets/audio/host/pirates/tts/pirates_revealNormal_02.mp3",
+      "bytes": 105787,
+      "checksumSha256": "ec9eb25454743a64d4365a2daa9dcf1e12a12c26bd79d3d88b6ca111a25a5348"
+    },
+    {
+      "path": "public/assets/audio/host/pirates/tts/pirates_setup_01.mp3",
+      "bytes": 104533,
+      "checksumSha256": "a95fef69fed86b9ec07a9ca916f7e317a83d90d26d15ac4909e9f66faafa4e8a"
+    },
+    {
+      "path": "public/assets/audio/host/pirates/tts/pirates_setup_02.mp3",
+      "bytes": 89487,
+      "checksumSha256": "88e3c5e1bcea06c4df0d2823714a7e0280d71a074abc4fd188701f31cfc011e3"
+    },
+    {
+      "path": "public/assets/audio/host/pirates/tts/pirates_stinger_chain_v1.mp3",
+      "bytes": 138388,
+      "checksumSha256": "fec4ecb97501d64d684193661cb9669532c5657c21e5169419192670a62409d3"
+    },
+    {
+      "path": "public/assets/audio/host/pirates/tts/pirates_stinger_chain_v2.mp3",
+      "bytes": 127521,
+      "checksumSha256": "2e24f757842f1e98dae4a10acda6efe8335ddb5caf90210dd7c27bc71a4138cf"
+    },
+    {
+      "path": "public/assets/audio/host/pirates/tts/pirates_stinger_chain_v3.mp3",
+      "bytes": 127521,
+      "checksumSha256": "5c0193de9d325bcd2883ca04ea43de9930ad58a9fb1bcaa6e8cff84389cf5949"
+    },
+    {
+      "path": "public/assets/audio/host/pirates/tts/pirates_stinger_nameblame_v1.mp3",
+      "bytes": 140060,
+      "checksumSha256": "4194591aabc5f7afa622c8d3fdb5ae6edf83fdd348ec5262dadf9f8cf1fc288a"
+    },
+    {
+      "path": "public/assets/audio/host/pirates/tts/pirates_stinger_nameblame_v2.mp3",
+      "bytes": 120834,
+      "checksumSha256": "92198879649b652ecc2f29d5be6aeb4757207e85aaedded995867cb3eb1239e4"
+    },
+    {
+      "path": "public/assets/audio/host/pirates/tts/pirates_stinger_nameblame_v3.mp3",
+      "bytes": 137970,
+      "checksumSha256": "2e6c77cb881998bbe86843fa8bb6918fc85de99df68237977ff1bc670f740ece"
+    },
+    {
+      "path": "public/assets/audio/host/pirates/tts/pirates_stinger_noise_v1.mp3",
+      "bytes": 125849,
+      "checksumSha256": "6847fc7226a5fef118356d23db7e39fed65ece07af2d728a087d814105a839c7"
+    },
+    {
+      "path": "public/assets/audio/host/pirates/tts/pirates_stinger_noise_v2.mp3",
+      "bytes": 114564,
+      "checksumSha256": "eeda7b0b0046f972deca582b8f4a70623553db712fcc9e008f8bdbf5431ae44e"
+    },
+    {
+      "path": "public/assets/audio/host/pirates/tts/pirates_stinger_noise_v3.mp3",
+      "bytes": 131701,
+      "checksumSha256": "8b15504f704b279d9d35b19d189eb83ad559e805990b32c7212e37d17bfd1a28"
+    },
+    {
+      "path": "public/assets/audio/host/pirates/tts/pirates_stinger_offtopic_v1.mp3",
+      "bytes": 144657,
+      "checksumSha256": "95ec9ccc8254f1bcab29503963e1697552fd2dfd1d0b21c45c353f3a0130cb41"
+    },
+    {
+      "path": "public/assets/audio/host/pirates/tts/pirates_stinger_offtopic_v2.mp3",
+      "bytes": 112475,
+      "checksumSha256": "8a9d14c7059aaad8626459a510f6fe7abacc5b7427722cc88ab10cb65f2dbec2"
+    },
+    {
+      "path": "public/assets/audio/host/pirates/tts/pirates_stinger_offtopic_v3.mp3",
+      "bytes": 128775,
+      "checksumSha256": "b8e98077d73a2dd3efe326694441b3d41137ecea7735017609dfccf0e76e9334"
+    },
+    {
+      "path": "public/assets/audio/host/pirates/tts/pirates_stinger_opinion_v1.mp3",
+      "bytes": 121252,
+      "checksumSha256": "8ef1efae8c1874feb10290fb050197bb3ef9fdce35bf53862b6ed4168ab43ab5"
+    },
+    {
+      "path": "public/assets/audio/host/pirates/tts/pirates_stinger_opinion_v2.mp3",
+      "bytes": 116236,
+      "checksumSha256": "acce38cc2c7e14c6d8b6fb571330a0bb3ebffecbb1a95568d475a18713d10696"
+    },
+    {
+      "path": "public/assets/audio/host/pirates/tts/pirates_stinger_opinion_v3.mp3",
+      "bytes": 143822,
+      "checksumSha256": "07566c4f53acc3632d4ceb53288ad8f58f7e0b6451d4efb07ec7a6cbcbd7b99d"
+    },
+    {
+      "path": "public/assets/audio/host/pirates/tts/pirates_stinger_pairs_v1.mp3",
+      "bytes": 120833,
+      "checksumSha256": "c84e566d38346398a90645e54c19b9fbd2899c5ead945e122dc6184ecd322e98"
+    },
+    {
+      "path": "public/assets/audio/host/pirates/tts/pirates_stinger_pairs_v2.mp3",
+      "bytes": 111220,
+      "checksumSha256": "460e49cd5d79c2a52abcc988eb26912d1531ca2560eb525847ad8db7a89fdbb5"
+    },
+    {
+      "path": "public/assets/audio/host/pirates/tts/pirates_stinger_pairs_v3.mp3",
+      "bytes": 136297,
+      "checksumSha256": "0b7e32b34e57f9aa825d20b5ab197259187fb87fee2ab7ae9da961c8d6d7feba"
+    },
+    {
+      "path": "public/assets/audio/host/pirates/tts/pirates_stinger_picture_v1.mp3",
+      "bytes": 120834,
+      "checksumSha256": "8a0a48d6587dd945a4f354b74686f1a37d4e9329336a5ebb91115ac36e35119b"
+    },
+    {
+      "path": "public/assets/audio/host/pirates/tts/pirates_stinger_picture_v2.mp3",
+      "bytes": 117908,
+      "checksumSha256": "0ae9d931a84448a82f1b1952343a092398eec4d739cbd207a0c29607d287fa33"
+    },
+    {
+      "path": "public/assets/audio/host/pirates/tts/pirates_stinger_picture_v3.mp3",
+      "bytes": 129611,
+      "checksumSha256": "b9873e79a071cae0d038ae1660d6e30b7553f18663958ffb7be4fa6067a64117"
+    },
+    {
+      "path": "public/assets/audio/host/pirates/tts/pirates_stinger_prompt_v1.mp3",
+      "bytes": 120834,
+      "checksumSha256": "1a0c858793f332fbd8751cb3b045d0eddcc1f5dcf0c8a12af9c01efb4f1c63a9"
+    },
+    {
+      "path": "public/assets/audio/host/pirates/tts/pirates_stinger_prompt_v2.mp3",
+      "bytes": 126685,
+      "checksumSha256": "15c1a72815b8663ec10608b43ba06bccefb9c7ec466260fcff7fab876a5d47b7"
+    },
+    {
+      "path": "public/assets/audio/host/pirates/tts/pirates_stinger_prompt_v3.mp3",
+      "bytes": 130447,
+      "checksumSha256": "7b77e20740eea24cb32320290fe98287b935c3848214fbcc250a97983c441db6"
+    },
+    {
+      "path": "public/assets/audio/host/pirates/tts/pirates_stinger_twotruths_v1.mp3",
+      "bytes": 127938,
+      "checksumSha256": "3bd1f9d4c859d22a242237c5ee1d3a9fba345b5ae6baaf443e560b1f07a18da2"
+    },
+    {
+      "path": "public/assets/audio/host/pirates/tts/pirates_stinger_twotruths_v2.mp3",
+      "bytes": 111638,
+      "checksumSha256": "916384b946ef4418d8963eb8ca02fa60af6e5813d14118aebb4bc3598a8e1352"
+    },
+    {
+      "path": "public/assets/audio/host/pirates/tts/pirates_stinger_twotruths_v3.mp3",
+      "bytes": 136297,
+      "checksumSha256": "cdc0df9286690233bcae4095b07c6c0fb61bae317679eac3f8a4ebd9bb10645f"
+    },
+    {
+      "path": "public/assets/audio/host/pirates/tts/pirates_voting_01.mp3",
+      "bytes": 90323,
+      "checksumSha256": "33230ff610fdae4f6c7096f1dfb6401759e3852cc2f9a636f001edea8e36bfc8"
+    },
+    {
+      "path": "public/assets/audio/host/pirates/tts/pirates_voting_02.mp3",
+      "bytes": 94502,
+      "checksumSha256": "ed376252fd6489993428321f0e92350cbf8409a9addea0c6eb8bbfa5da601393"
+    },
+    {
+      "path": "public/assets/audio/host/pirates/tts/pirates_winner_01.mp3",
+      "bytes": 76112,
+      "checksumSha256": "cbacb3a7bb9c3055ab893e84730e14678510b1d6a9bb55e6074dc0b0ff1a70f2"
+    },
+    {
+      "path": "public/assets/audio/host/pirates/tts/pirates_winner_02.mp3",
+      "bytes": 81128,
+      "checksumSha256": "d27835a1b9a229cf71b77ba646794d760e41d6fe77f3d1ac3dc2e1fabc47eae1"
+    },
+    {
+      "path": "public/assets/audio/host/wrestlers/tts/wrestlers_caught_01.mp3",
+      "bytes": 64827,
+      "checksumSha256": "329c19c5269dbd083f247fd1be76883ffee24b6eb39fc9ce518ddb2284b13579"
+    },
+    {
+      "path": "public/assets/audio/host/wrestlers/tts/wrestlers_caught_02.mp3",
+      "bytes": 74022,
+      "checksumSha256": "ac9c420b4c8819ca4077fe120244137bbdd098f5535bca1ca9bae1abb1b06e58"
+    },
+    {
+      "path": "public/assets/audio/host/wrestlers/tts/wrestlers_chooser_01.mp3",
+      "bytes": 67335,
+      "checksumSha256": "6110bb02ed2ea1e5bc8e1bb209368f0b202771e36ea29ea5d4490281b2a44039"
+    },
+    {
+      "path": "public/assets/audio/host/wrestlers/tts/wrestlers_chooser_02.mp3",
+      "bytes": 70261,
+      "checksumSha256": "408d2ff61bdaf79e8de1417f927f6299f8ce373af44d5624c4a100caa81beba1"
+    },
+    {
+      "path": "public/assets/audio/host/wrestlers/tts/wrestlers_discussion_01.mp3",
+      "bytes": 76948,
+      "checksumSha256": "0ba6cd8ada997dc7ad22d1b1235926440e7bc2df9ee1ea722ca79fcb3ba88b40"
+    },
+    {
+      "path": "public/assets/audio/host/wrestlers/tts/wrestlers_discussion_02.mp3",
+      "bytes": 71515,
+      "checksumSha256": "33d4ba8aa71ee687df51a5f18fd8f3da9df212b77c5fcdbfb671c74fa1798e55"
+    },
+    {
+      "path": "public/assets/audio/host/wrestlers/tts/wrestlers_escaped_01.mp3",
+      "bytes": 84471,
+      "checksumSha256": "53041a15fdb1a3c3826ab2de3b2ddf9043a01c14d62eb11000b6824bc30bb508"
+    },
+    {
+      "path": "public/assets/audio/host/wrestlers/tts/wrestlers_escaped_02.mp3",
+      "bytes": 66499,
+      "checksumSha256": "e1893cee3a91f265430a50e7ef1f46bb861e2973ad3939db8cdf6117a4b253cd"
+    },
+    {
+      "path": "public/assets/audio/host/wrestlers/tts/wrestlers_home_01.mp3",
+      "bytes": 99936,
+      "checksumSha256": "c83f73f883139020b9b98233e04bf25007e9ecad2a2edde8947290377d424118"
+    },
+    {
+      "path": "public/assets/audio/host/wrestlers/tts/wrestlers_home_02.mp3",
+      "bytes": 95338,
+      "checksumSha256": "27d33c677d4545fd6799826d68961a7046d1cc34eaefeaf0060a51a83d9e7aef"
+    },
+    {
+      "path": "public/assets/audio/host/wrestlers/tts/wrestlers_intro_closing.mp3",
+      "bytes": 98264,
+      "checksumSha256": "7b1104ef4e0db87f8fffa61e235ae7b049b7923b419618de5afbd7686573b153"
+    },
+    {
+      "path": "public/assets/audio/host/wrestlers/tts/wrestlers_intro_greeting_afternoon.mp3",
+      "bytes": 111221,
+      "checksumSha256": "740fc6f39212431d4e0cdf0d5d66a306f7ea764ba5a7c84aacfb8bdae387bcb9"
+    },
+    {
+      "path": "public/assets/audio/host/wrestlers/tts/wrestlers_intro_greeting_anytime.mp3",
+      "bytes": 100772,
+      "checksumSha256": "311af227a3954544162145f2d6700de8c32510b47afa8c5438ba47ac1a9fb41b"
+    },
+    {
+      "path": "public/assets/audio/host/wrestlers/tts/wrestlers_intro_greeting_evening.mp3",
+      "bytes": 99936,
+      "checksumSha256": "bc3bbb4c3cd32897d5f78a08cee7fccd4b6dab75e13334b354e2424ec8c6661b"
+    },
+    {
+      "path": "public/assets/audio/host/wrestlers/tts/wrestlers_intro_greeting_morning.mp3",
+      "bytes": 106623,
+      "checksumSha256": "5588fcb0e83d7034b51d7518f658119fc367f5fda62aeaa56d325f02f1609217"
+    },
+    {
+      "path": "public/assets/audio/host/wrestlers/tts/wrestlers_intro_hook_01.mp3",
+      "bytes": 79038,
+      "checksumSha256": "2b4b6c991a067965b1e62c3a0541e90ff532e32d45606f715f4a9f83ae9b62da"
+    },
+    {
+      "path": "public/assets/audio/host/wrestlers/tts/wrestlers_intro_hook_02.mp3",
+      "bytes": 81964,
+      "checksumSha256": "2b7972970eac9495ca65ac41271edb52a0ead5ce6f6a8222aacbee568e93c6dc"
+    },
+    {
+      "path": "public/assets/audio/host/wrestlers/tts/wrestlers_intro_hook_03.mp3",
+      "bytes": 88651,
+      "checksumSha256": "4db82011726224d55fd528ad8f9ddb8df1762cb30d7ed4a6cd1d03e22d1588e7"
+    },
+    {
+      "path": "public/assets/audio/host/wrestlers/tts/wrestlers_intro_hook_04.mp3",
+      "bytes": 104533,
+      "checksumSha256": "c525e2dc0d8c825efc0747684f344c72dc990b15699d595d24785676cdf56b7d"
+    },
+    {
+      "path": "public/assets/audio/host/wrestlers/tts/wrestlers_intro_host_name.mp3",
+      "bytes": 68589,
+      "checksumSha256": "4d6992c40021daf3aedaca1b8ea188e65c4cfdd024fe6eff9b886df8caa42b3d"
+    },
+    {
+      "path": "public/assets/audio/host/wrestlers/tts/wrestlers_intro_online_prompt.mp3",
+      "bytes": 95338,
+      "checksumSha256": "606dfcb8c73b924a73e2877668c4adb2d5816c73b2a484ab28e93d9cd7c8acad"
+    },
+    {
+      "path": "public/assets/audio/host/wrestlers/tts/wrestlers_intro_pass_prompt.mp3",
+      "bytes": 70261,
+      "checksumSha256": "3128cae0cb909f6f57bb48d52bddc51b70c939b737c30188dbbcc3399c7eeba8"
+    },
+    {
+      "path": "public/assets/audio/host/wrestlers/tts/wrestlers_intro_rounds_10_players_10.mp3",
+      "bytes": 99936,
+      "checksumSha256": "ad9a8f83a79012a34e08171b02cc3f6909e722593c19e94716dbdf118087a68b"
+    },
+    {
+      "path": "public/assets/audio/host/wrestlers/tts/wrestlers_intro_rounds_10_players_5.mp3",
+      "bytes": 99100,
+      "checksumSha256": "b0fe4845d4ac4863eece07b33d107232f8b244b11c30aecfd2ca2e2f507fd6f1"
+    },
+    {
+      "path": "public/assets/audio/host/wrestlers/tts/wrestlers_intro_rounds_11_players_11.mp3",
+      "bytes": 107459,
+      "checksumSha256": "bec6798ca6ce9d42ec43bd598dd75647d4d7b60b9f2cb467b20c156352136200"
+    },
+    {
+      "path": "public/assets/audio/host/wrestlers/tts/wrestlers_intro_rounds_12_players_12.mp3",
+      "bytes": 104533,
+      "checksumSha256": "ae56b83e9624a0055fe4723329193f95e28417fe0e61fa5f934d662c6e8a381a"
+    },
+    {
+      "path": "public/assets/audio/host/wrestlers/tts/wrestlers_intro_rounds_12_players_4.mp3",
+      "bytes": 107459,
+      "checksumSha256": "64581c3f2ee6686f10c3a9d4d9c66296b2c3ebdac310b5340e4bd2bfeedea4c3"
+    },
+    {
+      "path": "public/assets/audio/host/wrestlers/tts/wrestlers_intro_rounds_12_players_6.mp3",
+      "bytes": 94502,
+      "checksumSha256": "6a005c4e9f3c166bf1af94c20e32664849f84b0d3c796b7a18c65bf4fc0b8120"
+    },
+    {
+      "path": "public/assets/audio/host/wrestlers/tts/wrestlers_intro_rounds_14_players_7.mp3",
+      "bytes": 101190,
+      "checksumSha256": "f6576ab89c3532fd75f6004528d32730be41d58d2abe2d9abb6c69e6ade0710e"
+    },
+    {
+      "path": "public/assets/audio/host/wrestlers/tts/wrestlers_intro_rounds_15_players_5.mp3",
+      "bytes": 111221,
+      "checksumSha256": "96af9bb9ed7ee57076da96f9086a02894a9e635160882b7cc4a3baf3a8f6a043"
+    },
+    {
+      "path": "public/assets/audio/host/wrestlers/tts/wrestlers_intro_rounds_16_players_8.mp3",
+      "bytes": 108713,
+      "checksumSha256": "f965523ae3329039030cf047afc8e42183d27eea9fe432931ce02a556581ac19"
+    },
+    {
+      "path": "public/assets/audio/host/wrestlers/tts/wrestlers_intro_rounds_18_players_6.mp3",
+      "bytes": 108713,
+      "checksumSha256": "e30f4c50461f3eaee20f9e34264422be63020ad54567759a613872ea4aa11d56"
+    },
+    {
+      "path": "public/assets/audio/host/wrestlers/tts/wrestlers_intro_rounds_18_players_9.mp3",
+      "bytes": 126685,
+      "checksumSha256": "49f627804295b63734c43b0bc09e972782acf530f818e505939e5fd7f2af5048"
+    },
+    {
+      "path": "public/assets/audio/host/wrestlers/tts/wrestlers_intro_rounds_20_players_10.mp3",
+      "bytes": 97010,
+      "checksumSha256": "3af47d3fa1d4333916c41c53a5e33faf7e61afc2913567d8ca69429dc016a398"
+    },
+    {
+      "path": "public/assets/audio/host/wrestlers/tts/wrestlers_intro_rounds_21_players_7.mp3",
+      "bytes": 114564,
+      "checksumSha256": "28d1519ef906bec183b23789daeb9800fd5425210c835c3b809e3f58e29365c3"
+    },
+    {
+      "path": "public/assets/audio/host/wrestlers/tts/wrestlers_intro_rounds_22_players_11.mp3",
+      "bytes": 107459,
+      "checksumSha256": "609f910b51d3cc06de5d152f60521cf9864aa9ecf4982290a9cec810d9e643ba"
+    },
+    {
+      "path": "public/assets/audio/host/wrestlers/tts/wrestlers_intro_rounds_24_players_12.mp3",
+      "bytes": 114146,
+      "checksumSha256": "7fa0468a4cbd7df455f0d48a5c41fb1976489040cf1cd53fb26607ce52d72e05"
+    },
+    {
+      "path": "public/assets/audio/host/wrestlers/tts/wrestlers_intro_rounds_24_players_8.mp3",
+      "bytes": 116236,
+      "checksumSha256": "b879fce43625796630d1d4f0aa3a8e4b48bd1bd90bd884f2a676d4e4574bd3b2"
+    },
+    {
+      "path": "public/assets/audio/host/wrestlers/tts/wrestlers_intro_rounds_27_players_9.mp3",
+      "bytes": 113311,
+      "checksumSha256": "b772375718a65db0b520cb1e17c31235626c96e69a33b7547726ccf6e5e86bc1"
+    },
+    {
+      "path": "public/assets/audio/host/wrestlers/tts/wrestlers_intro_rounds_3_players_3.mp3",
+      "bytes": 104951,
+      "checksumSha256": "adc4cd9480c3c06a9e0e228c73f39a358b97ba48f62b6c2ed38316f973ba38f4"
+    },
+    {
+      "path": "public/assets/audio/host/wrestlers/tts/wrestlers_intro_rounds_30_players_10.mp3",
+      "bytes": 96174,
+      "checksumSha256": "ccec056dd2b178f286526b0b9a3bed348420c9634d4a3178337c2e5494c0c2b2"
+    },
+    {
+      "path": "public/assets/audio/host/wrestlers/tts/wrestlers_intro_rounds_33_players_11.mp3",
+      "bytes": 134626,
+      "checksumSha256": "6e2dfc478c56ff9cca54901a6810c6e2d1bacaebee117eacc3328534b693474c"
+    },
+    {
+      "path": "public/assets/audio/host/wrestlers/tts/wrestlers_intro_rounds_36_players_12.mp3",
+      "bytes": 111221,
+      "checksumSha256": "e84f4af6a929715100185e24904a4572b21d6df55ddd664579cfdd9be43ea99d"
+    },
+    {
+      "path": "public/assets/audio/host/wrestlers/tts/wrestlers_intro_rounds_4_players_4.mp3",
+      "bytes": 103697,
+      "checksumSha256": "39f718c540039d08d86b251d2daeaed271632eb5db305a8874c1120695e043b9"
+    },
+    {
+      "path": "public/assets/audio/host/wrestlers/tts/wrestlers_intro_rounds_5_players_5.mp3",
+      "bytes": 102862,
+      "checksumSha256": "db6c753a102fe605500e72f35f793510fe0d6ecb8cfb5343b411dc3c107a38b5"
+    },
+    {
+      "path": "public/assets/audio/host/wrestlers/tts/wrestlers_intro_rounds_6_players_3.mp3",
+      "bytes": 98264,
+      "checksumSha256": "7155b379cc87234b7b739ab3d08c84487a1eac56ea28251eb06032b47cfec904"
+    },
+    {
+      "path": "public/assets/audio/host/wrestlers/tts/wrestlers_intro_rounds_6_players_6.mp3",
+      "bytes": 104951,
+      "checksumSha256": "a2ca4838aa403218d3d812134d733c8955465a16c79a07ba75005a3406990701"
+    },
+    {
+      "path": "public/assets/audio/host/wrestlers/tts/wrestlers_intro_rounds_7_players_7.mp3",
+      "bytes": 101190,
+      "checksumSha256": "239f5260d00dd385ddebe9d8d5b1a03b8771f4c3dddcc10e4879cab77656d6af"
+    },
+    {
+      "path": "public/assets/audio/host/wrestlers/tts/wrestlers_intro_rounds_8_players_4.mp3",
+      "bytes": 92413,
+      "checksumSha256": "f1fbba11b42ef8f2109add4cd15ef45989ee2704fab22d5cb7f784fa0d1144d1"
+    },
+    {
+      "path": "public/assets/audio/host/wrestlers/tts/wrestlers_intro_rounds_8_players_8.mp3",
+      "bytes": 92413,
+      "checksumSha256": "ad62fe0686e8d4f5ceadce71ece30c57c417763ae50a45b3a4e0c99ec5eb1e6d"
+    },
+    {
+      "path": "public/assets/audio/host/wrestlers/tts/wrestlers_intro_rounds_9_players_3.mp3",
+      "bytes": 94084,
+      "checksumSha256": "7426fc2f46dcf6539ba6b39b7293c560aa008c531011e614e5657e0bc998daef"
+    },
+    {
+      "path": "public/assets/audio/host/wrestlers/tts/wrestlers_intro_rounds_9_players_9.mp3",
+      "bytes": 100772,
+      "checksumSha256": "ca6c09dab409ad3841f3afdda3cb3497970e4f280c6f43fbad9807fe764cb165"
+    },
+    {
+      "path": "public/assets/audio/host/wrestlers/tts/wrestlers_onlineLobby_01.mp3",
+      "bytes": 72351,
+      "checksumSha256": "c0804432f914e693ad1bd1b77ab051e8375f1e0be2ef8f696dadf2502745a45f"
+    },
+    {
+      "path": "public/assets/audio/host/wrestlers/tts/wrestlers_passPhone_01.mp3",
+      "bytes": 75276,
+      "checksumSha256": "982868b69af1ff2d7a755757cf66e666b03f109f9dc4cf06ae285e00c9815e99"
+    },
+    {
+      "path": "public/assets/audio/host/wrestlers/tts/wrestlers_passPhone_02.mp3",
+      "bytes": 61902,
+      "checksumSha256": "ab638ef058ac0b089d01e2250ad5e5ac15eea8de6ec49a22b883d762868543a2"
+    },
+    {
+      "path": "public/assets/audio/host/wrestlers/tts/wrestlers_revealLiar_01.mp3",
+      "bytes": 79874,
+      "checksumSha256": "162c8e69e9d033093a368834921cb3bcb760b624cf4ffe7e541fb6595b98edb5"
+    },
+    {
+      "path": "public/assets/audio/host/wrestlers/tts/wrestlers_revealLiar_02.mp3",
+      "bytes": 84471,
+      "checksumSha256": "ec13ea3b7a8273c9d12c9cd7c14bea03f57390f818d94f7254e8fbae8c5cfd93"
+    },
+    {
+      "path": "public/assets/audio/host/wrestlers/tts/wrestlers_revealNormal_01.mp3",
+      "bytes": 60648,
+      "checksumSha256": "061e054ce80c80748171b3982e3045dd9b28d77065e2c725a78b4886f8a93364"
+    },
+    {
+      "path": "public/assets/audio/host/wrestlers/tts/wrestlers_revealNormal_02.mp3",
+      "bytes": 76948,
+      "checksumSha256": "faf19ac59fdf51505b3f6b3542dcfc044bd735aa8b60ad627557544e0f8cf922"
+    },
+    {
+      "path": "public/assets/audio/host/wrestlers/tts/wrestlers_setup_01.mp3",
+      "bytes": 69425,
+      "checksumSha256": "fec2a63a3c89082784fa6f42b8a50f63c54633201fd9aac386914a6083c1f471"
+    },
+    {
+      "path": "public/assets/audio/host/wrestlers/tts/wrestlers_setup_02.mp3",
+      "bytes": 79038,
+      "checksumSha256": "47828c7afcd9ce300e0501755c6268c500882c0a55271fa60f900e5de4a1e277"
+    },
+    {
+      "path": "public/assets/audio/host/wrestlers/tts/wrestlers_stinger_chain_v1.mp3",
+      "bytes": 97010,
+      "checksumSha256": "b96c8717fbdbc691d60e0793349316256aa5c1ba478d25b9693117880bcc2c3b"
+    },
+    {
+      "path": "public/assets/audio/host/wrestlers/tts/wrestlers_stinger_chain_v2.mp3",
+      "bytes": 87397,
+      "checksumSha256": "7696028ab071d021447f8c2fe18165a0a7f1fa0a04d6b36e20ccb22457710749"
+    },
+    {
+      "path": "public/assets/audio/host/wrestlers/tts/wrestlers_stinger_chain_v3.mp3",
+      "bytes": 96174,
+      "checksumSha256": "d1f5775fe09d4b2f246f37e35cc539d9ef4d942bcfb4d84728c0a4f2c6815222"
+    },
+    {
+      "path": "public/assets/audio/host/wrestlers/tts/wrestlers_stinger_nameblame_v1.mp3",
+      "bytes": 93248,
+      "checksumSha256": "60f65439d2a23d7a8266d4fcc0fd24be5322ebc753b83c76e79cf09c1f97fc09"
+    },
+    {
+      "path": "public/assets/audio/host/wrestlers/tts/wrestlers_stinger_nameblame_v2.mp3",
+      "bytes": 105787,
+      "checksumSha256": "8de98fc77909ad735d4e736bf39e6fe3b2be3baf2967a2a7559e926d1fd935f3"
+    },
+    {
+      "path": "public/assets/audio/host/wrestlers/tts/wrestlers_stinger_nameblame_v3.mp3",
+      "bytes": 153435,
+      "checksumSha256": "ba0f0ade44b58e167d34a0d362f804625402e41f854215ae06c94c6c6539337f"
+    },
+    {
+      "path": "public/assets/audio/host/wrestlers/tts/wrestlers_stinger_noise_v1.mp3",
+      "bytes": 104533,
+      "checksumSha256": "a9a1006fa30e4e237c8dc1dc9f21929cfd8d68d849a29e92ad42a4fb975c64d9"
+    },
+    {
+      "path": "public/assets/audio/host/wrestlers/tts/wrestlers_stinger_noise_v2.mp3",
+      "bytes": 91159,
+      "checksumSha256": "d3f092b6e17e9c566eccd7fc1de4d338f3331d15a6333456931cf7f427ffb464"
+    },
+    {
+      "path": "public/assets/audio/host/wrestlers/tts/wrestlers_stinger_noise_v3.mp3",
+      "bytes": 90323,
+      "checksumSha256": "c814015af4a4ff95fd4a6d6203d6f2d2d47c96dbe26bd8964260f611aa4e1700"
+    },
+    {
+      "path": "public/assets/audio/host/wrestlers/tts/wrestlers_stinger_offtopic_v1.mp3",
+      "bytes": 95338,
+      "checksumSha256": "d6e9d3ad54edb66690b800d599a64360701130a8d88354c3ff9f5076df10edda"
+    },
+    {
+      "path": "public/assets/audio/host/wrestlers/tts/wrestlers_stinger_offtopic_v2.mp3",
+      "bytes": 102862,
+      "checksumSha256": "382567065ce0886c5d0a792469cdb11bfca4906b25782fdc88ed9b6b1d896f76"
+    },
+    {
+      "path": "public/assets/audio/host/wrestlers/tts/wrestlers_stinger_offtopic_v3.mp3",
+      "bytes": 87397,
+      "checksumSha256": "7843122352991e967897417341c701e6d019dca2e6906752fd618362e8d609eb"
+    },
+    {
+      "path": "public/assets/audio/host/wrestlers/tts/wrestlers_stinger_opinion_v1.mp3",
+      "bytes": 111221,
+      "checksumSha256": "149b28cb7790acc672103d5a9978dfdaeca8f6d0323fdf9b9198c3af0f4f7da5"
+    },
+    {
+      "path": "public/assets/audio/host/wrestlers/tts/wrestlers_stinger_opinion_v2.mp3",
+      "bytes": 115400,
+      "checksumSha256": "25c23fef377a4f579590151847476af08697c7a71b9dcb6848af505ea9008f61"
+    },
+    {
+      "path": "public/assets/audio/host/wrestlers/tts/wrestlers_stinger_opinion_v3.mp3",
+      "bytes": 96174,
+      "checksumSha256": "64d2d69a0634fb0653eb3138ff05ed6884eb0574ba3e7b27be1b1983f5d0789e"
+    },
+    {
+      "path": "public/assets/audio/host/wrestlers/tts/wrestlers_stinger_picture_v1.mp3",
+      "bytes": 97010,
+      "checksumSha256": "143a3a24c983cf9bbb95c73f0416c6ff822ef2353642710322b93df66e6fa75d"
+    },
+    {
+      "path": "public/assets/audio/host/wrestlers/tts/wrestlers_stinger_picture_v2.mp3",
+      "bytes": 109549,
+      "checksumSha256": "e14f66d87917280dedeba978a9b73e6ea29e7368170340860d7f3a99e6caf1d3"
+    },
+    {
+      "path": "public/assets/audio/host/wrestlers/tts/wrestlers_stinger_picture_v3.mp3",
+      "bytes": 94502,
+      "checksumSha256": "edcefc62b02ea854a72da63dcbea132610a8322fc40d8f9518f8cbbbf1873277"
+    },
+    {
+      "path": "public/assets/audio/host/wrestlers/tts/wrestlers_stinger_prompt_v1.mp3",
+      "bytes": 88651,
+      "checksumSha256": "ec24310b6e3f5c64d32d959540920b67614efa742213448f13146381db8b7d40"
+    },
+    {
+      "path": "public/assets/audio/host/wrestlers/tts/wrestlers_stinger_prompt_v2.mp3",
+      "bytes": 106623,
+      "checksumSha256": "b0deb7f94a1bab2e9a476e2d612f59a9d17d07c40aa0636118d46f38c85aece0"
+    },
+    {
+      "path": "public/assets/audio/host/wrestlers/tts/wrestlers_stinger_prompt_v3.mp3",
+      "bytes": 89487,
+      "checksumSha256": "82894034254c07626fdaba84447c7733858c90b8345ffb22c068d836e5c15693"
+    },
+    {
+      "path": "public/assets/audio/host/wrestlers/tts/wrestlers_voting_01.mp3",
+      "bytes": 53960,
+      "checksumSha256": "8c3c9daf9653443f343bef2b7c454d5ce00931d518a2df0346c8feb52d945c96"
+    },
+    {
+      "path": "public/assets/audio/host/wrestlers/tts/wrestlers_voting_02.mp3",
+      "bytes": 58140,
+      "checksumSha256": "856d814718419711a29e530d86a4646c2d394f476c6ac9a38cb6766da6f18618"
+    },
+    {
+      "path": "public/assets/audio/host/wrestlers/tts/wrestlers_winner_01.mp3",
+      "bytes": 76948,
+      "checksumSha256": "d3adf688e98414d6c6e7e7ec5f05991e36476b84711098feb65e94430c284de9"
+    },
+    {
+      "path": "public/assets/audio/host/wrestlers/tts/wrestlers_winner_02.mp3",
+      "bytes": 76948,
+      "checksumSha256": "846ec860053d5b591bcc70e4df3e28533e502c205077803d26c1f243ba1bef6a"
+    }
+  ]
+}
