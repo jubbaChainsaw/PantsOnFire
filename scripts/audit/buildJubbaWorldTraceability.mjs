@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 /**
- * Build traceability matrix from jubbaworld-snapshot JSON + optional evidence JSON.
- * Does NOT keyword-classify items — evidence comes from evidence-batch-*.json (manual / batched examination).
+ * Build traceability matrix from jubbaworld-snapshot JSON + evidence-batch-*.json.
+ * Merges all `evidence-batch-*.json` in lexical order (batch01, batch02, …); later files override item numbers.
+ * Does NOT keyword-classify items.
  */
 import fs from 'node:fs';
 import path from 'node:path';
@@ -11,7 +12,6 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(__dirname, '../..');
 const auditDir = path.join(root, 'docs/audit/2026-11-06-jubba-full-audit');
 const snapshotPath = path.join(auditDir, 'jubbaworld-snapshot-2026-11-06.json');
-const evidencePath = path.join(auditDir, 'evidence-batch-01.json');
 
 function collectTestFiles() {
   const out = [];
@@ -29,19 +29,39 @@ function collectTestFiles() {
 
 const allTestFiles = collectTestFiles();
 
+function listEvidenceBatchFiles() {
+  if (!fs.existsSync(auditDir)) return [];
+  return fs
+    .readdirSync(auditDir)
+    .filter((name) => /^evidence-batch-.*\.json$/.test(name))
+    .sort()
+    .map((name) => path.join(auditDir, name));
+}
+
 function loadEvidenceMap() {
-  if (!fs.existsSync(evidencePath)) return { items: {}, conversationRequirements: {}, meta: null };
-  const raw = JSON.parse(fs.readFileSync(evidencePath, 'utf8'));
-  return {
-    items: raw.items || {},
-    conversationRequirements: raw.conversationRequirements || {},
-    meta: {
-      auditContinuationId: raw.auditContinuationId,
-      examinedItemNumbers: raw.examinedItemNumbersBatch01,
-      examinedItemCountThisBatch: raw.examinedItemCountThisBatch,
-      pendingExaminationCount: raw.pendingExaminationCount,
-    },
-  };
+  const paths = listEvidenceBatchFiles();
+  if (!paths.length) {
+    return { items: {}, conversationRequirements: {}, sources: [], batchMeta: [] };
+  }
+  const items = {};
+  const conversationRequirements = {};
+  const batchMeta = [];
+  for (const p of paths) {
+    const raw = JSON.parse(fs.readFileSync(p, 'utf8'));
+    batchMeta.push({
+      file: path.relative(root, p).replace(/\\/g, '/'),
+      auditBatchId: raw.auditBatchId || raw.auditContinuationId || null,
+      generatedAt: raw.generatedAt || null,
+      stats: raw.stats || null,
+    });
+    for (const [num, row] of Object.entries(raw.items || {})) {
+      items[num] = { ...(items[num] || {}), ...row };
+    }
+    for (const [key, row] of Object.entries(raw.conversationRequirements || {})) {
+      conversationRequirements[key] = { ...(conversationRequirements[key] || {}), ...row };
+    }
+  }
+  return { items, conversationRequirements, sources: paths.map((p) => path.relative(root, p).replace(/\\/g, '/')), batchMeta };
 }
 
 function rowFromEvidenceItem(item, ev) {
@@ -63,6 +83,7 @@ function rowFromEvidenceItem(item, ev) {
       priority: item.priority || null,
       emptyDescription: emptyDesc,
       acceptanceBasis: ev.acceptanceBasis || (emptyDesc ? 'inferred_from_title' : 'from_snapshot_description'),
+      acceptanceInferredFlag: ev.acceptanceInferredFlag ?? emptyDesc,
       evidenceClassification: ev.evidenceClassification,
       confidence: ev.confidence,
       evidenceSource: ev.evidenceSource,
@@ -70,11 +91,11 @@ function rowFromEvidenceItem(item, ev) {
       implementationRefs: ev.implementationRefs || [],
       testRefs: ev.testRefs || [],
       runtimeNotes: ev.runtimeNotes ?? null,
+      linksExistingTracker: ev.linksExistingTracker || [],
       nextAction: ev.nextAction,
     };
   }
 
-  // No evidence batch row — should not happen if evidence JSON covers all numbers
   return {
     jubbaWorldId: item.id,
     number: item.number,
@@ -95,6 +116,7 @@ function rowFromEvidenceItem(item, ev) {
     methodologyNote: 'Add this number to evidence-batch-*.json',
     implementationRefs: [],
     testRefs: [],
+    linksExistingTracker: [],
     runtimeNotes: null,
     nextAction: 'Add batched examination entry',
   };
@@ -103,11 +125,8 @@ function rowFromEvidenceItem(item, ev) {
 function conversationRows(snapshot, convEvidence) {
   const conv = snapshot.conversation_requirements_not_yet_filed_as_new_items || [];
   return conv.map((c) => {
-    const key = c.id.replace(/-/g, '_');
-    const ev =
-      convEvidence[key] ||
-      convEvidence[c.id] ||
-      null;
+    const keyUnderscore = c.id.replace(/-/g, '_');
+    const ev = convEvidence[keyUnderscore] || convEvidence[c.id] || null;
     if (ev) {
       return {
         jubbaWorldId: null,
@@ -125,6 +144,7 @@ function conversationRows(snapshot, convEvidence) {
         implementationRefs: ev.implementationRefs || [],
         testRefs: ev.testRefs || [],
         relatedTrackerRefs: c.related_tracker || [],
+        linksExistingTracker: ev.linksExistingTracker || [],
         nextAction: ev.nextAction,
       };
     }
@@ -141,6 +161,7 @@ function conversationRows(snapshot, convEvidence) {
       nextAction: 'Add CONV block to evidence-batch-*.json',
       implementationRefs: [],
       testRefs: [],
+      linksExistingTracker: [],
     };
   });
 }
@@ -162,7 +183,7 @@ function main() {
     process.exit(1);
   }
 
-  const { items: evItems, conversationRequirements: convEv, meta: evMeta } = loadEvidenceMap();
+  const { items: evItems, conversationRequirements: convEv, sources, batchMeta } = loadEvidenceMap();
 
   const rows = items.map((item) => {
     const ev = evItems[item.number];
@@ -199,7 +220,7 @@ function main() {
     auditId: 'POF-AUDIT-2026-11-06-JUBBA-FULL',
     generatedAt: new Date().toISOString(),
     methodologyNote:
-      'Superpowers bundle: docs/audit/2026-11-06-jubba-full-audit/SUPERPOWERS_SKILLS_BUNDLE.md. Traceability rows merge snapshot + evidence-batch-01.json (no keyword heuristics). Independent code reviewer: not available this run.',
+      'Superpowers bundle: docs/audit/2026-11-06-jubba-full-audit/SUPERPOWERS_SKILLS_BUNDLE.md. Rows merge snapshot + evidence-batch-*.json (lexical merge order). No keyword heuristics. Independent code reviewer: not available this run.',
     baseline: {
       snapshotPath: 'docs/audit/2026-11-06-jubba-full-audit/jubbaworld-snapshot-2026-11-06.json',
       snapshotProvenanceCopyPath:
@@ -209,7 +230,8 @@ function main() {
       conversationRequirementCount: convRows.length,
       matrixRowCount: 119 + convRows.length,
     },
-    evidenceBatch: evMeta,
+    evidenceBatchFiles: sources,
+    evidenceBatchMerge: batchMeta,
     itemClassificationCounts: itemClassifications,
     conversationClassificationCounts: convClassifications,
     counts: raw.counts,
@@ -226,6 +248,7 @@ function main() {
   const outPath = path.join(auditDir, 'traceability-FULL.json');
   fs.writeFileSync(outPath, JSON.stringify(out, null, 2));
   console.log(`Wrote ${outPath} (${rows.length} items + ${convRows.length} conv rows)`);
+  console.log('Evidence files:', sources.join(', ') || '(none)');
   console.log('Item classification counts:', JSON.stringify(itemClassifications));
 }
 

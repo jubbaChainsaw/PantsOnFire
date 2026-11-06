@@ -2350,7 +2350,9 @@
       "implementationRefs": [
         "docs/audit/2026-11-06-jubba-full-audit/findings-FULL.md",
         "docs/audit/2026-11-06-jubba-full-audit/traceability-FULL.json",
-        "docs/audit/2026-11-06-jubba-full-audit/evidence-batch-01.json"
+        "docs/audit/2026-11-06-jubba-full-audit/evidence-batch-01.json",
+        "docs/audit/2026-11-06-jubba-full-audit/evidence-batch-02.json",
+        "docs/audit/2026-11-06-jubba-full-audit/evidence-batch-03.json"
       ],
       "testRefs": [],
       "nextAction": "Parent assembles Page from these paths."

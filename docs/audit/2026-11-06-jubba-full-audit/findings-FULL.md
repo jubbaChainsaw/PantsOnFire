@@ -1,72 +1,80 @@
-# Jubba full audit — findings (continuation batch 01)
+# Jubba full audit — findings (batch 02/03 matrix complete)
 
 **Branch:** `cursor/ionos-web-deploy-6e4c` — **PR #111**  
 
-**Audit deliverable commits** (historical chain; see `findings-FULL.json` → `auditDeliverableCommits`):
+Historical **frozen deliverable chain** (parent logging): see `findings-FULL.json` → `auditDeliverableCommits` (five SHAs through `0e1c36adce560d7118c43e2735cc42f6f4121e70`). This document and later commits **append** audit evidence; they do not invalidate that chain.
 
-1. `cbef5d48c4805833b2f74fdecb0acc2ddc434064` — snapshot, traceability, findings, generator, Superpowers bundle copy, E2E selector fix, `.gitignore` dist-android  
-2. `9fb745f749700ecdf684cad8678cedea4a0e5131` — `docs/jubbaworld-pending.json` pointer entry  
-3. `22508a64e4bbc513b79015080466a9e1ef6c6ba8` — record SHAs in findings  
-4. `f73c735f2f0e6cda6e14890d06d55b79952606c2` — extend `commits` in `jubbaworld-pending`  
-5. `0e1c36adce560d7118c43e2735cc42f6f4121e70` — add `auditDeliverableCommits` (five SHAs) and sync pending `commit` to chain tip  
+## What this round delivered
 
-Later commits on this branch may add **continuation** audit artifacts; they append to the evidence story without rewriting the frozen chain unless explicitly requested.
+- **Extended evidence loader:** `scripts/audit/buildJubbaWorldTraceability.mjs` merges **all** `evidence-batch-*.json` in **lexical order** (batch01 → batch02 → batch03); later files **override** `item.number` fields.
+- **`evidence-batch-02.json`:** **105** remaining tracker rows filled via `scripts/audit/generateEvidenceBatch02.mjs` — **explicit per-number overrides**, not keyword rules.
+- **`evidence-batch-03.json`:** Link overlays for **REQ0017**, **REQ0009**, **STRY0010/11/24** testRefs; expands **CONV-REQ-REVIEW-AS-PAGE** artifact list.
+- **`proposed-tracker-updates.json`:** **REQ0017** implementation evidence + **TEST0005** diagnostic scope note + **REQ0014** package mismatch — **no duplicate server task** (removed from proposed new work).
+- **`proposed-new-work-tasks.json`:** Single residual gap — **TEST_STRATEGY.md vs npm-test.yml** doc sync (deduped with **DFCT0040** / **REQ0010**).
 
-## What changed in this continuation
+## Superpowers
 
-- **Removed keyword heuristics** from `scripts/audit/buildJubbaWorldTraceability.mjs`. Rows are produced from **`evidence-batch-01.json`** merged with the snapshot.
-- **Provenance:** `jubbaworld-snapshot-upload-provenance-8c20.json` — copy of the user-supplied upload (`pants-on-fire-jubbaworld-snapshot_8c20.json`); identical byte size to `jubbaworld-snapshot-2026-11-06.json` in this workspace.
-- **Batch 01 examined:** **13** tracker items with file references and methodology notes; **105** rows remain **`pending_examination`** (explicit backlog for the next batch — not “keyword untested”). **WTSK0002** is **`deferred`** (decision pending — not counted in the 105).
-- **REQ0017 (online Two Truths):** classified **`missing`** — `buildAuthoritativeRound` only emits `roundTypeId: 'prompt'` (Hot Seat); no server branch for Two Truths in `server/storage/lobbyStore.js`.
-- **Mobile auth ECONNREFUSED:** added Playwright diagnostic `tests/e2e/playwright/mobile-preview-api-proxy-diagnostic.spec.js` (audit scope, documents proxy/API shape gap; not a product fix). Parent **TEST0005** is not duplicated in proposed tasks.
-- **Double Take skip:** still tracked in **`tests/e2e/playwright/martin-smoke.spec.js`**; parent **TEST0004** — not duplicated in proposed tasks.
+Bundle: `SUPERPOWERS_SKILLS_BUNDLE.md`. Plugin not installed in cloud. **Independent code review:** not available this run.
 
-## Superpowers (attached bundle)
+## Matrix reconciliation (machine check)
 
-Imported text: `SUPERPOWERS_SKILLS_BUNDLE.md`. Plugin not installed; workflows: writing-plans, systematic-debugging, verification-before-completion. **Independent code review:** not available as a separate agent in this run.
+| Metric | Value |
+|--------|------:|
+| Snapshot items | **119** (unique `number` == 119) |
+| Conversation rows | **10** |
+| Matrix rows | **129** |
 
-## JubbaWorld baseline
+**Item `evidenceClassification` counts** (sum **119**): see `traceability-FULL.json` → `itemClassificationCounts` (e.g. `code_proven_partial`, `partial`, `blocked_device_external`, `verified`, `deferred`, `missing`, `blocked_external_owner`).
 
-- **119** items — unique `number` in `traceability-FULL.json`.
-- **+10** conversation requirement rows (separate from the 119).
-- **26** empty descriptions in snapshot — `acceptanceInferredFlag` / `acceptanceBasis` in evidence JSON.
-- **API limits:** comments/history/acceptance subroutes unavailable (403/404) — `jubbaworld-snapshot-2026-11-06.json` → `meta.limitations`.
+**Conversation counts** (sum **10**): `partial` + `verified`.
 
-## Parent tracker updates (do not duplicate)
+Taxonomy explicitly **avoids** generic `untested`; use `blocked_device_external` / `blocked_external_owner` / `missing` / `deferred` as appropriate.
 
-User reports parent already updated JubbaWorld: **WTSK0002** reopened pending decision, **ENHC0024**, **TEST0001/3** notes, **ENHC0025** client tests, **TEST0004** Double Take, **TEST0005** mobile auth. Repo **`proposed-tracker-updates.json`** is trimmed to avoid re-applying the same instructions.
+### Priority themes (evidence pointers)
 
-## Classification counts (batch 01)
+- **Core loop:** `REQ0005`, `STRY0010`, `STRY0011` — `src/App.jsx` screen machine; `tests/e2e/playwright/martin-smoke.spec.js` (Double Take **still skipped** — **TEST0004**).
+- **Historical Done security:** `DFCT0035`, `DFCT0042`, `DFCT0043` — `server/lobbyServer.js` + `tests/server/lobbyHttpRateLimit.test.mjs` / `lobbyStore.test.mjs`.
+- **Voice / LiveKit:** `TEST0003`, `CONV-REQ-VOICE-TURN-PHASE` — `server/lobbyServer.js` `/api/lobbies/:code/voice/token`, `src/online/voicePartyTransport.js`; **no device party test**.
+- **Entitlements / billing:** `ENHC0013`, `tests/server/entitlements.test.mjs`, `server/stripeBillingRoutes.js` — sandbox/unit; **not live Play/Stripe**.
+- **Offline / newest source:** `REQ0019`, `CONV-REQ-PROMPT-SOURCE-SELECTION` — `src/lib/gameSourcePreference.js`, `tests/nativeShell/gameSourceSelection.test.mjs`.
+- **Moderation / report:** `CONV-REQ-REPORT-BLOCK-DELETE` — `server/moderationRoutes.js`, `src/lib/lobbyModerationApi.js`, `src/App.jsx` `handleReportLobbyPlayer`.
 
-From `traceability-FULL.json` → `itemClassificationCounts` / `conversationClassificationCounts` (see JSON for current numbers). **`pending_examination`** means “not yet examined in audit batches,” not “fails keyword search.”
+## REQ0017 (existing item — not a new server epic)
 
-## Tests run (this continuation)
+- **Missing (server):** `server/storage/lobbyStore.js` `buildAuthoritativeRound` sets `roundTypeId: 'prompt'` (Hot Seat) only (~353–410).
+- **Present (client):** Two Truths screens (`twotruths-input` / `twotruths-voting` / `twotruths-reveal`) in `src/App.jsx` (~9257+).
+- **Parent payload:** `proposed-tracker-updates.json` → **REQ0017** note with file anchors.
 
-See **`AUDIT_TEST_LOG.md`** for full commands. Summary:
+## TEST0005 (diagnostic scope)
 
-- `npm test` — 49 pass  
-- `npm run test:server` — 41 pass  
-- `npm run lint:undef` — pass  
-- `npm run test:mobile-dist-smoke` — **2** pass (smoke + **proxy diagnostic**); build `dist-android` via `node scripts/buildMobileBundledWeb.mjs dist-android`  
-- `npm run test:e2e` — not re-run this batch (prior: 7 pass, 1 skip — Double Take)  
+`tests/e2e/playwright/mobile-preview-api-proxy-diagnostic.spec.js` documents that the **Vite preview** mobile harness (`playwright.mobile-dist.config.js`) **does not** return JSON `/api/auth/status` like a live API without a backend. That is **harness limitation**, not proof of production auth failure. Dev proxy: `vite.config.js` forwards `/api` to `localhost:8787`.
 
-No physical device, no production billing.
+## Parent tracker (deduped)
 
-## Artifacts for review Page (exact repo paths)
+Parent items **ENHC0024**, **ENHC0025**, **TEST0004**, **TEST0005**, **TEST0001/3** — referenced in evidence `linksExistingTracker` and `proposed-tracker-updates.json` **parentReportedUpdates**; no duplicate tasks filed for them.
 
-Copy these file paths for the parent Page (not directory-only):
+## Tests (this audit — targeted)
+
+- **Regenerated** matrices only in this message — **did not re-run** full `npm test` / Playwright / mobile smoke (prior log: `AUDIT_TEST_LOG.md`). Run before release: `npm test`, `npm run test:e2e`, `npm run test:mobile-dist-smoke` after `buildMobileBundledWeb`.
+
+## Artifacts for parent Page (exact file paths)
 
 - `docs/audit/2026-11-06-jubba-full-audit/traceability-FULL.json`
 - `docs/audit/2026-11-06-jubba-full-audit/findings-FULL.json`
 - `docs/audit/2026-11-06-jubba-full-audit/evidence-batch-01.json`
+- `docs/audit/2026-11-06-jubba-full-audit/evidence-batch-02.json`
+- `docs/audit/2026-11-06-jubba-full-audit/evidence-batch-03.json`
 - `docs/audit/2026-11-06-jubba-full-audit/jubbaworld-snapshot-2026-11-06.json`
 - `docs/audit/2026-11-06-jubba-full-audit/jubbaworld-snapshot-upload-provenance-8c20.json`
-- `docs/audit/2026-11-06-jubba-full-audit/jubbaworld-inventory-2026-11-06.md`
-- `docs/audit/2026-11-06-jubba-full-audit/AUDIT_TEST_LOG.md`
 - `docs/audit/2026-11-06-jubba-full-audit/proposed-tracker-updates.json`
 - `docs/audit/2026-11-06-jubba-full-audit/proposed-new-work-tasks.json`
-- `docs/audit/2026-11-06-jubba-full-audit/SUPERPOWERS_SKILLS_BUNDLE.md`
+- `docs/audit/2026-11-06-jubba-full-audit/AUDIT_TEST_LOG.md`
 
-Runtime screenshots (if present on the Page host): `/opt/cursor/artifacts/jubba-audit-2026-11-06/e2e-shots/` and `.../store-graphics/` (see `findings-FULL.json` → `artifactPaths`).
+Optional screenshots: `/opt/cursor/artifacts/jubba-audit-2026-11-06/e2e-shots/*.png`, `.../store-graphics/*.png`
+
+## Remaining after audit
+
+- **Implementation:** REQ0017 server Two Truths authority; REQ0009 full online round-type parity; voice/device tests (TEST0003); Double Take unskip (TEST0004); doc CI drift (see proposed-new-work-tasks).
+- **Process:** WTSK0002 decision; Play/org items (REQ0012/3/5/6).
 
 Machine-check: **`findings-FULL.json`** and **`traceability-FULL.json`**.

@@ -1,18 +1,43 @@
 {
-  "schemaVersion": 2,
-  "purpose": "Parent applies via JubbaWorld API or manual UI — agent performs NO API writes. Deduped: user reports many items already updated in JubbaWorld.",
+  "schemaVersion": 3,
+  "purpose": "Parent applies via JubbaWorld API or manual UI — agent performs NO API writes. Includes implementation-evidence notes for existing items (no duplicate REQ0017 server task).",
   "parentReportedUpdates": [
     "WTSK0002 / POF-DEC-001 reopened pending user decision",
-    "ENHC0024 caps note",
+    "ENHC0024 caps",
     "TEST0001 / TEST0003 notes",
-    "ENHC0025 client-side tests",
-    "TEST0004 Double Take",
-    "TEST0005 mobile auth"
+    "ENHC0025 client tests",
+    "TEST0004 Double Take skip",
+    "TEST0005 mobile auth harness"
   ],
   "updates": [
     {
-      "externalRef": "_NO_OP_DEDUP_",
-      "recommendedNote": "Verify JubbaWorld matches intended state; do not bulk-apply stale JSON if parent already reconciled. Use evidence-batch-01.json and traceability-FULL.json as audit evidence only."
+      "number": "REQ0017",
+      "externalRef": "pof:req:online-two-truths",
+      "recommendedNote": "Audit evidence (2026-11-06): Online authoritative rounds use `buildAuthoritativeRound` in `server/storage/lobbyStore.js` (lines ~353–410) with `roundTypeId: 'prompt'` (Hot Seat) only — Two Truths not generated server-side yet. Client implements Two Truths UI (`twotruths-input` / `twotruths-voting` / `twotruths-reveal` phases in `src/App.jsx` ~9257+). Gap is server + store parity, not a duplicate new requirement — keep this REQ and link STRY0013, REQ0009, TEST0004, ENHC0012.",
+      "evidence": [
+        "server/storage/lobbyStore.js:353-410",
+        "src/App.jsx — twotruths screen routing",
+        "docs/audit/2026-11-06-jubba-full-audit/traceability-FULL.json — row REQ0017"
+      ]
+    },
+    {
+      "number": "TEST0005",
+      "recommendedNote": "Audit clarification: `tests/e2e/playwright/mobile-preview-api-proxy-diagnostic.spec.js` proves the **Vite preview** mobile harness (playwright.mobile-dist.config.js) does **not** return JSON for `/api/auth/status` without a backend — it documents harness limits, **not** that production auth is broken. Dev proxy: `vite.config.js` forwards `/api` to `localhost:8787`.",
+      "evidence": [
+        "tests/e2e/playwright/mobile-preview-api-proxy-diagnostic.spec.js",
+        "vite.config.js:7-16",
+        "playwright.mobile-dist.config.js"
+      ]
+    },
+    {
+      "number": "REQ0014",
+      "title": "Confirm package name app.pantsonfire.liar",
+      "recommendedNote": "Audit mismatch: `app.json` → `expo.android.package` is `app.pantsonfire.findtheliar`, not `app.pantsonfire.liar`. Reconcile tracker title or package rename — see evidence row REQ0014 in traceability-FULL.json.",
+      "evidence": ["app.json:22-24"]
+    },
+    {
+      "externalRef": "_NO_BULK_REOPEN_",
+      "recommendedNote": "Items marked `missing` / `blocked_device_external` / `blocked_external_owner` in traceability-FULL.json need targeted next actions — do not bulk-reopen all Done rows."
     }
   ]
 }

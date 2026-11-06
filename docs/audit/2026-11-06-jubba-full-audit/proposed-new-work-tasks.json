@@ -1,32 +1,19 @@
 {
-  "schemaVersion": 2,
-  "purpose": "Residual work not covered by parent-created items (ENHC0025, TEST0004, TEST0005). No duplicate epic.",
+  "schemaVersion": 3,
+  "purpose": "Deduped gaps only — REQ0017 server work stays on existing REQ0017 (see proposed-tracker-updates.json). Parent already tracks ENHC0025, TEST0004, TEST0005, ENHC0024.",
   "tasks": [
     {
-      "external_ref": "POF-AUDIT-2026-11-06-REQ0017-SERVER",
-      "type": "requirement",
-      "title": "Server-side round generation for Two Truths (REQ0017)",
-      "priority": "high",
-      "linksExistingIds": ["REQ0017"],
-      "problem": "buildAuthoritativeRound only creates roundTypeId 'prompt' (Hot Seat). REQ0017 expects online Two Truths support.",
-      "acceptanceCriteria": [
-        "Lobby server creates twotruths rounds with authoritative state matching client expectations",
-        "tests/server covers round lifecycle for twotruths online path"
-      ],
-      "verificationPlan": ["npm run test:server", "multi-client Playwright online smoke"]
-    },
-    {
-      "external_ref": "POF-AUDIT-2026-11-06-AGENTS-CI",
+      "external_ref": "POF-AUDIT-2026-11-06-DOCS-TEST-STRATEGY-CI",
       "type": "defect",
-      "title": "Reconcile AGENTS.md CI text with npm-test.yml (DFCT0040 overlap)",
+      "title": "Sync docs/TEST_STRATEGY.md CI paragraph with npm-test.yml (and AGENTS.md)",
       "priority": "low",
-      "linksExistingIds": ["DFCT0040"],
-      "problem": "AGENTS.md states workflows do not run npm test; .github/workflows/npm-test.yml runs npm test on path-filtered PRs/pushes.",
+      "linksExistingIds": ["DFCT0040", "REQ0010"],
+      "problem": "TEST_STRATEGY.md still states CI does not run npm test on every push; `.github/workflows/npm-test.yml` runs `npm test` on path-filtered PRs/pushes. AGENTS.md line 28 also omits npm-test.yml.",
       "acceptanceCriteria": [
-        "Single accurate description of which workflows run npm test",
-        "Optional: link to workflow file path"
+        "Single source of truth listing which workflows run unit tests",
+        "TEST_STRATEGY.md, AGENTS.md aligned"
       ],
-      "verificationPlan": ["docs review"]
+      "verificationPlan": ["Docs review only"]
     }
   ]
 }

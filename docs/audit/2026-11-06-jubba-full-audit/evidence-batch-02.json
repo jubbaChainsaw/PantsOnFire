@@ -1,0 +1,2258 @@
+{
+  "schemaVersion": 1,
+  "auditBatchId": "POF-AUDIT-2026-11-06-BATCH02",
+  "generatedAt": "2026-11-06T19:15:40.134Z",
+  "purpose": "Evidence for remaining snapshot rows; merged after batch 01 by buildJubbaWorldTraceability.mjs.",
+  "items": {
+    "DFCT0001": {
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "Settings screen uses structured toggle layout (`pof-settings-toggle-col`) and haptics/music switches in App.jsx; no automated UI test for “consistent” across every toggle.",
+      "implementationRefs": [
+        "src/App.jsx:6720-7150 settings panel toggles and layout"
+      ],
+      "testRefs": [
+        "tests/e2e/playwright/martin-smoke.spec.js — reaches Play flow, not full settings matrix"
+      ],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "REQ0005",
+        "ENHC0025"
+      ],
+      "evidenceClassification": "code_proven_partial",
+      "confidence": "medium",
+      "nextAction": "Optional Playwright: toggle each settings control and assert state persistence (ENHC0025 / client tests umbrella).",
+      "number": "DFCT0001",
+      "title": "Inconsistent settings toggles",
+      "type": "defect"
+    },
+    "DFCT0002": {
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "APK size work lives in Android build + `scripts/buildMobileBundledWeb.mjs` asset stripping; current dist-android build logged byte reduction in script output — not a Play Console size report.",
+      "implementationRefs": [
+        "scripts/buildMobileBundledWeb.mjs",
+        "android/"
+      ],
+      "testRefs": [
+        "tests/e2e/playwright/mobile-bundled-dist-smoke.spec.js — bundled web loads"
+      ],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "REQ0007",
+        "STRY0008"
+      ],
+      "evidenceClassification": "code_proven_partial",
+      "confidence": "medium",
+      "nextAction": "Compare AAB/APK sizes in Play Console vs acceptance target (device pipeline).",
+      "number": "DFCT0002",
+      "title": "APK 856 MB / 225 MB too large",
+      "type": "defect"
+    },
+    "DFCT0003": {
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "Inventory notes “assumed fixed in port”; no dedicated test id for layout under primary buttons.",
+      "implementationRefs": [
+        "src/App.jsx — home/setup shell (large file)"
+      ],
+      "testRefs": [
+        "tests/e2e/playwright/martin-smoke.spec.js"
+      ],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "REQ0005",
+        "REQ0008"
+      ],
+      "evidenceClassification": "partial",
+      "confidence": "low",
+      "nextAction": "Viewport snapshot test or manual pass-the-phone QA (REQ0005).",
+      "number": "DFCT0003",
+      "title": "Player setup hidden under buttons",
+      "type": "defect"
+    },
+    "DFCT0004": {
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "Round-type grid exists (`data-testid=\"round-type-choice-grid\"` in E2E); tracker still In progress — visual regression for “lost graphics / duplicate Hot Seat” not closed in this audit.",
+      "implementationRefs": [
+        "src/App.jsx — round type choice UI"
+      ],
+      "testRefs": [
+        "tests/e2e/playwright/mobile-bundled-dist-smoke.spec.js — iterates round-type icons"
+      ],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "REQ0008",
+        "STRY0007"
+      ],
+      "evidenceClassification": "partial",
+      "confidence": "medium",
+      "nextAction": "Visual E2E or device pass on mode screen (neon assets).",
+      "number": "DFCT0004",
+      "title": "Game mode screen lost graphics; showed Hot Seat twice; tiny icons; black host frame",
+      "type": "defect"
+    },
+    "DFCT0005": {
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "Host intro timing/background — host dialogue CSS in `src/pof-components.css`; “lines too slow” is subjective without device video.",
+      "implementationRefs": [
+        "src/pof-components.css — host dialogue / wallpaper tokens"
+      ],
+      "testRefs": [],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "REQ0008"
+      ],
+      "evidenceClassification": "partial",
+      "confidence": "low",
+      "nextAction": "Device capture + tune host intro scroll/timing (REQ0008).",
+      "number": "DFCT0005",
+      "title": "Host intro off-screen, gap and repeating background; lines too slow",
+      "type": "defect"
+    },
+    "DFCT0006": {
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "Bundled web + `scripts/verifyAndroidEmbeddedBundle.mjs` exist; “Unable to load script” class of issues addressed via bundle staging — release APK not rebuilt in this audit.",
+      "implementationRefs": [
+        "scripts/buildMobileBundledWeb.mjs",
+        "scripts/stageAndroidBundledWeb.mjs",
+        "scripts/verifyAndroidEmbeddedBundle.mjs"
+      ],
+      "testRefs": [
+        "tests/e2e/playwright/mobile-bundled-dist-smoke.spec.js"
+      ],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "REQ0007",
+        "TEST0002"
+      ],
+      "evidenceClassification": "code_proven_partial",
+      "confidence": "medium",
+      "nextAction": "Fresh assembleRelease + install smoke (TEST0002 linkage).",
+      "number": "DFCT0006",
+      "title": "Release APK crashes: \"Unable to load script\" (no JS bundle)",
+      "type": "defect"
+    },
+    "DFCT0007": {
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "UI uses responsive clamps; inventory marked “uncertain / MagicPath” — no pixel-proof in automation.",
+      "implementationRefs": [
+        "src/App.jsx — card/button layout regions"
+      ],
+      "testRefs": [
+        "tests/e2e/playwright/mobile-bundled-dist-smoke.spec.js — broken image check"
+      ],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "REQ0008"
+      ],
+      "evidenceClassification": "partial",
+      "confidence": "low",
+      "nextAction": "Responsive visual baselines or manual sweep (REQ0008).",
+      "number": "DFCT0007",
+      "title": "Cards do not fill container; button wording overflows",
+      "type": "defect"
+    },
+    "DFCT0008": {
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "Inventory cites timer bug + regression test — likely covered indirectly in server/lobby tests; client “start game” path exercised by martin/mobile smoke.",
+      "implementationRefs": [
+        "src/App.jsx — screen transitions"
+      ],
+      "testRefs": [
+        "tests/e2e/playwright/martin-smoke.spec.js",
+        "tests/server/lobbyStore.test.mjs"
+      ],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "REQ0005",
+        "ENHC0025"
+      ],
+      "evidenceClassification": "partial",
+      "confidence": "medium",
+      "nextAction": "If recurrence: add targeted repro + client unit test (ENHC0025).",
+      "number": "DFCT0008",
+      "title": "Render error when starting a game",
+      "type": "defect"
+    },
+    "DFCT0009": {
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "Public asset URLs + bundled web path handling (`src/lib/publicAssetUrl.js`); blank screen often WebView base URL — mobile smoke loads home.",
+      "implementationRefs": [
+        "src/lib/publicAssetUrl.js",
+        "src/main.jsx"
+      ],
+      "testRefs": [
+        "tests/e2e/playwright/mobile-bundled-dist-smoke.spec.js"
+      ],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "REQ0007"
+      ],
+      "evidenceClassification": "code_proven_partial",
+      "confidence": "medium",
+      "nextAction": "Physical device file:// and play asset loader regression (REQ0007).",
+      "number": "DFCT0009",
+      "title": "Blank navy screen on launch",
+      "type": "defect"
+    },
+    "DFCT0010": {
+      "acceptanceBasis": "inferred_from_title",
+      "acceptanceInferredFlag": true,
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "Body/UI copy uses Inter per `.pof-desc` and settings copy in `src/pof-components.css`.",
+      "implementationRefs": [
+        "src/pof-components.css:113-114 .pof-desc Inter"
+      ],
+      "testRefs": [],
+      "runtimeNotes": null,
+      "linksExistingTracker": [],
+      "evidenceClassification": "code_proven_partial",
+      "confidence": "high",
+      "nextAction": "None unless new body-text regression reported.",
+      "number": "DFCT0010",
+      "title": "Unreadable body text (switched to Inter)",
+      "type": "defect"
+    },
+    "DFCT0011": {
+      "acceptanceBasis": "inferred_from_title",
+      "acceptanceInferredFlag": true,
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "Prompt card backs use bundled assets + `ThemeArt`; empty description — inferred fix = asset paths resolve.",
+      "implementationRefs": [
+        "src/App.jsx — ThemeArt / card back sources"
+      ],
+      "testRefs": [
+        "tests/e2e/playwright/mobile-bundled-dist-smoke.spec.js"
+      ],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "REQ0008"
+      ],
+      "evidenceClassification": "partial",
+      "confidence": "medium",
+      "nextAction": "Spot-check each theme prompt card back in dist-android.",
+      "number": "DFCT0011",
+      "title": "Prompt card back not loading",
+      "type": "defect"
+    },
+    "DFCT0012": {
+      "acceptanceBasis": "inferred_from_title",
+      "acceptanceInferredFlag": true,
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "`CategoryChoiceGrid` + `data-testid=\"category-choice-grid\"` implements category grid.",
+      "implementationRefs": [
+        "src/App.jsx:4097-4165 CategoryChoiceGrid"
+      ],
+      "testRefs": [
+        "tests/e2e/playwright/martin-smoke.spec.js — reaches rules and round flow"
+      ],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "ENHC0011",
+        "REQ0005"
+      ],
+      "evidenceClassification": "code_proven_partial",
+      "confidence": "high",
+      "nextAction": "Online mode category timer assert if needed (REQ0009).",
+      "number": "DFCT0012",
+      "title": "Category grid missing",
+      "type": "defect"
+    },
+    "DFCT0013": {
+      "acceptanceBasis": "inferred_from_title",
+      "acceptanceInferredFlag": true,
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "Vote chips and buttons use overflow-wrap in CSS (`pof-vote-chip`); full matrix not enumerated.",
+      "implementationRefs": [
+        "src/pof-components.css:68-69 pof-vote-chip"
+      ],
+      "testRefs": [],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "ENHC0025"
+      ],
+      "evidenceClassification": "partial",
+      "confidence": "medium",
+      "nextAction": "Long-label regression tests (ENHC0025).",
+      "number": "DFCT0013",
+      "title": "Text overflow in buttons/cards",
+      "type": "defect"
+    },
+    "DFCT0014": {
+      "acceptanceBasis": "inferred_from_title",
+      "acceptanceInferredFlag": true,
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "Wallpapers in neon assets; empty description in tracker.",
+      "implementationRefs": [
+        "src/data/uiNeonAssets.js",
+        "src/pof-components.css"
+      ],
+      "testRefs": [],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "REQ0008"
+      ],
+      "evidenceClassification": "partial",
+      "confidence": "low",
+      "nextAction": "Visual QA wallpapers per theme.",
+      "number": "DFCT0014",
+      "title": "Wallpaper repeating",
+      "type": "defect"
+    },
+    "DFCT0015": {
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "Host reveal uses host dialogue layers; black frame issue needs device repro.",
+      "implementationRefs": [
+        "src/pof-components.css — host intro caption"
+      ],
+      "testRefs": [],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "REQ0005"
+      ],
+      "evidenceClassification": "partial",
+      "confidence": "medium",
+      "nextAction": "Repro on target device + capture (DFCT0028 cluster).",
+      "number": "DFCT0015",
+      "title": "Host missing at reveal intro (black frame) + unreadable caption",
+      "type": "defect"
+    },
+    "DFCT0016": {
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "Category scroll container + safe-area bottom padding (`CategoryChoiceGrid` style + `category-choice-scroll`).",
+      "implementationRefs": [
+        "src/App.jsx:4124-4130 category-choice-scroll paddingBottom safe-area"
+      ],
+      "testRefs": [],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "ENHC0011"
+      ],
+      "evidenceClassification": "code_proven_partial",
+      "confidence": "medium",
+      "nextAction": "Verify last row visible on small phones + landscape (device).",
+      "number": "DFCT0016",
+      "title": "Category choice screen clipped at bottom (last row of tiles cut off)",
+      "type": "defect"
+    },
+    "DFCT0017": {
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "`data-category-count` reflects `categoryOptions.length`; six-category enhancement tracked separately (ENHC0011).",
+      "implementationRefs": [
+        "src/App.jsx:4133-4136 data-category-count"
+      ],
+      "testRefs": [],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "ENHC0011"
+      ],
+      "evidenceClassification": "partial",
+      "confidence": "medium",
+      "nextAction": "Assert six categories seeded for mode under test (REQ0005).",
+      "number": "DFCT0017",
+      "title": "Only 5 categories showing on category choice screen",
+      "type": "defect"
+    },
+    "DFCT0018": {
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "Choose-for-me control in category screen stack; clip overlap needs viewport test.",
+      "implementationRefs": [
+        "src/App.jsx ~10975 Choose for me"
+      ],
+      "testRefs": [],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "ENHC0019"
+      ],
+      "evidenceClassification": "partial",
+      "confidence": "low",
+      "nextAction": "Playwright viewport snapshot small height (ENHC0019 roulette area).",
+      "number": "DFCT0018",
+      "title": "'Choose for me' button clips over top row of category tiles",
+      "type": "defect"
+    },
+    "DFCT0019": {
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "Debug embed path: same bundle pipeline as DFCT0006; CI mentions in inventory.",
+      "implementationRefs": [
+        "scripts/buildMobileBundledWeb.mjs",
+        ".github/workflows/android-debug-apk.yml"
+      ],
+      "testRefs": [
+        "tests/e2e/playwright/mobile-bundled-dist-smoke.spec.js"
+      ],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "TEST0002",
+        "STRY0003"
+      ],
+      "evidenceClassification": "code_proven_partial",
+      "confidence": "medium",
+      "nextAction": "CI artifact install smoke (TEST0002).",
+      "number": "DFCT0019",
+      "title": "Debug APK: Unable to load script (JS bundle not embedded)",
+      "type": "defect"
+    },
+    "DFCT0020": {
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "`CARD_FIRE_FLAME_SOURCES` defined and used in App.jsx (Grill removal fix).",
+      "implementationRefs": [
+        "src/App.jsx:319 CARD_FIRE_FLAME_SOURCES",
+        "src/App.jsx:2370 resolveBundledAssetSrc"
+      ],
+      "testRefs": [],
+      "runtimeNotes": null,
+      "linksExistingTracker": [],
+      "evidenceClassification": "code_proven_partial",
+      "confidence": "high",
+      "nextAction": "None unless flame assets change.",
+      "number": "DFCT0020",
+      "title": "CARD_FIRE_FLAME_SOURCES undefined after Grill Em removal",
+      "type": "defect"
+    },
+    "DFCT0021": {
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "Fonts loaded in mobile smoke (`PoF Display`, `Vintage Cowboy`); 18+ toggle removed per ENHC0009 — grep settings.",
+      "implementationRefs": [
+        "tests/e2e/playwright/mobile-bundled-dist-smoke.spec.js:assertGameFontsLoaded"
+      ],
+      "testRefs": [
+        "tests/e2e/playwright/mobile-bundled-dist-smoke.spec.js"
+      ],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "ENHC0009",
+        "REQ0007"
+      ],
+      "evidenceClassification": "partial",
+      "confidence": "medium",
+      "nextAction": "Physical APK visual QA for leftover 18+ branding.",
+      "number": "DFCT0021",
+      "title": "Android build: missing fonts and graphics, leftover 18+ logo",
+      "type": "defect"
+    },
+    "DFCT0022": {
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "Home safe-area padding in `NeonHomeScreen` — edge spacing device-dependent.",
+      "implementationRefs": [
+        "src/components/neon/NeonHomeScreen.jsx:145-146 safe-area padding"
+      ],
+      "testRefs": [],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "DFCT0028"
+      ],
+      "evidenceClassification": "partial",
+      "confidence": "low",
+      "nextAction": "Device screenshot matrix (DFCT0028).",
+      "number": "DFCT0022",
+      "title": "Home screen: top icons too close to top edge, unequal edge spacing vs bottom buttons",
+      "type": "defect"
+    },
+    "DFCT0023": {
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "Achievement toast has dismiss `X` and `data-testid=\"achievement-unlock-toast\"` (addresses never-dismiss report).",
+      "implementationRefs": [
+        "src/App.jsx:11614-11637 achievement unlock toast + dismiss button"
+      ],
+      "testRefs": [],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "ENHC0025"
+      ],
+      "evidenceClassification": "code_proven_partial",
+      "confidence": "high",
+      "nextAction": "Playwright: trigger toast via `pof-e2e-achievement-toast` event if auto-hide timing needed.",
+      "number": "DFCT0023",
+      "title": "Achievement toast never dismisses: add X close and auto-hide",
+      "type": "defect"
+    },
+    "DFCT0024": {
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "Chain Reaction screens use neon typography; countdown font — verify in `pof-components.css` / round screens.",
+      "implementationRefs": [
+        "src/pof-components.css",
+        "src/App.jsx — chain round branch"
+      ],
+      "testRefs": [],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "STRY0010"
+      ],
+      "evidenceClassification": "partial",
+      "confidence": "medium",
+      "nextAction": "Visual compare Chain vs global countdown (STRY0010).",
+      "number": "DFCT0024",
+      "title": "Chain Reaction host screen font mismatch; countdown uses old bold font (3 hard to read)",
+      "type": "defect"
+    },
+    "DFCT0025": {
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "Host audio files under `public/assets/audio/host/` + host line maps; sync to captions not asserted in tests.",
+      "implementationRefs": [
+        "src/data/hostVoiceLineMap.js",
+        "public/assets/audio/host/"
+      ],
+      "testRefs": [],
+      "runtimeNotes": "No automated assertion for audio/caption sync.",
+      "linksExistingTracker": [
+        "STRY0019"
+      ],
+      "evidenceClassification": "partial",
+      "confidence": "medium",
+      "nextAction": "Manual ear + waveform check or add ava media test stub (deferred).",
+      "number": "DFCT0025",
+      "title": "Host voice lines not playing; captions should sync to audio timing",
+      "type": "defect"
+    },
+    "DFCT0026": {
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "Inventory: missing MP3s for pairs/twotruths; data-driven host lines — verify file glob vs map.",
+      "implementationRefs": [
+        "src/data/hostVoiceLineMap.js"
+      ],
+      "testRefs": [],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "STRY0019",
+        "TEST0004"
+      ],
+      "evidenceClassification": "partial",
+      "confidence": "medium",
+      "nextAction": "Add asset presence test or fill stingers (STRY0019).",
+      "number": "DFCT0026",
+      "title": "Missing host voice stingers for Double Take (pairs) and Two Truths",
+      "type": "defect"
+    },
+    "DFCT0027": {
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "Tracker Done; font system documented in `pof-components.css` — full per-mode audit not automated (ENHC0024 partial).",
+      "implementationRefs": [
+        "src/pof-components.css:84-114",
+        "ENHC0024 tracker"
+      ],
+      "testRefs": [],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "ENHC0024",
+        "CONV-REQ-ALL-CAPS"
+      ],
+      "evidenceClassification": "partial",
+      "confidence": "medium",
+      "nextAction": "Complete div-title CAPS (ENHC0024) + visual matrix.",
+      "number": "DFCT0027",
+      "title": "Font consistency audit across every game mode and round screen",
+      "type": "defect"
+    },
+    "DFCT0028": {
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "Samsung S24 Ultra report in tracker — not reproduced in Linux CI; safe-area vars exist but device proof missing.",
+      "implementationRefs": [
+        "src/pof-components.css:3-6 --pof-safe-*",
+        "src/lib/safeAreaInsets.js"
+      ],
+      "testRefs": [],
+      "runtimeNotes": "No S24 in audit environment.",
+      "linksExistingTracker": [
+        "DFCT0029",
+        "DFCT0030",
+        "DFCT0031",
+        "DFCT0032",
+        "DFCT0033",
+        "DFCT0034"
+      ],
+      "evidenceClassification": "blocked_device_external",
+      "confidence": "high",
+      "nextAction": "Re-test on physical S24 after CSS pass; link DFCT0029-0034 cluster.",
+      "number": "DFCT0028",
+      "title": "Safe-area insets: content under S24 Ultra status/nav bars; general big gaps and edge clipping",
+      "type": "defect"
+    },
+    "DFCT0029": {
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "Same S24 cluster as DFCT0028 — layout gap host vs intro.",
+      "implementationRefs": [
+        "src/App.jsx — host card + intro stack"
+      ],
+      "testRefs": [],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "DFCT0028"
+      ],
+      "evidenceClassification": "blocked_device_external",
+      "confidence": "medium",
+      "nextAction": "Device capture + CSS fix; grouped with DFCT0028.",
+      "number": "DFCT0029",
+      "title": "Empty strip between host card and intro text",
+      "type": "defect"
+    },
+    "DFCT0030": {
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "Clipped pill — needs device viewport.",
+      "implementationRefs": [
+        "src/App.jsx — top pill / debug overlay region"
+      ],
+      "testRefs": [],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "DFCT0028"
+      ],
+      "evidenceClassification": "blocked_device_external",
+      "confidence": "medium",
+      "nextAction": "Identify pill component; fix padding (DFCT0028 batch).",
+      "number": "DFCT0030",
+      "title": "Clipped pill at top-left on every screen",
+      "type": "defect"
+    },
+    "DFCT0031": {
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "Persona avatars vs initials — visual on scoreboard.",
+      "implementationRefs": [
+        "src/App.jsx — persona / scoreboard"
+      ],
+      "testRefs": [],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "DFCT0028",
+        "STRY0026"
+      ],
+      "evidenceClassification": "blocked_device_external",
+      "confidence": "medium",
+      "nextAction": "Device QA persona pipeline (STRY0026 host costumes related).",
+      "number": "DFCT0031",
+      "title": "Use persona avatars instead of initials/broken image on scoreboard, results and tally",
+      "type": "defect"
+    },
+    "DFCT0032": {
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "Vote tally layout whitespace.",
+      "implementationRefs": [
+        "src/App.jsx — voting / tally panels"
+      ],
+      "testRefs": [],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "DFCT0028"
+      ],
+      "evidenceClassification": "blocked_device_external",
+      "confidence": "medium",
+      "nextAction": "UI polish pass on device.",
+      "number": "DFCT0032",
+      "title": "Vote tally/results panels have large empty space",
+      "type": "defect"
+    },
+    "DFCT0033": {
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "Final accusation layout.",
+      "implementationRefs": [
+        "src/App.jsx — final accusation reveal"
+      ],
+      "testRefs": [],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "DFCT0028"
+      ],
+      "evidenceClassification": "blocked_device_external",
+      "confidence": "medium",
+      "nextAction": "Device regression.",
+      "number": "DFCT0033",
+      "title": "Final Accusation reveal off-centre, text overflow, broken avatar, wrong font",
+      "type": "defect"
+    },
+    "DFCT0034": {
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "ReferenceError `theme` on Randomize personas — needs repro build; not reproduced in headless smoke.",
+      "implementationRefs": [
+        "src/App.jsx — persona randomize handler"
+      ],
+      "testRefs": [],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "DFCT0028",
+        "ENHC0025"
+      ],
+      "evidenceClassification": "blocked_device_external",
+      "confidence": "high",
+      "nextAction": "Repro on S24 + add try/coverage (ENHC0025).",
+      "number": "DFCT0034",
+      "title": "Crash: ReferenceError theme is not defined when tapping Randomize personas (be03dd5)",
+      "type": "defect"
+    },
+    "DFCT0037": {
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "README updated in historical commits; spot-check: round types list in README vs App — not re-diffed line-for-line in batch 02.",
+      "implementationRefs": [
+        "README.md",
+        "docs/FEATURE_INVENTORY.md"
+      ],
+      "testRefs": [],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "DFCT0038",
+        "DFCT0039"
+      ],
+      "evidenceClassification": "code_proven_partial",
+      "confidence": "medium",
+      "nextAction": "Automated doc drift check vs `ROUND_TYPE` list (optional).",
+      "number": "DFCT0037",
+      "title": "Docs: README drift (env vars, file names, round types, What's Next)",
+      "type": "defect"
+    },
+    "DFCT0038": {
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "`FEATURE_INVENTORY.md` lists modes; Grill removal — grep confirms no CARD_FIRE_FLAME undefined.",
+      "implementationRefs": [
+        "docs/FEATURE_INVENTORY.md",
+        "README.md"
+      ],
+      "testRefs": [],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "DFCT0037"
+      ],
+      "evidenceClassification": "code_proven_partial",
+      "confidence": "medium",
+      "nextAction": "Periodic doc review with release.",
+      "number": "DFCT0038",
+      "title": "Docs: removed Grill 'Em still documented; new modes missing",
+      "type": "defect"
+    },
+    "DFCT0039": {
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "`LOBBY_ARCHITECTURE.md` inventories routes; server mounts match high-level list.",
+      "implementationRefs": [
+        "docs/LOBBY_ARCHITECTURE.md",
+        "server/lobbyServer.js"
+      ],
+      "testRefs": [
+        "tests/server/lobbyHttpRateLimit.test.mjs"
+      ],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "STRY0002"
+      ],
+      "evidenceClassification": "code_proven_partial",
+      "confidence": "high",
+      "nextAction": "Diff doc vs `app.get/post` list when routes added.",
+      "number": "DFCT0039",
+      "title": "Docs: ~25 undocumented server routes; lobby/security docs inaccurate",
+      "type": "defect"
+    },
+    "DFCT0041": {
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "Minor doc slips — batch 01 covered sibling items; residual slips untracked.",
+      "implementationRefs": [
+        "docs/"
+      ],
+      "testRefs": [],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "DFCT0039"
+      ],
+      "evidenceClassification": "partial",
+      "confidence": "low",
+      "nextAction": "Next Toolsmith doc sweep.",
+      "number": "DFCT0041",
+      "title": "Docs: minor drift fixes across several docs",
+      "type": "defect"
+    },
+    "ENHC0001": {
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "PoF Display / Chewy assets in CSS and `public/assets/fonts` — Narrow variant coverage partial.",
+      "implementationRefs": [
+        "src/pof-components.css",
+        "public/assets/fonts/"
+      ],
+      "testRefs": [
+        "tests/e2e/playwright/mobile-bundled-dist-smoke.spec.js — font load"
+      ],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "ENHC0010"
+      ],
+      "evidenceClassification": "code_proven_partial",
+      "confidence": "medium",
+      "nextAction": "Typography spec for Narrow (ENHC0010).",
+      "number": "ENHC0001",
+      "title": "Custom \"Pants on Fire\" font (colour, outline and Narrow variants)",
+      "type": "enhancement"
+    },
+    "ENHC0002": {
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "App name in `app.json`; icon in android adaptive / assets.",
+      "implementationRefs": [
+        "app.json:1-36",
+        "docs/store/graphics/icon-512.png"
+      ],
+      "testRefs": [],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "WTSK0005"
+      ],
+      "evidenceClassification": "code_proven_partial",
+      "confidence": "medium",
+      "nextAction": "Play Console icon upload verification (org).",
+      "number": "ENHC0002",
+      "title": "Pants on Fire app icon and app name",
+      "type": "enhancement"
+    },
+    "ENHC0003": {
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "Persona flow in App (`screen === \"persona\"` paths); leaderboard hook — verify routing.",
+      "implementationRefs": [
+        "src/App.jsx — persona settings"
+      ],
+      "testRefs": [
+        "tests/e2e/playwright/martin-smoke.spec.js — profile tab"
+      ],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "REQ0005"
+      ],
+      "evidenceClassification": "partial",
+      "confidence": "medium",
+      "nextAction": "E2E persona rename + uniqueness (ENHC0025).",
+      "number": "ENHC0003",
+      "title": "Unique persona names; move persona settings into Settings; wire help/leaderboard icons",
+      "type": "enhancement"
+    },
+    "ENHC0004": {
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "Lobby code uses countdown digit styling (audit fixed E2E selector `.pof-countdown-digit`).",
+      "implementationRefs": [
+        "src/App.jsx — lobby code display",
+        "tests/e2e/playwright/web-player-website.spec.js"
+      ],
+      "testRefs": [
+        "tests/e2e/playwright/web-player-website.spec.js"
+      ],
+      "runtimeNotes": null,
+      "linksExistingTracker": [],
+      "evidenceClassification": "code_proven_partial",
+      "confidence": "high",
+      "nextAction": "None unless typography changes.",
+      "number": "ENHC0004",
+      "title": "Lobby code in plain bold font",
+      "type": "enhancement"
+    },
+    "ENHC0005": {
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "Headings PoF Display; body Inter via `.pof-desc` (see CSS).",
+      "implementationRefs": [
+        "src/pof-components.css"
+      ],
+      "testRefs": [],
+      "runtimeNotes": null,
+      "linksExistingTracker": [],
+      "evidenceClassification": "code_proven_partial",
+      "confidence": "high",
+      "nextAction": "Regression if new components skip `.pof-desc`.",
+      "number": "ENHC0005",
+      "title": "Legibility: outline font only for headings, Inter for body",
+      "type": "enhancement"
+    },
+    "ENHC0006": {
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "Custom prompt editor gated by entitlements in App — full gate not unit-tested.",
+      "implementationRefs": [
+        "src/App.jsx — AdminDialog / category editor"
+      ],
+      "testRefs": [],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "ENHC0013"
+      ],
+      "evidenceClassification": "partial",
+      "confidence": "medium",
+      "nextAction": "Entitlement matrix test (tests/server/entitlements + UI).",
+      "number": "ENHC0006",
+      "title": "Custom prompts = lobby owner editor add-on, not player prompts",
+      "type": "enhancement"
+    },
+    "ENHC0007": {
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "Audio settings separate music/SFX; theme tune mix not verified with metering.",
+      "implementationRefs": [
+        "src/App.jsx — audioSettings"
+      ],
+      "testRefs": [],
+      "runtimeNotes": "No audio level automated test.",
+      "linksExistingTracker": [
+        "REQ0005"
+      ],
+      "evidenceClassification": "partial",
+      "confidence": "low",
+      "nextAction": "Manual listen pass.",
+      "number": "ENHC0007",
+      "title": "Theme tune: vocal on menus, instrumental quieter in gameplay",
+      "type": "enhancement"
+    },
+    "ENHC0008": {
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "`useTimedChoice` + `NeonTimerBar` in `CategoryChoiceGrid` for online (`ONLINE_SELECTION_TIMER_SEC`).",
+      "implementationRefs": [
+        "src/App.jsx:4108-4121 useTimedChoice + NeonTimerBar"
+      ],
+      "testRefs": [
+        "tests/server/lobbyStore.test.mjs — online flow partial"
+      ],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "REQ0009"
+      ],
+      "evidenceClassification": "code_proven_partial",
+      "confidence": "high",
+      "nextAction": "Playwright two-browser online category pick.",
+      "number": "ENHC0008",
+      "title": "Online lobbies: 30s vote / selection timer with random flash pick",
+      "type": "enhancement"
+    },
+    "ENHC0009": {
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "Settings toggles sound/music/haptics; 18+ removed from product.",
+      "implementationRefs": [
+        "src/App.jsx:7041-7043 haptics toggle"
+      ],
+      "testRefs": [],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "WTSK0005"
+      ],
+      "evidenceClassification": "code_proven_partial",
+      "confidence": "medium",
+      "nextAction": "Confirm no 18+ remnant in store listing (WTSK0005).",
+      "number": "ENHC0009",
+      "title": "Remove 18+ toggle; Settings page for sound/music/haptics; custom-prompt warning",
+      "type": "enhancement"
+    },
+    "ENHC0010": {
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "Narrow font pipeline — partial vs ENHC0001; check font-face declarations.",
+      "implementationRefs": [
+        "src/pof-components.css",
+        "public/assets/fonts/"
+      ],
+      "testRefs": [],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "ENHC0001"
+      ],
+      "evidenceClassification": "partial",
+      "confidence": "medium",
+      "nextAction": "Visual audit Narrow on buttons (ENHC0001).",
+      "number": "ENHC0010",
+      "title": "Use Narrow outline font for buttons and UI headings",
+      "type": "enhancement"
+    },
+    "ENHC0011": {
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "Six categories + Choose for me: `CategoryChoiceGrid` + random pick hooks in App.",
+      "implementationRefs": [
+        "src/App.jsx:4097-4170",
+        "src/App.jsx ~10975 choose for me"
+      ],
+      "testRefs": [
+        "tests/e2e/playwright/martin-smoke.spec.js"
+      ],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "DFCT0016",
+        "DFCT0017",
+        "DFCT0018"
+      ],
+      "evidenceClassification": "code_proven_partial",
+      "confidence": "high",
+      "nextAction": "Close DFCT0016-18 if QA clean.",
+      "number": "ENHC0011",
+      "title": "Category screen: 6 random categories (2x3) + Choose for me",
+      "type": "enhancement"
+    },
+    "ENHC0012": {
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "Randomisation in client round selection — server round is still Hot Seat for online sync (gap vs REQ0017).",
+      "implementationRefs": [
+        "src/App.jsx — round shuffle"
+      ],
+      "testRefs": [],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "REQ0017",
+        "REQ0009"
+      ],
+      "evidenceClassification": "partial",
+      "confidence": "medium",
+      "nextAction": "Align server randomisation when non-prompt rounds online (REQ0017, REQ0009).",
+      "number": "ENHC0012",
+      "title": "Randomise round types, categories and pass-the-phone voting order",
+      "type": "enhancement"
+    },
+    "ENHC0013": {
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "Neon store screens + Stripe routes (`server/stripeBillingRoutes.js`); sandbox tests exist.",
+      "implementationRefs": [
+        "src/components/neon/NeonStoreScreen.jsx",
+        "server/stripeBillingRoutes.js"
+      ],
+      "testRefs": [
+        "tests/server/stripeCatalog.test.mjs",
+        "tests/server/entitlements.test.mjs"
+      ],
+      "runtimeNotes": "Live Play billing not exercised.",
+      "linksExistingTracker": [
+        "WTSK0006",
+        "STRY0013"
+      ],
+      "evidenceClassification": "code_proven_partial",
+      "confidence": "medium",
+      "nextAction": "RevenueCat + Play purchase QA on device (WTSK0006 checklist).",
+      "number": "ENHC0013",
+      "title": "Shop access to upgrade account / buy packs using existing tiers",
+      "type": "enhancement"
+    },
+    "ENHC0014": {
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "Two Truths data files under `src/data/twoTruthsOneFire` — count parity not asserted in CI.",
+      "implementationRefs": [
+        "src/data/twoTruthsOneFire/"
+      ],
+      "testRefs": [],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "STRY0013"
+      ],
+      "evidenceClassification": "partial",
+      "confidence": "medium",
+      "nextAction": "Script: equal count per category lint.",
+      "number": "ENHC0014",
+      "title": "Equal prompt counts per category for Two Truths",
+      "type": "enhancement"
+    },
+    "ENHC0015": {
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "Mode logos in UI assets; ENHC0022 “fill card” still in progress.",
+      "implementationRefs": [
+        "src/data/uiNeonAssets.js"
+      ],
+      "testRefs": [
+        "tests/e2e/playwright/mobile-bundled-dist-smoke.spec.js — round-type icons"
+      ],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "ENHC0022"
+      ],
+      "evidenceClassification": "partial",
+      "confidence": "medium",
+      "nextAction": "Visual fill-factor check (ENHC0022).",
+      "number": "ENHC0015",
+      "title": "New mode logos for Two Truths and Off Topic Defense",
+      "type": "enhancement"
+    },
+    "ENHC0016": {
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "NeonStoreScreen collapsible sections — component-level.",
+      "implementationRefs": [
+        "src/components/neon/NeonStoreScreen.jsx"
+      ],
+      "testRefs": [],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "ENHC0013"
+      ],
+      "evidenceClassification": "code_proven_partial",
+      "confidence": "medium",
+      "nextAction": "Playwright store navigation.",
+      "number": "ENHC0016",
+      "title": "Shop renamed with collapsible Access/Themes/Add-ons sections",
+      "type": "enhancement"
+    },
+    "ENHC0017": {
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "UK English pass in data packs — grep/lint not run in batch.",
+      "implementationRefs": [
+        "src/data/packs/categoryPromptPacks.js"
+      ],
+      "testRefs": [],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "ENHC0018"
+      ],
+      "evidenceClassification": "partial",
+      "confidence": "low",
+      "nextAction": "Editorial checklist.",
+      "number": "ENHC0017",
+      "title": "UK English rewrite of prompts",
+      "type": "enhancement"
+    },
+    "ENHC0018": {
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "Editorial quality — subjective.",
+      "implementationRefs": [
+        "src/data/twoTruthsOneFire/"
+      ],
+      "testRefs": [],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "STRY0013"
+      ],
+      "evidenceClassification": "partial",
+      "confidence": "low",
+      "nextAction": "Content review pass.",
+      "number": "ENHC0018",
+      "title": "Two Truths prompt quality editorial pass",
+      "type": "enhancement"
+    },
+    "ENHC0019": {
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "Roulette highlight ids in CategoryChoiceGrid (`pof-choice-flash`).",
+      "implementationRefs": [
+        "src/App.jsx:4142-4156 highlighted class"
+      ],
+      "testRefs": [],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "TEST0001"
+      ],
+      "evidenceClassification": "partial",
+      "confidence": "medium",
+      "nextAction": "E2E assert highlight lands on chosen id.",
+      "number": "ENHC0019",
+      "title": "Choose for me: roulette highlight animation landing on chosen category",
+      "type": "enhancement"
+    },
+    "ENHC0020": {
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "Prompt copy lives in data packs — Chain Reaction fit is editorial.",
+      "implementationRefs": [
+        "src/data/packs/"
+      ],
+      "testRefs": [],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "REQ0005"
+      ],
+      "evidenceClassification": "partial",
+      "confidence": "low",
+      "nextAction": "Content ticket per round family.",
+      "number": "ENHC0020",
+      "title": "Prompt deep-dive: rework prompts per round (Chain Reaction prompts do not fit mechanic)",
+      "type": "enhancement"
+    },
+    "ENHC0021": {
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "“Extract as skills” is process/backlog — no code change in scope.",
+      "implementationRefs": [],
+      "testRefs": [],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "WTSK0001"
+      ],
+      "evidenceClassification": "deferred",
+      "confidence": "low",
+      "nextAction": "Defer to post-release tooling (WTSK0001 logging related).",
+      "number": "ENHC0021",
+      "title": "Release-state analysis: extract reusable systems as skills",
+      "type": "enhancement"
+    },
+    "ENHC0022": {
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "Mode card layout — device S24 report (DFCT0028 cluster).",
+      "implementationRefs": [
+        "src/App.jsx — round type choice cards"
+      ],
+      "testRefs": [],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "ENHC0015",
+        "DFCT0028"
+      ],
+      "evidenceClassification": "partial",
+      "confidence": "medium",
+      "nextAction": "Device QA with ENHC0015 assets.",
+      "number": "ENHC0022",
+      "title": "Mode logo art should fill mode select cards",
+      "type": "enhancement"
+    },
+    "REQ0005": {
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "Core loop screens encoded in App (home, setup, rounds, voting, reveal); E2E smokes cover subset not full matrix.",
+      "implementationRefs": [
+        "src/App.jsx — screen state machine (host-intro, voting, twotruths-*, one-word, discussion, final)"
+      ],
+      "testRefs": [
+        "tests/e2e/playwright/martin-smoke.spec.js",
+        "tests/e2e/playwright/mobile-bundled-dist-smoke.spec.js"
+      ],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "STRY0010",
+        "STRY0011",
+        "TEST0001"
+      ],
+      "evidenceClassification": "code_proven_partial",
+      "confidence": "medium",
+      "nextAction": "Expand Playwright per STRY0010 round families (TEST0001, TEST0004).",
+      "number": "REQ0005",
+      "title": "Core party game loop",
+      "type": "requirement"
+    },
+    "REQ0006": {
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "Grill 'Em removed from product; requirement obsolete unless spec rewritten — voice I/O not present as described.",
+      "implementationRefs": [],
+      "testRefs": [],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "STRY0012",
+        "TEST0003"
+      ],
+      "evidenceClassification": "missing",
+      "confidence": "high",
+      "nextAction": "Tracker: close or rewrite REQ0006 to current voice (LiveKit party) scope.",
+      "number": "REQ0006",
+      "title": "Grill 'Em voice I/O",
+      "type": "requirement"
+    },
+    "REQ0007": {
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "Expo `app.json`, android package, WebView shell — APK workflows in `.github/workflows/`.",
+      "implementationRefs": [
+        "app.json",
+        ".github/workflows/android-debug-apk.yml",
+        ".github/workflows/android-release-aab.yml"
+      ],
+      "testRefs": [
+        "tests/e2e/playwright/mobile-bundled-dist-smoke.spec.js"
+      ],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "STRY0008",
+        "REQ0012",
+        "REQ0013"
+      ],
+      "evidenceClassification": "code_proven_partial",
+      "confidence": "medium",
+      "nextAction": "EAS/Play pipeline checklist (REQ0012-REQ0016 org tasks).",
+      "number": "REQ0007",
+      "title": "Mobile app build",
+      "type": "requirement"
+    },
+    "REQ0008": {
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "Neon components under `src/components/neon/` + `pof-components.css`.",
+      "implementationRefs": [
+        "src/components/neon/",
+        "src/pof-components.css"
+      ],
+      "testRefs": [
+        "tests/e2e/playwright/mobile-bundled-dist-smoke.spec.js"
+      ],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "STRY0006",
+        "STRY0007"
+      ],
+      "evidenceClassification": "code_proven_partial",
+      "confidence": "medium",
+      "nextAction": "Close DFCT0004/0005 when visual sign-off.",
+      "number": "REQ0008",
+      "title": "Neon UI redesign",
+      "type": "requirement"
+    },
+    "REQ0010": {
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "Node tests + Playwright + mobile smoke; `docs/TEST_STRATEGY.md` still partially stale on CI note.",
+      "implementationRefs": [
+        "docs/TEST_STRATEGY.md",
+        ".github/workflows/npm-test.yml"
+      ],
+      "testRefs": [
+        "tests/**/*.test.mjs"
+      ],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "ENHC0023",
+        "ENHC0025",
+        "TEST0001"
+      ],
+      "evidenceClassification": "code_proven_partial",
+      "confidence": "medium",
+      "nextAction": "Sync TEST_STRATEGY CI paragraph with npm-test.yml; ENHC0025 client tests.",
+      "number": "REQ0010",
+      "title": "Quality and testing",
+      "type": "requirement"
+    },
+    "REQ0011": {
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "IONOS deploy workflow, lobby server, Redis optional — see docs and `server/`.",
+      "implementationRefs": [
+        ".github/workflows/deploy-ionos-web.yml",
+        "server/lobbyServer.js"
+      ],
+      "testRefs": [
+        "tests/server/lobbyStore.test.mjs"
+      ],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "STRY0002",
+        "STRY0004",
+        "STRY0005"
+      ],
+      "evidenceClassification": "code_proven_partial",
+      "confidence": "medium",
+      "nextAction": "Prod deploy verification outside audit.",
+      "number": "REQ0011",
+      "title": "Infrastructure / hosting",
+      "type": "requirement"
+    },
+    "REQ0012": {
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "Martin/org keystore — not in repo.",
+      "implementationRefs": [],
+      "testRefs": [],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "STRY0017"
+      ],
+      "evidenceClassification": "blocked_external_owner",
+      "confidence": "high",
+      "nextAction": "Owner: enable Play App Signing or supply keystore.",
+      "number": "REQ0012",
+      "title": "Martin to supply upload keystore or enable Play App Signing",
+      "type": "requirement"
+    },
+    "REQ0013": {
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "Play Console app creation — org.",
+      "implementationRefs": [],
+      "testRefs": [],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "REQ0007"
+      ],
+      "evidenceClassification": "blocked_external_owner",
+      "confidence": "high",
+      "nextAction": "Owner: create app + link to package.",
+      "number": "REQ0013",
+      "title": "Martin to create Play Console app",
+      "type": "requirement"
+    },
+    "REQ0014": {
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "Package id in Expo: `app.pantsonfire.findtheliar` — snapshot text `app.pantsonfire.liar` may be outdated (verify tracker).",
+      "implementationRefs": [
+        "app.json:22-24 android.package"
+      ],
+      "testRefs": [],
+      "runtimeNotes": null,
+      "linksExistingTracker": [],
+      "evidenceClassification": "code_proven_partial",
+      "confidence": "high",
+      "nextAction": "Align tracker REQ0014 title with `app.json` or rename package.",
+      "number": "REQ0014",
+      "title": "Confirm package name app.pantsonfire.liar",
+      "type": "requirement"
+    },
+    "REQ0015": {
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "Privacy policy URL — host/org.",
+      "implementationRefs": [
+        "docs/store/play-listing.md"
+      ],
+      "testRefs": [],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "WTSK0005"
+      ],
+      "evidenceClassification": "blocked_external_owner",
+      "confidence": "high",
+      "nextAction": "Publish URL + paste in Console.",
+      "number": "REQ0015",
+      "title": "Privacy policy URL",
+      "type": "requirement"
+    },
+    "REQ0016": {
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "EAS project id — Expo cloud.",
+      "implementationRefs": [
+        "app.json",
+        "eas.json if present"
+      ],
+      "testRefs": [],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "REQ0007"
+      ],
+      "evidenceClassification": "blocked_external_owner",
+      "confidence": "high",
+      "nextAction": "Owner: set EAS project in Expo dashboard.",
+      "number": "REQ0016",
+      "title": "EAS project id",
+      "type": "requirement"
+    },
+    "REQ0018": {
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "Meme Decoder on hold per tracker.",
+      "implementationRefs": [],
+      "testRefs": [],
+      "runtimeNotes": null,
+      "linksExistingTracker": [],
+      "evidenceClassification": "deferred",
+      "confidence": "high",
+      "nextAction": "Defer until product rethink.",
+      "number": "REQ0018",
+      "title": "Meme Decoder on hold for rethink",
+      "type": "requirement"
+    },
+    "REQ0019": {
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "`gameSourcePreference.js` + settings copy; native host `__POF_NATIVE_HOST__` — selection semantics.",
+      "implementationRefs": [
+        "src/lib/gameSourcePreference.js",
+        "src/App.jsx:6986-6987 settings copy",
+        "server/shellConfig.js"
+      ],
+      "testRefs": [
+        "tests/nativeShell/gameSourceSelection.test.mjs"
+      ],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "CONV-REQ-PROMPT-SOURCE-SELECTION"
+      ],
+      "evidenceClassification": "code_proven_partial",
+      "confidence": "high",
+      "nextAction": "WebView integration test on debug APK (TEST0005 harness scope).",
+      "number": "REQ0019",
+      "title": "Decision: keep live-website loading with version-aware selection; debug builds default to bundled with a Game source toggle",
+      "type": "requirement"
+    },
+    "STRY0001": {
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "MCP wiring is tooling — not verifiable from runtime tests here.",
+      "implementationRefs": [
+        ".cursor/ or docs if any"
+      ],
+      "testRefs": [],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "REQ0011"
+      ],
+      "evidenceClassification": "partial",
+      "confidence": "low",
+      "nextAction": "Owner: confirm MCP config in Cursor team settings.",
+      "number": "STRY0001",
+      "title": "Wire Cursor MCP servers (GitHub, Playwright, Supabase, Railway)",
+      "type": "story"
+    },
+    "STRY0002": {
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "CORS, rate limits, entitlements routes — see LOBBY_ARCHITECTURE + tests.",
+      "implementationRefs": [
+        "server/lobbyServer.js",
+        "server/stripeBillingRoutes.js",
+        "docs/LOBBY_ARCHITECTURE.md"
+      ],
+      "testRefs": [
+        "tests/server/pofAuthJwt.test.mjs",
+        "tests/server/entitlements.test.mjs"
+      ],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "REQ0011"
+      ],
+      "evidenceClassification": "code_proven_partial",
+      "confidence": "medium",
+      "nextAction": "Prod Redis + Postgres config validation.",
+      "number": "STRY0002",
+      "title": "Production hardening of lobby server (CORS, Redis, Supabase entitlements)",
+      "type": "story"
+    },
+    "STRY0003": {
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "`.github/workflows/android-debug-apk.yml` builds APK pipeline.",
+      "implementationRefs": [
+        ".github/workflows/android-debug-apk.yml"
+      ],
+      "testRefs": [
+        "tests/e2e/playwright/mobile-bundled-dist-smoke.spec.js"
+      ],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "WTSK0002"
+      ],
+      "evidenceClassification": "code_proven_partial",
+      "confidence": "medium",
+      "nextAction": "Resolve WTSK0002 PR #112 workflow decision.",
+      "number": "STRY0003",
+      "title": "Android release APK build pipeline",
+      "type": "story"
+    },
+    "STRY0004": {
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "Security model in docs + host-only advance + moderation routes.",
+      "implementationRefs": [
+        "docs/LOBBY_ARCHITECTURE.md",
+        "server/moderationRoutes.js",
+        "server/lobbyServer.js"
+      ],
+      "testRefs": [
+        "tests/server/lobbyStore.test.mjs"
+      ],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "STRY0002"
+      ],
+      "evidenceClassification": "partial",
+      "confidence": "medium",
+      "nextAction": "Third-party security review (deferred).",
+      "number": "STRY0004",
+      "title": "Security/deployment hardening (alpha review)",
+      "type": "story"
+    },
+    "STRY0005": {
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "Lobby deploy for sideload — same server codebase.",
+      "implementationRefs": [
+        "server/lobbyServer.js"
+      ],
+      "testRefs": [],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "REQ0011"
+      ],
+      "evidenceClassification": "partial",
+      "confidence": "medium",
+      "nextAction": "Railway/hosting ops verification.",
+      "number": "STRY0005",
+      "title": "Online lobby backend hosting for sideloaded builds",
+      "type": "story"
+    },
+    "STRY0006": {
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "MagicPath external; ported UI in repo under neon — completion subjective.",
+      "implementationRefs": [
+        "src/components/neon/"
+      ],
+      "testRefs": [],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "REQ0008",
+        "STRY0014"
+      ],
+      "evidenceClassification": "partial",
+      "confidence": "low",
+      "nextAction": "Design sign-off vs MagicPath reference.",
+      "number": "STRY0006",
+      "title": "Redesign UI in MagicPath around new neon graphics",
+      "type": "story"
+    },
+    "STRY0007": {
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "Neon port merged into App.jsx monolith.",
+      "implementationRefs": [
+        "src/App.jsx",
+        "src/components/neon/"
+      ],
+      "testRefs": [
+        "tests/e2e/playwright/mobile-bundled-dist-smoke.spec.js"
+      ],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "REQ0008"
+      ],
+      "evidenceClassification": "code_proven_partial",
+      "confidence": "medium",
+      "nextAction": "Regression sweep vs STRY0006.",
+      "number": "STRY0007",
+      "title": "Port neon redesign into the real game",
+      "type": "story"
+    },
+    "STRY0008": {
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "Android debug workflow produces installable artifact.",
+      "implementationRefs": [
+        ".github/workflows/android-debug-apk.yml",
+        "app.json"
+      ],
+      "testRefs": [
+        "tests/e2e/playwright/mobile-bundled-dist-smoke.spec.js"
+      ],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "REQ0007",
+        "TEST0002"
+      ],
+      "evidenceClassification": "code_proven_partial",
+      "confidence": "medium",
+      "nextAction": "Play internal track upload.",
+      "number": "STRY0008",
+      "title": "Installable Android APK",
+      "type": "story"
+    },
+    "STRY0009": {
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "E2E exists but coverage gaps (Double Take skip, client unit gap).",
+      "implementationRefs": [
+        "tests/e2e/playwright/"
+      ],
+      "testRefs": [
+        "npm run test:e2e",
+        "tests/e2e/playwright/martin-smoke.spec.js"
+      ],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "TEST0001",
+        "ENHC0025"
+      ],
+      "evidenceClassification": "partial",
+      "confidence": "medium",
+      "nextAction": "TEST0001 green CI + expand matrix.",
+      "number": "STRY0009",
+      "title": "End-to-end test suite",
+      "type": "story"
+    },
+    "STRY0010": {
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "Many round types in client; server online round = prompt only — sync gap.",
+      "implementationRefs": [
+        "src/App.jsx — round type ids",
+        "server/storage/lobbyStore.js:353-378"
+      ],
+      "testRefs": [
+        "tests/e2e/playwright/mobile-bundled-dist-smoke.spec.js — iterates round-type icons"
+      ],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "REQ0017",
+        "REQ0009",
+        "REQ0005"
+      ],
+      "evidenceClassification": "partial",
+      "confidence": "medium",
+      "nextAction": "Server parity for non-prompt rounds online (REQ0017, REQ0009).",
+      "number": "STRY0010",
+      "title": "Five round types playable",
+      "type": "story"
+    },
+    "STRY0011": {
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "Classic/Chaos + rules + reveal in client state machine.",
+      "implementationRefs": [
+        "src/App.jsx"
+      ],
+      "testRefs": [
+        "tests/e2e/playwright/martin-smoke.spec.js (partial path — excludes skipped Double Take)"
+      ],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "REQ0005",
+        "STRY0010"
+      ],
+      "evidenceClassification": "partial",
+      "confidence": "medium",
+      "nextAction": "E2E chaos mode path.",
+      "number": "STRY0011",
+      "title": "Classic/Chaos modes, rules splash and liar reveal",
+      "type": "story"
+    },
+    "STRY0012": {
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "Grill Em strand obsolete — see REQ0006.",
+      "implementationRefs": [],
+      "testRefs": [],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "REQ0006",
+        "TEST0003"
+      ],
+      "evidenceClassification": "missing",
+      "confidence": "high",
+      "nextAction": "Close or retarget STRY0012 to LiveKit voice chat.",
+      "number": "STRY0012",
+      "title": "Grill 'Em mic capture + TTS answers",
+      "type": "story"
+    },
+    "STRY0013": {
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "Two Truths client screens + data; online server gap REQ0017.",
+      "implementationRefs": [
+        "src/App.jsx:9257-9272 twotruths screens",
+        "src/data/twoTruthsOneFire/"
+      ],
+      "testRefs": [],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "REQ0017",
+        "STRY0010"
+      ],
+      "evidenceClassification": "code_proven_partial",
+      "confidence": "medium",
+      "nextAction": "Server + E2E online Two Truths (REQ0017).",
+      "number": "STRY0013",
+      "title": "Two Truths, One Fire mode",
+      "type": "story"
+    },
+    "STRY0014": {
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "MagicPath mockup — external; tracker In progress.",
+      "implementationRefs": [
+        "src/components/neon/NeonStoreScreen.jsx"
+      ],
+      "testRefs": [],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "ENHC0013"
+      ],
+      "evidenceClassification": "partial",
+      "confidence": "low",
+      "nextAction": "Martin feedback gate.",
+      "number": "STRY0014",
+      "title": "MagicPath shop themes/packs redesign mockup (awaiting Martin feedback)",
+      "type": "story"
+    },
+    "STRY0015": {
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "`BugReportScreen` + queue client `src/lib/bugReportClient.js`.",
+      "implementationRefs": [
+        "src/components/BugReportScreen.jsx",
+        "src/lib/bugReportClient.js"
+      ],
+      "testRefs": [],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "ENHC0025"
+      ],
+      "evidenceClassification": "code_proven_partial",
+      "confidence": "high",
+      "nextAction": "E2E open bug report with mock API.",
+      "number": "STRY0015",
+      "title": "Report a bug feature",
+      "type": "story"
+    },
+    "STRY0016": {
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "expo-updates / EAS OTA — config in Expo layer; not verified in CI.",
+      "implementationRefs": [
+        "app.json",
+        "eas.json"
+      ],
+      "testRefs": [],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "REQ0007"
+      ],
+      "evidenceClassification": "partial",
+      "confidence": "medium",
+      "nextAction": "EAS channel smoke on device.",
+      "number": "STRY0016",
+      "title": "OTA updates via expo-updates/EAS",
+      "type": "story"
+    },
+    "STRY0017": {
+      "acceptanceBasis": "inferred_from_title",
+      "acceptanceInferredFlag": true,
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "AAB workflow exists; placeholder signing — org acceptance.",
+      "implementationRefs": [
+        ".github/workflows/android-release-aab.yml"
+      ],
+      "testRefs": [],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "REQ0012",
+        "STRY0008"
+      ],
+      "evidenceClassification": "partial",
+      "confidence": "medium",
+      "nextAction": "Production signing (REQ0012).",
+      "number": "STRY0017",
+      "title": "AAB release packaging (placeholder-signed)",
+      "type": "story"
+    },
+    "STRY0018": {
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "Theme-driven AV — data in theme packs; broad scope.",
+      "implementationRefs": [
+        "src/data/themeHosts.js",
+        "src/data/themeAssets.js"
+      ],
+      "testRefs": [],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "REQ0008"
+      ],
+      "evidenceClassification": "partial",
+      "confidence": "low",
+      "nextAction": "Content QA per theme.",
+      "number": "STRY0018",
+      "title": "Themes drive graphics, music and sound effects",
+      "type": "story"
+    },
+    "STRY0019": {
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "Host lines + media — see hostVoiceLineMap + assets.",
+      "implementationRefs": [
+        "src/data/hostVoiceLineMap.js"
+      ],
+      "testRefs": [],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "DFCT0025",
+        "DFCT0026"
+      ],
+      "evidenceClassification": "partial",
+      "confidence": "medium",
+      "nextAction": "DFCT0025/0026 audio QA.",
+      "number": "STRY0019",
+      "title": "Dynamic randomised host greetings and comments each round",
+      "type": "story"
+    },
+    "STRY0020": {
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "Chaos banned words — data/config in App for rounds.",
+      "implementationRefs": [
+        "src/App.jsx — chaos / banned"
+      ],
+      "testRefs": [],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "STRY0011"
+      ],
+      "evidenceClassification": "partial",
+      "confidence": "medium",
+      "nextAction": "Unit test banned word merge.",
+      "number": "STRY0020",
+      "title": "Chaos banned words relevant to both prompts, excluding prompt/category/hint words",
+      "type": "story"
+    },
+    "STRY0021": {
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "Round scoring server-side `scoreRoundServer` in lobbyStore.",
+      "implementationRefs": [
+        "server/storage/lobbyStore.js — scoring"
+      ],
+      "testRefs": [
+        "tests/server/lobbyStore.test.mjs"
+      ],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "STRY0010"
+      ],
+      "evidenceClassification": "partial",
+      "confidence": "medium",
+      "nextAction": "Client display alignment tests.",
+      "number": "STRY0021",
+      "title": "Show points added per round on the leaderboard",
+      "type": "story"
+    },
+    "STRY0022": {
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "Heartbeat / disconnect grace — server timers in lobbyServer.",
+      "implementationRefs": [
+        "server/lobbyServer.js — disconnect grace"
+      ],
+      "testRefs": [
+        "tests/server/lobbyStore.test.mjs"
+      ],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "STRY0002"
+      ],
+      "evidenceClassification": "partial",
+      "confidence": "low",
+      "nextAction": "Soak test multi-tab disconnect.",
+      "number": "STRY0022",
+      "title": "Heartbeat sound and pulsing screen before the liar reveal",
+      "type": "story"
+    },
+    "STRY0023": {
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "AV online-only gating in client settings / mode flags.",
+      "implementationRefs": [
+        "src/App.jsx — onlineMode branches"
+      ],
+      "testRefs": [],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "REQ0009"
+      ],
+      "evidenceClassification": "partial",
+      "confidence": "medium",
+      "nextAction": "E2E verify local has no live AV when offline.",
+      "number": "STRY0023",
+      "title": "Audio/video rounds only in online lobbies, not pass-the-phone",
+      "type": "story"
+    },
+    "STRY0024": {
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "Round chooser UI — round-type grid.",
+      "implementationRefs": [
+        "src/App.jsx — round type choice"
+      ],
+      "testRefs": [
+        "tests/e2e/playwright/mobile-bundled-dist-smoke.spec.js"
+      ],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "TEST0004"
+      ],
+      "evidenceClassification": "partial",
+      "confidence": "medium",
+      "nextAction": "Unskip Double Take path (TEST0004).",
+      "number": "STRY0024",
+      "title": "Round chooser: pick round type from 2 options (not the previous), then category",
+      "type": "story"
+    },
+    "STRY0025": {
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "Rules/settings screens in App.",
+      "implementationRefs": [
+        "src/App.jsx — rules",
+        "settings"
+      ],
+      "testRefs": [
+        "tests/e2e/playwright/martin-smoke.spec.js — rules-continue path"
+      ],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "REQ0005"
+      ],
+      "evidenceClassification": "partial",
+      "confidence": "medium",
+      "nextAction": "Snapshot all rule variants.",
+      "number": "STRY0025",
+      "title": "Game rules settings: points to win 10/15/20, rounds per player 1/2/3",
+      "type": "story"
+    },
+    "STRY0026": {
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "Host costumes — assets/scripts under host generation.",
+      "implementationRefs": [
+        "scripts/host:*",
+        "src/data/themeHosts.js"
+      ],
+      "testRefs": [],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "STRY0018"
+      ],
+      "evidenceClassification": "partial",
+      "confidence": "low",
+      "nextAction": "Visual content QA.",
+      "number": "STRY0026",
+      "title": "Host presenter costume variants per theme",
+      "type": "story"
+    },
+    "STRY0027": {
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "Infomercial script — content, not code.",
+      "implementationRefs": [],
+      "testRefs": [],
+      "runtimeNotes": null,
+      "linksExistingTracker": [],
+      "evidenceClassification": "deferred",
+      "confidence": "low",
+      "nextAction": "Defer to marketing.",
+      "number": "STRY0027",
+      "title": "30-second 'Ian Poster' infomercial video",
+      "type": "story"
+    },
+    "TEST0001": {
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "Playwright E2E runs locally; “Green on CI” depends on adding job — npm-test.yml covers unit only.",
+      "implementationRefs": [
+        "playwright.config.js",
+        ".github/workflows/npm-test.yml"
+      ],
+      "testRefs": [
+        "tests/e2e/playwright/*.spec.js"
+      ],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "ENHC0023",
+        "STRY0009"
+      ],
+      "evidenceClassification": "partial",
+      "confidence": "high",
+      "nextAction": "Optional: add Playwright CI workflow (separate from ENHC0025).",
+      "number": "TEST0001",
+      "title": "Playwright E2E: core game loop",
+      "type": "test"
+    },
+    "TEST0002": {
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "Tracker Done — physical install/launch not repeated in this audit (Linux agent).",
+      "implementationRefs": [
+        ".github/workflows/android-debug-apk.yml"
+      ],
+      "testRefs": [
+        "tests/e2e/playwright/mobile-bundled-dist-smoke.spec.js — proxy web only"
+      ],
+      "runtimeNotes": "WebView install smoke ≠ APK install proof.",
+      "linksExistingTracker": [
+        "REQ0007",
+        "STRY0008"
+      ],
+      "evidenceClassification": "blocked_device_external",
+      "confidence": "medium",
+      "nextAction": "Physical device repeat per release.",
+      "number": "TEST0002",
+      "title": "Release APK install + launch smoke test",
+      "type": "test"
+    },
+    "TEST0003": {
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "Voice round device test — needs real mic + LiveKit room.",
+      "implementationRefs": [
+        "src/online/voicePartyTransport.js",
+        "server/lobbyServer.js:403-456 /api/lobbies/:code/voice/token"
+      ],
+      "testRefs": [],
+      "runtimeNotes": "No automated voice round test in repo.",
+      "linksExistingTracker": [
+        "STRY0012",
+        "CONV-REQ-VOICE-TURN-PHASE"
+      ],
+      "evidenceClassification": "blocked_device_external",
+      "confidence": "high",
+      "nextAction": "Manual device script: join lobby, publish mic, verify others hear.",
+      "number": "TEST0003",
+      "title": "Voice round device test",
+      "type": "test"
+    },
+    "WTSK0001": {
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "Retrospective chat logging — process backlog.",
+      "implementationRefs": [],
+      "testRefs": [],
+      "runtimeNotes": null,
+      "linksExistingTracker": [],
+      "evidenceClassification": "deferred",
+      "confidence": "medium",
+      "nextAction": "Schedule during dev gap.",
+      "number": "WTSK0001",
+      "title": "Retrospective logging: backfill past fixes and decisions from chat history",
+      "type": "work_task"
+    },
+    "WTSK0003": {
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "Sandbox Stripe price + mapping in code/tests; live deploy explicitly out of scope for audit.",
+      "implementationRefs": [
+        "server/stripeCatalog.js",
+        "tests/server/stripeCatalog.test.mjs"
+      ],
+      "testRefs": [
+        "tests/server/stripeCatalog.test.mjs"
+      ],
+      "runtimeNotes": "Railway healthy deploy cited in tracker — not re-verified live.",
+      "linksExistingTracker": [
+        "WTSK0006"
+      ],
+      "evidenceClassification": "partial",
+      "confidence": "medium",
+      "nextAction": "Live migration per WTSK0006 checklist.",
+      "number": "WTSK0003",
+      "title": "Decision: Web DLC packs repriced to £0.99 (Stripe sandbox)",
+      "type": "work_task"
+    }
+  },
+  "stats": {
+    "rowsWritten": 105,
+    "batch01ItemKeys": 119
+  }
+}

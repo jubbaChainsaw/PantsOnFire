@@ -34,13 +34,14 @@
 ### Task 3: Traceability matrix
 
 - [x] Generator script produces `traceability-FULL.json` (119 + 10 rows)
-- [x] **Continuation batch 01:** `evidence-batch-01.json` — **no keyword heuristics**; merge via `buildJubbaWorldTraceability.mjs`
-- [ ] Remaining **105** tracker rows: replace `pending_examination` with evidence (ongoing batches)
+- [x] **Batch 01:** `evidence-batch-01.json` — **no keyword heuristics**; merge via `buildJubbaWorldTraceability.mjs`
+- [x] **Batch 02:** `evidence-batch-02.json` from `scripts/audit/generateEvidenceBatch02.mjs` — fills remaining **105** tracker rows
+- [x] **Batch 03:** `evidence-batch-03.json` — link overlays + artifact list for Page review
 
 ### Task 4: Parent payloads
 
-- [x] `proposed-tracker-updates.json` (POF-DEC-001 + global caveats)
-- [x] `proposed-new-work-tasks.json` (deduped)
+- [x] `proposed-tracker-updates.json` — REQ0017 evidence note, TEST0005 harness scope, REQ0014 package mismatch; dedup parent updates
+- [x] `proposed-new-work-tasks.json` — single doc-CI drift task (deduped)
 
 ### Task 5: Evidence capture
 
