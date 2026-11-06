@@ -1,5 +1,7 @@
 # Builds a debug APK with the Vite web client bundled under android_asset/pof-web.
-# Trigger: Actions → Android debug APK → Run workflow (pick branch).
+# Manual: Actions → Android debug APK → Run workflow (pick branch / ref via `ref` input).
+# `workflow_dispatch` checks out `ref` when set; otherwise `github.ref` for the selected branch.
+# Branch-only escape hatch when API workflow_dispatch is unavailable (touches `.github/trigger-android-debug-apk` only).
 
 name: Android debug APK
 
@@ -10,7 +12,6 @@ on:
         description: Git ref to build (branch, tag, or SHA)
         required: false
         default: cursor/ionos-web-deploy-6e4c
-  # Branch-only escape hatch when API workflow_dispatch is unavailable (touches this file only).
   push:
     branches:
       - cursor/ionos-web-deploy-6e4c
