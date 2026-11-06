@@ -34,7 +34,8 @@
 ### Task 3: Traceability matrix
 
 - [x] Generator script produces `traceability-FULL.json` (119 + 10 rows)
-- [ ] Optional: manual refinement per **`untested`** row (ongoing)
+- [x] **Continuation batch 01:** `evidence-batch-01.json` — **no keyword heuristics**; merge via `buildJubbaWorldTraceability.mjs`
+- [ ] Remaining **105** tracker rows: replace `pending_examination` with evidence (ongoing batches)
 
 ### Task 4: Parent payloads
 

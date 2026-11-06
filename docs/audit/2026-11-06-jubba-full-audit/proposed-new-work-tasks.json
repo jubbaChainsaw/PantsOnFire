@@ -1,66 +1,32 @@
 {
-  "schemaVersion": 1,
-  "purpose": "Deduped proposals — link existing IDs where applicable. Parent creates items in JubbaWorld.",
+  "schemaVersion": 2,
+  "purpose": "Residual work not covered by parent-created items (ENHC0025, TEST0004, TEST0005). No duplicate epic.",
   "tasks": [
     {
-      "external_ref": "POF-AUDIT-2026-11-06-EPIC-TRACE",
-      "type": "work_task",
-      "title": "Close traceability gaps for 72 audit-untested JubbaWorld rows",
+      "external_ref": "POF-AUDIT-2026-11-06-REQ0017-SERVER",
+      "type": "requirement",
+      "title": "Server-side round generation for Two Truths (REQ0017)",
       "priority": "high",
-      "linksExistingIds": [],
-      "problem": "Heuristic matrix classifies 72/119 items as untested — no mapped automated test or verified file proof in this audit.",
-      "expected": "Each row eventually verified | partial with explicit file+test | deferred with reason.",
-      "actual": "Snapshot export only; Done flags not trustworthy per trust_note.",
-      "reproduction": "Open traceability-FULL.json filter evidenceClassification=untested",
+      "linksExistingIds": ["REQ0017"],
+      "problem": "buildAuthoritativeRound only creates roundTypeId 'prompt' (Hot Seat). REQ0017 expects online Two Truths support.",
       "acceptanceCriteria": [
-        "Epic triage assigns owner per subsystem (UI, lobby, billing, content, mobile)",
-        "No row left untested without explicit deferred label",
-        "Empty-description items get written acceptance or are closed as obsolete"
+        "Lobby server creates twotruths rounds with authoritative state matching client expectations",
+        "tests/server covers round lifecycle for twotruths online path"
       ],
-      "verificationPlan": [
-        "Updated matrix JSON",
-        "Optional added tests per area"
-      ]
+      "verificationPlan": ["npm run test:server", "multi-client Playwright online smoke"]
     },
     {
-      "external_ref": "POF-AUDIT-2026-11-06-CLIENT-TESTS",
-      "type": "enhancement",
-      "title": "Introduce client-side unit tests for pure game helpers",
-      "priority": "high",
-      "linksExistingIds": ["REQ0005"],
-      "problem": "docs/TEST_STRATEGY.md documents absence of client logic tests; risk for scoring/prompt bugs.",
-      "expected": "Vitest or node-extract tests for at least one critical module.",
+      "external_ref": "POF-AUDIT-2026-11-06-AGENTS-CI",
+      "type": "defect",
+      "title": "Reconcile AGENTS.md CI text with npm-test.yml (DFCT0040 overlap)",
+      "priority": "low",
+      "linksExistingIds": ["DFCT0040"],
+      "problem": "AGENTS.md states workflows do not run npm test; .github/workflows/npm-test.yml runs npm test on path-filtered PRs/pushes.",
       "acceptanceCriteria": [
-        "One non-trivial pure function extracted from App.jsx or related module with tests",
-        "TEST_STRATEGY.md updated"
+        "Single accurate description of which workflows run npm test",
+        "Optional: link to workflow file path"
       ],
-      "verificationPlan": ["npm test extended", "CI npm-test workflow"]
-    },
-    {
-      "external_ref": "POF-AUDIT-2026-11-06-E2E-DOUBLE-TAKE",
-      "type": "test",
-      "title": "Un-skip or replace martin-smoke Double Take E2E",
-      "priority": "medium",
-      "linksExistingIds": [],
-      "problem": "Playwright run reports 1 skipped test — Double Take intro flow not exercised.",
-      "acceptanceCriteria": [
-        "Either un-skip with stable selectors or document intentional skip with ticket"
-      ],
-      "verificationPlan": ["npm run test:e2e"]
-    },
-    {
-      "external_ref": "POF-AUDIT-2026-11-06-ALL-CAPS-DIV",
-      "type": "enhancement",
-      "title": "Finish ALL CAPS for div-based display titles",
-      "priority": "medium",
-      "linksExistingIds": ["POF-ENH-DISPLAY-CAPS"],
-      "linksConversation": ["CONV-REQ-ALL-CAPS"],
-      "problem": "CSS uppercase applies to h1-h3 under .pof-root; many screens use div+font-black.",
-      "acceptanceCriteria": [
-        "Documented list of title patterns",
-        "CSS or refactor with pof-preserve-heading-case for dynamic fragments"
-      ],
-      "verificationPlan": ["npm run build", "spot-check viewports"]
+      "verificationPlan": ["docs review"]
     }
   ]
 }

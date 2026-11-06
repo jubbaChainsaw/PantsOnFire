@@ -2,7 +2,10 @@ import { defineConfig, devices } from '@playwright/test';
 
 export default defineConfig({
   testDir: 'tests/e2e/playwright',
-  testMatch: 'mobile-bundled-dist-smoke.spec.js',
+  testMatch: [
+    'mobile-bundled-dist-smoke.spec.js',
+    'mobile-preview-api-proxy-diagnostic.spec.js',
+  ],
   timeout: 120_000,
   retries: 0,
   use: {

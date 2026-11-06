@@ -1,17 +1,19 @@
 # JubbaWorld traceability — machine-readable primary artifact
 
-**Source of truth:** `traceability-FULL.json` (129 rows: **119** JubbaWorld items + **10** conversation requirements).
+**Source of truth:** `traceability-FULL.json` (**129** rows: **119** JubbaWorld items + **10** conversation requirements).
 
-Snapshot: `jubbaworld-snapshot-2026-11-06.json` (fetched 2026-11-06T18:34Z UTC). Inventory markdown copy: `jubbaworld-inventory-2026-11-06.md`.
+- **Working snapshot:** `jubbaworld-snapshot-2026-11-06.json` (fetched 2026-11-06 18:34Z UTC).
+- **Upload provenance copy:** `jubbaworld-snapshot-upload-provenance-8c20.json` (same content as user upload `pants-on-fire-jubbaworld-snapshot_8c20.json`).
+- **Per-item evidence (batched):** `evidence-batch-01.json` — generator **does not** apply keyword heuristics.
 
-## Row schema (per item)
+## Row schema
 
 | Field | Meaning |
 |-------|--------|
-| `evidenceClassification` | `verified` \| `partial` \| `untested` \| `deferred` |
-| `confidence` | low \| medium \| high |
-| `emptyDescription` | 26 items — acceptance **inferred** from title/parent |
-| `nextAction` | Evidence-backed follow-up (not “Done”) |
+| `evidenceClassification` | `pending_examination` until a batch fills the row; then `verified` \| `partial` \| `missing` \| `blocked` \| `deferred` as appropriate |
+| `implementationRefs` | Human-entered path snippets (often `file:anchor`) |
+| `testRefs` | Automated test files or cases |
+| `nextAction` | Concrete follow-up; never “epic test 72 items” |
 
 ## Generator
 
@@ -19,12 +21,10 @@ Snapshot: `jubbaworld-snapshot-2026-11-06.json` (fetched 2026-11-06T18:34Z UTC).
 node scripts/audit/buildJubbaWorldTraceability.mjs
 ```
 
-Heuristic rules + keyword buckets — **parent must not** treat as automatic product sign-off. Deep per-item code review remains manual for rows marked `untested`/`partial`.
+Edits **`evidence-batch-01.json`** (or future `evidence-batch-02.json` once wired) — not title/keyword matching.
 
-## Quick counts (from generator output)
+## Batch 01 status
 
-Run: `node -e "const j=require('./traceability-FULL.json'); ..."` — see `findings-FULL.json` → `matrix.evidenceCounts`.
+See `traceability-FULL.json` → `evidenceBatch` and `itemClassificationCounts`.
 
-## Special: WTSK0002 / POF-DEC-001
-
-Tracker `Done` **overridden** to **`deferred`** in matrix: PR #112 decision **not** final per user.
+**WTSK0002 / POF-DEC-001:** Parent reports tracker reopened — row remains tied to snapshot fields; do not use matrix as proof of final decision state.

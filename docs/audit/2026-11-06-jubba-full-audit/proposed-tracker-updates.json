@@ -1,24 +1,18 @@
 {
-  "schemaVersion": 1,
-  "purpose": "Parent applies via JubbaWorld API or manual UI — agent performs NO API writes",
+  "schemaVersion": 2,
+  "purpose": "Parent applies via JubbaWorld API or manual UI — agent performs NO API writes. Deduped: user reports many items already updated in JubbaWorld.",
+  "parentReportedUpdates": [
+    "WTSK0002 / POF-DEC-001 reopened pending user decision",
+    "ENHC0024 caps note",
+    "TEST0001 / TEST0003 notes",
+    "ENHC0025 client-side tests",
+    "TEST0004 Double Take",
+    "TEST0005 mobile auth"
+  ],
   "updates": [
     {
-      "externalRef": "POF-DEC-001",
-      "number": "WTSK0002",
-      "currentTrackerStatus": "Done",
-      "recommendedStatus": "In progress",
-      "recommendedDone": false,
-      "recommendedProgress": 0,
-      "reason": "Only an engineering recommendation exists (PR #112 vs branch workflow). Jubba has not made the final decision; tracker Done contradicts progress=0 and user instruction.",
-      "evidence": [
-        "docs/audit/2026-11-06-jubba-full-audit/jubbaworld-snapshot-2026-11-06.json → notable_inconsistencies",
-        "docs/decisions/POF-DEC-112-android-debug-apk-workflow.md"
-      ]
-    },
-    {
-      "externalRef": "_GLOBAL_",
-      "recommendedNote": "Do not bulk-reopen Done items. Use traceability-FULL.json: 59 × tracker Done map to untested/partial until each has commit+test or explicit defer.",
-      "evidence": ["docs/audit/2026-11-06-jubba-full-audit/findings-FULL.json"]
+      "externalRef": "_NO_OP_DEDUP_",
+      "recommendedNote": "Verify JubbaWorld matches intended state; do not bulk-apply stale JSON if parent already reconciled. Use evidence-batch-01.json and traceability-FULL.json as audit evidence only."
     }
   ]
 }
