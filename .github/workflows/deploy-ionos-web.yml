@@ -1,5 +1,5 @@
 # Deploy production web UI (Vite dist/) to IONOS via SFTP.
-# Runs on push to main or manual workflow_dispatch.
+# Manual only: GitHub → Actions → Deploy web to IONOS (SFTP) → Run workflow.
 
 name: Deploy web to IONOS (SFTP)
 
@@ -10,12 +10,6 @@ on:
         description: Git ref to build and deploy (branch, tag, or SHA)
         required: false
         default: main
-  push:
-    branches:
-      - main
-      - cursor/ionos-web-deploy-6e4c
-    paths:
-      - .github/trigger-ionos-web-deploy
 
 concurrency:
   group: deploy-ionos-web
