@@ -384,10 +384,94 @@ test('online Two Truths: configure, submit, vote matrix, host reveal advance', a
   lobby = await store.getLobby(code);
   assert.equal(lobby.activeRound.phase, 'twotruths-reveal');
   assert.ok(lobby.activeRound.resolution);
+  const resolution = lobby.activeRound.resolution;
+  for (const voter of members) {
+    assert.equal(
+      resolution.roundBreakdown[voter.player.id].voteHit,
+      0,
+      'all-wrong ballots record no vote hits',
+    );
+    assert.equal(
+      resolution.roundGains[voter.player.id],
+      2,
+      'each author earns +1 per fooled voter (2 peers)',
+    );
+  }
+  for (const author of members) {
+    assert.equal(
+      resolution.roundBreakdown[author.player.id].fooledCount,
+      2,
+      'each author fools the two other voters',
+    );
+  }
+
+  const joiner = members[1];
+  const deniedAdvance = await store.advanceRoundPhase(
+    code,
+    joiner.player.id,
+    joiner.sessionToken,
+  );
+  assert.equal(deniedAdvance.error, 'host-only');
 
   advance = await store.advanceRoundPhase(code, host.player.id, host.sessionToken);
   assert.equal(advance.error, undefined);
   assert.equal(advance.round?.phase, 'results');
+});
+
+test('online Two Truths: spotting lies awards voters authoritative voteHit gains', async () => {
+  const store = makeStore();
+  const { code, members } = await makeLobbyWithPlayers(store, 3);
+  await readyAllAndStart(store, code, members);
+  const host = members[0];
+
+  let configured = await store.configureOnlineRound(code, host.clientId, host.sessionToken, {
+    roundTypeId: 'twotruths',
+    categoryId: 'sports',
+  });
+  host.sessionToken = configured.sessionToken;
+  let advance = await store.advanceRoundPhase(code, host.player.id, host.sessionToken);
+  host.sessionToken = advance.sessionToken;
+
+  const mkSub = (label) => ({
+    items: [`${label}a`, `${label}b`, `${label}c`],
+    lieIndex: 1,
+    burnedOut: false,
+    timedOut: false,
+  });
+  for (const member of members) {
+    const sub = await store.submitTwoTruthsSubmission(
+      code,
+      member.player.id,
+      member.sessionToken,
+      mkSub(member.player.name),
+    );
+    member.sessionToken = sub.sessionToken;
+  }
+  let lobby = await store.getLobby(code);
+  for (const voter of members) {
+    for (const author of members) {
+      if (author.player.id === voter.player.id) continue;
+      const deck = lobby.activeRound.twoTruthsData.presentationsByPlayerId[author.player.id];
+      const v = await store.submitTwoTruthsAuthorVote(
+        code,
+        voter.player.id,
+        voter.sessionToken,
+        author.player.id,
+        deck.lieIndex,
+      );
+      assert.equal(v.error, undefined);
+      voter.sessionToken = v.sessionToken;
+    }
+  }
+  lobby = await store.getLobby(code);
+  const resolution = lobby.activeRound.resolution;
+  for (const voter of members) {
+    assert.equal(resolution.roundGains[voter.player.id], 2, '+1 per other author spotted');
+    assert.equal(resolution.roundBreakdown[voter.player.id].voteHit, 2);
+  }
+  for (const author of members) {
+    assert.equal(resolution.roundBreakdown[author.player.id].fooledCount, 0);
+  }
 });
 
 test('resume rotates the session token and invalidates the old one', async () => {

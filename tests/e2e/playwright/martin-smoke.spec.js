@@ -39,8 +39,8 @@ test.describe('Martin smoke — local game flow', () => {
     await expect(page.getByTestId('achievement-row-referral-fever-dream-2')).toBeVisible();
   });
 
-  test('Double Take round (intro flow)', async ({ page }) => {
-    test.setTimeout(180_000);
+  test('Double Take full local round (pass-phone reveal → vote → results)', async ({ page }) => {
+    test.setTimeout(300_000);
     await page.addInitScript(seedLocalStorage);
     await page.goto('/');
     await page.getByRole('button', { name: 'Play', exact: true }).click({ timeout: 120_000 });
@@ -57,14 +57,36 @@ test.describe('Martin smoke — local game flow', () => {
       timeout: 60_000,
     });
     await page.getByTestId('round-type-pairs').click({ timeout: 30_000 });
-    // Double Take uses a global pool — category grid is skipped via useEffect auto-pick.
     await page.getByTestId('host-intro-visual').waitFor({ state: 'visible', timeout: 60_000 });
     await page.getByTestId('host-intro-skip').click({ timeout: 30_000 }).catch(() => {});
-    await page.getByTestId('reveal-ready').waitFor({ state: 'visible', timeout: 60_000 });
-    await page.getByTestId('reveal-ready').click();
-    await page.waitForTimeout(2600);
-    await expect(page.getByTestId('double-take-reveal-label')).toBeVisible({
-      timeout: 30_000,
-    });
+
+    const playerCount = 3;
+    let sawLiar = false;
+    let sawInnocent = false;
+    for (let i = 0; i < playerCount; i += 1) {
+      await page.getByTestId('reveal-ready').click({ timeout: 60_000 });
+      await page.waitForTimeout(2600);
+      const label = page.getByTestId('double-take-reveal-label');
+      await expect(label).toBeVisible({ timeout: 30_000 });
+      const text = (await label.innerText()).trim();
+      if (/liar/i.test(text)) sawLiar = true;
+      else sawInnocent = true;
+      await page.getByTestId('reveal-next').click({ timeout: 30_000 });
+    }
+    expect(sawLiar || sawInnocent).toBe(true);
+
+    for (let i = 0; i < playerCount; i += 1) {
+      await page.getByTestId('one-word-local-next').click({ timeout: 60_000 });
+    }
+    await page.getByTestId('discussion-continue').click({ timeout: 60_000 });
+
+    for (let round = 0; round < playerCount; round += 1) {
+      const chip = page.locator('[data-testid^="vote-for-"]').first();
+      if (await chip.isVisible({ timeout: 10_000 }).catch(() => false)) {
+        await chip.click();
+      }
+    }
+    await page.getByTestId('submit-votes').click({ timeout: 30_000 });
+    await expect(page.getByTestId('results-screen-root')).toBeVisible({ timeout: 90_000 });
   });
 });

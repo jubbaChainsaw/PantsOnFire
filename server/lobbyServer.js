@@ -141,10 +141,12 @@ const { store, kind: storeKind, close: closeStore, redisClient } = await createL
   sessionTokenTtlMs: SESSION_TOKEN_TTL_MS,
 });
 
-const createLobbyLimiter = createRateLimiter({ windowMs: 60_000, max: 10 });
-const joinLobbyLimiter = createRateLimiter({ windowMs: 60_000, max: 20 });
-const resumeLimiter = createRateLimiter({ windowMs: 60_000, max: 30 });
-const lookupLimiter = createRateLimiter({ windowMs: 60_000, max: 60 });
+const e2eLobby = String(process.env.POF_E2E_LOBBY || '').trim() === '1';
+const rateMax = (prodMax, e2eMax) => (e2eLobby ? e2eMax : prodMax);
+const createLobbyLimiter = createRateLimiter({ windowMs: 60_000, max: rateMax(10, 80) });
+const joinLobbyLimiter = createRateLimiter({ windowMs: 60_000, max: rateMax(20, 240) });
+const resumeLimiter = createRateLimiter({ windowMs: 60_000, max: rateMax(30, 240) });
+const lookupLimiter = createRateLimiter({ windowMs: 60_000, max: rateMax(60, 600) });
 const voiceTokenLimiter = createRateLimiter({ windowMs: 60_000, max: 12 });
 const appInstallTokenLimiter = createRateLimiter({ windowMs: 60_000, max: 30 });
 

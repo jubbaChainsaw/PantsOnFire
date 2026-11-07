@@ -19,8 +19,8 @@ then uploads `dist/` via SFTP.
 
 ## Triggers
 
-- **Push to `main`** — deploys automatically after merge (once secrets are set).
-- **`workflow_dispatch`** — manual run from GitHub → Actions → *Deploy web to IONOS (SFTP)*.
+- **`workflow_dispatch` only** — run from GitHub → Actions → *Deploy web to IONOS (SFTP)* (optional `ref` input for branch/tag/SHA).
+- **No automatic deploy** on push to `main` or any branch; production web updates are intentional manual runs only.
 
 ## GitHub Actions secrets
 
@@ -47,7 +47,7 @@ These are baked in at **build time** (not runtime on IONOS).
 
 1. Add all secrets above in GitHub.
 2. Confirm IONOS web space uses **Apache** with `mod_rewrite` (for `.htaccess`).
-3. Merge the workflow PR to `main` **or** run **workflow_dispatch** once secrets exist.
+3. Run **workflow_dispatch** once secrets exist (merge to `main` only when you want the workflow file on the default branch — it still does not auto-deploy).
 4. Open `https://www.pantsonfire.app` and verify join flow + shop (no production code change until you choose to merge/run).
 
 ## Local smoke build (join-only web)

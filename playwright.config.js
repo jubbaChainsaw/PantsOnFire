@@ -13,7 +13,7 @@ export default defineConfig({
   webServer: [
     {
       command:
-        'POF_BILLING_SIMULATE=1 POF_AUTH_JWT_SECRET=e2e-pof-auth-secret npm run lobby:server',
+        'POF_BILLING_SIMULATE=1 POF_E2E_LOBBY=1 POF_AUTH_JWT_SECRET=e2e-pof-auth-secret npm run lobby:server',
       port: 8787,
       reuseExistingServer: true,
       timeout: 120_000,

@@ -290,6 +290,7 @@ import {
   syncMusicForScreen,
   tapFx,
 } from "./lib/pofFx.js";
+import { playGameSfx } from "./lib/playGameSfx.js";
 import {
   EXCLUDED_PLAYER_ROUND_TYPE_IDS,
   NEON_ASSETS,
@@ -1399,9 +1400,11 @@ function calculateRoundResolutionLocal(players, round, votesByPlayerId = {}) {
 }
 
 
-function GlassPanel({ children, className = "" }) {
+function GlassPanel({ children, className = "", ...rest }) {
   return (
-    <div className={`pof-glass rounded-[1.4rem] ${className}`}>{children}</div>
+    <div className={`pof-glass rounded-[1.4rem] ${className}`} {...rest}>
+      {children}
+    </div>
   );
 }
 function ZanyAccentBurst({ className = "", glowClass = "bg-fuchsia-500/25" }) {
@@ -8604,19 +8607,8 @@ export default function App() {
       ),
     [selectedFriendInviteUsernames],
   );
-  const playSfx = useCallback((src, { volume = 0.55 } = {}) => {
-    const fxSettings = loadFx();
-    if (!fxSettings.sfx) return;
-    if (!src) return;
-    const volScale = (Number(fxSettings.sfxVol) || 80) / 100;
-    try {
-      const audio = new Audio(src);
-      audio.volume = Math.max(
-        0,
-        Math.min(1, (Number(volume) || 0.55) * volScale),
-      );
-      audio.play().catch(() => {});
-    } catch {}
+  const playSfx = useCallback((src, options) => {
+    playGameSfx(src, options);
   }, []);
   const disconnectOnlineVoiceTransport = useCallback(async () => {
     const activeTransport = onlineVoiceTransportRef.current;
