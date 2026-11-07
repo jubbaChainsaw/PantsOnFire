@@ -5,6 +5,42 @@ import { Server } from 'socket.io';
 import { AccessToken } from 'livekit-server-sdk';
 import { createLobbyStore, toClientSnapshot } from './storage/index.js';
 import { mountEntitlementsRoutes } from './entitlementsRoutes.js';
+import { mountStripeBillingRoutes, mountStripeWebhook } from './stripeBillingRoutes.js';
+import { mountPoFAuthRoutes } from './pofAuthRoutes.js';
+import {
+  createPoFAccountStore,
+  ensurePoFAccountSchema,
+} from './pofAccountStore.js';
+import {
+  createPostgresEntitlementsStore,
+  ensurePoFEntitlementsSchema,
+} from './pofEntitlementsStore.js';
+import {
+  createPostgresPlayerProfileStore,
+  ensurePoFPlayerProfileSchema,
+} from './pofPlayerProfileStore.js';
+import {
+  createMemoryReferralStore,
+  createPostgresReferralStore,
+  ensurePoFReferralSchema,
+} from './pofReferralStore.js';
+import { mountPlayerProfileRoutes } from './playerProfileRoutes.js';
+import { mountReferralRoutes } from './referralRoutes.js';
+import { createReferralHooks } from './referralService.js';
+import { mountAltCardUnlockRoutes } from './altCardUnlockRoutes.js';
+import { mountContentPackRoutes } from './contentPackRoutes.js';
+import { mountAppInstallRoutes } from './appInstallRoutes.js';
+import { assertMayHostLobby } from './hostingGate.js';
+import { resolveAuthUserFromBearer } from './resolveAuthUser.js';
+import { filterProfanity, sanitizeDisplayName } from '../src/lib/profanityFilter.js';
+import { appendLobbyChatMessage } from './lobbyChatContext.js';
+import {
+  createModerationStore,
+  ensureModerationSchema,
+} from './moderationStore.js';
+import { mountModerationRoutes } from './moderationRoutes.js';
+import { mountAccountDeletionRoutes } from './accountDeletionRoutes.js';
+import { createRateLimiter } from './rateLimit.js';
 
 const PORT = Number(process.env.LOBBY_SERVER_PORT || process.env.PORT || 8787);
 const CLIENT_ORIGINS_RAW = String(
@@ -105,70 +141,126 @@ const { store, kind: storeKind, close: closeStore, redisClient } = await createL
   sessionTokenTtlMs: SESSION_TOKEN_TTL_MS,
 });
 
-// Minimal fixed-window rate limiter (per IP) so lobby-code guessing and join
-// spam cannot run unthrottled. Swap for a shared-store limiter if the server
-// is ever scaled to multiple instances.
-function createRateLimiter({ windowMs, max }) {
-  const buckets = new Map();
-  const cleanupTimer = setInterval(() => {
-    const now = Date.now();
-    for (const [key, bucket] of buckets.entries()) {
-      if (bucket.resetAt <= now) buckets.delete(key);
-    }
-  }, windowMs);
-  cleanupTimer.unref?.();
-  return (req, res, next) => {
-    const key = String(req.ip || req.socket?.remoteAddress || 'unknown');
-    const now = Date.now();
-    let bucket = buckets.get(key);
-    if (!bucket || bucket.resetAt <= now) {
-      bucket = { count: 0, resetAt: now + windowMs };
-      buckets.set(key, bucket);
-    }
-    bucket.count += 1;
-    if (bucket.count > max) {
-      res.status(429).json({ error: 'rate-limited' });
-      return;
-    }
-    next();
-  };
+const e2eLobby = String(process.env.POF_E2E_LOBBY || '').trim() === '1';
+const rateMax = (prodMax, e2eMax) => (e2eLobby ? e2eMax : prodMax);
+const createLobbyLimiter = createRateLimiter({ windowMs: 60_000, max: rateMax(10, 80) });
+const joinLobbyLimiter = createRateLimiter({ windowMs: 60_000, max: rateMax(20, 240) });
+const resumeLimiter = createRateLimiter({ windowMs: 60_000, max: rateMax(30, 240) });
+const lookupLimiter = createRateLimiter({ windowMs: 60_000, max: rateMax(60, 600) });
+const voiceTokenLimiter = createRateLimiter({ windowMs: 60_000, max: 12 });
+const appInstallTokenLimiter = createRateLimiter({ windowMs: 60_000, max: 30 });
+
+// Entitlements: Postgres when DATABASE_URL is set; else Redis; else in-memory (local dev).
+const entitlementsRedisPrefix = String(process.env.ENTITLEMENTS_REDIS_KEY_PREFIX || 'pof:entitlements').trim() || 'pof:entitlements';
+const databaseUrl = String(process.env.DATABASE_URL || '').trim();
+let pgPool = null;
+if (databaseUrl) {
+  const { default: pg } = await import('pg');
+  pgPool = new pg.Pool({ connectionString: databaseUrl, max: 10 });
+  await ensurePoFAccountSchema(pgPool);
+  await ensurePoFEntitlementsSchema(pgPool);
+  await ensurePoFPlayerProfileSchema(pgPool);
+  await ensurePoFReferralSchema(pgPool);
 }
 
-const createLobbyLimiter = createRateLimiter({ windowMs: 60_000, max: 10 });
-const joinLobbyLimiter = createRateLimiter({ windowMs: 60_000, max: 20 });
-const resumeLimiter = createRateLimiter({ windowMs: 60_000, max: 30 });
-const lookupLimiter = createRateLimiter({ windowMs: 60_000, max: 60 });
-const voiceTokenLimiter = createRateLimiter({ windowMs: 60_000, max: 12 });
+let moderationStore = createModerationStore(pgPool);
+if (pgPool) {
+  await ensureModerationSchema(pgPool);
+}
+
+const accountStore = createPoFAccountStore(pgPool);
+
+let entitlementsStore;
+if (pgPool) {
+  entitlementsStore = createPostgresEntitlementsStore(pgPool);
+} else if (redisClient) {
+  entitlementsStore = {
+    get: async (userId) => {
+      const raw = await redisClient.get(`${entitlementsRedisPrefix}:${userId}`);
+      if (!raw) return undefined;
+      try {
+        return JSON.parse(raw);
+      } catch {
+        return undefined;
+      }
+    },
+    set: async (userId, row) => {
+      await redisClient.set(`${entitlementsRedisPrefix}:${userId}`, JSON.stringify(row));
+    },
+  };
+} else {
+  entitlementsStore = new Map();
+}
+
+const profileRedisPrefix =
+  String(process.env.PROFILE_REDIS_KEY_PREFIX || 'pof:profile').trim() || 'pof:profile';
+let playerProfileStore;
+if (pgPool) {
+  playerProfileStore = createPostgresPlayerProfileStore(pgPool);
+} else if (redisClient) {
+  playerProfileStore = {
+    get: async (userId) => {
+      const raw = await redisClient.get(`${profileRedisPrefix}:${userId}`);
+      if (!raw) return undefined;
+      try {
+        return JSON.parse(raw);
+      } catch {
+        return undefined;
+      }
+    },
+    set: async (userId, profile) => {
+      await redisClient.set(`${profileRedisPrefix}:${userId}`, JSON.stringify(profile));
+      return profile;
+    },
+  };
+} else {
+  playerProfileStore = new Map();
+}
+
+let referralStore;
+if (pgPool) {
+  referralStore = createPostgresReferralStore(pgPool);
+} else {
+  referralStore = createMemoryReferralStore();
+}
+
+const referralHooks = createReferralHooks({ referralStore, playerProfileStore });
 
 const app = express();
 app.set('trust proxy', 1);
 app.use(cors({ origin: corsOriginHandler }));
-app.use(express.json({ limit: '1mb' }));
-
-// Entitlements survive restarts when Redis is configured; the Map fallback is
-// for local development only.
-const entitlementsRedisPrefix = String(process.env.ENTITLEMENTS_REDIS_KEY_PREFIX || 'pof:entitlements').trim() || 'pof:entitlements';
-const entitlementsStore = redisClient
-  ? {
-      get: async (userId) => {
-        const raw = await redisClient.get(`${entitlementsRedisPrefix}:${userId}`);
-        if (!raw) return undefined;
-        try {
-          return JSON.parse(raw);
-        } catch {
-          return undefined;
-        }
-      },
-      set: async (userId, row) => {
-        await redisClient.set(`${entitlementsRedisPrefix}:${userId}`, JSON.stringify(row));
-      },
-    }
-  : new Map();
-mountEntitlementsRoutes(app, { store: entitlementsStore });
+mountStripeWebhook(app, { store: entitlementsStore, referralHooks });
+app.use(express.json({ limit: '3mb' }));
+mountPoFAuthRoutes(app, { accountStore });
+mountEntitlementsRoutes(app, { store: entitlementsStore, referralHooks });
+mountPlayerProfileRoutes(app, { store: playerProfileStore });
+mountReferralRoutes(app, { referralStore, playerProfileStore });
+mountAltCardUnlockRoutes(app, { store: playerProfileStore, lobbyStore: store });
+mountContentPackRoutes(app, {
+  entitlementStore: entitlementsStore,
+  profileStore: playerProfileStore,
+  referralStore,
+});
+mountAppInstallRoutes(app, { rateLimiter: appInstallTokenLimiter });
+mountStripeBillingRoutes(app, { store: entitlementsStore, referralHooks });
+mountAccountDeletionRoutes(app, {
+  accountStore,
+  profileStore: playerProfileStore,
+  entitlementsStore,
+  moderationStore,
+  pgPool,
+});
 
 const httpServer = createServer(app);
 const io = new Server(httpServer, {
   cors: { origin: corsOriginHandler, methods: ['GET', 'POST'] },
+});
+
+mountModerationRoutes(app, {
+  moderationStore,
+  lobbyStore: store,
+  io,
+  broadcastSnapshot,
 });
 
 function roomName(code) {
@@ -243,6 +335,10 @@ function hasActiveSocketSubscription(code, playerId) {
   const playerSockets = lobbySubscriptions.get(normalizedPlayerId);
   return Boolean(playerSockets && playerSockets.size > 0);
 }
+
+store.setOneWordConnectionChecker?.((code, playerId) =>
+  hasActiveSocketSubscription(code, playerId),
+);
 
 function scheduleDisconnectGraceTimer(code, playerId) {
   const normalizedCode = normalizeCode(code);
@@ -362,17 +458,27 @@ app.post('/api/lobbies/:code/voice/token', voiceTokenLimiter, async (req, res) =
 });
 
 app.post('/api/lobbies', createLobbyLimiter, async (req, res) => {
+  if (!assertMayHostLobby(req, res)) return;
   const hostName = String(req.body?.hostName || '').trim() || 'Host';
   const hostPlayer = req.body?.hostPlayer || {};
   const maxPlayers = Number(req.body?.maxPlayers);
   const settings = req.body?.settings && typeof req.body.settings === 'object'
     ? req.body.settings
     : {};
+  let hostAuthUserId = '';
+  const auth = await resolveAuthUserFromBearer(req);
+  if (!auth.error) {
+    hostAuthUserId = auth.userId;
+  }
   const created = await store.createLobby({
-    hostPlayer,
-    hostName,
+    hostPlayer: {
+      ...hostPlayer,
+      name: sanitizeDisplayName(hostPlayer?.name || hostName),
+    },
+    hostName: sanitizeDisplayName(hostName),
     maxPlayers,
     settings,
+    hostAuthUserId,
   });
   broadcastSnapshot(created.lobby.code, created.lobby);
   res.status(201).json({
@@ -395,6 +501,9 @@ app.get('/api/lobbies/:code', lookupLimiter, async (req, res) => {
 app.post('/api/lobbies/:code/join', joinLobbyLimiter, async (req, res) => {
   const code = normalizeCode(req.params.code);
   const incoming = req.body?.player || {};
+  if (incoming?.name) {
+    incoming.name = sanitizeDisplayName(incoming.name);
+  }
   const sessionToken = String(req.body?.sessionToken || '');
   const joined = await store.upsertPlayer(code, incoming, sessionToken);
   if (joined.error === 'not-found') {
@@ -435,7 +544,7 @@ app.post('/api/lobbies/:code/join', joinLobbyLimiter, async (req, res) => {
   });
 });
 
-app.post('/api/lobbies/:code/resume', async (req, res) => {
+app.post('/api/lobbies/:code/resume', resumeLimiter, async (req, res) => {
   const code = normalizeCode(req.params.code);
   const sessionToken = String(req.body?.sessionToken || '');
   const clientId = String(req.body?.clientId || '');
@@ -512,6 +621,7 @@ app.post('/api/lobbies/:code/leave', async (req, res) => {
 });
 
 app.post('/api/lobbies/:code/start', async (req, res) => {
+  if (!assertMayHostLobby(req, res)) return;
   const code = normalizeCode(req.params.code);
   const hostClientId = String(req.body?.hostClientId || '');
   const sessionToken = String(req.body?.sessionToken || '');
@@ -570,6 +680,196 @@ app.post('/api/lobbies/:code/start', async (req, res) => {
   });
 });
 
+app.post('/api/lobbies/:code/round/configure', async (req, res) => {
+  if (!assertMayHostLobby(req, res)) return;
+  const code = normalizeCode(req.params.code);
+  const hostClientId = String(req.body?.hostClientId || '');
+  const sessionToken = String(req.body?.sessionToken || '');
+  const payload = req.body?.round && typeof req.body.round === 'object' ? req.body.round : req.body || {};
+  const result = await store.configureOnlineRound(code, hostClientId, sessionToken, payload);
+  if (result.error === 'not-found') {
+    res.status(404).json({ error: 'lobby-not-found' });
+    return;
+  }
+  if (result.error === 'lobby-not-started') {
+    res.status(409).json({ error: 'lobby-not-started' });
+    return;
+  }
+  if (result.error === 'lobby-ended') {
+    res.status(409).json({
+      error: 'lobby-ended',
+      lobby: toClientSnapshot(result.lobby || null),
+    });
+    return;
+  }
+  if (result.error === 'host-only') {
+    res.status(403).json({ error: 'host-only' });
+    return;
+  }
+  if (result.error === 'host-session-token-required') {
+    res.status(400).json({ error: 'host-session-token-required' });
+    return;
+  }
+  if (result.error === 'token-rotation-required') {
+    res.status(401).json({ error: 'token-rotation-required' });
+    return;
+  }
+  if (result.error === 'session-token-expired') {
+    res.status(401).json({ error: 'session-token-expired' });
+    return;
+  }
+  if (result.error === 'round-already-configured') {
+    res.status(409).json({ error: 'round-already-configured' });
+    return;
+  }
+  if (result.error === 'round-generation-failed') {
+    res.status(500).json({ error: 'round-generation-failed' });
+    return;
+  }
+  if (result.error === 'lock-timeout') {
+    res.status(503).json({ error: 'lobby-busy' });
+    return;
+  }
+  broadcastSnapshot(code, result.lobby);
+  res.json({
+    lobby: toClientSnapshot(result.lobby),
+    round: result.round || null,
+    rotatedSessionToken: result.sessionToken || '',
+  });
+});
+
+app.post('/api/lobbies/:code/round/two-truths/submit', async (req, res) => {
+  const code = normalizeCode(req.params.code);
+  const playerId = String(req.body?.playerId || '');
+  const sessionToken = String(req.body?.sessionToken || '');
+  const submission = req.body?.submission && typeof req.body.submission === 'object' ? req.body.submission : {};
+  const result = await store.submitTwoTruthsSubmission(code, playerId, sessionToken, submission);
+  if (result.error === 'not-found') {
+    res.status(404).json({ error: 'lobby-not-found' });
+    return;
+  }
+  if (result.error === 'lobby-not-started') {
+    res.status(409).json({ error: 'lobby-not-started' });
+    return;
+  }
+  if (result.error === 'lobby-ended') {
+    res.status(409).json({
+      error: 'lobby-ended',
+      lobby: toClientSnapshot(result.lobby || null),
+    });
+    return;
+  }
+  if (result.error === 'round-not-found') {
+    res.status(404).json({ error: 'round-not-found' });
+    return;
+  }
+  if (result.error === 'player-id-required') {
+    res.status(400).json({ error: 'player-id-required' });
+    return;
+  }
+  if (result.error === 'invalid-session-token' || result.error === 'session-token-expired') {
+    res.status(401).json({ error: result.error });
+    return;
+  }
+  if (result.error === 'not-two-truths-round') {
+    res.status(409).json({ error: 'not-two-truths-round' });
+    return;
+  }
+  if (result.error === 'twotruths-input-not-active') {
+    res.status(409).json({ error: 'twotruths-input-not-active' });
+    return;
+  }
+  if (result.error === 'not-your-turn') {
+    res.status(409).json({ error: 'not-your-turn' });
+    return;
+  }
+  if (result.error === 'twotruths-invalid-items' || result.error === 'twotruths-invalid-lie-index') {
+    res.status(400).json({ error: result.error });
+    return;
+  }
+  if (result.error === 'lock-timeout') {
+    res.status(503).json({ error: 'lobby-busy' });
+    return;
+  }
+  if (result.lobby) {
+    broadcastSnapshot(code, result.lobby);
+  }
+  res.json({
+    lobby: toClientSnapshot(result.lobby),
+    round: result.round || null,
+    rotatedSessionToken: result.sessionToken || '',
+  });
+});
+
+app.post('/api/lobbies/:code/round/two-truths/vote', async (req, res) => {
+  const code = normalizeCode(req.params.code);
+  const playerId = String(req.body?.playerId || '');
+  const sessionToken = String(req.body?.sessionToken || '');
+  const authorId = String(req.body?.authorId || '');
+  const lieIndex = req.body?.lieIndex;
+  const result = await store.submitTwoTruthsAuthorVote(code, playerId, sessionToken, authorId, lieIndex);
+  if (result.error === 'not-found') {
+    res.status(404).json({ error: 'lobby-not-found' });
+    return;
+  }
+  if (result.error === 'lobby-not-started') {
+    res.status(409).json({ error: 'lobby-not-started' });
+    return;
+  }
+  if (result.error === 'lobby-ended') {
+    res.status(409).json({
+      error: 'lobby-ended',
+      lobby: toClientSnapshot(result.lobby || null),
+    });
+    return;
+  }
+  if (result.error === 'round-not-found') {
+    res.status(404).json({ error: 'round-not-found' });
+    return;
+  }
+  if (result.error === 'player-id-required') {
+    res.status(400).json({ error: 'player-id-required' });
+    return;
+  }
+  if (result.error === 'vote-target-required') {
+    res.status(400).json({ error: 'vote-target-required' });
+    return;
+  }
+  if (result.error === 'vote-target-invalid') {
+    res.status(409).json({ error: 'invalid-vote-target' });
+    return;
+  }
+  if (result.error === 'invalid-session-token' || result.error === 'session-token-expired') {
+    res.status(401).json({ error: result.error });
+    return;
+  }
+  if (result.error === 'not-two-truths-round') {
+    res.status(409).json({ error: 'not-two-truths-round' });
+    return;
+  }
+  if (result.error === 'twotruths-voting-not-active') {
+    res.status(409).json({ error: 'twotruths-voting-not-active' });
+    return;
+  }
+  if (result.error === 'twotruths-invalid-lie-index') {
+    res.status(400).json({ error: result.error });
+    return;
+  }
+  if (result.error === 'lock-timeout') {
+    res.status(503).json({ error: 'lobby-busy' });
+    return;
+  }
+  if (result.lobby) {
+    broadcastSnapshot(code, result.lobby);
+  }
+  res.json({
+    lobby: toClientSnapshot(result.lobby),
+    round: result.round || null,
+    votingComplete: Boolean(result.votingComplete),
+    rotatedSessionToken: result.sessionToken || '',
+  });
+});
+
 app.post('/api/lobbies/:code/ready', async (req, res) => {
   const code = normalizeCode(req.params.code);
   const playerId = String(req.body?.playerId || '');
@@ -620,7 +920,7 @@ app.post('/api/lobbies/:code/ready', async (req, res) => {
   });
 });
 
-app.get('/api/lobbies/:code/round', async (req, res) => {
+app.get('/api/lobbies/:code/round', lookupLimiter, async (req, res) => {
   const code = normalizeCode(req.params.code);
   const result = await store.getCurrentRound(code);
   if (result.error === 'not-found') {
@@ -648,7 +948,7 @@ app.get('/api/lobbies/:code/round', async (req, res) => {
   });
 });
 
-app.get('/api/lobbies/:code/round/private', async (req, res) => {
+app.get('/api/lobbies/:code/round/private', lookupLimiter, async (req, res) => {
   const code = normalizeCode(req.params.code);
   const playerId = String(req.query?.playerId || '');
   const sessionToken = String(req.query?.sessionToken || '');
@@ -698,6 +998,7 @@ app.get('/api/lobbies/:code/round/private', async (req, res) => {
 });
 
 app.post('/api/lobbies/:code/rounds/next', async (req, res) => {
+  if (!assertMayHostLobby(req, res)) return;
   const code = normalizeCode(req.params.code);
   const hostClientId = String(req.body?.hostClientId || '');
   const sessionToken = String(req.body?.sessionToken || '');
@@ -789,12 +1090,65 @@ app.post('/api/lobbies/:code/round/phase/advance', async (req, res) => {
     res.status(410).json({ error: 'session-player-missing' });
     return;
   }
+  if (result.error === 'host-only') {
+    res.status(403).json({ error: 'host-only' });
+    return;
+  }
   if (result.error === 'phase-advance-not-allowed' || result.error === 'voting-incomplete' || result.error === 'invalid-round-phase') {
     res.status(409).json({ error: 'round-phase-not-advanceable', phase: result.phase || null });
     return;
   }
   if (result.error === 'lock-timeout') {
     res.status(503).json({ error: 'lobby-busy' });
+    return;
+  }
+  if (result.lobby) {
+    broadcastSnapshot(code, result.lobby);
+  }
+  res.json({
+    lobby: toClientSnapshot(result.lobby),
+    round: result.round || null,
+    phase: result.phase || result.round?.phase || null,
+    rotatedSessionToken: result.sessionToken || '',
+  });
+});
+
+app.post('/api/lobbies/:code/round/one-word', async (req, res) => {
+  const code = normalizeCode(req.params.code);
+  const playerId = String(req.body?.playerId || '');
+  const sessionToken = String(req.body?.sessionToken || '');
+  const action = String(req.body?.action || '').trim();
+  const word = req.body?.word;
+  const result = await store.submitOneWordTurn(code, playerId, sessionToken, { action, word });
+  if (result.error === 'not-found') {
+    res.status(404).json({ error: 'lobby-not-found' });
+    return;
+  }
+  if (result.error === 'lobby-not-started') {
+    res.status(409).json({ error: 'lobby-not-started' });
+    return;
+  }
+  if (result.error === 'lobby-ended') {
+    res.status(409).json({
+      error: 'lobby-ended',
+      lobby: toClientSnapshot(result.lobby || null),
+    });
+    return;
+  }
+  if (result.error === 'round-not-found') {
+    res.status(404).json({ error: 'round-not-found' });
+    return;
+  }
+  if (result.error === 'player-id-required') {
+    res.status(400).json({ error: 'player-id-required' });
+    return;
+  }
+  if (result.error === 'invalid-session-token' || result.error === 'session-token-expired') {
+    res.status(401).json({ error: result.error });
+    return;
+  }
+  if (result.error === 'one-word-not-active' || result.error === 'not-your-turn' || result.error === 'invalid-one-word-action') {
+    res.status(409).json({ error: result.error });
     return;
   }
   if (result.lobby) {
@@ -904,7 +1258,7 @@ io.on('connection', (socket) => {
     const normalizedCode = normalizeCode(code);
     const normalizedPlayerId = String(playerId || '').trim();
     const normalizedToken = String(sessionToken || '').trim();
-    const normalizedText = String(text || '').trim().slice(0, 280);
+    const normalizedText = filterProfanity(String(text || '').trim().slice(0, 280));
     if (!normalizedCode || !normalizedPlayerId || !normalizedToken || !normalizedText) return;
     const lobby = await store.getLobby(normalizedCode);
     if (!lobby) return;
@@ -915,14 +1269,16 @@ io.on('connection', (socket) => {
       ? lobby.players.find((entry) => String(entry?.id || '') === normalizedPlayerId)
       : null;
     if (!player) return;
-    io.to(roomName(normalizedCode)).emit('party-chat:message', {
+    const outbound = {
       id: `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
       lobbyCode: normalizedCode,
       playerId: normalizedPlayerId,
       playerName: String(player.name || 'Player'),
       text: normalizedText,
       createdAt: nowIso(),
-    });
+    };
+    appendLobbyChatMessage(normalizedCode, outbound);
+    io.to(roomName(normalizedCode)).emit('party-chat:message', outbound);
   });
 
   socket.on('party-voice:activity', async ({ code, playerId, sessionToken, isTalking }) => {

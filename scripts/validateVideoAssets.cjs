@@ -72,17 +72,36 @@ function parseCoreVideoConstants(appJsPath) {
   return refs;
 }
 
+function slugifyThemeName(themeName) {
+  return String(themeName || 'default')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-|-$)/g, '');
+}
+
+function parseThemeCardSlugs(themeAssetsPath) {
+  const source = fs.readFileSync(themeAssetsPath, 'utf8');
+  const objectMatch = source.match(/const THEME_CARD_SLUGS = \{([\s\S]*?)\n\};/);
+  const block = objectMatch?.[1] || '';
+  const slugMap = {};
+  const lineMatches = [...block.matchAll(/^\s*(?:'([^']+)'|([A-Za-z][A-Za-z0-9]*))\s*:\s*'([^']+)'/gm)];
+  lineMatches.forEach((match) => {
+    const key = String(match[1] || match[2] || '').trim();
+    const slug = String(match[3] || '').trim();
+    if (key && slug) slugMap[key] = slug;
+  });
+  return slugMap;
+}
+
 function parseThemeHostTalkingVideos(themeAssetsPath) {
   const source = fs.readFileSync(themeAssetsPath, 'utf8');
   const objectMatch = source.match(/export const THEME_ASSETS\s*=\s*\{([\s\S]*?)\n\};/);
   const themeBlock = objectMatch?.[1] || source;
   const matches = [...themeBlock.matchAll(/^\s{2}(?:'([^']+)'|([A-Za-z][A-Za-z0-9]*))\s*:\s*\{/gm)];
   const themeNames = [...new Set(matches.map((match) => String(match[1] || match[2] || '').trim()).filter(Boolean))];
+  const cardSlugs = parseThemeCardSlugs(themeAssetsPath);
   return themeNames.map((themeName) => {
-    const slug = String(themeName || 'default')
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/(^-|-$)/g, '');
+    const slug = cardSlugs[themeName] || slugifyThemeName(themeName);
     return `/assets/videos/hosts/${slug}/talking-placeholder.mp4`;
   });
 }

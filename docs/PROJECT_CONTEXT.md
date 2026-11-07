@@ -83,16 +83,19 @@ The repository includes:
 
 ## Current / Intended Round Types
 
+(See `src/data/roundTypes.js`.)
+
 - Hot Seat
 - Truth or Twisted
 - Flash Frame
+- Double Take
 - Name and Blame
 - Sound Off
 - Off Topic Defense
 - Chain Reaction
-- Grill 'Em
-- Dodgy Audio
-- Clip Trap
+- Two Truths, One Fire
+- Dodgy Audio (online)
+- Clip Trap (online)
 
 The first target should remain **pass-the-phone** reliability. Online and media-heavy modes should be layered on top without breaking the core offline party experience.
 
@@ -114,7 +117,8 @@ Optional adult/risky content mode. Must be opt-in, clearly labelled, and never a
 
 The game uses a host/personality layer to add energy, stingers, voice lines, theme flavour, and dramatic reveal moments.
 
-Current host direction includes **Ian Poster** and AI/voice-style host behaviour such as **Blaze Byte** for Grill 'Em style rounds.
+Current host direction includes **Ian Poster** themed voice lines and host
+art per theme (`src/data/hostVoiceLineMap.js`, `/assets/audio/host/`).
 
 The host system should support:
 

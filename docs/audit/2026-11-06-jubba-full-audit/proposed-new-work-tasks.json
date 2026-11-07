@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 3,
+  "purpose": "Deduped gaps only — REQ0017 server work stays on existing REQ0017 (see proposed-tracker-updates.json). Parent already tracks ENHC0025, TEST0004, TEST0005, ENHC0024.",
+  "tasks": [
+    {
+      "external_ref": "POF-AUDIT-2026-11-06-DOCS-TEST-STRATEGY-CI",
+      "type": "defect",
+      "title": "Sync docs/TEST_STRATEGY.md CI paragraph with npm-test.yml (and AGENTS.md)",
+      "priority": "low",
+      "linksExistingIds": ["DFCT0040", "REQ0010"],
+      "problem": "TEST_STRATEGY.md still states CI does not run npm test on every push; `.github/workflows/npm-test.yml` runs `npm test` on path-filtered PRs/pushes. AGENTS.md line 28 also omits npm-test.yml.",
+      "acceptanceCriteria": [
+        "Single source of truth listing which workflows run unit tests",
+        "TEST_STRATEGY.md, AGENTS.md aligned"
+      ],
+      "verificationPlan": ["Docs review only"]
+    }
+  ]
+}

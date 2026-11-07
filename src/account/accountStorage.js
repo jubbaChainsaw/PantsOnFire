@@ -1,4 +1,5 @@
 import { normalizeUnlockedThemePackIds } from '../data/themeCatalog';
+import { normalizeUnlockedAltCardThemeKeys } from '../data/themeCardStyles';
 import { TIER_FIBBER, TIER_HOST_MOST, TIER_LOCAL_LIAR, TIER_SUSPECT } from './tierModel.js';
 
 const SESSION_KEY = 'imposter-account-session-v2';
@@ -64,7 +65,15 @@ export function readAccountSession() {
     tierId: String(raw.tierId || TIER_FIBBER).trim() || TIER_FIBBER,
     addonTwistTruth: Boolean(raw.addonTwistTruth),
     unlockedThemePackIds: normalizeUnlockedThemePackIds(raw.unlockedThemePackIds || []),
-    authProvider: raw.authProvider === 'supabase' ? 'supabase' : 'local',
+    unlockedAltCardThemeKeys: normalizeUnlockedAltCardThemeKeys(
+      raw.unlockedAltCardThemeKeys || [],
+    ),
+    authProvider:
+      raw.authProvider === 'supabase'
+        ? 'supabase'
+        : raw.authProvider === 'pof'
+          ? 'pof'
+          : 'local',
   };
 }
 
@@ -229,9 +238,20 @@ export function purchaseDlcPackDemo(userId, packId) {
   return { ok: true, session };
 }
 
+export function syncSessionAltCardUnlocks(unlockedAltCardThemeKeys) {
+  const sess = readAccountSession();
+  if (!sess || sess.authProvider === 'supabase' || sess.authProvider === 'pof') return;
+  const next = {
+    ...sess,
+    unlockedAltCardThemeKeys: normalizeUnlockedAltCardThemeKeys(unlockedAltCardThemeKeys),
+  };
+  writeAccountSession(next);
+  patchDirectory(sess.userId, { unlockedAltCardThemeKeys: next.unlockedAltCardThemeKeys });
+}
+
 export function syncSessionPackIds(unlockedThemePackIds) {
   const sess = readAccountSession();
-  if (!sess || sess.authProvider === 'supabase') return;
+  if (!sess || sess.authProvider === 'supabase' || sess.authProvider === 'pof') return;
   const next = {
     ...sess,
     unlockedThemePackIds: normalizeUnlockedThemePackIds(unlockedThemePackIds),

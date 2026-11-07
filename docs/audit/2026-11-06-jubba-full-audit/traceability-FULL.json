@@ -1,0 +1,4341 @@
+{
+  "schemaVersion": 3,
+  "auditId": "POF-AUDIT-2026-11-06-JUBBA-FULL",
+  "generatedAt": "2026-11-06T19:30:37.854Z",
+  "methodologyNote": "Superpowers bundle: docs/audit/2026-11-06-jubba-full-audit/SUPERPOWERS_SKILLS_BUNDLE.md. Rows merge snapshot + evidence-batch-*.json (lexical merge order). No keyword heuristics. Evidence rows are **accounted-for** (repo anchors + test commands where applicable); they are **not** independent human examination unless noted. Independent code reviewer: **not run** — `requesting-code-review` Superpowers step **not fulfilled**.",
+  "baseline": {
+    "snapshotPath": "docs/audit/2026-11-06-jubba-full-audit/jubbaworld-snapshot-2026-11-06.json",
+    "snapshotProvenanceCopyPath": "docs/audit/2026-11-06-jubba-full-audit/jubbaworld-snapshot-upload-provenance-8c20.json",
+    "fetchedAt": "2026-11-06T18:34:07.458018+00:00",
+    "itemCount": 119,
+    "conversationRequirementCount": 10,
+    "matrixRowCount": 129
+  },
+  "evidenceBatchFiles": [
+    "docs/audit/2026-11-06-jubba-full-audit/evidence-batch-01.json",
+    "docs/audit/2026-11-06-jubba-full-audit/evidence-batch-02.json",
+    "docs/audit/2026-11-06-jubba-full-audit/evidence-batch-03.json"
+  ],
+  "evidenceBatchMerge": [
+    {
+      "file": "docs/audit/2026-11-06-jubba-full-audit/evidence-batch-01.json",
+      "auditBatchId": "POF-AUDIT-2026-11-06-BATCH01",
+      "generatedAt": "2026-11-06T19:05:34.739Z",
+      "stats": null
+    },
+    {
+      "file": "docs/audit/2026-11-06-jubba-full-audit/evidence-batch-02.json",
+      "auditBatchId": "POF-AUDIT-2026-11-06-BATCH02",
+      "generatedAt": "2026-11-06T19:30:06.149Z",
+      "stats": {
+        "rowsWritten": 105,
+        "batch01ItemKeys": 119
+      }
+    },
+    {
+      "file": "docs/audit/2026-11-06-jubba-full-audit/evidence-batch-03.json",
+      "auditBatchId": "POF-AUDIT-2026-11-06-BATCH03",
+      "generatedAt": "2026-11-06T19:30:00.000Z",
+      "stats": null
+    }
+  ],
+  "itemClassificationCounts": {
+    "code_proven_partial": 34,
+    "partial": 59,
+    "blocked_device_external": 9,
+    "verified": 4,
+    "deferred": 6,
+    "missing": 3,
+    "account_status_unknown": 3,
+    "stale_tracker_mismatch": 1
+  },
+  "conversationClassificationCounts": {
+    "partial": 9,
+    "verified": 1
+  },
+  "counts": {
+    "total": 119,
+    "by_type": {
+      "defect": 43,
+      "enhancement": 24,
+      "requirement": 15,
+      "story": 27,
+      "test": 3,
+      "work_task": 7
+    },
+    "by_status": {
+      "Done": 61,
+      "In progress": 32,
+      "To do": 3,
+      "Backlog": 23
+    },
+    "by_done_flag": {
+      "true": 61,
+      "false": 58
+    },
+    "by_type_and_status": {
+      "defect": {
+        "Done": 30,
+        "In progress": 13
+      },
+      "enhancement": {
+        "In progress": 7,
+        "Done": 15,
+        "To do": 2
+      },
+      "requirement": {
+        "In progress": 6,
+        "Backlog": 9
+      },
+      "story": {
+        "Backlog": 13,
+        "Done": 9,
+        "In progress": 5
+      },
+      "test": {
+        "In progress": 1,
+        "Done": 1,
+        "Backlog": 1
+      },
+      "work_task": {
+        "To do": 1,
+        "Done": 6
+      }
+    },
+    "empty_description_count": 26,
+    "empty_description_numbers": [
+      "DFCT0010",
+      "DFCT0011",
+      "DFCT0012",
+      "DFCT0013",
+      "DFCT0014",
+      "DFCT0015",
+      "DFCT0016",
+      "DFCT0017",
+      "DFCT0018",
+      "DFCT0022",
+      "DFCT0023",
+      "DFCT0024",
+      "DFCT0025",
+      "DFCT0027",
+      "ENHC0014",
+      "ENHC0015",
+      "ENHC0016",
+      "ENHC0017",
+      "ENHC0019",
+      "REQ0012",
+      "REQ0013",
+      "REQ0014",
+      "REQ0015",
+      "REQ0016",
+      "REQ0017",
+      "STRY0017"
+    ]
+  },
+  "limitations": [
+    "Auth env JUBBAWORLD_POF_TOKEN (not echoed). Project-scoped bot token.",
+    "List endpoint /projects/pants-on-fire/items?limit=200 returned all 119 items with descriptions, checklists, createdAt/updatedAt/done.",
+    "GET /items/{id} enrichment hit Rate limit: 60 calls per 60s; after retries 119/119 details fetched (or note remaining_errors). Detail payload omits createdAt/updatedAt/done.",
+    "Subroutes comments/updates/blockers/history/acceptance return 403 for POF token; owner token returns 404 Unknown bot route — comments/updates not available via bot API as probed.",
+    "Acceptance criteria live in description text and/or checklist[]; no separate AC endpoint.",
+    "Docs endpoint returned empty/minimal payload.",
+    "Do not trust tracker Done without repo/test/dashboard evidence.",
+    "No mutations performed in this export.",
+    "Cursor preliminary note (parent): only draft audit + unit tests 49 app / 41 server so far; E2E/mobile smoke NOT attempted — must be exercised on next audit run locally."
+  ],
+  "trackerInconsistencies": [
+    {
+      "ref": "POF-DEC-001",
+      "number": "WTSK0002",
+      "tracker_status": "Done",
+      "tracker_done": true,
+      "tracker_progress": 0,
+      "issue": "Marked Done even though only a Cursor recommendation exists; Jubba has not made the PR #112 decision. progress=0 while status=Done.",
+      "description": "PR #112 from main makes the Android debug workflow manual-only and conflicts with the workflow on cursor/ionos-web-deploy-6e4c. Not merged; a choice between the two is needed later.\n\nSource: Toolsmith docs drift report 2026-11-01, approved by Jubba. Branch cursor/ionos-web-deploy-6e4c (PR #111)."
+    },
+    {
+      "issue": "GET /items/{id} omits createdAt/updatedAt/done. List endpoint provides them. Earlier agent reads oddly lacked recent modified timestamps despite Nov 3 logs — retain list evidence; do not over-trust freshness."
+    }
+  ],
+  "auditRunEvidence": {
+    "npmTest": {
+      "command": "npm test",
+      "note": "Node tests under tests/**/*.test.mjs"
+    },
+    "npmTestServer": {
+      "command": "npm run test:server",
+      "note": "tests/server/*.test.mjs"
+    },
+    "playwrightE2e": {
+      "command": "npm run test:e2e"
+    },
+    "mobileDistSmoke": {
+      "command": "node scripts/buildMobileBundledWeb.mjs dist-android && npm run test:mobile-dist-smoke",
+      "note": "dist-android gitignored; Vite preview may log ECONNREFUSED for /api/* without lobby server"
+    }
+  },
+  "testInventory": {
+    "nodeTestFiles": [
+      "tests/billing/googlePlayProductCatalog.test.mjs",
+      "tests/nativeShell/gameSourceSelection.test.mjs",
+      "tests/server/altCardUnlockService.test.mjs",
+      "tests/server/billingCatalog.test.mjs",
+      "tests/server/contentPackEntitlements.test.mjs",
+      "tests/server/entitlements.test.mjs",
+      "tests/server/hostingGate.test.mjs",
+      "tests/server/lobbyHttpRateLimit.test.mjs",
+      "tests/server/lobbyStore.test.mjs",
+      "tests/server/pofAuthJwt.test.mjs",
+      "tests/server/rateLimit.test.mjs",
+      "tests/server/stripeCatalog.test.mjs"
+    ]
+  },
+  "rows": [
+    {
+      "jubbaWorldId": "0c089ce5-82ff-4831-bd48-369048a179a1",
+      "number": "DFCT0001",
+      "type": "defect",
+      "title": "Inconsistent settings toggles",
+      "externalRef": "seed:pants-on-fire:pof-def-6",
+      "requirementRef": "seed:pants-on-fire:pof-R1",
+      "requirementNumber": "REQ0005",
+      "trackerStatus": "Done",
+      "trackerDone": true,
+      "trackerProgress": 100,
+      "priority": "Medium",
+      "emptyDescription": false,
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceClassification": "code_proven_partial",
+      "confidence": "medium",
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "Settings screen uses structured toggle layout (`pof-settings-toggle-col`) and haptics/music switches in App.jsx; no automated UI test for “consistent” across every toggle.",
+      "implementationRefs": [
+        "src/App.jsx:6720-7150 settings panel toggles and layout"
+      ],
+      "testRefs": [
+        "tests/e2e/playwright/martin-smoke.spec.js — reaches Play flow, not full settings matrix"
+      ],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "REQ0005",
+        "ENHC0025"
+      ],
+      "nextAction": "Optional Playwright: toggle each settings control and assert state persistence (ENHC0025 / client tests umbrella).",
+      "checklistTotal": 0,
+      "checklistDone": 0
+    },
+    {
+      "jubbaWorldId": "149bab73-f3b5-4cf4-b79d-bb8cfb8e6190",
+      "number": "DFCT0002",
+      "type": "defect",
+      "title": "APK 856 MB / 225 MB too large",
+      "externalRef": "seed:pants-on-fire:pof-def-3",
+      "requirementRef": "seed:pants-on-fire:pof-R3",
+      "requirementNumber": "REQ0007",
+      "trackerStatus": "Done",
+      "trackerDone": true,
+      "trackerProgress": 100,
+      "priority": "Medium",
+      "emptyDescription": false,
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceClassification": "code_proven_partial",
+      "confidence": "medium",
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "APK size work lives in Android build + `scripts/buildMobileBundledWeb.mjs` asset stripping; current dist-android build logged byte reduction in script output — not a Play Console size report.",
+      "implementationRefs": [
+        "scripts/buildMobileBundledWeb.mjs",
+        "android/"
+      ],
+      "testRefs": [
+        "tests/e2e/playwright/mobile-bundled-dist-smoke.spec.js — bundled web loads"
+      ],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "REQ0007",
+        "STRY0008"
+      ],
+      "nextAction": "Compare AAB/APK sizes in Play Console vs acceptance target (device pipeline).",
+      "checklistTotal": 0,
+      "checklistDone": 0
+    },
+    {
+      "jubbaWorldId": "1898f4d5-3dd4-45a1-b47a-4db0e62b7feb",
+      "number": "DFCT0003",
+      "type": "defect",
+      "title": "Player setup hidden under buttons",
+      "externalRef": "seed:pants-on-fire:pof-def-2",
+      "requirementRef": "seed:pants-on-fire:pof-R4",
+      "requirementNumber": "REQ0008",
+      "trackerStatus": "Done",
+      "trackerDone": true,
+      "trackerProgress": 100,
+      "priority": "Medium",
+      "emptyDescription": false,
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceClassification": "partial",
+      "confidence": "medium",
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "Inventory “assumed fixed in port” — local setup uses `LocalSetupScreen` with `data-testid=\"start-match\"`; no test asserting buttons never cover name fields.",
+      "implementationRefs": [
+        "src/App.jsx:4625-5088 LocalSetupScreen — Create Pass the Phone Game / start-match"
+      ],
+      "testRefs": [
+        "tests/e2e/playwright/martin-smoke.spec.js:26-27 — click Play, expect getByTestId(\"start-match\")"
+      ],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "REQ0005",
+        "REQ0008"
+      ],
+      "nextAction": "Playwright viewport matrix: assert setup fields visible above docked buttons (REQ0005 / ENHC0025).",
+      "checklistTotal": 0,
+      "checklistDone": 0
+    },
+    {
+      "jubbaWorldId": "1d87553c-da51-4f44-8be3-ce9fc93593fe",
+      "number": "DFCT0004",
+      "type": "defect",
+      "title": "Game mode screen lost graphics; showed Hot Seat twice; tiny icons; black host frame",
+      "externalRef": "seed:pants-on-fire:pof-def-9",
+      "requirementRef": "seed:pants-on-fire:pof-R4",
+      "requirementNumber": "REQ0008",
+      "trackerStatus": "In progress",
+      "trackerDone": false,
+      "trackerProgress": 0,
+      "priority": "Medium",
+      "emptyDescription": false,
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceClassification": "partial",
+      "confidence": "medium",
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "`RoundTypeChoiceGrid` (4033-4095) + screen branch `screen === \"round-type-choice\"` (10899-10922); duplicate Hot Seat / missing art not asserted in tests — tracker In progress.",
+      "implementationRefs": [
+        "src/App.jsx:4033-4095 RoundTypeChoiceGrid — data-testid=\"round-type-choice-grid\", data-testid={`round-type-${type.id}`}",
+        "src/App.jsx:10899-10922 round-type-choice screen + onSelectRoundType"
+      ],
+      "testRefs": [
+        "tests/e2e/playwright/mobile-bundled-dist-smoke.spec.js — forEach data-testid round-type-* / icon"
+      ],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "REQ0008",
+        "STRY0007"
+      ],
+      "nextAction": "Visual E2E: assert ≥N distinct round-type ids visible; device pass if graphics loss reported (REQ0008).",
+      "checklistTotal": 0,
+      "checklistDone": 0
+    },
+    {
+      "jubbaWorldId": "3da0eae0-24d2-4d30-8176-2d1256bbfd35",
+      "number": "DFCT0005",
+      "type": "defect",
+      "title": "Host intro off-screen, gap and repeating background; lines too slow",
+      "externalRef": "seed:pants-on-fire:pof-def-8",
+      "requirementRef": "seed:pants-on-fire:pof-R4",
+      "requirementNumber": "REQ0008",
+      "trackerStatus": "In progress",
+      "trackerDone": false,
+      "trackerProgress": 50,
+      "priority": "Medium",
+      "emptyDescription": false,
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceClassification": "partial",
+      "confidence": "medium",
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "Host intro: `HostIntroScreen` uses `useHostSpeechAutoAdvance` + `HOST_DIALOGUE_TIMINGS.roundIntroAdvanceMs` fallback; “too slow” is subjective — not metered in CI.",
+      "implementationRefs": [
+        "src/App.jsx:2582-2675 HostIntroScreen — speechSteps, useHostSpeechAutoAdvance, data-testid=\"host-intro-skip\"",
+        "src/pof-components.css — .pof-host-dialogue (wallpaper via BrandedScreen/TopFrame)"
+      ],
+      "testRefs": [
+        "tests/e2e/playwright/martin-smoke.spec.js — may skip intro via host-intro-skip when present"
+      ],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "REQ0008"
+      ],
+      "nextAction": "Device: measure tap-to-next vs auto-advance; tune HOST_DIALOGUE_TIMINGS if needed.",
+      "checklistTotal": 0,
+      "checklistDone": 0
+    },
+    {
+      "jubbaWorldId": "65db65cf-529c-49a1-8ad8-cca10681118f",
+      "number": "DFCT0006",
+      "type": "defect",
+      "title": "Release APK crashes: \"Unable to load script\" (no JS bundle)",
+      "externalRef": "seed:pants-on-fire:pof-def-4",
+      "requirementRef": "seed:pants-on-fire:pof-R3",
+      "requirementNumber": "REQ0007",
+      "trackerStatus": "Done",
+      "trackerDone": true,
+      "trackerProgress": 100,
+      "priority": "Medium",
+      "emptyDescription": false,
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceClassification": "code_proven_partial",
+      "confidence": "medium",
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "Bundled web + `scripts/verifyAndroidEmbeddedBundle.mjs` exist; “Unable to load script” class of issues addressed via bundle staging — release APK not rebuilt in this audit.",
+      "implementationRefs": [
+        "scripts/buildMobileBundledWeb.mjs",
+        "scripts/stageAndroidBundledWeb.mjs",
+        "scripts/verifyAndroidEmbeddedBundle.mjs"
+      ],
+      "testRefs": [
+        "tests/e2e/playwright/mobile-bundled-dist-smoke.spec.js"
+      ],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "REQ0007",
+        "TEST0002"
+      ],
+      "nextAction": "Fresh assembleRelease + install smoke (TEST0002 linkage).",
+      "checklistTotal": 0,
+      "checklistDone": 0
+    },
+    {
+      "jubbaWorldId": "90ff82ac-5cc1-4542-bd89-418b8f266262",
+      "number": "DFCT0007",
+      "type": "defect",
+      "title": "Cards do not fill container; button wording overflows",
+      "externalRef": "seed:pants-on-fire:pof-def-1",
+      "requirementRef": "seed:pants-on-fire:pof-R4",
+      "requirementNumber": "REQ0008",
+      "trackerStatus": "Done",
+      "trackerDone": true,
+      "trackerProgress": 100,
+      "priority": "Medium",
+      "emptyDescription": false,
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceClassification": "partial",
+      "confidence": "medium",
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "Round/category tiles use flex + `ThemeArt` object-contain; inventory “uncertain” — mobile smoke checks broken images, not overflow per breakpoint.",
+      "implementationRefs": [
+        "src/App.jsx:4067-4091 RoundTypeChoiceGrid button + ThemeArt scale-[1.03]",
+        "src/App.jsx:4147-4165 CategoryChoiceGrid category tile + ThemeArt max-h clamps"
+      ],
+      "testRefs": [
+        "tests/e2e/playwright/mobile-bundled-dist-smoke.spec.js — expect(page.locator(\"img\")).not broken naturalWidth"
+      ],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "REQ0008"
+      ],
+      "nextAction": "Playwright overflow assert on small viewports or manual sweep (REQ0008 / ENHC0025).",
+      "checklistTotal": 0,
+      "checklistDone": 0
+    },
+    {
+      "jubbaWorldId": "a5f97243-a219-4997-8a67-21a6e7b53bfa",
+      "number": "DFCT0008",
+      "type": "defect",
+      "title": "Render error when starting a game",
+      "externalRef": "seed:pants-on-fire:pof-def-7",
+      "requirementRef": "seed:pants-on-fire:pof-R1",
+      "requirementNumber": "REQ0005",
+      "trackerStatus": "Done",
+      "trackerDone": true,
+      "trackerProgress": 100,
+      "priority": "Medium",
+      "emptyDescription": false,
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceClassification": "partial",
+      "confidence": "medium",
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "Inventory cites timer regression (historical) — not re-isolated here. Client path: martin-smoke Play → start-match; online timer paths in `useTimedChoice` + `NeonTimerBar` (CategoryChoiceGrid).",
+      "implementationRefs": [
+        "src/App.jsx:4108-4121 CategoryChoiceGrid — useTimedChoice + NeonTimerBar",
+        "src/App.jsx:4042-4057 RoundTypeChoiceGrid — useTimedChoice when onlineMode"
+      ],
+      "testRefs": [
+        "tests/e2e/playwright/martin-smoke.spec.js:26-27",
+        "tests/server/lobbyStore.test.mjs — lobby lifecycle (not same bug class)"
+      ],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "REQ0005",
+        "ENHC0025"
+      ],
+      "nextAction": "If recurrence: git bisect + minimal Playwright repro for offending timer.",
+      "checklistTotal": 0,
+      "checklistDone": 0
+    },
+    {
+      "jubbaWorldId": "b995ca04-59f0-4bad-bfdd-607285e58b81",
+      "number": "DFCT0009",
+      "type": "defect",
+      "title": "Blank navy screen on launch",
+      "externalRef": "seed:pants-on-fire:pof-def-5",
+      "requirementRef": "seed:pants-on-fire:pof-R3",
+      "requirementNumber": "REQ0007",
+      "trackerStatus": "Done",
+      "trackerDone": true,
+      "trackerProgress": 100,
+      "priority": "Medium",
+      "emptyDescription": false,
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceClassification": "code_proven_partial",
+      "confidence": "medium",
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "Public asset URLs + bundled web path handling (`src/lib/publicAssetUrl.js`); blank screen often WebView base URL — mobile smoke loads home.",
+      "implementationRefs": [
+        "src/lib/publicAssetUrl.js",
+        "src/main.jsx"
+      ],
+      "testRefs": [
+        "tests/e2e/playwright/mobile-bundled-dist-smoke.spec.js"
+      ],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "REQ0007"
+      ],
+      "nextAction": "Physical device file:// and play asset loader regression (REQ0007).",
+      "checklistTotal": 0,
+      "checklistDone": 0
+    },
+    {
+      "jubbaWorldId": "b199e452-04a0-4baa-ae15-50e17d255b44",
+      "number": "DFCT0010",
+      "type": "defect",
+      "title": "Unreadable body text (switched to Inter)",
+      "externalRef": "pof:def:body-text-unreadable",
+      "requirementRef": null,
+      "requirementNumber": null,
+      "trackerStatus": "Done",
+      "trackerDone": true,
+      "trackerProgress": 100,
+      "priority": "Medium",
+      "emptyDescription": true,
+      "acceptanceBasis": "inferred_from_title",
+      "acceptanceInferredFlag": true,
+      "evidenceClassification": "code_proven_partial",
+      "confidence": "high",
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "Body/UI copy uses Inter per `.pof-desc` and settings copy in `src/pof-components.css`.",
+      "implementationRefs": [
+        "src/pof-components.css:113-114 .pof-desc Inter"
+      ],
+      "testRefs": [],
+      "runtimeNotes": null,
+      "linksExistingTracker": [],
+      "nextAction": "None unless new body-text regression reported.",
+      "checklistTotal": 0,
+      "checklistDone": 0
+    },
+    {
+      "jubbaWorldId": "df18501b-6c75-40e6-8563-6d9b283c1c85",
+      "number": "DFCT0011",
+      "type": "defect",
+      "title": "Prompt card back not loading",
+      "externalRef": "pof:def:prompt-card-back",
+      "requirementRef": null,
+      "requirementNumber": null,
+      "trackerStatus": "Done",
+      "trackerDone": true,
+      "trackerProgress": 100,
+      "priority": "Medium",
+      "emptyDescription": true,
+      "acceptanceBasis": "inferred_from_title",
+      "acceptanceInferredFlag": true,
+      "evidenceClassification": "partial",
+      "confidence": "medium",
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "Card backs: `resolveCategoryChoiceCardArt` → `getRoundCardBackSrc`; tiles use `ThemeArt` — mobile smoke checks images load.",
+      "implementationRefs": [
+        "src/App.jsx:2577-2581 resolveCategoryChoiceCardArt",
+        "src/App.jsx:4159-4164 CategoryChoiceGrid ThemeArt for category icon"
+      ],
+      "testRefs": [
+        "tests/e2e/playwright/mobile-bundled-dist-smoke.spec.js — img naturalWidth assertions"
+      ],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "REQ0008"
+      ],
+      "nextAction": "Per-theme spot-check in dist-android APK (device).",
+      "checklistTotal": 0,
+      "checklistDone": 0
+    },
+    {
+      "jubbaWorldId": "d0706a8b-ca56-4bb2-bf31-fc595d02587d",
+      "number": "DFCT0012",
+      "type": "defect",
+      "title": "Category grid missing",
+      "externalRef": "pof:def:category-grid-missing",
+      "requirementRef": null,
+      "requirementNumber": null,
+      "trackerStatus": "Done",
+      "trackerDone": true,
+      "trackerProgress": 100,
+      "priority": "Medium",
+      "emptyDescription": true,
+      "acceptanceBasis": "inferred_from_title",
+      "acceptanceInferredFlag": true,
+      "evidenceClassification": "code_proven_partial",
+      "confidence": "high",
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "`CategoryChoiceGrid` + `data-testid=\"category-choice-grid\"` implements category grid.",
+      "implementationRefs": [
+        "src/App.jsx:4097-4165 CategoryChoiceGrid"
+      ],
+      "testRefs": [
+        "tests/e2e/playwright/martin-smoke.spec.js — reaches rules and round flow"
+      ],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "ENHC0011",
+        "REQ0005"
+      ],
+      "nextAction": "Online mode category timer assert if needed (REQ0009).",
+      "checklistTotal": 0,
+      "checklistDone": 0
+    },
+    {
+      "jubbaWorldId": "3bdec05e-5285-4441-8303-c678679e94b6",
+      "number": "DFCT0013",
+      "type": "defect",
+      "title": "Text overflow in buttons/cards",
+      "externalRef": "pof:def:text-overflow",
+      "requirementRef": null,
+      "requirementNumber": null,
+      "trackerStatus": "Done",
+      "trackerDone": true,
+      "trackerProgress": 100,
+      "priority": "Medium",
+      "emptyDescription": true,
+      "acceptanceBasis": "inferred_from_title",
+      "acceptanceInferredFlag": true,
+      "evidenceClassification": "partial",
+      "confidence": "medium",
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "Vote chips and buttons use overflow-wrap in CSS (`pof-vote-chip`); full matrix not enumerated.",
+      "implementationRefs": [
+        "src/pof-components.css:68-69 pof-vote-chip"
+      ],
+      "testRefs": [],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "ENHC0025"
+      ],
+      "nextAction": "Long-label regression tests (ENHC0025).",
+      "checklistTotal": 0,
+      "checklistDone": 0
+    },
+    {
+      "jubbaWorldId": "9bd1d02e-9818-4e06-bc1d-80ccddb25974",
+      "number": "DFCT0014",
+      "type": "defect",
+      "title": "Wallpaper repeating",
+      "externalRef": "pof:def:wallpaper-repeating",
+      "requirementRef": null,
+      "requirementNumber": null,
+      "trackerStatus": "Done",
+      "trackerDone": true,
+      "trackerProgress": 100,
+      "priority": "Medium",
+      "emptyDescription": true,
+      "acceptanceBasis": "inferred_from_title",
+      "acceptanceInferredFlag": true,
+      "evidenceClassification": "partial",
+      "confidence": "medium",
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "Wallpapers: `BrandedScreen` uses `backgroundImage` from props; neon UI refs in `src/data/uiNeonAssets.js`. Repeating-tile class of bug needs device screenshot.",
+      "implementationRefs": [
+        "src/App.jsx:4018-4023 BrandedScreen wallpaper div backgroundRepeat no-repeat",
+        "src/data/uiNeonAssets.js — UI_WALLPAPER_* exports"
+      ],
+      "testRefs": [],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "REQ0008"
+      ],
+      "nextAction": "Device visual QA per theme (repeating artifact).",
+      "checklistTotal": 0,
+      "checklistDone": 0
+    },
+    {
+      "jubbaWorldId": "83a7007c-0c7d-4984-b519-a6df4ec6fde1",
+      "number": "DFCT0015",
+      "type": "defect",
+      "title": "Host missing at reveal intro (black frame) + unreadable caption",
+      "externalRef": "pof:def:reveal-intro-host",
+      "requirementRef": null,
+      "requirementNumber": null,
+      "trackerStatus": "In progress",
+      "trackerDone": false,
+      "trackerProgress": 0,
+      "priority": "Medium",
+      "emptyDescription": true,
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceClassification": "partial",
+      "confidence": "medium",
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "Reveal host visual: `RevealPromptScreen` / host layers — black frame not reproduced in headless; needs device.",
+      "implementationRefs": [
+        "src/App.jsx:2582-2700 HostIntroScreen — ThemeHostVisual + caption panel data-testid=\"host-intro-caption\""
+      ],
+      "testRefs": [],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "REQ0005"
+      ],
+      "nextAction": "Device repro + screen recording (DFCT0028 cluster).",
+      "checklistTotal": 0,
+      "checklistDone": 0
+    },
+    {
+      "jubbaWorldId": "c7503808-d9b2-4337-9771-532d0aeaffaa",
+      "number": "DFCT0016",
+      "type": "defect",
+      "title": "Category choice screen clipped at bottom (last row of tiles cut off)",
+      "externalRef": "pof:def:category-screen-clipped",
+      "requirementRef": null,
+      "requirementNumber": null,
+      "trackerStatus": "In progress",
+      "trackerDone": false,
+      "trackerProgress": 0,
+      "priority": "Medium",
+      "emptyDescription": true,
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceClassification": "code_proven_partial",
+      "confidence": "medium",
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "Category scroll container + safe-area bottom padding (`CategoryChoiceGrid` style + `category-choice-scroll`).",
+      "implementationRefs": [
+        "src/App.jsx:4124-4130 category-choice-scroll paddingBottom safe-area"
+      ],
+      "testRefs": [],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "ENHC0011"
+      ],
+      "nextAction": "Verify last row visible on small phones + landscape (device).",
+      "checklistTotal": 0,
+      "checklistDone": 0
+    },
+    {
+      "jubbaWorldId": "66a2390c-a5e4-43f5-8ce0-c24044103e6b",
+      "number": "DFCT0017",
+      "type": "defect",
+      "title": "Only 5 categories showing on category choice screen",
+      "externalRef": "pof:def:only-5-categories",
+      "requirementRef": null,
+      "requirementNumber": null,
+      "trackerStatus": "In progress",
+      "trackerDone": false,
+      "trackerProgress": 0,
+      "priority": "Medium",
+      "emptyDescription": true,
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceClassification": "partial",
+      "confidence": "medium",
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "`data-category-count` reflects `categoryOptions.length`; six-category enhancement tracked separately (ENHC0011).",
+      "implementationRefs": [
+        "src/App.jsx:4133-4136 data-category-count"
+      ],
+      "testRefs": [],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "ENHC0011"
+      ],
+      "nextAction": "Assert six categories seeded for mode under test (REQ0005).",
+      "checklistTotal": 0,
+      "checklistDone": 0
+    },
+    {
+      "jubbaWorldId": "ae239065-6158-4a65-b15a-5738de677344",
+      "number": "DFCT0018",
+      "type": "defect",
+      "title": "'Choose for me' button clips over top row of category tiles",
+      "externalRef": "pof:def:choose-for-me-clip",
+      "requirementRef": null,
+      "requirementNumber": null,
+      "trackerStatus": "In progress",
+      "trackerDone": false,
+      "trackerProgress": 0,
+      "priority": "Medium",
+      "emptyDescription": true,
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceClassification": "partial",
+      "confidence": "medium",
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "Choose-for-me bar is fixed header `data-testid=\"category-choice-random-bar\"` above scroll — clip risk on short viewports.",
+      "implementationRefs": [
+        "src/App.jsx:10961-10977 category-choice-random-bar + data-testid=\"choose-category-random\"",
+        "src/App.jsx:10978-10986 CategoryChoiceGrid wrapper"
+      ],
+      "testRefs": [],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "ENHC0019"
+      ],
+      "nextAction": "Playwright small viewport: assert bar + first category row both visible (ENHC0019).",
+      "checklistTotal": 0,
+      "checklistDone": 0
+    },
+    {
+      "jubbaWorldId": "8967129f-d62e-4d20-addd-3cc26ff6dd1d",
+      "number": "DFCT0019",
+      "type": "defect",
+      "title": "Debug APK: Unable to load script (JS bundle not embedded)",
+      "externalRef": "POF-BUG-001",
+      "requirementRef": null,
+      "requirementNumber": null,
+      "trackerStatus": "Done",
+      "trackerDone": true,
+      "trackerProgress": 100,
+      "priority": "Medium",
+      "emptyDescription": false,
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceClassification": "code_proven_partial",
+      "confidence": "medium",
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "Debug embed path: same bundle pipeline as DFCT0006; CI mentions in inventory.",
+      "implementationRefs": [
+        "scripts/buildMobileBundledWeb.mjs",
+        ".github/workflows/android-debug-apk.yml"
+      ],
+      "testRefs": [
+        "tests/e2e/playwright/mobile-bundled-dist-smoke.spec.js"
+      ],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "TEST0002",
+        "STRY0003"
+      ],
+      "nextAction": "CI artifact install smoke (TEST0002).",
+      "checklistTotal": 0,
+      "checklistDone": 0
+    },
+    {
+      "jubbaWorldId": "e2e51302-4f33-4de5-989b-3375dbb6998b",
+      "number": "DFCT0020",
+      "type": "defect",
+      "title": "CARD_FIRE_FLAME_SOURCES undefined after Grill Em removal",
+      "externalRef": "POF-BUG-002",
+      "requirementRef": null,
+      "requirementNumber": null,
+      "trackerStatus": "Done",
+      "trackerDone": true,
+      "trackerProgress": 100,
+      "priority": "Medium",
+      "emptyDescription": false,
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceClassification": "code_proven_partial",
+      "confidence": "high",
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "`CARD_FIRE_FLAME_SOURCES` defined and used in App.jsx (Grill removal fix).",
+      "implementationRefs": [
+        "src/App.jsx:319 CARD_FIRE_FLAME_SOURCES",
+        "src/App.jsx:2370 resolveBundledAssetSrc"
+      ],
+      "testRefs": [],
+      "runtimeNotes": null,
+      "linksExistingTracker": [],
+      "nextAction": "None unless flame assets change.",
+      "checklistTotal": 0,
+      "checklistDone": 0
+    },
+    {
+      "jubbaWorldId": "17575f55-df51-43b8-85e8-e47bad29023c",
+      "number": "DFCT0021",
+      "type": "defect",
+      "title": "Android build: missing fonts and graphics, leftover 18+ logo",
+      "externalRef": "POF-BUG-003",
+      "requirementRef": null,
+      "requirementNumber": null,
+      "trackerStatus": "Done",
+      "trackerDone": true,
+      "trackerProgress": 100,
+      "priority": "Medium",
+      "emptyDescription": false,
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceClassification": "partial",
+      "confidence": "medium",
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "Fonts loaded in mobile smoke (`PoF Display`, `Vintage Cowboy`); 18+ toggle removed per ENHC0009 — grep settings.",
+      "implementationRefs": [
+        "tests/e2e/playwright/mobile-bundled-dist-smoke.spec.js:assertGameFontsLoaded"
+      ],
+      "testRefs": [
+        "tests/e2e/playwright/mobile-bundled-dist-smoke.spec.js"
+      ],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "ENHC0009",
+        "REQ0007"
+      ],
+      "nextAction": "Physical APK visual QA for leftover 18+ branding.",
+      "checklistTotal": 0,
+      "checklistDone": 0
+    },
+    {
+      "jubbaWorldId": "8b3b3fd0-2d91-4063-a1d9-0a4c6c1749ca",
+      "number": "DFCT0022",
+      "type": "defect",
+      "title": "Home screen: top icons too close to top edge, unequal edge spacing vs bottom buttons",
+      "externalRef": "POF-UI-001",
+      "requirementRef": null,
+      "requirementNumber": null,
+      "trackerStatus": "Done",
+      "trackerDone": true,
+      "trackerProgress": 0,
+      "priority": "Medium",
+      "emptyDescription": true,
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceClassification": "partial",
+      "confidence": "medium",
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "Home uses `--pof-safe-top/bottom` padding on shell (`NeonHomeScreen`); exact balance vs bottom CTAs is device-dependent.",
+      "implementationRefs": [
+        "src/components/neon/NeonHomeScreen.jsx:145-146 paddingTop/Bottom max(... var(--pof-safe-*) ...)",
+        "src/pof-components.css:3-6 --pof-safe-* tokens"
+      ],
+      "testRefs": [],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "DFCT0028"
+      ],
+      "nextAction": "Device screenshot matrix vs design tokens (DFCT0028 cluster).",
+      "checklistTotal": 0,
+      "checklistDone": 0
+    },
+    {
+      "jubbaWorldId": "0682576e-15d0-4de3-9dbb-e07e4c112c59",
+      "number": "DFCT0023",
+      "type": "defect",
+      "title": "Achievement toast never dismisses: add X close and auto-hide",
+      "externalRef": "POF-UI-002",
+      "requirementRef": null,
+      "requirementNumber": null,
+      "trackerStatus": "Done",
+      "trackerDone": true,
+      "trackerProgress": 0,
+      "priority": "Medium",
+      "emptyDescription": true,
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceClassification": "code_proven_partial",
+      "confidence": "high",
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "Achievement toast has dismiss `X` and `data-testid=\"achievement-unlock-toast\"` (addresses never-dismiss report).",
+      "implementationRefs": [
+        "src/App.jsx:11614-11637 achievement unlock toast + dismiss button"
+      ],
+      "testRefs": [],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "ENHC0025"
+      ],
+      "nextAction": "Playwright: trigger toast via `pof-e2e-achievement-toast` event if auto-hide timing needed.",
+      "checklistTotal": 0,
+      "checklistDone": 0
+    },
+    {
+      "jubbaWorldId": "fd4ed690-f8f9-449a-865a-9b581d587d3f",
+      "number": "DFCT0024",
+      "type": "defect",
+      "title": "Chain Reaction host screen font mismatch; countdown uses old bold font (3 hard to read)",
+      "externalRef": "POF-UI-003",
+      "requirementRef": null,
+      "requirementNumber": null,
+      "trackerStatus": "Done",
+      "trackerDone": true,
+      "trackerProgress": 0,
+      "priority": "Medium",
+      "emptyDescription": true,
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceClassification": "partial",
+      "confidence": "medium",
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "Chain rounds branch in `getRoundScreenCopy` / reveal copy; countdown typography not isolated — compare NeonTimerBar vs host intro caption styling.",
+      "implementationRefs": [
+        "src/App.jsx:1121-1128 getRoundScreenCopy chain branch",
+        "src/App.jsx:4054-4056 NeonTimerBar in RoundTypeChoiceGrid",
+        "src/pof-components.css:84-108 heading/body font rules"
+      ],
+      "testRefs": [],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "STRY0010"
+      ],
+      "nextAction": "Device visual: Chain host vs selection timer numerals (STRY0010).",
+      "checklistTotal": 0,
+      "checklistDone": 0
+    },
+    {
+      "jubbaWorldId": "deeea0d0-2577-4e04-9854-d7b6e6fd05ee",
+      "number": "DFCT0025",
+      "type": "defect",
+      "title": "Host voice lines not playing; captions should sync to audio timing",
+      "externalRef": "POF-BUG-004",
+      "requirementRef": null,
+      "requirementNumber": null,
+      "trackerStatus": "Done",
+      "trackerDone": true,
+      "trackerProgress": 0,
+      "priority": "Medium",
+      "emptyDescription": true,
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceClassification": "partial",
+      "confidence": "medium",
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "Host audio files under `public/assets/audio/host/` + host line maps; sync to captions not asserted in tests.",
+      "implementationRefs": [
+        "src/data/hostVoiceLineMap.js",
+        "public/assets/audio/host/"
+      ],
+      "testRefs": [],
+      "runtimeNotes": "No automated assertion for audio/caption sync.",
+      "linksExistingTracker": [
+        "STRY0019"
+      ],
+      "nextAction": "Manual ear + waveform check or add ava media test stub (deferred).",
+      "checklistTotal": 0,
+      "checklistDone": 0
+    },
+    {
+      "jubbaWorldId": "769bd160-2789-47ce-9b8f-f208395eedd1",
+      "number": "DFCT0026",
+      "type": "defect",
+      "title": "Missing host voice stingers for Double Take (pairs) and Two Truths",
+      "externalRef": "POF-BUG-005",
+      "requirementRef": null,
+      "requirementNumber": null,
+      "trackerStatus": "Done",
+      "trackerDone": true,
+      "trackerProgress": 0,
+      "priority": "Medium",
+      "emptyDescription": false,
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceClassification": "partial",
+      "confidence": "medium",
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "Inventory: missing MP3s for pairs/twotruths; data-driven host lines — verify file glob vs map.",
+      "implementationRefs": [
+        "src/data/hostVoiceLineMap.js"
+      ],
+      "testRefs": [],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "STRY0019",
+        "TEST0004"
+      ],
+      "nextAction": "Add asset presence test or fill stingers (STRY0019).",
+      "checklistTotal": 0,
+      "checklistDone": 0
+    },
+    {
+      "jubbaWorldId": "1221e8c0-c746-4d05-8d72-844302ef338f",
+      "number": "DFCT0027",
+      "type": "defect",
+      "title": "Font consistency audit across every game mode and round screen",
+      "externalRef": "POF-UI-004",
+      "requirementRef": null,
+      "requirementNumber": null,
+      "trackerStatus": "Done",
+      "trackerDone": true,
+      "trackerProgress": 0,
+      "priority": "Medium",
+      "emptyDescription": true,
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceClassification": "partial",
+      "confidence": "medium",
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "Tracker Done; font system documented in `pof-components.css` — full per-mode audit not automated (ENHC0024 partial).",
+      "implementationRefs": [
+        "src/pof-components.css:84-114",
+        "ENHC0024 tracker"
+      ],
+      "testRefs": [],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "ENHC0024",
+        "CONV-REQ-ALL-CAPS"
+      ],
+      "nextAction": "Complete div-title CAPS (ENHC0024) + visual matrix.",
+      "checklistTotal": 0,
+      "checklistDone": 0
+    },
+    {
+      "jubbaWorldId": "bf62a1c2-aa94-40f0-9c0a-174ed837461a",
+      "number": "DFCT0028",
+      "type": "defect",
+      "title": "Safe-area insets: content under S24 Ultra status/nav bars; general big gaps and edge clipping",
+      "externalRef": null,
+      "requirementRef": null,
+      "requirementNumber": null,
+      "trackerStatus": "In progress",
+      "trackerDone": false,
+      "trackerProgress": 0,
+      "priority": "Medium",
+      "emptyDescription": false,
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceClassification": "blocked_device_external",
+      "confidence": "high",
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "Samsung S24 Ultra report in tracker — not reproduced in Linux CI; safe-area vars exist but device proof missing.",
+      "implementationRefs": [
+        "src/pof-components.css:3-6 --pof-safe-*",
+        "src/lib/safeAreaInsets.js"
+      ],
+      "testRefs": [],
+      "runtimeNotes": "No S24 in audit environment.",
+      "linksExistingTracker": [
+        "DFCT0029",
+        "DFCT0030",
+        "DFCT0031",
+        "DFCT0032",
+        "DFCT0033",
+        "DFCT0034"
+      ],
+      "nextAction": "Re-test on physical S24 after CSS pass; link DFCT0029-0034 cluster.",
+      "checklistTotal": 0,
+      "checklistDone": 0
+    },
+    {
+      "jubbaWorldId": "8250c4fb-f964-4393-afe0-9b8b3cdae617",
+      "number": "DFCT0029",
+      "type": "defect",
+      "title": "Empty strip between host card and intro text",
+      "externalRef": null,
+      "requirementRef": null,
+      "requirementNumber": null,
+      "trackerStatus": "In progress",
+      "trackerDone": false,
+      "trackerProgress": 0,
+      "priority": "Medium",
+      "emptyDescription": false,
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceClassification": "blocked_device_external",
+      "confidence": "medium",
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "Layout gap between host card and intro text — device-only verification; code path: `HostIntroScreen` + `TopFrame`.",
+      "implementationRefs": [
+        "src/App.jsx:2582-2674 HostIntroScreen layout",
+        "src/App.jsx:10993-11008 host-intro screen branch + onContinue"
+      ],
+      "testRefs": [],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "DFCT0028"
+      ],
+      "nextAction": "Device capture + CSS fix; grouped with DFCT0028.",
+      "checklistTotal": 0,
+      "checklistDone": 0
+    },
+    {
+      "jubbaWorldId": "21e70f2d-88a7-4e1a-ba6e-8354bccbd11e",
+      "number": "DFCT0030",
+      "type": "defect",
+      "title": "Clipped pill at top-left on every screen",
+      "externalRef": null,
+      "requirementRef": null,
+      "requirementNumber": null,
+      "trackerStatus": "In progress",
+      "trackerDone": false,
+      "trackerProgress": 0,
+      "priority": "Medium",
+      "emptyDescription": false,
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceClassification": "blocked_device_external",
+      "confidence": "medium",
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "Category header uses `pl-14 sm:pl-0` for round-owner pill — may clip on some notches; needs device.",
+      "implementationRefs": [
+        "src/App.jsx:10932-10943 category-choice-header — pl-14 sm:pl-0"
+      ],
+      "testRefs": [],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "DFCT0028"
+      ],
+      "nextAction": "Device: confirm pill + h2 alignment; adjust safe-area padding (DFCT0028).",
+      "checklistTotal": 0,
+      "checklistDone": 0
+    },
+    {
+      "jubbaWorldId": "d1a6e319-459c-4257-a74d-bd8e13740d89",
+      "number": "DFCT0031",
+      "type": "defect",
+      "title": "Use persona avatars instead of initials/broken image on scoreboard, results and tally",
+      "externalRef": null,
+      "requirementRef": null,
+      "requirementNumber": null,
+      "trackerStatus": "In progress",
+      "trackerDone": false,
+      "trackerProgress": 0,
+      "priority": "Medium",
+      "emptyDescription": false,
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceClassification": "blocked_device_external",
+      "confidence": "medium",
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "`PlayerPersonaAvatar` on results/scoreboard — broken image falls back to initials.",
+      "implementationRefs": [
+        "src/App.jsx:6383-6389 ResultsScreen summary row — PlayerPersonaAvatar",
+        "src/App.jsx:6433-6441 Vote Tally row — PlayerPersonaAvatar",
+        "src/App.jsx:6471-6477 Scoreboard — PlayerPersonaAvatar"
+      ],
+      "testRefs": [],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "DFCT0028",
+        "STRY0026"
+      ],
+      "nextAction": "Device QA: broken personaImageSrc vs intended art (STRY0026).",
+      "checklistTotal": 0,
+      "checklistDone": 0
+    },
+    {
+      "jubbaWorldId": "ac34ca79-b80f-40c8-a9e6-45705b5e831d",
+      "number": "DFCT0032",
+      "type": "defect",
+      "title": "Vote tally/results panels have large empty space",
+      "externalRef": null,
+      "requirementRef": null,
+      "requirementNumber": null,
+      "trackerStatus": "In progress",
+      "trackerDone": false,
+      "trackerProgress": 0,
+      "priority": "Medium",
+      "emptyDescription": false,
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceClassification": "blocked_device_external",
+      "confidence": "medium",
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "Vote tally UI in `ResultsScreen` details stage — whitespace subjective on device.",
+      "implementationRefs": [
+        "src/App.jsx:6419-6453 Vote Tally GlassPanel + sortedVoteRows map"
+      ],
+      "testRefs": [],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "DFCT0028"
+      ],
+      "nextAction": "Device UI polish (DFCT0028 batch).",
+      "checklistTotal": 0,
+      "checklistDone": 0
+    },
+    {
+      "jubbaWorldId": "c3ed214b-6a43-43b9-9b3a-4968cd99c822",
+      "number": "DFCT0033",
+      "type": "defect",
+      "title": "Final Accusation reveal off-centre, text overflow, broken avatar, wrong font",
+      "externalRef": null,
+      "requirementRef": null,
+      "requirementNumber": null,
+      "trackerStatus": "In progress",
+      "trackerDone": false,
+      "trackerProgress": 0,
+      "priority": "Medium",
+      "emptyDescription": false,
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceClassification": "blocked_device_external",
+      "confidence": "medium",
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "`FinalAccusationReveal` (inline in App.jsx) — host + announcement bubble + liar badges.",
+      "implementationRefs": [
+        "src/App.jsx:6187-6281 Final accusation block — ThemeHostVisual, announcement bubble, PlayerPersonaAvatar for liars"
+      ],
+      "testRefs": [],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "DFCT0028"
+      ],
+      "nextAction": "Device regression: centering/overflow on S24 (DFCT0028).",
+      "checklistTotal": 0,
+      "checklistDone": 0
+    },
+    {
+      "jubbaWorldId": "048c08e1-9295-41f3-8829-285058074cba",
+      "number": "DFCT0034",
+      "type": "defect",
+      "title": "Crash: ReferenceError theme is not defined when tapping Randomize personas (be03dd5)",
+      "externalRef": null,
+      "requirementRef": null,
+      "requirementNumber": null,
+      "trackerStatus": "In progress",
+      "trackerDone": false,
+      "trackerProgress": 0,
+      "priority": "Medium",
+      "emptyDescription": false,
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceClassification": "blocked_device_external",
+      "confidence": "high",
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "Randomize all personas: `randomizeAllPlayersForTheme` calls `buildRandomizedPlayerIdentity` — historical ReferenceError on device build be03dd5 not reproduced here.",
+      "implementationRefs": [
+        "src/App.jsx:4689-4702 randomizeAllPlayersForTheme",
+        "src/App.jsx:4815-4822 Button Randomize all personas for this theme",
+        "src/App.jsx:631-660 buildRandomizedPlayerIdentity"
+      ],
+      "testRefs": [],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "DFCT0028",
+        "ENHC0025"
+      ],
+      "nextAction": "Repro on reported build/device + add regression test (ENHC0025).",
+      "checklistTotal": 0,
+      "checklistDone": 0
+    },
+    {
+      "jubbaWorldId": "26266da1-7409-4dcb-bf65-59de8282944f",
+      "number": "DFCT0035",
+      "type": "defect",
+      "title": "Security: resume rate limiter not attached; public round reads unthrottled",
+      "externalRef": "POF-BUG-006",
+      "requirementRef": null,
+      "requirementNumber": null,
+      "trackerStatus": "Done",
+      "trackerDone": true,
+      "trackerProgress": 100,
+      "priority": "High",
+      "emptyDescription": false,
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceClassification": "verified",
+      "confidence": "high",
+      "evidenceSource": "repo_read_and_server_tests",
+      "methodologyNote": "Read server/lobbyServer.js for resumeLimiter on POST /api/lobbies/:code/resume and lookupLimiter on GET /api/lobbies/:code, /round, /round/private; tests/server/lobbyHttpRateLimit.test.mjs exercises rate limits.",
+      "implementationRefs": [
+        "server/lobbyServer.js:145-147 resumeLimiter definition",
+        "server/lobbyServer.js:545 resume route uses resumeLimiter",
+        "server/lobbyServer.js:489 GET /api/lobbies/:code uses lookupLimiter",
+        "server/lobbyServer.js:731 GET /api/lobbies/:code/round uses lookupLimiter",
+        "server/lobbyServer.js:759 GET /api/lobbies/:code/round/private uses lookupLimiter"
+      ],
+      "testRefs": [
+        "tests/server/lobbyHttpRateLimit.test.mjs — lookup and resume limits",
+        "tests/server/rateLimit.test.mjs"
+      ],
+      "runtimeNotes": "Automated tests only (no live Redis). npm run test:server passes in audit rerun 2026-11-06.",
+      "linksExistingTracker": [],
+      "nextAction": "None for security fix; optional staging soak test under load.",
+      "checklistTotal": 0,
+      "checklistDone": 0
+    },
+    {
+      "jubbaWorldId": "f6b930ae-968d-4ab4-a370-8b98a3bf11d4",
+      "number": "DFCT0036",
+      "type": "defect",
+      "title": "Docs: AGENTS.md claimed no tests",
+      "externalRef": "POF-BUG-007",
+      "requirementRef": null,
+      "requirementNumber": null,
+      "trackerStatus": "Done",
+      "trackerDone": true,
+      "trackerProgress": 100,
+      "priority": "Medium",
+      "emptyDescription": false,
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceClassification": "partial",
+      "confidence": "high",
+      "evidenceSource": "repo_read",
+      "methodologyNote": "AGENTS.md documents npm test and Playwright optional; aligns with claim docs had no tests — now fixed but batch did not diff historical commit.",
+      "implementationRefs": [
+        "AGENTS.md:24-28 test commands"
+      ],
+      "testRefs": [],
+      "runtimeNotes": null,
+      "linksExistingTracker": [],
+      "nextAction": "Optional: cite commit 637fdfe from item description in tracker note.",
+      "checklistTotal": 0,
+      "checklistDone": 0
+    },
+    {
+      "jubbaWorldId": "5a50369b-8f55-4d24-b88a-1b0ed459373d",
+      "number": "DFCT0037",
+      "type": "defect",
+      "title": "Docs: README drift (env vars, file names, round types, What's Next)",
+      "externalRef": "POF-BUG-008",
+      "requirementRef": null,
+      "requirementNumber": null,
+      "trackerStatus": "Done",
+      "trackerDone": true,
+      "trackerProgress": 100,
+      "priority": "Medium",
+      "emptyDescription": false,
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceClassification": "code_proven_partial",
+      "confidence": "medium",
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "README updated in historical commits; spot-check: round types list in README vs App — not re-diffed line-for-line in batch 02.",
+      "implementationRefs": [
+        "README.md",
+        "docs/FEATURE_INVENTORY.md"
+      ],
+      "testRefs": [],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "DFCT0038",
+        "DFCT0039"
+      ],
+      "nextAction": "Automated doc drift check vs `ROUND_TYPE` list (optional).",
+      "checklistTotal": 0,
+      "checklistDone": 0
+    },
+    {
+      "jubbaWorldId": "d376828f-a4c5-4a6e-a0be-6349b73e3f80",
+      "number": "DFCT0038",
+      "type": "defect",
+      "title": "Docs: removed Grill 'Em still documented; new modes missing",
+      "externalRef": "POF-BUG-009",
+      "requirementRef": null,
+      "requirementNumber": null,
+      "trackerStatus": "Done",
+      "trackerDone": true,
+      "trackerProgress": 100,
+      "priority": "Medium",
+      "emptyDescription": false,
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceClassification": "code_proven_partial",
+      "confidence": "medium",
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "`FEATURE_INVENTORY.md` lists modes; Grill removal — grep confirms no CARD_FIRE_FLAME undefined.",
+      "implementationRefs": [
+        "docs/FEATURE_INVENTORY.md",
+        "README.md"
+      ],
+      "testRefs": [],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "DFCT0037"
+      ],
+      "nextAction": "Periodic doc review with release.",
+      "checklistTotal": 0,
+      "checklistDone": 0
+    },
+    {
+      "jubbaWorldId": "ca8aa2bd-cff1-4849-926b-845cce172880",
+      "number": "DFCT0039",
+      "type": "defect",
+      "title": "Docs: ~25 undocumented server routes; lobby/security docs inaccurate",
+      "externalRef": "POF-BUG-010",
+      "requirementRef": null,
+      "requirementNumber": null,
+      "trackerStatus": "Done",
+      "trackerDone": true,
+      "trackerProgress": 100,
+      "priority": "Medium",
+      "emptyDescription": false,
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceClassification": "code_proven_partial",
+      "confidence": "high",
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "`LOBBY_ARCHITECTURE.md` inventories routes; server mounts match high-level list.",
+      "implementationRefs": [
+        "docs/LOBBY_ARCHITECTURE.md",
+        "server/lobbyServer.js"
+      ],
+      "testRefs": [
+        "tests/server/lobbyHttpRateLimit.test.mjs"
+      ],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "STRY0002"
+      ],
+      "nextAction": "Diff doc vs `app.get/post` list when routes added.",
+      "checklistTotal": 0,
+      "checklistDone": 0
+    },
+    {
+      "jubbaWorldId": "9b0b3376-007a-4dba-90b3-3a67b144d0a5",
+      "number": "DFCT0040",
+      "type": "defect",
+      "title": "Docs: CI overstated in BUILD_PIPELINE/TEST_STRATEGY/TECHNICAL_DEBT",
+      "externalRef": "POF-BUG-011",
+      "requirementRef": null,
+      "requirementNumber": null,
+      "trackerStatus": "Done",
+      "trackerDone": true,
+      "trackerProgress": 100,
+      "priority": "Medium",
+      "emptyDescription": false,
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceClassification": "partial",
+      "confidence": "high",
+      "evidenceSource": "repo_read",
+      "methodologyNote": "npm-test.yml exists and runs npm ci + npm test on path-filtered PRs/pushes; AGENTS.md line 28 still says workflows do not run npm test — internal doc drift vs workflow.",
+      "implementationRefs": [
+        ".github/workflows/npm-test.yml — job unit-tests runs npm test",
+        "AGENTS.md:28 claims workflows do not currently run npm test"
+      ],
+      "testRefs": [],
+      "runtimeNotes": null,
+      "linksExistingTracker": [],
+      "nextAction": "Reconcile AGENTS.md CI bullet with npm-test.yml (single source of truth).",
+      "checklistTotal": 0,
+      "checklistDone": 0
+    },
+    {
+      "jubbaWorldId": "d68e21a3-d30e-4a90-93ec-2c759d8c7d0e",
+      "number": "DFCT0041",
+      "type": "defect",
+      "title": "Docs: minor drift fixes across several docs",
+      "externalRef": "POF-BUG-012",
+      "requirementRef": null,
+      "requirementNumber": null,
+      "trackerStatus": "Done",
+      "trackerDone": true,
+      "trackerProgress": 100,
+      "priority": "Low",
+      "emptyDescription": false,
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceClassification": "partial",
+      "confidence": "medium",
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "“Minor slips” not enumerated — sibling doc defects have file anchors (DFCT0037-39); this row stays open-ended.",
+      "implementationRefs": [
+        "README.md — round list / env (spot-check only)",
+        "docs/FEATURE_INVENTORY.md — mode inventory",
+        "docs/LOBBY_ARCHITECTURE.md — route list"
+      ],
+      "testRefs": [],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "DFCT0039"
+      ],
+      "nextAction": "Toolsmith pass: diff README FEATURE_INVENTORY LOBBY_ARCHITECTURE vs server route table.",
+      "checklistTotal": 0,
+      "checklistDone": 0
+    },
+    {
+      "jubbaWorldId": "fded6ce4-d9d6-4d07-8d38-b915888f7eb3",
+      "number": "DFCT0042",
+      "type": "defect",
+      "title": "Any player could advance the round phase, not just the host",
+      "externalRef": "POF-BUG-013",
+      "requirementRef": null,
+      "requirementNumber": null,
+      "trackerStatus": "Done",
+      "trackerDone": true,
+      "trackerProgress": 100,
+      "priority": "High",
+      "emptyDescription": false,
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceClassification": "verified",
+      "confidence": "high",
+      "evidenceSource": "repo_read_and_server_tests",
+      "methodologyNote": "advanceRoundPhase returns host-only; HTTP maps to 403; covered by tests/server/lobbyStore.test.mjs.",
+      "implementationRefs": [
+        "server/storage/lobbyStore.js:926-994 advanceRoundPhase — host-only at 940",
+        "server/lobbyServer.js:857-922 POST /api/lobbies/:code/round/phase/advance — 403 host-only at 901-903"
+      ],
+      "testRefs": [
+        "tests/server/lobbyStore.test.mjs — advanceRoundPhase is host-only after lobby started"
+      ],
+      "runtimeNotes": "Unit tests only; no multi-client browser run in this batch.",
+      "linksExistingTracker": [],
+      "nextAction": "Optional Playwright online two-player regression.",
+      "checklistTotal": 0,
+      "checklistDone": 0
+    },
+    {
+      "jubbaWorldId": "8fe4dafe-ce16-4c47-9318-6e420bd01bf1",
+      "number": "DFCT0043",
+      "type": "defect",
+      "title": "Re-review of 637fdfe: 8 minor doc slips",
+      "externalRef": "POF-BUG-014",
+      "requirementRef": null,
+      "requirementNumber": null,
+      "trackerStatus": "Done",
+      "trackerDone": true,
+      "trackerProgress": 100,
+      "priority": "Low",
+      "emptyDescription": false,
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceClassification": "partial",
+      "confidence": "high",
+      "evidenceSource": "repo_read",
+      "methodologyNote": "Description cites lobbyHttpRateLimit.test.mjs; file exists and exercises HTTP-layer limits.",
+      "implementationRefs": [
+        "tests/server/lobbyHttpRateLimit.test.mjs"
+      ],
+      "testRefs": [
+        "tests/server/lobbyHttpRateLimit.test.mjs"
+      ],
+      "runtimeNotes": null,
+      "linksExistingTracker": [],
+      "nextAction": "Match each bullet in description to a test name if parent needs line-level proof.",
+      "checklistTotal": 0,
+      "checklistDone": 0
+    },
+    {
+      "jubbaWorldId": "09b4c6cc-a58a-44d7-b183-bbb7999019da",
+      "number": "ENHC0001",
+      "type": "enhancement",
+      "title": "Custom \"Pants on Fire\" font (colour, outline and Narrow variants)",
+      "externalRef": "seed:pants-on-fire:pof-enh-12",
+      "requirementRef": "seed:pants-on-fire:pof-R4",
+      "requirementNumber": "REQ0008",
+      "trackerStatus": "In progress",
+      "trackerDone": false,
+      "trackerProgress": 0,
+      "priority": "Medium",
+      "emptyDescription": false,
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceClassification": "code_proven_partial",
+      "confidence": "medium",
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "PoF Display / Chewy assets in CSS and `public/assets/fonts` — Narrow variant coverage partial.",
+      "implementationRefs": [
+        "src/pof-components.css",
+        "public/assets/fonts/"
+      ],
+      "testRefs": [
+        "tests/e2e/playwright/mobile-bundled-dist-smoke.spec.js — font load"
+      ],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "ENHC0010"
+      ],
+      "nextAction": "Typography spec for Narrow (ENHC0010).",
+      "checklistTotal": 0,
+      "checklistDone": 0
+    },
+    {
+      "jubbaWorldId": "0c93b36b-fe46-4c68-a270-246c5d81394c",
+      "number": "ENHC0002",
+      "type": "enhancement",
+      "title": "Pants on Fire app icon and app name",
+      "externalRef": "seed:pants-on-fire:pof-enh-10",
+      "requirementRef": "seed:pants-on-fire:pof-R3",
+      "requirementNumber": "REQ0007",
+      "trackerStatus": "Done",
+      "trackerDone": true,
+      "trackerProgress": 100,
+      "priority": "Medium",
+      "emptyDescription": false,
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceClassification": "code_proven_partial",
+      "confidence": "medium",
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "App name in `app.json`; icon in android adaptive / assets.",
+      "implementationRefs": [
+        "app.json:1-36",
+        "docs/store/graphics/icon-512.png"
+      ],
+      "testRefs": [],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "WTSK0005"
+      ],
+      "nextAction": "Play Console icon upload verification (org).",
+      "checklistTotal": 0,
+      "checklistDone": 0
+    },
+    {
+      "jubbaWorldId": "102e9b78-ffbf-4cdc-9c3e-a89a9c12db8f",
+      "number": "ENHC0003",
+      "type": "enhancement",
+      "title": "Unique persona names; move persona settings into Settings; wire help/leaderboard icons",
+      "externalRef": "seed:pants-on-fire:pof-enh-6",
+      "requirementRef": "seed:pants-on-fire:pof-R1",
+      "requirementNumber": "REQ0005",
+      "trackerStatus": "In progress",
+      "trackerDone": false,
+      "trackerProgress": 0,
+      "priority": "Medium",
+      "emptyDescription": false,
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceClassification": "partial",
+      "confidence": "medium",
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "Persona screen branch `screen === \"persona\"` (8629-8631, 10765+); profile menu navigates via `onSelectProfileMenu(\"persona\")`.",
+      "implementationRefs": [
+        "src/App.jsx:8629-8631 setScreen(\"persona\")",
+        "src/App.jsx:3232 onSelectProfileMenu → persona"
+      ],
+      "testRefs": [
+        "tests/e2e/playwright/martin-smoke.spec.js — Leaderboard/profile tab"
+      ],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "REQ0005"
+      ],
+      "nextAction": "E2E persona rename + uniqueness (ENHC0025).",
+      "checklistTotal": 0,
+      "checklistDone": 0
+    },
+    {
+      "jubbaWorldId": "1276cf55-f25c-4ca7-a7a4-ff2f43eff455",
+      "number": "ENHC0004",
+      "type": "enhancement",
+      "title": "Lobby code in plain bold font",
+      "externalRef": "seed:pants-on-fire:pof-enh-4",
+      "requirementRef": "seed:pants-on-fire:pof-R5",
+      "requirementNumber": "REQ0009",
+      "trackerStatus": "Done",
+      "trackerDone": true,
+      "trackerProgress": 100,
+      "priority": "Medium",
+      "emptyDescription": false,
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceClassification": "code_proven_partial",
+      "confidence": "high",
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "Lobby code uses countdown digit styling (audit fixed E2E selector `.pof-countdown-digit`).",
+      "implementationRefs": [
+        "src/App.jsx:4444 .pof-countdown-digit — lobby / match context",
+        "src/App.jsx:5406 .pof-countdown-digit — themed prompt card overlay countdown",
+        "tests/e2e/playwright/web-player-website.spec.js — lobby code visibility"
+      ],
+      "testRefs": [
+        "tests/e2e/playwright/web-player-website.spec.js"
+      ],
+      "runtimeNotes": null,
+      "linksExistingTracker": [],
+      "nextAction": "None unless typography changes.",
+      "checklistTotal": 0,
+      "checklistDone": 0
+    },
+    {
+      "jubbaWorldId": "28666e1b-9ec6-428c-8eeb-7dfd9270ff75",
+      "number": "ENHC0005",
+      "type": "enhancement",
+      "title": "Legibility: outline font only for headings, Inter for body",
+      "externalRef": "seed:pants-on-fire:pof-enh-11",
+      "requirementRef": "seed:pants-on-fire:pof-R4",
+      "requirementNumber": "REQ0008",
+      "trackerStatus": "Done",
+      "trackerDone": true,
+      "trackerProgress": 100,
+      "priority": "Medium",
+      "emptyDescription": false,
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceClassification": "code_proven_partial",
+      "confidence": "high",
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "Headings PoF Display; body Inter via `.pof-desc` (see CSS).",
+      "implementationRefs": [
+        "src/pof-components.css"
+      ],
+      "testRefs": [],
+      "runtimeNotes": null,
+      "linksExistingTracker": [],
+      "nextAction": "Regression if new components skip `.pof-desc`.",
+      "checklistTotal": 0,
+      "checklistDone": 0
+    },
+    {
+      "jubbaWorldId": "3de85e8a-05a0-424b-941f-8ae456c62ee5",
+      "number": "ENHC0006",
+      "type": "enhancement",
+      "title": "Custom prompts = lobby owner editor add-on, not player prompts",
+      "externalRef": "seed:pants-on-fire:pof-enh-9",
+      "requirementRef": "seed:pants-on-fire:pof-R5",
+      "requirementNumber": "REQ0009",
+      "trackerStatus": "Done",
+      "trackerDone": true,
+      "trackerProgress": 100,
+      "priority": "Medium",
+      "emptyDescription": false,
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceClassification": "partial",
+      "confidence": "medium",
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "`AdminDialog` — custom category CRUD; gated by `premiumEnabled || categoryEditorUnlocked` (props from entitlements).",
+      "implementationRefs": [
+        "src/App.jsx:7232-7323 AdminDialog — category list + add flow",
+        "src/App.jsx:11603-11612 AdminDialog open + categoryEditorUnlocked"
+      ],
+      "testRefs": [],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "ENHC0013"
+      ],
+      "nextAction": "Entitlement matrix test (tests/server/entitlements + UI E2E).",
+      "checklistTotal": 0,
+      "checklistDone": 0
+    },
+    {
+      "jubbaWorldId": "57e95505-45e0-40ee-97e4-3f7a091fab16",
+      "number": "ENHC0007",
+      "type": "enhancement",
+      "title": "Theme tune: vocal on menus, instrumental quieter in gameplay",
+      "externalRef": "seed:pants-on-fire:pof-enh-7",
+      "requirementRef": "seed:pants-on-fire:pof-R1",
+      "requirementNumber": "REQ0005",
+      "trackerStatus": "Done",
+      "trackerDone": true,
+      "trackerProgress": 100,
+      "priority": "Medium",
+      "emptyDescription": false,
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceClassification": "partial",
+      "confidence": "medium",
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "Settings persist music/sfx/haptics via `audioSettings` state + `useEffect` syncing to sound engine (lines ~8301+); theme tune relative levels not metered in CI.",
+      "implementationRefs": [
+        "src/App.jsx:6770-7050 SettingsScreen — SettingsToggleRow / Slider rows",
+        "src/App.jsx:7575-7580 initial audioSettings from storage",
+        "src/App.jsx:8301-8306 map audioSettings to sound engine payload"
+      ],
+      "testRefs": [],
+      "runtimeNotes": "No automated audio level assertion.",
+      "linksExistingTracker": [
+        "REQ0005"
+      ],
+      "nextAction": "Manual listen: menu vs gameplay mix (REQ0005).",
+      "checklistTotal": 0,
+      "checklistDone": 0
+    },
+    {
+      "jubbaWorldId": "646d334a-0791-4be4-9eaa-7d37618aef28",
+      "number": "ENHC0008",
+      "type": "enhancement",
+      "title": "Online lobbies: 30s vote / selection timer with random flash pick",
+      "externalRef": "seed:pants-on-fire:pof-enh-3",
+      "requirementRef": "seed:pants-on-fire:pof-R5",
+      "requirementNumber": "REQ0009",
+      "trackerStatus": "Done",
+      "trackerDone": true,
+      "trackerProgress": 100,
+      "priority": "Medium",
+      "emptyDescription": false,
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceClassification": "code_proven_partial",
+      "confidence": "high",
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "`useTimedChoice` + `NeonTimerBar` in `CategoryChoiceGrid` for online (`ONLINE_SELECTION_TIMER_SEC`).",
+      "implementationRefs": [
+        "src/App.jsx:4108-4121 useTimedChoice + NeonTimerBar"
+      ],
+      "testRefs": [
+        "tests/server/lobbyStore.test.mjs — online flow partial"
+      ],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "REQ0009"
+      ],
+      "nextAction": "Playwright two-browser online category pick.",
+      "checklistTotal": 0,
+      "checklistDone": 0
+    },
+    {
+      "jubbaWorldId": "72ffea93-e6ea-45ee-a054-c0691dfbf025",
+      "number": "ENHC0009",
+      "type": "enhancement",
+      "title": "Remove 18+ toggle; Settings page for sound/music/haptics; custom-prompt warning",
+      "externalRef": "seed:pants-on-fire:pof-enh-5",
+      "requirementRef": "seed:pants-on-fire:pof-R1",
+      "requirementNumber": "REQ0005",
+      "trackerStatus": "Done",
+      "trackerDone": true,
+      "trackerProgress": 100,
+      "priority": "Medium",
+      "emptyDescription": false,
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceClassification": "code_proven_partial",
+      "confidence": "medium",
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "Settings toggles sound/music/haptics; 18+ removed from product.",
+      "implementationRefs": [
+        "src/App.jsx:7041-7043 haptics toggle"
+      ],
+      "testRefs": [],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "WTSK0005"
+      ],
+      "nextAction": "Confirm no 18+ remnant in store listing (WTSK0005).",
+      "checklistTotal": 0,
+      "checklistDone": 0
+    },
+    {
+      "jubbaWorldId": "9ef2d64a-4144-4e5a-8a5b-f82acd3943c5",
+      "number": "ENHC0010",
+      "type": "enhancement",
+      "title": "Use Narrow outline font for buttons and UI headings",
+      "externalRef": "seed:pants-on-fire:pof-enh-13",
+      "requirementRef": "seed:pants-on-fire:pof-R4",
+      "requirementNumber": "REQ0008",
+      "trackerStatus": "In progress",
+      "trackerDone": false,
+      "trackerProgress": 0,
+      "priority": "Medium",
+      "emptyDescription": false,
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceClassification": "partial",
+      "confidence": "medium",
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "Narrow font pipeline — partial vs ENHC0001; check font-face declarations.",
+      "implementationRefs": [
+        "src/pof-components.css",
+        "public/assets/fonts/"
+      ],
+      "testRefs": [],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "ENHC0001"
+      ],
+      "nextAction": "Visual audit Narrow on buttons (ENHC0001).",
+      "checklistTotal": 0,
+      "checklistDone": 0
+    },
+    {
+      "jubbaWorldId": "b40bd8ce-78c5-4843-9e53-7d98e0faba98",
+      "number": "ENHC0011",
+      "type": "enhancement",
+      "title": "Category screen: 6 random categories (2x3) + Choose for me",
+      "externalRef": "seed:pants-on-fire:pof-enh-1",
+      "requirementRef": "seed:pants-on-fire:pof-R1",
+      "requirementNumber": "REQ0005",
+      "trackerStatus": "Done",
+      "trackerDone": true,
+      "trackerProgress": 100,
+      "priority": "Medium",
+      "emptyDescription": false,
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceClassification": "code_proven_partial",
+      "confidence": "high",
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "Six categories + Choose for me: `CategoryChoiceGrid` + random pick hooks in App.",
+      "implementationRefs": [
+        "src/App.jsx:4097-4170",
+        "src/App.jsx ~10975 choose for me"
+      ],
+      "testRefs": [
+        "tests/e2e/playwright/martin-smoke.spec.js"
+      ],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "DFCT0016",
+        "DFCT0017",
+        "DFCT0018"
+      ],
+      "nextAction": "Close DFCT0016-18 if QA clean.",
+      "checklistTotal": 0,
+      "checklistDone": 0
+    },
+    {
+      "jubbaWorldId": "c3a23f91-0946-4708-950c-a4baf57be5db",
+      "number": "ENHC0012",
+      "type": "enhancement",
+      "title": "Randomise round types, categories and pass-the-phone voting order",
+      "externalRef": "seed:pants-on-fire:pof-enh-2",
+      "requirementRef": "seed:pants-on-fire:pof-R1",
+      "requirementNumber": "REQ0005",
+      "trackerStatus": "Done",
+      "trackerDone": true,
+      "trackerProgress": 100,
+      "priority": "Medium",
+      "emptyDescription": false,
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceClassification": "partial",
+      "confidence": "medium",
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "Client round choice: `pickCompatibleRoundTypeId` + `getCompatibleRoundTypes` (1065-1087); server online authority still prompt-only (`buildAuthoritativeRound`).",
+      "implementationRefs": [
+        "src/App.jsx:1065-1087 getCompatibleRoundTypes / pickCompatibleRoundTypeId",
+        "server/storage/lobbyStore.js:353-378 buildAuthoritativeRound roundTypeId prompt"
+      ],
+      "testRefs": [],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "REQ0017",
+        "REQ0009"
+      ],
+      "nextAction": "Align server when non-prompt rounds online (REQ0017, REQ0009).",
+      "checklistTotal": 0,
+      "checklistDone": 0
+    },
+    {
+      "jubbaWorldId": "d2daf8b2-1d95-49ee-b469-0f8a5a43b8f3",
+      "number": "ENHC0013",
+      "type": "enhancement",
+      "title": "Shop access to upgrade account / buy packs using existing tiers",
+      "externalRef": "seed:pants-on-fire:pof-enh-8",
+      "requirementRef": "seed:pants-on-fire:pof-R1",
+      "requirementNumber": "REQ0005",
+      "trackerStatus": "In progress",
+      "trackerDone": false,
+      "trackerProgress": 0,
+      "priority": "Medium",
+      "emptyDescription": false,
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceClassification": "code_proven_partial",
+      "confidence": "medium",
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "Neon store screens + Stripe routes (`server/stripeBillingRoutes.js`); sandbox tests exist.",
+      "implementationRefs": [
+        "src/components/neon/NeonStoreScreen.jsx",
+        "server/stripeBillingRoutes.js"
+      ],
+      "testRefs": [
+        "tests/server/stripeCatalog.test.mjs",
+        "tests/server/entitlements.test.mjs"
+      ],
+      "runtimeNotes": "Live Play billing not exercised.",
+      "linksExistingTracker": [
+        "WTSK0006",
+        "STRY0013"
+      ],
+      "nextAction": "RevenueCat + Play purchase QA on device (WTSK0006 checklist).",
+      "checklistTotal": 0,
+      "checklistDone": 0
+    },
+    {
+      "jubbaWorldId": "c5b634a7-511e-4387-876b-ef3a3bd9e25f",
+      "number": "ENHC0014",
+      "type": "enhancement",
+      "title": "Equal prompt counts per category for Two Truths",
+      "externalRef": "pof:enh:two-truths-equal-prompts",
+      "requirementRef": null,
+      "requirementNumber": null,
+      "trackerStatus": "Done",
+      "trackerDone": true,
+      "trackerProgress": 100,
+      "priority": "Medium",
+      "emptyDescription": true,
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceClassification": "partial",
+      "confidence": "medium",
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "Two Truths data files under `src/data/twoTruthsOneFire` — count parity not asserted in CI.",
+      "implementationRefs": [
+        "src/data/twoTruthsOneFire/"
+      ],
+      "testRefs": [],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "STRY0013"
+      ],
+      "nextAction": "Script: equal count per category lint.",
+      "checklistTotal": 0,
+      "checklistDone": 0
+    },
+    {
+      "jubbaWorldId": "4fab74b8-0ee2-445b-b841-b11e760223ce",
+      "number": "ENHC0015",
+      "type": "enhancement",
+      "title": "New mode logos for Two Truths and Off Topic Defense",
+      "externalRef": "pof:enh:mode-logos",
+      "requirementRef": null,
+      "requirementNumber": null,
+      "trackerStatus": "Done",
+      "trackerDone": true,
+      "trackerProgress": 100,
+      "priority": "Medium",
+      "emptyDescription": true,
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceClassification": "partial",
+      "confidence": "medium",
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "Mode logos in UI assets; ENHC0022 “fill card” still in progress.",
+      "implementationRefs": [
+        "src/data/uiNeonAssets.js"
+      ],
+      "testRefs": [
+        "tests/e2e/playwright/mobile-bundled-dist-smoke.spec.js — round-type icons"
+      ],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "ENHC0022"
+      ],
+      "nextAction": "Visual fill-factor check (ENHC0022).",
+      "checklistTotal": 0,
+      "checklistDone": 0
+    },
+    {
+      "jubbaWorldId": "17115f2f-18d6-48d6-b11f-ee9c6cf5ca35",
+      "number": "ENHC0016",
+      "type": "enhancement",
+      "title": "Shop renamed with collapsible Access/Themes/Add-ons sections",
+      "externalRef": "pof:enh:shop-rename-collapsible",
+      "requirementRef": null,
+      "requirementNumber": null,
+      "trackerStatus": "Done",
+      "trackerDone": true,
+      "trackerProgress": 100,
+      "priority": "Medium",
+      "emptyDescription": true,
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceClassification": "code_proven_partial",
+      "confidence": "medium",
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "NeonStoreScreen collapsible sections — component-level.",
+      "implementationRefs": [
+        "src/components/neon/NeonStoreScreen.jsx"
+      ],
+      "testRefs": [],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "ENHC0013"
+      ],
+      "nextAction": "Playwright store navigation.",
+      "checklistTotal": 0,
+      "checklistDone": 0
+    },
+    {
+      "jubbaWorldId": "c402e34b-cac8-4c37-a321-02d1e67fd402",
+      "number": "ENHC0017",
+      "type": "enhancement",
+      "title": "UK English rewrite of prompts",
+      "externalRef": "pof:enh:uk-english-prompts",
+      "requirementRef": null,
+      "requirementNumber": null,
+      "trackerStatus": "Done",
+      "trackerDone": true,
+      "trackerProgress": 100,
+      "priority": "Medium",
+      "emptyDescription": true,
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceClassification": "partial",
+      "confidence": "medium",
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "UK editorial in prompt packs — sample strings are UK-flavoured; full pack not linguistically linted.",
+      "implementationRefs": [
+        "src/data/packs/categoryPromptPacks.js — e.g. Travel / category strings (search UK spellings ad hoc)"
+      ],
+      "testRefs": [],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "ENHC0018"
+      ],
+      "nextAction": "Editorial checklist with style guide.",
+      "checklistTotal": 0,
+      "checklistDone": 0
+    },
+    {
+      "jubbaWorldId": "6830529e-c26e-4c38-b119-3d58056db755",
+      "number": "ENHC0018",
+      "type": "enhancement",
+      "title": "Two Truths prompt quality editorial pass",
+      "externalRef": "pof:enh:two-truths-prompt-editorial",
+      "requirementRef": null,
+      "requirementNumber": null,
+      "trackerStatus": "In progress",
+      "trackerDone": false,
+      "trackerProgress": 0,
+      "priority": "Medium",
+      "emptyDescription": false,
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceClassification": "partial",
+      "confidence": "medium",
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "Two Truths content: `src/data/twoTruthsOneFire/**` — quality subjective; no automated quality gate.",
+      "implementationRefs": [
+        "src/data/twoTruthsOneFire/categoryTopicNouns.js",
+        "src/data/twoTruthsOneFire/**"
+      ],
+      "testRefs": [],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "STRY0013"
+      ],
+      "nextAction": "Content review pass (STRY0013).",
+      "checklistTotal": 0,
+      "checklistDone": 0
+    },
+    {
+      "jubbaWorldId": "8d508614-e2d7-403d-a2a8-39a40de65c4a",
+      "number": "ENHC0019",
+      "type": "enhancement",
+      "title": "Choose for me: roulette highlight animation landing on chosen category",
+      "externalRef": "POF-ENH-001",
+      "requirementRef": null,
+      "requirementNumber": null,
+      "trackerStatus": "Done",
+      "trackerDone": true,
+      "trackerProgress": 0,
+      "priority": "Medium",
+      "emptyDescription": true,
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceClassification": "partial",
+      "confidence": "medium",
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "Roulette highlight ids in CategoryChoiceGrid (`pof-choice-flash`).",
+      "implementationRefs": [
+        "src/App.jsx:4142-4156 highlighted class"
+      ],
+      "testRefs": [],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "TEST0001"
+      ],
+      "nextAction": "E2E assert highlight lands on chosen id.",
+      "checklistTotal": 0,
+      "checklistDone": 0
+    },
+    {
+      "jubbaWorldId": "eeb09814-190e-4fab-9870-5cc7007db52d",
+      "number": "ENHC0020",
+      "type": "enhancement",
+      "title": "Prompt deep-dive: rework prompts per round (Chain Reaction prompts do not fit mechanic)",
+      "externalRef": "POF-ENH-002",
+      "requirementRef": null,
+      "requirementNumber": null,
+      "trackerStatus": "To do",
+      "trackerDone": false,
+      "trackerProgress": 0,
+      "priority": "Medium",
+      "emptyDescription": false,
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceClassification": "partial",
+      "confidence": "medium",
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "Chain reaction prompts: pack data in `categoryPromptPacks.js` — fit vs mechanic is editorial.",
+      "implementationRefs": [
+        "src/data/packs/categoryPromptPacks.js — search chain / reaction prompt ids"
+      ],
+      "testRefs": [],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "REQ0005"
+      ],
+      "nextAction": "Content ticket per round family.",
+      "checklistTotal": 0,
+      "checklistDone": 0
+    },
+    {
+      "jubbaWorldId": "5261517e-2167-4681-9efc-5bcc7289f96b",
+      "number": "ENHC0021",
+      "type": "enhancement",
+      "title": "Release-state analysis: extract reusable systems as skills",
+      "externalRef": "POF-ENH-003",
+      "requirementRef": null,
+      "requirementNumber": null,
+      "trackerStatus": "To do",
+      "trackerDone": false,
+      "trackerProgress": 0,
+      "priority": "Medium",
+      "emptyDescription": false,
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceClassification": "deferred",
+      "confidence": "medium",
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "“Extract as skills” is process/backlog — no code change in scope.",
+      "implementationRefs": [
+        "docs/superpowers/plans/2026-11-06-jubba-full-audit.md — planning artifact only"
+      ],
+      "testRefs": [],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "WTSK0001"
+      ],
+      "nextAction": "Defer to post-release tooling (WTSK0001 logging related).",
+      "checklistTotal": 0,
+      "checklistDone": 0
+    },
+    {
+      "jubbaWorldId": "7a0b3d8e-0d44-49ed-b355-f4cdc01b5aaf",
+      "number": "ENHC0022",
+      "type": "enhancement",
+      "title": "Mode logo art should fill mode select cards",
+      "externalRef": null,
+      "requirementRef": null,
+      "requirementNumber": null,
+      "trackerStatus": "In progress",
+      "trackerDone": false,
+      "trackerProgress": 0,
+      "priority": "Medium",
+      "emptyDescription": false,
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceClassification": "partial",
+      "confidence": "medium",
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "Round type cards: `RoundTypeChoiceGrid` uses `ThemeArt` `object-cover object-center scale-[1.03]` — fill vs letterbox device-dependent.",
+      "implementationRefs": [
+        "src/App.jsx:4033-4095 RoundTypeChoiceGrid — min-h-0 flex-1 cards"
+      ],
+      "testRefs": [],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "ENHC0015",
+        "DFCT0028"
+      ],
+      "nextAction": "Device QA with ENHC0015 assets (DFCT0028).",
+      "checklistTotal": 0,
+      "checklistDone": 0
+    },
+    {
+      "jubbaWorldId": "243f4ebd-60b7-465a-b8ea-bd34d25a1997",
+      "number": "ENHC0023",
+      "type": "enhancement",
+      "title": "CI: add a job that runs npm test",
+      "externalRef": "POF-ENH-005",
+      "requirementRef": null,
+      "requirementNumber": null,
+      "trackerStatus": "Done",
+      "trackerDone": true,
+      "trackerProgress": 0,
+      "priority": "Medium",
+      "emptyDescription": false,
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceClassification": "verified",
+      "confidence": "high",
+      "evidenceSource": "repo_read",
+      "methodologyNote": "Workflow runs npm test on listed paths; maps POF-ENH-005.",
+      "implementationRefs": [
+        ".github/workflows/npm-test.yml:47-51 Run npm test"
+      ],
+      "testRefs": [],
+      "runtimeNotes": null,
+      "linksExistingTracker": [],
+      "nextAction": "CI green on default branch is out of scope here; local npm test passed this run.",
+      "checklistTotal": 0,
+      "checklistDone": 0
+    },
+    {
+      "jubbaWorldId": "38eca3de-d66b-4737-a6d0-7888c51d51f2",
+      "number": "ENHC0024",
+      "type": "enhancement",
+      "title": "Display titles ALL CAPS (partial: h1–h3 + buttons/nav)",
+      "externalRef": "POF-ENH-DISPLAY-CAPS",
+      "requirementRef": null,
+      "requirementNumber": null,
+      "trackerStatus": "In progress",
+      "trackerDone": false,
+      "trackerProgress": 0,
+      "priority": "Medium",
+      "emptyDescription": false,
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceClassification": "partial",
+      "confidence": "high",
+      "evidenceSource": "repo_read",
+      "methodologyNote": "CSS forces uppercase on h1–h3 and several components; tracker and CONV-REQ note div-based titles incomplete; some button classes use text-transform:none (pof-btn-wrap).",
+      "implementationRefs": [
+        "src/pof-components.css:107-108 :where(h1,h2,h3):not(.pof-preserve-heading-case)",
+        "src/pof-components.css:68-71 pof-btn-wrap / pof-ui-copy text-transform rules"
+      ],
+      "testRefs": [],
+      "runtimeNotes": null,
+      "linksExistingTracker": [],
+      "nextAction": "Enumerate div-title screens or extend CSS per parent tracker ENHC0024.",
+      "checklistTotal": 0,
+      "checklistDone": 0
+    },
+    {
+      "jubbaWorldId": "b9a59e78-d99b-4533-bc65-880c576d0d06",
+      "number": "REQ0005",
+      "type": "requirement",
+      "title": "Core party game loop",
+      "externalRef": "seed:pants-on-fire:pof-R1",
+      "requirementRef": null,
+      "requirementNumber": null,
+      "trackerStatus": "In progress",
+      "trackerDone": false,
+      "trackerProgress": 0,
+      "priority": "High",
+      "emptyDescription": false,
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceClassification": "code_proven_partial",
+      "confidence": "medium",
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "Core loop: screen union LOCAL_GAME_PAUSE_SCREENS + ONLINE_* sets (349-423) drive phase gating; `syncOnlineRoundFromSnapshot` maps server phases to screens (9210-9293). E2E smokes cover subset.",
+      "implementationRefs": [
+        "src/App.jsx:349-423 ONLINE_VOICE_ACTIVE_SCREENS / LOCAL_GAME_PAUSE_SCREENS",
+        "src/App.jsx:9210-9293 syncOnlineRoundFromSnapshot phase→screen"
+      ],
+      "testRefs": [
+        "tests/e2e/playwright/martin-smoke.spec.js",
+        "tests/e2e/playwright/mobile-bundled-dist-smoke.spec.js"
+      ],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "STRY0010",
+        "STRY0011",
+        "TEST0001"
+      ],
+      "nextAction": "Expand Playwright per STRY0010 round families (TEST0001, TEST0004).",
+      "checklistTotal": 0,
+      "checklistDone": 0
+    },
+    {
+      "jubbaWorldId": "521b06ba-a359-4dbf-b27e-f4b26b2982ab",
+      "number": "REQ0006",
+      "type": "requirement",
+      "title": "Grill 'Em voice I/O",
+      "externalRef": "seed:pants-on-fire:pof-R2",
+      "requirementRef": null,
+      "requirementNumber": null,
+      "trackerStatus": "Backlog",
+      "trackerDone": false,
+      "trackerProgress": 0,
+      "priority": "High",
+      "emptyDescription": false,
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceClassification": "missing",
+      "confidence": "high",
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "Historical Grill 'Em voice mode — `grill` round type absent in `ROUND_TYPES` / src grep; product voice is LiveKit party (`server/lobbyServer.js` `/api/lobbies/:code/voice/token`, `src/online/voicePartyTransport.js`).",
+      "implementationRefs": [
+        "src/data/packs/categoryPromptPacks.js — MemesViralPromptRoundData only (word grill as content, not mode)",
+        "server/lobbyServer.js:403-456 POST /api/lobbies/:code/voice/token",
+        "src/online/voicePartyTransport.js — Room.connect"
+      ],
+      "testRefs": [],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "STRY0012",
+        "TEST0003"
+      ],
+      "nextAction": "Tracker: close or rewrite REQ0006 to LiveKit voice scope.",
+      "checklistTotal": 0,
+      "checklistDone": 0
+    },
+    {
+      "jubbaWorldId": "b6cbcefe-3e2d-4470-a8c4-2c4d7eb0992f",
+      "number": "REQ0007",
+      "type": "requirement",
+      "title": "Mobile app build",
+      "externalRef": "seed:pants-on-fire:pof-R3",
+      "requirementRef": null,
+      "requirementNumber": null,
+      "trackerStatus": "In progress",
+      "trackerDone": false,
+      "trackerProgress": 0,
+      "priority": "High",
+      "emptyDescription": false,
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceClassification": "code_proven_partial",
+      "confidence": "medium",
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "Expo `app.json`, android package, WebView shell — APK workflows in `.github/workflows/`.",
+      "implementationRefs": [
+        "app.json",
+        ".github/workflows/android-debug-apk.yml",
+        ".github/workflows/android-release-aab.yml"
+      ],
+      "testRefs": [
+        "tests/e2e/playwright/mobile-bundled-dist-smoke.spec.js"
+      ],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "STRY0008",
+        "REQ0012",
+        "REQ0013"
+      ],
+      "nextAction": "EAS/Play pipeline checklist (REQ0012-REQ0016 org tasks).",
+      "checklistTotal": 0,
+      "checklistDone": 0
+    },
+    {
+      "jubbaWorldId": "d8492171-1c33-4e01-9c79-cda3e9885f8b",
+      "number": "REQ0008",
+      "type": "requirement",
+      "title": "Neon UI redesign",
+      "externalRef": "seed:pants-on-fire:pof-R4",
+      "requirementRef": null,
+      "requirementNumber": null,
+      "trackerStatus": "In progress",
+      "trackerDone": false,
+      "trackerProgress": 0,
+      "priority": "High",
+      "emptyDescription": false,
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceClassification": "code_proven_partial",
+      "confidence": "medium",
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "Neon components under `src/components/neon/` + `pof-components.css`.",
+      "implementationRefs": [
+        "src/components/neon/",
+        "src/pof-components.css"
+      ],
+      "testRefs": [
+        "tests/e2e/playwright/mobile-bundled-dist-smoke.spec.js"
+      ],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "STRY0006",
+        "STRY0007"
+      ],
+      "nextAction": "Close DFCT0004/0005 when visual sign-off.",
+      "checklistTotal": 0,
+      "checklistDone": 0
+    },
+    {
+      "jubbaWorldId": "81c6165b-a4e9-4006-9d0a-ad3c67f7592f",
+      "number": "REQ0009",
+      "type": "requirement",
+      "title": "Online multiplayer lobbies",
+      "externalRef": "seed:pants-on-fire:pof-R5",
+      "requirementRef": null,
+      "requirementNumber": null,
+      "trackerStatus": "Backlog",
+      "trackerDone": false,
+      "trackerProgress": 0,
+      "priority": "High",
+      "emptyDescription": false,
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceClassification": "partial",
+      "confidence": "high",
+      "evidenceSource": "repo_read",
+      "methodologyNote": "Online lobbies + voice token path exist; full “Jackbox-style” parity blocked until non-prompt round types on server (REQ0017 and related).",
+      "implementationRefs": [
+        "server/lobbyServer.js — create/join/resume/socket",
+        "server/lobbyServer.js:393-456 GET /health voice + POST /api/lobbies/:code/voice/token (LiveKit)",
+        "server/storage/lobbyStore.js:353-410 buildAuthoritativeRound (prompt-only online round)"
+      ],
+      "testRefs": [
+        "tests/server/lobbyStore.test.mjs"
+      ],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "REQ0017",
+        "STRY0010",
+        "ENHC0008",
+        "ENHC0012",
+        "STRY0023"
+      ],
+      "nextAction": "Extend server for non-prompt round types or narrow REQ0009 acceptance.",
+      "checklistTotal": 0,
+      "checklistDone": 0
+    },
+    {
+      "jubbaWorldId": "947ee634-20fc-4bbe-a37d-effc4fbd65e3",
+      "number": "REQ0010",
+      "type": "requirement",
+      "title": "Quality and testing",
+      "externalRef": "seed:pants-on-fire:pof-R6",
+      "requirementRef": null,
+      "requirementNumber": null,
+      "trackerStatus": "In progress",
+      "trackerDone": false,
+      "trackerProgress": 0,
+      "priority": "High",
+      "emptyDescription": false,
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceClassification": "code_proven_partial",
+      "confidence": "medium",
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "Node tests + Playwright + mobile smoke; `docs/TEST_STRATEGY.md` still partially stale on CI note.",
+      "implementationRefs": [
+        "docs/TEST_STRATEGY.md",
+        ".github/workflows/npm-test.yml"
+      ],
+      "testRefs": [
+        "tests/**/*.test.mjs"
+      ],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "ENHC0023",
+        "ENHC0025",
+        "TEST0001"
+      ],
+      "nextAction": "Sync TEST_STRATEGY CI paragraph with npm-test.yml; ENHC0025 client tests.",
+      "checklistTotal": 0,
+      "checklistDone": 0
+    },
+    {
+      "jubbaWorldId": "8d4ba703-b4a2-4c21-a3e9-bc1347fb8a25",
+      "number": "REQ0011",
+      "type": "requirement",
+      "title": "Infrastructure / hosting",
+      "externalRef": "seed:pants-on-fire:pof-R7",
+      "requirementRef": null,
+      "requirementNumber": null,
+      "trackerStatus": "In progress",
+      "trackerDone": false,
+      "trackerProgress": 0,
+      "priority": "High",
+      "emptyDescription": false,
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceClassification": "code_proven_partial",
+      "confidence": "medium",
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "IONOS deploy workflow, lobby server, Redis optional — see docs and `server/`.",
+      "implementationRefs": [
+        ".github/workflows/deploy-ionos-web.yml",
+        "server/lobbyServer.js"
+      ],
+      "testRefs": [
+        "tests/server/lobbyStore.test.mjs"
+      ],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "STRY0002",
+        "STRY0004",
+        "STRY0005"
+      ],
+      "nextAction": "Prod deploy verification outside audit.",
+      "checklistTotal": 0,
+      "checklistDone": 0
+    },
+    {
+      "jubbaWorldId": "1a537260-b995-47f2-8934-31927a13666c",
+      "number": "REQ0012",
+      "type": "requirement",
+      "title": "Martin to supply upload keystore or enable Play App Signing",
+      "externalRef": "pof:req:upload-keystore",
+      "requirementRef": null,
+      "requirementNumber": null,
+      "trackerStatus": "Backlog",
+      "trackerDone": false,
+      "trackerProgress": 0,
+      "priority": "Medium",
+      "emptyDescription": true,
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceClassification": "account_status_unknown",
+      "confidence": "high",
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "Repo expectation: release AAB workflow **requires** GitHub secrets ANDROID_KEYSTORE_* (`.github/workflows/android-release-aab.yml:84-98`). User context: Play internal draft + signing may already exist — **audit does not verify** org secrets or Play state.",
+      "implementationRefs": [
+        ".github/workflows/android-release-aab.yml:84-98 Require Play upload signing secrets"
+      ],
+      "testRefs": [],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "STRY0017"
+      ],
+      "nextAction": "Parent: mark REQ0012 satisfied in tracker if secrets + signing match production, or paste pointer to where secrets live (not in repo).",
+      "checklistTotal": 0,
+      "checklistDone": 0
+    },
+    {
+      "jubbaWorldId": "d73d2cb0-d06f-421a-a643-48af7a82351f",
+      "number": "REQ0013",
+      "type": "requirement",
+      "title": "Martin to create Play Console app",
+      "externalRef": "pof:req:play-console-app",
+      "requirementRef": null,
+      "requirementNumber": null,
+      "trackerStatus": "Backlog",
+      "trackerDone": false,
+      "trackerProgress": 0,
+      "priority": "Medium",
+      "emptyDescription": true,
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceClassification": "account_status_unknown",
+      "confidence": "high",
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "Play Console app **existence** is not derivable from repo; user context reports internal draft **1.0.3 (v20)** — reconcile in tracker.",
+      "implementationRefs": [
+        "app.json:22-24 android.package — intended application id"
+      ],
+      "testRefs": [],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "REQ0007"
+      ],
+      "nextAction": "Parent: confirm REQ0013 against Play Console (org-only); close or update externalRef.",
+      "checklistTotal": 0,
+      "checklistDone": 0
+    },
+    {
+      "jubbaWorldId": "becfb6b9-2f0a-4297-87a1-ea00238424fd",
+      "number": "REQ0014",
+      "type": "requirement",
+      "title": "Confirm package name app.pantsonfire.liar",
+      "externalRef": "pof:req:confirm-package",
+      "requirementRef": null,
+      "requirementNumber": null,
+      "trackerStatus": "Backlog",
+      "trackerDone": false,
+      "trackerProgress": 0,
+      "priority": "Medium",
+      "emptyDescription": true,
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceClassification": "stale_tracker_mismatch",
+      "confidence": "high",
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "**Stale title in tracker:** Expo `android.package` is `app.pantsonfire.findtheliar` (`app.json:23`). Snapshot REQ0014 title says `app.pantsonfire.liar` — **do not rename package in audit**; human resolves tracker vs shipped id.",
+      "implementationRefs": [
+        "app.json:22-24 android.package"
+      ],
+      "testRefs": [],
+      "runtimeNotes": null,
+      "linksExistingTracker": [],
+      "nextAction": "Parent: update REQ0014 title or close with rationale (no repo rename from audit).",
+      "checklistTotal": 0,
+      "checklistDone": 0
+    },
+    {
+      "jubbaWorldId": "7ea73191-49eb-4d82-a75b-ad9557f99952",
+      "number": "REQ0015",
+      "type": "requirement",
+      "title": "Privacy policy URL",
+      "externalRef": "pof:req:privacy-policy",
+      "requirementRef": null,
+      "requirementNumber": null,
+      "trackerStatus": "Backlog",
+      "trackerDone": false,
+      "trackerProgress": 0,
+      "priority": "Medium",
+      "emptyDescription": true,
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceClassification": "account_status_unknown",
+      "confidence": "high",
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "Repo hosts static privacy page `public/privacy/index.html` + join-site links (`src/components/SiteLegalLinks.jsx`). Play Console “Data safety” URL **not verified** here — user context may already have published URL.",
+      "implementationRefs": [
+        "public/privacy/index.html",
+        "src/components/SiteLegalLinks.jsx:11-12 href `${base}/privacy`",
+        "docs/store/play-listing.md:35 — references in-app links"
+      ],
+      "testRefs": [],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "WTSK0005"
+      ],
+      "nextAction": "Parent: confirm live URL in Console matches deployed site; close REQ0015 if done.",
+      "checklistTotal": 0,
+      "checklistDone": 0
+    },
+    {
+      "jubbaWorldId": "57d65551-d3af-4caf-829c-d5d1dcbd9fb4",
+      "number": "REQ0016",
+      "type": "requirement",
+      "title": "EAS project id",
+      "externalRef": "pof:req:eas-project-id",
+      "requirementRef": null,
+      "requirementNumber": null,
+      "trackerStatus": "Backlog",
+      "trackerDone": false,
+      "trackerProgress": 0,
+      "priority": "Medium",
+      "emptyDescription": true,
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceClassification": "deferred",
+      "confidence": "high",
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "No `eas.json` in repo; Android CI uses `npx expo prebuild` + Gradle (`.github/workflows/android-release-aab.yml:72-79`). EAS project id may be **inapplicable** if releases are Gradle/GitHub-Actions only — **not verified**.",
+      "implementationRefs": [
+        "glob: eas.json — absent in repo (audit)",
+        ".github/workflows/android-release-aab.yml:72-79 Expo prebuild + bundle"
+      ],
+      "testRefs": [],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "REQ0007"
+      ],
+      "nextAction": "Parent: close REQ0016 as N/A or document EAS only if OTA used.",
+      "checklistTotal": 0,
+      "checklistDone": 0
+    },
+    {
+      "jubbaWorldId": "f382f88f-c01d-4a53-85e2-5bd931fe7304",
+      "number": "REQ0017",
+      "type": "requirement",
+      "title": "Online server support for Two Truths round",
+      "externalRef": "pof:req:online-two-truths",
+      "requirementRef": null,
+      "requirementNumber": null,
+      "trackerStatus": "Backlog",
+      "trackerDone": false,
+      "trackerProgress": 0,
+      "priority": "Medium",
+      "emptyDescription": true,
+      "acceptanceBasis": "inferred_from_title",
+      "acceptanceInferredFlag": true,
+      "evidenceClassification": "missing",
+      "confidence": "high",
+      "evidenceSource": "repo_read",
+      "methodologyNote": "Existing JubbaWorld item REQ0017 — server `buildAuthoritativeRound` only emits Hot Seat (`roundTypeId: 'prompt'`). Client already implements Two Truths screens (`twotruths-input` / `twotruths-voting` / `twotruths-reveal` in App.jsx) but online authority + E2E unskip depend on REQ0017 + TEST0004.",
+      "implementationRefs": [
+        "server/storage/lobbyStore.js:353-410 buildAuthoritativeRound — roundTypeId: prompt",
+        "src/App.jsx:9257-9273 syncOnlineRoundFromSnapshot — twotruths-input / twotruths-voting / reveal branches"
+      ],
+      "testRefs": [],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "STRY0013",
+        "REQ0009",
+        "ENHC0012",
+        "TEST0004"
+      ],
+      "nextAction": "Extend server round generator + lobby store for online Two Truths (use existing REQ0017); add server tests; then unblock Playwright online two-truths path (TEST0004).",
+      "checklistTotal": 0,
+      "checklistDone": 0
+    },
+    {
+      "jubbaWorldId": "c52e53b2-5bfc-4824-a809-6ccff3518ec6",
+      "number": "REQ0018",
+      "type": "requirement",
+      "title": "Meme Decoder on hold for rethink",
+      "externalRef": "pof:req:meme-decoder-hold",
+      "requirementRef": null,
+      "requirementNumber": null,
+      "trackerStatus": "Backlog",
+      "trackerDone": false,
+      "trackerProgress": 0,
+      "priority": "Medium",
+      "emptyDescription": false,
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceClassification": "deferred",
+      "confidence": "high",
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "Dedicated “Meme Decoder” mode not found in `ROUND_TYPES`; meme **category** data exists (`MemesViralPromptRoundData`) — product hold is tracker state, not code absence of word meme.",
+      "implementationRefs": [
+        "src/data/packs/categoryPromptPacks.js:53-65 MemesViralPromptRoundData"
+      ],
+      "testRefs": [],
+      "runtimeNotes": null,
+      "linksExistingTracker": [],
+      "nextAction": "Defer until product rethink.",
+      "checklistTotal": 0,
+      "checklistDone": 0
+    },
+    {
+      "jubbaWorldId": "07bef2e3-328d-497c-8e62-2e19c17ff038",
+      "number": "REQ0019",
+      "type": "requirement",
+      "title": "Decision: keep live-website loading with version-aware selection; debug builds default to bundled with a Game source toggle",
+      "externalRef": null,
+      "requirementRef": null,
+      "requirementNumber": null,
+      "trackerStatus": "In progress",
+      "trackerDone": false,
+      "trackerProgress": 0,
+      "priority": "Medium",
+      "emptyDescription": false,
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceClassification": "code_proven_partial",
+      "confidence": "high",
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "`gameSourcePreference.js` + settings copy; native host `__POF_NATIVE_HOST__` — selection semantics.",
+      "implementationRefs": [
+        "src/lib/gameSourcePreference.js",
+        "src/App.jsx:6986-6987 settings copy",
+        "server/shellConfig.js"
+      ],
+      "testRefs": [
+        "tests/nativeShell/gameSourceSelection.test.mjs"
+      ],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "CONV-REQ-PROMPT-SOURCE-SELECTION"
+      ],
+      "nextAction": "WebView integration test on debug APK (TEST0005 harness scope).",
+      "checklistTotal": 0,
+      "checklistDone": 0
+    },
+    {
+      "jubbaWorldId": "3591ae53-2376-47d6-97a6-d95370d847c6",
+      "number": "STRY0001",
+      "type": "story",
+      "title": "Wire Cursor MCP servers (GitHub, Playwright, Supabase, Railway)",
+      "externalRef": "seed:pants-on-fire:pof-infra-1",
+      "requirementRef": "seed:pants-on-fire:pof-R7",
+      "requirementNumber": "REQ0011",
+      "trackerStatus": "Backlog",
+      "trackerDone": false,
+      "trackerProgress": 0,
+      "priority": "Medium",
+      "emptyDescription": false,
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceClassification": "partial",
+      "confidence": "medium",
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "MCP availability is **Cursor host configuration** — not encoded in application tests.",
+      "implementationRefs": [
+        "AGENTS.md — agent environment notes (no MCP manifest in repo root)"
+      ],
+      "testRefs": [],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "REQ0011"
+      ],
+      "nextAction": "Owner: confirm Cursor team MCP enablement in product settings.",
+      "checklistTotal": 3,
+      "checklistDone": 0
+    },
+    {
+      "jubbaWorldId": "3e0c6b37-2bf8-46b3-954e-812665a2f346",
+      "number": "STRY0002",
+      "type": "story",
+      "title": "Production hardening of lobby server (CORS, Redis, Supabase entitlements)",
+      "externalRef": "seed:pants-on-fire:pof-infra-2",
+      "requirementRef": "seed:pants-on-fire:pof-R7",
+      "requirementNumber": "REQ0011",
+      "trackerStatus": "Backlog",
+      "trackerDone": false,
+      "trackerProgress": 0,
+      "priority": "Medium",
+      "emptyDescription": false,
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceClassification": "code_proven_partial",
+      "confidence": "medium",
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "CORS, rate limits, entitlements routes — see LOBBY_ARCHITECTURE + tests.",
+      "implementationRefs": [
+        "server/lobbyServer.js",
+        "server/stripeBillingRoutes.js",
+        "docs/LOBBY_ARCHITECTURE.md"
+      ],
+      "testRefs": [
+        "tests/server/pofAuthJwt.test.mjs",
+        "tests/server/entitlements.test.mjs"
+      ],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "REQ0011"
+      ],
+      "nextAction": "Prod Redis + Postgres config validation.",
+      "checklistTotal": 0,
+      "checklistDone": 0
+    },
+    {
+      "jubbaWorldId": "495f0d2d-81c9-49b4-981c-486566132b6b",
+      "number": "STRY0003",
+      "type": "story",
+      "title": "Android release APK build pipeline",
+      "externalRef": "seed:pants-on-fire:pof-infra-4",
+      "requirementRef": "seed:pants-on-fire:pof-R7",
+      "requirementNumber": "REQ0011",
+      "trackerStatus": "Done",
+      "trackerDone": true,
+      "trackerProgress": 100,
+      "priority": "Medium",
+      "emptyDescription": false,
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceClassification": "code_proven_partial",
+      "confidence": "medium",
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "`.github/workflows/android-debug-apk.yml` builds APK pipeline.",
+      "implementationRefs": [
+        ".github/workflows/android-debug-apk.yml"
+      ],
+      "testRefs": [
+        "tests/e2e/playwright/mobile-bundled-dist-smoke.spec.js"
+      ],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "WTSK0002"
+      ],
+      "nextAction": "Resolve WTSK0002 PR #112 workflow decision.",
+      "checklistTotal": 4,
+      "checklistDone": 3
+    },
+    {
+      "jubbaWorldId": "51065ea4-adc6-4f74-9164-1e3f0da38cfc",
+      "number": "STRY0004",
+      "type": "story",
+      "title": "Security/deployment hardening (alpha review)",
+      "externalRef": "seed:pants-on-fire:pof-infra-3",
+      "requirementRef": "seed:pants-on-fire:pof-R7",
+      "requirementNumber": "REQ0011",
+      "trackerStatus": "Done",
+      "trackerDone": true,
+      "trackerProgress": 100,
+      "priority": "Medium",
+      "emptyDescription": false,
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceClassification": "partial",
+      "confidence": "medium",
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "Security model in docs + host-only advance + moderation routes.",
+      "implementationRefs": [
+        "docs/LOBBY_ARCHITECTURE.md",
+        "server/moderationRoutes.js",
+        "server/lobbyServer.js"
+      ],
+      "testRefs": [
+        "tests/server/lobbyStore.test.mjs"
+      ],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "STRY0002"
+      ],
+      "nextAction": "Third-party security review (deferred).",
+      "checklistTotal": 0,
+      "checklistDone": 0
+    },
+    {
+      "jubbaWorldId": "9ca0f97b-cdd7-48ff-a8c1-575557c68ba2",
+      "number": "STRY0005",
+      "type": "story",
+      "title": "Online lobby backend hosting for sideloaded builds",
+      "externalRef": "seed:pants-on-fire:pof-infra-5",
+      "requirementRef": "seed:pants-on-fire:pof-R7",
+      "requirementNumber": "REQ0011",
+      "trackerStatus": "In progress",
+      "trackerDone": false,
+      "trackerProgress": 0,
+      "priority": "Medium",
+      "emptyDescription": false,
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceClassification": "partial",
+      "confidence": "medium",
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "Lobby deploy for sideload — same server codebase.",
+      "implementationRefs": [
+        "server/lobbyServer.js"
+      ],
+      "testRefs": [],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "REQ0011"
+      ],
+      "nextAction": "Railway/hosting ops verification.",
+      "checklistTotal": 0,
+      "checklistDone": 0
+    },
+    {
+      "jubbaWorldId": "e9d857e7-732d-469b-ad3d-9ded684f59e6",
+      "number": "STRY0006",
+      "type": "story",
+      "title": "Redesign UI in MagicPath around new neon graphics",
+      "externalRef": "seed:pants-on-fire:pof-req-1",
+      "requirementRef": "seed:pants-on-fire:pof-R4",
+      "requirementNumber": "REQ0008",
+      "trackerStatus": "Done",
+      "trackerDone": true,
+      "trackerProgress": 100,
+      "priority": "Medium",
+      "emptyDescription": false,
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceClassification": "partial",
+      "confidence": "medium",
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "Neon UI components live under `src/components/neon/` (e.g. `NeonHomeScreen.jsx`, `NeonStoreScreen.jsx`); parity vs MagicPath is **design sign-off** not automated.",
+      "implementationRefs": [
+        "src/components/neon/NeonHomeScreen.jsx",
+        "src/components/neon/NeonStoreScreen.jsx"
+      ],
+      "testRefs": [
+        "tests/e2e/playwright/mobile-bundled-dist-smoke.spec.js — home UI smoke"
+      ],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "REQ0008",
+        "STRY0014"
+      ],
+      "nextAction": "Design sign-off vs MagicPath reference.",
+      "checklistTotal": 2,
+      "checklistDone": 2
+    },
+    {
+      "jubbaWorldId": "e295b8bc-b5d4-43d6-8a89-e2bbd0ac8874",
+      "number": "STRY0007",
+      "type": "story",
+      "title": "Port neon redesign into the real game",
+      "externalRef": "seed:pants-on-fire:pof-req-2",
+      "requirementRef": "seed:pants-on-fire:pof-R4",
+      "requirementNumber": "REQ0008",
+      "trackerStatus": "In progress",
+      "trackerDone": false,
+      "trackerProgress": 0,
+      "priority": "Medium",
+      "emptyDescription": false,
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceClassification": "code_proven_partial",
+      "confidence": "medium",
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "Neon shell integrated: `NeonHomeScreen` imported and home branch in render tree — monolith file.",
+      "implementationRefs": [
+        "src/App.jsx:248 import NeonHomeScreen",
+        "src/App.jsx:10554+ <NeonHomeScreen ... /> render branch",
+        "src/App.jsx:10484+ startupGraphicsReady / app shell"
+      ],
+      "testRefs": [
+        "tests/e2e/playwright/mobile-bundled-dist-smoke.spec.js"
+      ],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "REQ0008"
+      ],
+      "nextAction": "Regression sweep vs STRY0006.",
+      "checklistTotal": 2,
+      "checklistDone": 1
+    },
+    {
+      "jubbaWorldId": "35858f5b-1291-4d5c-81c3-641bfcfb1de5",
+      "number": "STRY0008",
+      "type": "story",
+      "title": "Installable Android APK",
+      "externalRef": "seed:pants-on-fire:pof-req-3",
+      "requirementRef": "seed:pants-on-fire:pof-R3",
+      "requirementNumber": "REQ0007",
+      "trackerStatus": "In progress",
+      "trackerDone": false,
+      "trackerProgress": 0,
+      "priority": "Medium",
+      "emptyDescription": false,
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceClassification": "code_proven_partial",
+      "confidence": "medium",
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "Android debug workflow produces installable artifact.",
+      "implementationRefs": [
+        ".github/workflows/android-debug-apk.yml",
+        "app.json"
+      ],
+      "testRefs": [
+        "tests/e2e/playwright/mobile-bundled-dist-smoke.spec.js"
+      ],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "REQ0007",
+        "TEST0002"
+      ],
+      "nextAction": "Play internal track upload.",
+      "checklistTotal": 2,
+      "checklistDone": 1
+    },
+    {
+      "jubbaWorldId": "1de24a62-ec8e-4208-a556-0a0fcd31f027",
+      "number": "STRY0009",
+      "type": "story",
+      "title": "End-to-end test suite",
+      "externalRef": "seed:pants-on-fire:pof-req-4",
+      "requirementRef": "seed:pants-on-fire:pof-R6",
+      "requirementNumber": "REQ0010",
+      "trackerStatus": "In progress",
+      "trackerDone": false,
+      "trackerProgress": 0,
+      "priority": "Medium",
+      "emptyDescription": false,
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceClassification": "partial",
+      "confidence": "medium",
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "E2E exists but coverage gaps (Double Take skip, client unit gap).",
+      "implementationRefs": [
+        "tests/e2e/playwright/"
+      ],
+      "testRefs": [
+        "npm run test:e2e",
+        "tests/e2e/playwright/martin-smoke.spec.js"
+      ],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "TEST0001",
+        "ENHC0025"
+      ],
+      "nextAction": "TEST0001 green CI + expand matrix.",
+      "checklistTotal": 2,
+      "checklistDone": 1
+    },
+    {
+      "jubbaWorldId": "91230138-0a49-4c65-939c-339c841a8652",
+      "number": "STRY0010",
+      "type": "story",
+      "title": "Five round types playable",
+      "externalRef": "seed:pants-on-fire:pof-st-1",
+      "requirementRef": "seed:pants-on-fire:pof-R1",
+      "requirementNumber": "REQ0005",
+      "trackerStatus": "In progress",
+      "trackerDone": false,
+      "trackerProgress": 0,
+      "priority": "Medium",
+      "emptyDescription": false,
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceClassification": "partial",
+      "confidence": "medium",
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "Client lists round types in `RoundTypeChoiceGrid`; server `buildAuthoritativeRound` still Hot Seat online — gap.",
+      "implementationRefs": [
+        "src/App.jsx:4033-4095 RoundTypeChoiceGrid",
+        "server/storage/lobbyStore.js:353-378 buildAuthoritativeRound"
+      ],
+      "testRefs": [
+        "tests/e2e/playwright/mobile-bundled-dist-smoke.spec.js — round-type icons list"
+      ],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "REQ0017",
+        "REQ0009",
+        "REQ0005"
+      ],
+      "nextAction": "Server parity for non-prompt rounds online (REQ0017, REQ0009).",
+      "checklistTotal": 4,
+      "checklistDone": 3
+    },
+    {
+      "jubbaWorldId": "0379f934-6832-4d79-8a01-940f2e9d0e9e",
+      "number": "STRY0011",
+      "type": "story",
+      "title": "Classic/Chaos modes, rules splash and liar reveal",
+      "externalRef": "seed:pants-on-fire:pof-st-2",
+      "requirementRef": "seed:pants-on-fire:pof-R1",
+      "requirementNumber": "REQ0005",
+      "trackerStatus": "Done",
+      "trackerDone": true,
+      "trackerProgress": 100,
+      "priority": "Medium",
+      "emptyDescription": false,
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceClassification": "partial",
+      "confidence": "medium",
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "Rules splash: `RulesSplashScreen` + `data-testid=\"rules-continue\"` (2788-2817); chaos banned words in reveal stack (1196-1249 sanitizeBannedWords).",
+      "implementationRefs": [
+        "src/App.jsx:2788-2817 RulesSplashScreen — rules-continue",
+        "src/App.jsx:1196-1249 bannedWords sanitizeBannedWords"
+      ],
+      "testRefs": [
+        "tests/e2e/playwright/martin-smoke.spec.js (partial — home, rules)"
+      ],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "REQ0005",
+        "STRY0010"
+      ],
+      "nextAction": "E2E chaos mode path.",
+      "checklistTotal": 4,
+      "checklistDone": 4
+    },
+    {
+      "jubbaWorldId": "f6ecdc45-f0ea-4383-a7f5-78caa9c75f87",
+      "number": "STRY0012",
+      "type": "story",
+      "title": "Grill 'Em mic capture + TTS answers",
+      "externalRef": "seed:pants-on-fire:pof-st-3",
+      "requirementRef": "seed:pants-on-fire:pof-R2",
+      "requirementNumber": "REQ0006",
+      "trackerStatus": "Backlog",
+      "trackerDone": false,
+      "trackerProgress": 0,
+      "priority": "Medium",
+      "emptyDescription": false,
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceClassification": "missing",
+      "confidence": "high",
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "Grill Em strand obsolete — see REQ0006.",
+      "implementationRefs": [
+        "REQ0006 evidence — no grill round type in client routing",
+        "server/lobbyServer.js:403-456 voice token (current voice stack)"
+      ],
+      "testRefs": [],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "REQ0006",
+        "TEST0003"
+      ],
+      "nextAction": "Close or retarget STRY0012 to LiveKit voice chat.",
+      "checklistTotal": 3,
+      "checklistDone": 0
+    },
+    {
+      "jubbaWorldId": "339d8816-7862-4b38-b0af-b5f0ceaf280d",
+      "number": "STRY0013",
+      "type": "story",
+      "title": "Two Truths, One Fire mode",
+      "externalRef": "pof:story:two-truths-mode",
+      "requirementRef": null,
+      "requirementNumber": null,
+      "trackerStatus": "Done",
+      "trackerDone": true,
+      "trackerProgress": 100,
+      "priority": "Medium",
+      "emptyDescription": false,
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceClassification": "code_proven_partial",
+      "confidence": "medium",
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "Client phases `twotruths-input|voting|reveal` in `syncOnlineRoundFromSnapshot` (9257-9273); data under `src/data/twoTruthsOneFire/`; server gap REQ0017.",
+      "implementationRefs": [
+        "src/App.jsx:9257-9273 twotruths phase branches",
+        "src/data/twoTruthsOneFire/"
+      ],
+      "testRefs": [],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "REQ0017",
+        "STRY0010"
+      ],
+      "nextAction": "Server + E2E online Two Truths (REQ0017).",
+      "checklistTotal": 0,
+      "checklistDone": 0
+    },
+    {
+      "jubbaWorldId": "6b1d968b-9722-4ff1-a9e9-67214ae45ba8",
+      "number": "STRY0014",
+      "type": "story",
+      "title": "MagicPath shop themes/packs redesign mockup (awaiting Martin feedback)",
+      "externalRef": "pof:story:magicpath-shop-mockup",
+      "requirementRef": null,
+      "requirementNumber": null,
+      "trackerStatus": "Done",
+      "trackerDone": true,
+      "trackerProgress": 100,
+      "priority": "Medium",
+      "emptyDescription": false,
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceClassification": "partial",
+      "confidence": "medium",
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "In-app store: `NeonStoreScreen.jsx` implements collapsible shop UI — MagicPath mockup equivalence is **subjective**.",
+      "implementationRefs": [
+        "src/components/neon/NeonStoreScreen.jsx"
+      ],
+      "testRefs": [],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "ENHC0013"
+      ],
+      "nextAction": "Martin feedback gate vs mockup.",
+      "checklistTotal": 0,
+      "checklistDone": 0
+    },
+    {
+      "jubbaWorldId": "308ca7c9-b9ff-477f-93e3-3c3f75d96d65",
+      "number": "STRY0015",
+      "type": "story",
+      "title": "Report a bug feature",
+      "externalRef": "pof:story:report-bug",
+      "requirementRef": null,
+      "requirementNumber": null,
+      "trackerStatus": "Done",
+      "trackerDone": true,
+      "trackerProgress": 100,
+      "priority": "Medium",
+      "emptyDescription": false,
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceClassification": "code_proven_partial",
+      "confidence": "high",
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "`BugReportScreen` + queue client `src/lib/bugReportClient.js`.",
+      "implementationRefs": [
+        "src/components/BugReportScreen.jsx",
+        "src/lib/bugReportClient.js"
+      ],
+      "testRefs": [],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "ENHC0025"
+      ],
+      "nextAction": "E2E open bug report with mock API.",
+      "checklistTotal": 0,
+      "checklistDone": 0
+    },
+    {
+      "jubbaWorldId": "b879ba5d-392b-4199-adff-4522b33609cc",
+      "number": "STRY0016",
+      "type": "story",
+      "title": "OTA updates via expo-updates/EAS",
+      "externalRef": "pof:story:ota-updates",
+      "requirementRef": null,
+      "requirementNumber": null,
+      "trackerStatus": "Done",
+      "trackerDone": true,
+      "trackerProgress": 100,
+      "priority": "Medium",
+      "emptyDescription": false,
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceClassification": "partial",
+      "confidence": "medium",
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "OTA via EAS not evidenced in repo (no eas.json); releases use GitHub + Gradle (`android-release-aab.yml`).",
+      "implementationRefs": [
+        "app.json:1-37",
+        ".github/workflows/android-release-aab.yml:1-80"
+      ],
+      "testRefs": [],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "REQ0007",
+        "REQ0016"
+      ],
+      "nextAction": "If OTA needed: add eas.json + channel policy; else close story as web shell only.",
+      "checklistTotal": 0,
+      "checklistDone": 0
+    },
+    {
+      "jubbaWorldId": "47ddc268-c0d3-4b62-a6f8-3f447f0450b2",
+      "number": "STRY0017",
+      "type": "story",
+      "title": "AAB release packaging (placeholder-signed)",
+      "externalRef": "pof:story:aab-packaging",
+      "requirementRef": null,
+      "requirementNumber": null,
+      "trackerStatus": "Done",
+      "trackerDone": true,
+      "trackerProgress": 100,
+      "priority": "Medium",
+      "emptyDescription": true,
+      "acceptanceBasis": "inferred_from_title",
+      "acceptanceInferredFlag": true,
+      "evidenceClassification": "partial",
+      "confidence": "medium",
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "AAB workflow exists; placeholder signing — org acceptance.",
+      "implementationRefs": [
+        ".github/workflows/android-release-aab.yml"
+      ],
+      "testRefs": [],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "REQ0012",
+        "STRY0008"
+      ],
+      "nextAction": "Production signing (REQ0012).",
+      "checklistTotal": 0,
+      "checklistDone": 0
+    },
+    {
+      "jubbaWorldId": "6cf85987-5b13-4769-ad0b-df23e493907d",
+      "number": "STRY0018",
+      "type": "story",
+      "title": "Themes drive graphics, music and sound effects",
+      "externalRef": "chatgpt:pants-on-fire:theme-av",
+      "requirementRef": null,
+      "requirementNumber": null,
+      "trackerStatus": "Backlog",
+      "trackerDone": false,
+      "trackerProgress": 0,
+      "priority": "Medium",
+      "emptyDescription": false,
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceClassification": "partial",
+      "confidence": "medium",
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "Theme host visuals/audio driven from `themeHosts.js` + `themeAssets.js` — per-theme QA not automated.",
+      "implementationRefs": [
+        "src/data/themeHosts.js",
+        "src/data/themeAssets.js"
+      ],
+      "testRefs": [],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "REQ0008"
+      ],
+      "nextAction": "Content QA per theme.",
+      "checklistTotal": 0,
+      "checklistDone": 0
+    },
+    {
+      "jubbaWorldId": "77f4609d-c3d5-4887-a848-693f401bd94e",
+      "number": "STRY0019",
+      "type": "story",
+      "title": "Dynamic randomised host greetings and comments each round",
+      "externalRef": "chatgpt:pants-on-fire:host-lines",
+      "requirementRef": null,
+      "requirementNumber": null,
+      "trackerStatus": "Backlog",
+      "trackerDone": false,
+      "trackerProgress": 0,
+      "priority": "Medium",
+      "emptyDescription": false,
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceClassification": "partial",
+      "confidence": "medium",
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "Host lines + media — see hostVoiceLineMap + assets.",
+      "implementationRefs": [
+        "src/data/hostVoiceLineMap.js"
+      ],
+      "testRefs": [],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "DFCT0025",
+        "DFCT0026"
+      ],
+      "nextAction": "DFCT0025/0026 audio QA.",
+      "checklistTotal": 0,
+      "checklistDone": 0
+    },
+    {
+      "jubbaWorldId": "f17afd99-2640-4431-bf87-35d25dd0d793",
+      "number": "STRY0020",
+      "type": "story",
+      "title": "Chaos banned words relevant to both prompts, excluding prompt/category/hint words",
+      "externalRef": "chatgpt:pants-on-fire:chaos-banned",
+      "requirementRef": null,
+      "requirementNumber": null,
+      "trackerStatus": "Backlog",
+      "trackerDone": false,
+      "trackerProgress": 0,
+      "priority": "Medium",
+      "emptyDescription": false,
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceClassification": "partial",
+      "confidence": "medium",
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "Chaos banned words: `sanitizeBannedWords` + `BANNED_WORD_BANK` (1196-1249); server mirrors in `lobbyStore` `pickBannedWords` (~228-241).",
+      "implementationRefs": [
+        "src/App.jsx:1196-1249 sanitizeBannedWords / BANNED_WORD_BANK",
+        "server/storage/lobbyStore.js:228-241 pickBannedWords"
+      ],
+      "testRefs": [],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "STRY0011"
+      ],
+      "nextAction": "Unit test banned word merge client vs server.",
+      "checklistTotal": 0,
+      "checklistDone": 0
+    },
+    {
+      "jubbaWorldId": "acae6ab3-45fb-42ce-9605-8c2a548bef81",
+      "number": "STRY0021",
+      "type": "story",
+      "title": "Show points added per round on the leaderboard",
+      "externalRef": "chatgpt:pants-on-fire:round-points",
+      "requirementRef": null,
+      "requirementNumber": null,
+      "trackerStatus": "Backlog",
+      "trackerDone": false,
+      "trackerProgress": 0,
+      "priority": "Medium",
+      "emptyDescription": false,
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceClassification": "partial",
+      "confidence": "medium",
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "Round scoring server-side `scoreRoundServer` in lobbyStore.",
+      "implementationRefs": [
+        "server/storage/lobbyStore.js:243-273 scoreRoundServer"
+      ],
+      "testRefs": [
+        "tests/server/lobbyStore.test.mjs"
+      ],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "STRY0010"
+      ],
+      "nextAction": "Client display alignment tests.",
+      "checklistTotal": 0,
+      "checklistDone": 0
+    },
+    {
+      "jubbaWorldId": "37c9a113-b07e-4196-9352-0f8ff33aba37",
+      "number": "STRY0022",
+      "type": "story",
+      "title": "Heartbeat sound and pulsing screen before the liar reveal",
+      "externalRef": "chatgpt:pants-on-fire:heartbeat",
+      "requirementRef": null,
+      "requirementNumber": null,
+      "trackerStatus": "Backlog",
+      "trackerDone": false,
+      "trackerProgress": 0,
+      "priority": "Medium",
+      "emptyDescription": false,
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceClassification": "partial",
+      "confidence": "medium",
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "Disconnect grace: `scheduleDisconnectGraceTimer` + socket `disconnect` handler (341-389, 1120-1134).",
+      "implementationRefs": [
+        "server/lobbyServer.js:341-389 scheduleDisconnectGraceTimer",
+        "server/lobbyServer.js:1120-1134 socket disconnect → scheduleDisconnectGraceTimer"
+      ],
+      "testRefs": [
+        "tests/server/lobbyStore.test.mjs"
+      ],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "STRY0002"
+      ],
+      "nextAction": "Soak test multi-tab disconnect.",
+      "checklistTotal": 0,
+      "checklistDone": 0
+    },
+    {
+      "jubbaWorldId": "1d0ae310-763b-4492-9420-126de7fe2cd8",
+      "number": "STRY0023",
+      "type": "story",
+      "title": "Audio/video rounds only in online lobbies, not pass-the-phone",
+      "externalRef": "chatgpt:pants-on-fire:av-online-only",
+      "requirementRef": null,
+      "requirementNumber": null,
+      "trackerStatus": "Backlog",
+      "trackerDone": false,
+      "trackerProgress": 0,
+      "priority": "Medium",
+      "emptyDescription": false,
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceClassification": "partial",
+      "confidence": "medium",
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "Voice: `ONLINE_VOICE_ACTIVE_SCREENS` (349-358) + effect gates `setOnlineVoiceEnabled` (8399-8407).",
+      "implementationRefs": [
+        "src/App.jsx:349-358 ONLINE_VOICE_ACTIVE_SCREENS",
+        "src/App.jsx:8399-8407 useEffect onlineVoiceEnabled"
+      ],
+      "testRefs": [],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "REQ0009"
+      ],
+      "nextAction": "E2E verify local pass-phone screens do not enable LiveKit connect.",
+      "checklistTotal": 0,
+      "checklistDone": 0
+    },
+    {
+      "jubbaWorldId": "922ae37a-c174-49de-a558-a0c0279bfd28",
+      "number": "STRY0024",
+      "type": "story",
+      "title": "Round chooser: pick round type from 2 options (not the previous), then category",
+      "externalRef": "chatgpt:pants-on-fire:round-chooser",
+      "requirementRef": null,
+      "requirementNumber": null,
+      "trackerStatus": "Backlog",
+      "trackerDone": false,
+      "trackerProgress": 0,
+      "priority": "Medium",
+      "emptyDescription": false,
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceClassification": "partial",
+      "confidence": "medium",
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "Round chooser UI — round-type grid.",
+      "implementationRefs": [
+        "src/App.jsx:10899-10920 screen round-type-choice + RoundTypeChoiceGrid"
+      ],
+      "testRefs": [
+        "tests/e2e/playwright/mobile-bundled-dist-smoke.spec.js"
+      ],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "TEST0004"
+      ],
+      "nextAction": "Unskip Double Take path (TEST0004).",
+      "checklistTotal": 0,
+      "checklistDone": 0
+    },
+    {
+      "jubbaWorldId": "d5328968-27cd-49c6-92b7-70127d2afbac",
+      "number": "STRY0025",
+      "type": "story",
+      "title": "Game rules settings: points to win 10/15/20, rounds per player 1/2/3",
+      "externalRef": "chatgpt:pants-on-fire:rules-settings",
+      "requirementRef": null,
+      "requirementNumber": null,
+      "trackerStatus": "Backlog",
+      "trackerDone": false,
+      "trackerProgress": 0,
+      "priority": "Medium",
+      "emptyDescription": false,
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceClassification": "partial",
+      "confidence": "medium",
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "Rules + settings: `RulesSplashScreen` + `SettingsScreen` (6770+) with `SettingsToggleRow` (6722+).",
+      "implementationRefs": [
+        "src/App.jsx:10892-10897 rules screen branch",
+        "src/App.jsx:6722-6767 SettingsToggleRow",
+        "src/App.jsx:6770+ SettingsScreen"
+      ],
+      "testRefs": [
+        "tests/e2e/playwright/martin-smoke.spec.js:53 rules-continue"
+      ],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "REQ0005"
+      ],
+      "nextAction": "Snapshot all rule variants.",
+      "checklistTotal": 0,
+      "checklistDone": 0
+    },
+    {
+      "jubbaWorldId": "c5242fcb-a40d-4c5f-9a41-965943e30072",
+      "number": "STRY0026",
+      "type": "story",
+      "title": "Host presenter costume variants per theme",
+      "externalRef": "chatgpt:pants-on-fire:host-costumes",
+      "requirementRef": null,
+      "requirementNumber": null,
+      "trackerStatus": "Backlog",
+      "trackerDone": false,
+      "trackerProgress": 0,
+      "priority": "Medium",
+      "emptyDescription": false,
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceClassification": "partial",
+      "confidence": "medium",
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "Host personas: `getThemePersonas` / `themeHosts.js`; voice export helper `scripts/lib/hostVoiceExportLib.cjs`.",
+      "implementationRefs": [
+        "src/data/themeHosts.js",
+        "scripts/lib/hostVoiceExportLib.cjs"
+      ],
+      "testRefs": [],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "STRY0018"
+      ],
+      "nextAction": "Visual content QA vs theme packs.",
+      "checklistTotal": 0,
+      "checklistDone": 0
+    },
+    {
+      "jubbaWorldId": "6ba18811-825b-4394-a926-972f7a5c7e56",
+      "number": "STRY0027",
+      "type": "story",
+      "title": "30-second 'Ian Poster' infomercial video",
+      "externalRef": "chatgpt:pants-on-fire:infomercial",
+      "requirementRef": null,
+      "requirementNumber": null,
+      "trackerStatus": "Backlog",
+      "trackerDone": false,
+      "trackerProgress": 0,
+      "priority": "Medium",
+      "emptyDescription": false,
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceClassification": "deferred",
+      "confidence": "medium",
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "Infomercial script — marketing content; no script file in repo audit.",
+      "implementationRefs": [
+        "docs/store/play-listing.md — marketing copy only"
+      ],
+      "testRefs": [],
+      "runtimeNotes": null,
+      "linksExistingTracker": [],
+      "nextAction": "Defer to marketing.",
+      "checklistTotal": 0,
+      "checklistDone": 0
+    },
+    {
+      "jubbaWorldId": "9f8d1e8a-be08-4c38-b8b6-8d61a4e470dd",
+      "number": "TEST0001",
+      "type": "test",
+      "title": "Playwright E2E: core game loop",
+      "externalRef": "seed:pants-on-fire:pof-test-1",
+      "requirementRef": "seed:pants-on-fire:pof-R6",
+      "requirementNumber": "REQ0010",
+      "trackerStatus": "In progress",
+      "trackerDone": false,
+      "trackerProgress": 0,
+      "priority": "Medium",
+      "emptyDescription": false,
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceClassification": "partial",
+      "confidence": "high",
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "Playwright E2E runs locally; “Green on CI” depends on adding job — npm-test.yml covers unit only.",
+      "implementationRefs": [
+        "playwright.config.js",
+        ".github/workflows/npm-test.yml"
+      ],
+      "testRefs": [
+        "tests/e2e/playwright/*.spec.js"
+      ],
+      "runtimeNotes": null,
+      "linksExistingTracker": [
+        "ENHC0023",
+        "STRY0009"
+      ],
+      "nextAction": "Optional: add Playwright CI workflow (separate from ENHC0025).",
+      "checklistTotal": 2,
+      "checklistDone": 1
+    },
+    {
+      "jubbaWorldId": "79dfcbc3-5ad5-4d9a-981f-f5b2486fa1b7",
+      "number": "TEST0002",
+      "type": "test",
+      "title": "Release APK install + launch smoke test",
+      "externalRef": "seed:pants-on-fire:pof-test-2",
+      "requirementRef": "seed:pants-on-fire:pof-R3",
+      "requirementNumber": "REQ0007",
+      "trackerStatus": "Done",
+      "trackerDone": true,
+      "trackerProgress": 100,
+      "priority": "Medium",
+      "emptyDescription": false,
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceClassification": "blocked_device_external",
+      "confidence": "medium",
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "Tracker Done — physical install/launch not repeated in this audit (Linux agent).",
+      "implementationRefs": [
+        ".github/workflows/android-debug-apk.yml"
+      ],
+      "testRefs": [
+        "tests/e2e/playwright/mobile-bundled-dist-smoke.spec.js — proxy web only"
+      ],
+      "runtimeNotes": "WebView install smoke ≠ APK install proof.",
+      "linksExistingTracker": [
+        "REQ0007",
+        "STRY0008"
+      ],
+      "nextAction": "Physical device repeat per release.",
+      "checklistTotal": 3,
+      "checklistDone": 3
+    },
+    {
+      "jubbaWorldId": "f3a19d77-010e-48c0-8acd-e977b19f8e2e",
+      "number": "TEST0003",
+      "type": "test",
+      "title": "Voice round device test",
+      "externalRef": "seed:pants-on-fire:pof-test-3",
+      "requirementRef": "seed:pants-on-fire:pof-R2",
+      "requirementNumber": "REQ0006",
+      "trackerStatus": "Backlog",
+      "trackerDone": false,
+      "trackerProgress": 0,
+      "priority": "Medium",
+      "emptyDescription": false,
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceClassification": "blocked_device_external",
+      "confidence": "high",
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "Voice round device test — needs real mic + LiveKit room.",
+      "implementationRefs": [
+        "src/online/voicePartyTransport.js",
+        "server/lobbyServer.js:403-456 /api/lobbies/:code/voice/token"
+      ],
+      "testRefs": [],
+      "runtimeNotes": "No automated voice round test in repo.",
+      "linksExistingTracker": [
+        "STRY0012",
+        "CONV-REQ-VOICE-TURN-PHASE"
+      ],
+      "nextAction": "Manual device script: join lobby, publish mic, verify others hear.",
+      "checklistTotal": 2,
+      "checklistDone": 0
+    },
+    {
+      "jubbaWorldId": "9dd8f1ff-a0d5-4382-869b-2f721d983888",
+      "number": "WTSK0001",
+      "type": "work_task",
+      "title": "Retrospective logging: backfill past fixes and decisions from chat history",
+      "externalRef": "POF-ENH-004",
+      "requirementRef": null,
+      "requirementNumber": null,
+      "trackerStatus": "To do",
+      "trackerDone": false,
+      "trackerProgress": 0,
+      "priority": "Medium",
+      "emptyDescription": false,
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceClassification": "deferred",
+      "confidence": "medium",
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "Retrospective chat logging — process backlog.",
+      "implementationRefs": [
+        "docs/superpowers/plans/2026-11-06-jubba-full-audit.md — plan artifact"
+      ],
+      "testRefs": [],
+      "runtimeNotes": null,
+      "linksExistingTracker": [],
+      "nextAction": "Schedule during dev gap.",
+      "checklistTotal": 0,
+      "checklistDone": 0
+    },
+    {
+      "jubbaWorldId": "ca580ae3-a621-4f38-8df4-8e4a6fdfab46",
+      "number": "WTSK0002",
+      "type": "work_task",
+      "title": "Decision pending: PR #112 (manual-only Android debug workflow) conflicts with branch workflow",
+      "externalRef": "POF-DEC-001",
+      "requirementRef": null,
+      "requirementNumber": null,
+      "trackerStatus": "Done",
+      "trackerDone": true,
+      "trackerProgress": 0,
+      "priority": "Medium",
+      "emptyDescription": false,
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceClassification": "deferred",
+      "confidence": "high",
+      "evidenceSource": "process_and_snapshot_notable_inconsistency",
+      "methodologyNote": "Snapshot export shows Done+progress 0; user reports parent reopened — defer until Jubba finalizes PR #112 vs branch workflow. Engineering recommendation lives in docs/decisions.",
+      "implementationRefs": [
+        "docs/decisions/POF-DEC-112-android-debug-apk-workflow.md",
+        "docs/audit/2026-11-06-jubba-full-audit/jubbaworld-snapshot-2026-11-06.json — notable_inconsistencies"
+      ],
+      "testRefs": [],
+      "runtimeNotes": null,
+      "linksExistingTracker": [],
+      "nextAction": "Align tracker with parent reopen; archive when workflow merged.",
+      "checklistTotal": 0,
+      "checklistDone": 0
+    },
+    {
+      "jubbaWorldId": "3eeff2aa-8566-4075-a662-796b2d5d0231",
+      "number": "WTSK0003",
+      "type": "work_task",
+      "title": "Decision: Web DLC packs repriced to £0.99 (Stripe sandbox)",
+      "externalRef": "POF-DEC-002",
+      "requirementRef": null,
+      "requirementNumber": null,
+      "trackerStatus": "Done",
+      "trackerDone": true,
+      "trackerProgress": 100,
+      "priority": "Medium",
+      "emptyDescription": false,
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceClassification": "partial",
+      "confidence": "medium",
+      "evidenceSource": "repo_read_batch02",
+      "methodologyNote": "Sandbox Stripe price + mapping in code/tests; live deploy explicitly out of scope for audit.",
+      "implementationRefs": [
+        "server/stripeCatalog.js",
+        "tests/server/stripeCatalog.test.mjs"
+      ],
+      "testRefs": [
+        "tests/server/stripeCatalog.test.mjs"
+      ],
+      "runtimeNotes": "Railway healthy deploy cited in tracker — not re-verified live.",
+      "linksExistingTracker": [
+        "WTSK0006"
+      ],
+      "nextAction": "Live migration per WTSK0006 checklist.",
+      "checklistTotal": 0,
+      "checklistDone": 0
+    },
+    {
+      "jubbaWorldId": "d9e7731a-58bb-45be-8d61-e804cbc935d9",
+      "number": "WTSK0004",
+      "type": "work_task",
+      "title": "13+ prompt copy: Travel Disasters pack",
+      "externalRef": "POF-ENH-006",
+      "requirementRef": null,
+      "requirementNumber": null,
+      "trackerStatus": "Done",
+      "trackerDone": true,
+      "trackerProgress": 100,
+      "priority": "Medium",
+      "emptyDescription": false,
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceClassification": "verified",
+      "confidence": "high",
+      "evidenceSource": "repo_read",
+      "methodologyNote": "Travel Mix-up prompt strings match 13+ sanitisation described; file:line verified.",
+      "implementationRefs": [
+        "src/data/packs/categoryPromptPacks.js:70-83 TravelDisastersPromptRoundData — Travel Mix-up pair"
+      ],
+      "testRefs": [],
+      "runtimeNotes": null,
+      "linksExistingTracker": [],
+      "nextAction": "None unless editorial wants different wording.",
+      "checklistTotal": 0,
+      "checklistDone": 0
+    },
+    {
+      "jubbaWorldId": "938921a1-f7b8-45b6-8b9b-5453e4e61ab6",
+      "number": "WTSK0005",
+      "type": "work_task",
+      "title": "Play Store listing draft + graphics",
+      "externalRef": "POF-ENH-007",
+      "requirementRef": null,
+      "requirementNumber": null,
+      "trackerStatus": "Done",
+      "trackerDone": true,
+      "trackerProgress": 100,
+      "priority": "Medium",
+      "emptyDescription": false,
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceClassification": "partial",
+      "confidence": "medium",
+      "evidenceSource": "repo_read",
+      "methodologyNote": "Listing and five PNG paths from description exist under docs/store/; commit/deploy not re-verified in this batch.",
+      "implementationRefs": [
+        "docs/store/play-listing.md",
+        "docs/store/graphics/icon-512.png",
+        "docs/store/graphics/feature-1024x500.png",
+        "docs/store/graphics/screenshot-01-home.png",
+        "docs/store/graphics/screenshot-02-ingame.png",
+        "docs/store/graphics/screenshot-03-lobby.png",
+        "scripts/generatePlayStoreGraphics.mjs"
+      ],
+      "testRefs": [],
+      "runtimeNotes": null,
+      "linksExistingTracker": [],
+      "nextAction": "Optional: confirm listing text against Play Console draft outside repo.",
+      "checklistTotal": 0,
+      "checklistDone": 0
+    },
+    {
+      "jubbaWorldId": "fb0559fd-0065-489b-8c29-dc16dfb6cb06",
+      "number": "WTSK0006",
+      "type": "work_task",
+      "title": "Stripe live + RevenueCat production checklist (research)",
+      "externalRef": "POF-ENH-008",
+      "requirementRef": null,
+      "requirementNumber": null,
+      "trackerStatus": "Done",
+      "trackerDone": true,
+      "trackerProgress": 100,
+      "priority": "Medium",
+      "emptyDescription": false,
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceClassification": "partial",
+      "confidence": "medium",
+      "evidenceSource": "repo_read",
+      "methodologyNote": "Checklist document present in repo; live Stripe/RevenueCat execution not verified (sandbox/research item).",
+      "implementationRefs": [
+        "docs/store/STRIPE_REVENUECAT_LIVE_CHECKLIST.md"
+      ],
+      "testRefs": [],
+      "runtimeNotes": "No live payment verification performed.",
+      "linksExistingTracker": [],
+      "nextAction": "Execute checklist steps in staging with owner credentials when approved.",
+      "checklistTotal": 0,
+      "checklistDone": 0
+    },
+    {
+      "jubbaWorldId": "6cec2835-350a-4cd2-a2ef-03cc15331c4f",
+      "number": "WTSK0007",
+      "type": "work_task",
+      "title": "Store graphics font fix: Chewy TTF glyph paths",
+      "externalRef": "POF-FIX-STORE-GRAPHICS-FONT",
+      "requirementRef": null,
+      "requirementNumber": null,
+      "trackerStatus": "Done",
+      "trackerDone": true,
+      "trackerProgress": 100,
+      "priority": "Medium",
+      "emptyDescription": false,
+      "acceptanceBasis": "from_snapshot_description",
+      "acceptanceInferredFlag": false,
+      "evidenceClassification": "partial",
+      "confidence": "high",
+      "evidenceSource": "repo_read_and_git_log",
+      "methodologyNote": "Commit d8adf1a exists in repo history per git log; ties to store graphics generator.",
+      "implementationRefs": [
+        "scripts/generatePlayStoreGraphics.mjs — Chewy verification helpers",
+        "git log -1 d8adf1a (local clone)"
+      ],
+      "testRefs": [],
+      "runtimeNotes": null,
+      "linksExistingTracker": [],
+      "nextAction": "Visual sign-off of PNG pixel accuracy optional.",
+      "checklistTotal": 0,
+      "checklistDone": 0
+    }
+  ],
+  "conversationRequirementRows": [
+    {
+      "jubbaWorldId": null,
+      "number": null,
+      "type": "conversation_requirement",
+      "title": "Display font must be Chewy with black outline and drop shadow (as chosen).",
+      "externalRef": "CONV-REQ-FONT-CHEWY",
+      "trackerStatus": "n/a",
+      "trackerDone": null,
+      "acceptanceBasis": "conversation_inferred",
+      "evidenceClassification": "partial",
+      "confidence": "medium",
+      "evidenceSource": "repo_read",
+      "methodologyNote": "Store generator uses Chewy TTF; in-app fonts validated in mobile dist smoke (PoF Display / Vintage Cowboy) — not identical scope to Chewy store requirement.",
+      "implementationRefs": [
+        "scripts/generatePlayStoreGraphics.mjs",
+        "tests/e2e/playwright/mobile-bundled-dist-smoke.spec.js — assertGameFontsLoaded"
+      ],
+      "testRefs": [
+        "tests/e2e/playwright/mobile-bundled-dist-smoke.spec.js"
+      ],
+      "relatedTrackerRefs": [
+        "POF-FIX-STORE-GRAPHICS-FONT",
+        "POF-UI-004"
+      ],
+      "linksExistingTracker": [],
+      "nextAction": "Explicit Playwright assertion for Chewy on store screens if required."
+    },
+    {
+      "jubbaWorldId": null,
+      "number": null,
+      "type": "conversation_requirement",
+      "title": "All fonts in headers etc should be ALL CAPS. Apply to headings, titles, button labels, nav; not player names, chat, or prompts. Body text may stay sentence case.",
+      "externalRef": "CONV-REQ-ALL-CAPS",
+      "trackerStatus": "n/a",
+      "trackerDone": null,
+      "acceptanceBasis": "conversation_inferred",
+      "evidenceClassification": "partial",
+      "confidence": "high",
+      "evidenceSource": "repo_read",
+      "methodologyNote": "Same evidence as ENHC0024 — heading/button patterns partial.",
+      "implementationRefs": [
+        "src/pof-components.css:84-108"
+      ],
+      "testRefs": [],
+      "relatedTrackerRefs": [
+        "POF-ENH-DISPLAY-CAPS"
+      ],
+      "linksExistingTracker": [],
+      "nextAction": "Complete div-based titles per tracker; do not duplicate new work_task."
+    },
+    {
+      "jubbaWorldId": null,
+      "number": null,
+      "type": "conversation_requirement",
+      "title": "Draft store graphics (icon, feature graphic, 3 portrait marketing stills) with ALL CAPS + Chewy approved for content review. Approval is not merge/upload/deploy permission.",
+      "externalRef": "CONV-REQ-GRAPHICS-APPROVED",
+      "trackerStatus": "n/a",
+      "trackerDone": null,
+      "acceptanceBasis": "conversation_inferred",
+      "evidenceClassification": "partial",
+      "confidence": "medium",
+      "evidenceSource": "repo_read",
+      "methodologyNote": "PNG artifacts exist; “approved for content review” is process state — not re-verified here.",
+      "implementationRefs": [
+        "docs/store/graphics/icon-512.png",
+        "docs/store/graphics/feature-1024x500.png",
+        "docs/store/graphics/screenshot-01-home.png",
+        "docs/store/graphics/screenshot-02-ingame.png",
+        "docs/store/graphics/screenshot-03-lobby.png"
+      ],
+      "testRefs": [],
+      "relatedTrackerRefs": [
+        "POF-ENH-006",
+        "POF-FIX-STORE-GRAPHICS-FONT",
+        "POF-ENH-DISPLAY-CAPS"
+      ],
+      "linksExistingTracker": [],
+      "nextAction": "Parent Page approval trail outside repo."
+    },
+    {
+      "jubbaWorldId": null,
+      "number": null,
+      "type": "conversation_requirement",
+      "title": "Game supports pass-phone and online play modes.",
+      "externalRef": "CONV-REQ-PASS-PHONE-AND-ONLINE",
+      "trackerStatus": "n/a",
+      "trackerDone": null,
+      "acceptanceBasis": "conversation_inferred",
+      "evidenceClassification": "partial",
+      "confidence": "medium",
+      "evidenceSource": "repo_read_and_tests",
+      "methodologyNote": "Pass-phone: mobile dist smoke local flow. Online: web-player E2E hits lobby proxy when server runs; not full matrix.",
+      "implementationRefs": [
+        "src/App.jsx — online + local flows (large file)",
+        "vite.config.js:7-16 proxy"
+      ],
+      "testRefs": [
+        "tests/e2e/playwright/mobile-bundled-dist-smoke.spec.js",
+        "tests/e2e/playwright/web-player-website.spec.js",
+        "tests/server/lobbyStore.test.mjs"
+      ],
+      "relatedTrackerRefs": [],
+      "linksExistingTracker": [],
+      "nextAction": "Multi-client online Playwright for each round type; unskip Double Take (parent TEST0004)."
+    },
+    {
+      "jubbaWorldId": null,
+      "number": null,
+      "type": "conversation_requirement",
+      "title": "One-word turn phase: microphone only for current player; then open discussion. Default voice on.",
+      "externalRef": "CONV-REQ-VOICE-TURN-PHASE",
+      "trackerStatus": "n/a",
+      "trackerDone": null,
+      "acceptanceBasis": "conversation_inferred",
+      "evidenceClassification": "partial",
+      "confidence": "medium",
+      "evidenceSource": "repo_read",
+      "methodologyNote": "Client: mic gated + typed fallback (OneWordRoundScreen). Server: submitOneWordTurn — runtime enforcement of “only current player speaks” not validated in this batch (no LiveKit/device test).",
+      "implementationRefs": [
+        "src/components/OneWordRoundScreen.jsx:64-120 mic vs typed fallback",
+        "server/lobbyServer.js:924+ POST /api/lobbies/:code/round/one-word",
+        "server/storage/lobbyStore.js:996+ submitOneWordTurn"
+      ],
+      "testRefs": [
+        "tests/server/lobbyStore.test.mjs — one-word phase coverage (server)"
+      ],
+      "relatedTrackerRefs": [],
+      "linksExistingTracker": [],
+      "nextAction": "Device test: online one-word with voice on; verify non-active players cannot publish audio."
+    },
+    {
+      "jubbaWorldId": null,
+      "number": null,
+      "type": "conversation_requirement",
+      "title": "Report/block and deletion flows required.",
+      "externalRef": "CONV-REQ-REPORT-BLOCK-DELETE",
+      "trackerStatus": "n/a",
+      "trackerDone": null,
+      "acceptanceBasis": "conversation_inferred",
+      "evidenceClassification": "partial",
+      "confidence": "medium",
+      "evidenceSource": "repo_read",
+      "methodologyNote": "Report + server route + client API present; account block sync; “deletion” as account/data deletion not mapped in this batch.",
+      "implementationRefs": [
+        "server/moderationRoutes.js:36-76 POST /api/lobbies/:code/report",
+        "src/lib/lobbyModerationApi.js:31-52 reportLobbyPlayer",
+        "src/lib/playerModeration.js — local block keys",
+        "src/App.jsx:7751+ handleReportLobbyPlayer"
+      ],
+      "testRefs": [],
+      "relatedTrackerRefs": [],
+      "linksExistingTracker": [],
+      "nextAction": "Add API/integration tests for report path; clarify deletion scope (GDPR/account)."
+    },
+    {
+      "jubbaWorldId": null,
+      "number": null,
+      "type": "conversation_requirement",
+      "title": "Age rating / audience is 13+; prompt reword for 13+ Travel Mix-up logged/done in tracker as part of store prep.",
+      "externalRef": "CONV-REQ-AGE-13-PLUS",
+      "trackerStatus": "n/a",
+      "trackerDone": null,
+      "acceptanceBasis": "conversation_inferred",
+      "evidenceClassification": "partial",
+      "confidence": "high",
+      "evidenceSource": "repo_read",
+      "methodologyNote": "Overlaps WTSK0004 Travel Mix-up reword — verified in categoryPromptPacks.js.",
+      "implementationRefs": [
+        "src/data/packs/categoryPromptPacks.js:83"
+      ],
+      "testRefs": [],
+      "relatedTrackerRefs": [],
+      "linksExistingTracker": [],
+      "nextAction": "Broader 13+ content audit if store asks for evidence pack."
+    },
+    {
+      "jubbaWorldId": null,
+      "number": null,
+      "type": "conversation_requirement",
+      "title": "Newest bundled/cache/live source selection for prompts; debug bundled default.",
+      "externalRef": "CONV-REQ-PROMPT-SOURCE-SELECTION",
+      "trackerStatus": "n/a",
+      "trackerDone": null,
+      "acceptanceBasis": "conversation_inferred",
+      "evidenceClassification": "partial",
+      "confidence": "high",
+      "evidenceSource": "repo_read_and_tests",
+      "methodologyNote": "Preference model + tests for auto/bundled/live; UI copy in App settings references newest compatible.",
+      "implementationRefs": [
+        "src/lib/gameSourcePreference.js",
+        "src/App.jsx:6986-6987 settings copy"
+      ],
+      "testRefs": [
+        "tests/nativeShell/gameSourceSelection.test.mjs"
+      ],
+      "relatedTrackerRefs": [],
+      "linksExistingTracker": [],
+      "nextAction": "E2E in WebView shell for source toggle if gaps found."
+    },
+    {
+      "jubbaWorldId": null,
+      "number": null,
+      "type": "conversation_requirement",
+      "title": "No release/merge/deploy/live payments changes without Jubba explicit approval. Jubba merges himself. Secrets never echoed.",
+      "externalRef": "CONV-REQ-NO-LIVE-WITHOUT-APPROVAL",
+      "trackerStatus": "n/a",
+      "trackerDone": null,
+      "acceptanceBasis": "conversation_inferred",
+      "evidenceClassification": "verified",
+      "confidence": "high",
+      "evidenceSource": "process",
+      "methodologyNote": "Audit session made no merge/deploy/live payment changes; branch push only for documentation.",
+      "implementationRefs": [],
+      "testRefs": [],
+      "relatedTrackerRefs": [],
+      "linksExistingTracker": [],
+      "nextAction": "Maintain for all future agent runs."
+    },
+    {
+      "jubbaWorldId": null,
+      "number": null,
+      "type": "conversation_requirement",
+      "title": "Whenever something needs review, present it as a Page showing the actual item, not only a PR link.",
+      "externalRef": "CONV-REQ-REVIEW-AS-PAGE",
+      "trackerStatus": "n/a",
+      "trackerDone": null,
+      "acceptanceBasis": "conversation_inferred",
+      "evidenceClassification": "partial",
+      "confidence": "medium",
+      "evidenceSource": "artifacts",
+      "methodologyNote": "Audit outputs are file-based for parent Page composition; not a product UI.",
+      "implementationRefs": [
+        "docs/audit/2026-11-06-jubba-full-audit/traceability-FULL.json",
+        "docs/audit/2026-11-06-jubba-full-audit/findings-FULL.json",
+        "docs/audit/2026-11-06-jubba-full-audit/evidence-batch-01.json",
+        "docs/audit/2026-11-06-jubba-full-audit/evidence-batch-02.json",
+        "docs/audit/2026-11-06-jubba-full-audit/evidence-batch-03.json"
+      ],
+      "testRefs": [],
+      "relatedTrackerRefs": [],
+      "linksExistingTracker": [],
+      "nextAction": "Parent assembles Page from these paths."
+    }
+  ]
+}

@@ -34,6 +34,7 @@ function parseArgs(argv) {
     delayMs: 350,
     modelId: 'eleven_multilingual_v2',
     outDir: '',
+    linesCsv: '',
   };
   for (let i = 2; i < argv.length; i += 1) {
     const a = argv[i];
@@ -52,6 +53,8 @@ function parseArgs(argv) {
       args.modelId = argv[++i].trim();
     } else if (a === '--out-dir' && argv[i + 1]) {
       args.outDir = argv[++i].trim();
+    } else if (a === '--lines-csv' && argv[i + 1]) {
+      args.linesCsv = argv[++i].trim();
     } else if (a === '--help' || a === '-h') {
       args.help = true;
     }
@@ -70,7 +73,7 @@ Options:
   --pack <id>         Use exports/dlc/<id>/host-voice-lines.csv
   --persona-callouts  Use exports/host-persona-callouts.csv (beta launch themes)
   --install           Write MP3s to public/assets/audio/host/<theme-slug>/tts/
-  --out-dir <path>    Otherwise writes to exports/generated-audio/<slug>/
+  --lines-csv <path>   Use a specific export CSV (instead of --core / --pack)
   --dry-run           Print plan only, no API calls
   --limit N           Only first N lines (testing)
   --delay-ms N        Pause between requests (default 350)
@@ -204,12 +207,14 @@ function resolveOutputPath({ row, install, outDir }) {
 
 async function main() {
   const args = parseArgs(process.argv);
-  if (args.help || (!args.core && !args.pack && !args.personaCallouts)) {
+  if (args.help || (!args.core && !args.pack && !args.personaCallouts && !args.linesCsv)) {
     printHelp();
     process.exit(args.help ? 0 : 1);
   }
 
-  const csvPath = args.personaCallouts
+  const csvPath = args.linesCsv
+    ? path.resolve(repoRoot, args.linesCsv)
+    : args.personaCallouts
     ? path.join(repoRoot, 'exports', 'host-persona-callouts.csv')
     : args.core
       ? path.join(repoRoot, 'exports', 'host-voice-lines-master.csv')

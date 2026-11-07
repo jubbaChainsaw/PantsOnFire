@@ -84,11 +84,12 @@ Supported or planned round families include:
 - Hot Seat.
 - Truth or Twisted.
 - Flash Frame.
+- Double Take.
 - Name and Blame.
 - Sound Off.
 - Off Topic Defense.
 - Chain Reaction.
-- Grill Em.
+- Two Truths, One Fire.
 - Dodgy Audio.
 - Clip Trap.
 

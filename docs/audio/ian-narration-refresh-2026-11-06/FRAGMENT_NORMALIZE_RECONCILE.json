@@ -1,0 +1,119 @@
+{
+  "ts": "2026-11-06T22:19:45.070264+00:00",
+  "frozenCorpusId": "df7269-modular-fragments-v1",
+  "corpusSha256": "e8b9c9c2365798927892c6c04cd4aa3c32dc82ddc37e38e2e6f20e31f8a72513",
+  "summary": {
+    "reuse": 12,
+    "generate_new": 2
+  },
+  "deltas": [
+    {
+      "scriptId": "banter_picker_prefix_v1",
+      "decision": "REUSE_COSMETIC",
+      "exact_old": "you're choosing the chaos this round.",
+      "exact_new": "You're choosing the chaos this round.",
+      "sourceCueId": "cue_banter_3a15e80390bd9255"
+    },
+    {
+      "scriptId": "banter_picker_alright_lead_v2",
+      "decision": "GENERATE_NEW",
+      "exact_old": null,
+      "exact_new": "Alright —",
+      "sourceCueId": null
+    },
+    {
+      "scriptId": "banter_picker_prefix_v2",
+      "decision": "REUSE_COSMETIC",
+      "exact_old": "pick a mode, pick a category, try not to look guilty before we start.",
+      "exact_new": "Pick a mode, pick a category, try not to look guilty before we start.",
+      "sourceCueId": "cue_banter_e21ee1930e7bb13d"
+    },
+    {
+      "scriptId": "banter_picker_prefix_v3",
+      "decision": "REUSE_COSMETIC",
+      "exact_old": "the wheel of bad decisions stops here.",
+      "exact_new": "The wheel of bad decisions stops here.",
+      "sourceCueId": "cue_banter_9707c24ba6253afa"
+    },
+    {
+      "scriptId": "banter_reveal_suffix_singular_v1",
+      "decision": "REUSE_COSMETIC",
+      "exact_old": "was bluffing the whole time.",
+      "exact_new": "Was bluffing the whole time.",
+      "sourceCueId": "cue_banter_a71770cf93256a6d"
+    },
+    {
+      "scriptId": "banter_reveal_suffix_singular_v2",
+      "decision": "REUSE_COSMETIC",
+      "exact_old": "— called it.",
+      "exact_new": "Called it.",
+      "sourceCueId": "cue_banter_facff20e3a971426"
+    },
+    {
+      "scriptId": "banter_result_caught_v1",
+      "decision": "REUSE_COSMETIC",
+      "exact_old": "that round had actual detective energy. shocking, honestly.",
+      "exact_new": "That round had actual detective energy. Shocking, honestly.",
+      "sourceCueId": "cue_banter_fcd4c667d36bf4b9"
+    },
+    {
+      "scriptId": "banter_result_caught_v2",
+      "decision": "REUSE_COSMETIC",
+      "exact_old": "clean vote — the table actually agreed. suspiciously organised.",
+      "exact_new": "Clean vote — the table actually agreed. Suspiciously organised.",
+      "sourceCueId": "cue_banter_148319cef5dba973"
+    },
+    {
+      "scriptId": "banter_result_escaped_v1",
+      "decision": "REUSE_COSMETIC",
+      "exact_old": "somehow the lie walked out wearing flip-flops. tough scene.",
+      "exact_new": "Somehow the lie walked out wearing flip-flops. Tough scene.",
+      "sourceCueId": "cue_banter_76013daaa86efa16"
+    },
+    {
+      "scriptId": "banter_result_escaped_v2",
+      "decision": "REUSE_COSMETIC",
+      "exact_old": "the fib survived — not a compliment, just a fact.",
+      "exact_new": "The fib survived — not a compliment, just a fact.",
+      "sourceCueId": "cue_banter_f1a4a7ab25a1700d"
+    },
+    {
+      "scriptId": "banter_result_chaos_v1",
+      "decision": "REUSE_COSMETIC",
+      "exact_old": "that was a chaotic round. beautiful, but chaotic.",
+      "exact_new": "That was a chaotic round. Beautiful, but chaotic.",
+      "sourceCueId": "cue_banter_e32a7a014deec7b4"
+    },
+    {
+      "scriptId": "banter_wrap_v1",
+      "decision": "REUSE_COSMETIC",
+      "exact_old": "that's a wrap — crown the chaos and run it back.",
+      "exact_new": "That's a wrap — crown the chaos and run it back.",
+      "sourceCueId": "cue_banter_815df462585bfa4f"
+    },
+    {
+      "scriptId": "banter_reveal_liar_is_prefix_v1",
+      "decision": "REUSE_COSMETIC",
+      "exact_old": "the liar is",
+      "exact_new": "The liar is…",
+      "sourceCueId": "cue_banter_051f1f88d1754b37"
+    },
+    {
+      "scriptId": "banter_reveal_plural_v1",
+      "decision": "GENERATE_NEW",
+      "exact_old": null,
+      "exact_new": "The liars are…",
+      "sourceCueId": null
+    }
+  ],
+  "themeSlugSharedPaths": [
+    {
+      "themeSlug": "cops-and-robbers",
+      "themeNames": [
+        "Cops and Robbers",
+        "Cowboys",
+        "Gangsters"
+      ]
+    }
+  ]
+}

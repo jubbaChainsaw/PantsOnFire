@@ -1,0 +1,193 @@
+{
+  "schemaVersion": 1,
+  "auditId": "POF-AUDIT-2026-11-06-JUBBA-FULL",
+  "purpose": "Explicit gap taxonomy (criteria → subcriteria → row coverage) after quality remediation — repo-accounted evidence, not blanket product closure.",
+  "criteria": [
+    {
+      "id": "C1",
+      "title": "Online parity (lobby server vs client round matrix)",
+      "subcriteria": [
+        {
+          "id": "C1.1",
+          "text": "Server authoritative round types match client for online games",
+          "evidenceRows": ["REQ0009", "REQ0017", "STRY0010", "ENHC0012"],
+          "primaryRefs": [
+            "server/storage/lobbyStore.js:353-378 buildAuthoritativeRound",
+            "src/App.jsx:4033-4095 RoundTypeChoiceGrid",
+            "src/App.jsx:9210-9293 syncOnlineRoundFromSnapshot"
+          ],
+          "tests": ["tests/server/lobbyStore.test.mjs"],
+          "coverage": "partial",
+          "openWork": "Implement non-prompt server rounds + tests; use existing REQ0017 — no duplicate tracker item."
+        },
+        {
+          "id": "C1.2",
+          "text": "Voice party (LiveKit) token path + client transport",
+          "evidenceRows": ["TEST0003", "STRY0012", "CONV-REQ-VOICE-TURN-PHASE"],
+          "primaryRefs": [
+            "server/lobbyServer.js:403-456 POST /api/lobbies/:code/voice/token",
+            "src/online/voicePartyTransport.js",
+            "src/App.jsx:349-358 ONLINE_VOICE_ACTIVE_SCREENS",
+            "src/App.jsx:8399-8407 setOnlineVoiceEnabled effect"
+          ],
+          "tests": [],
+          "coverage": "blocked_device_external / partial",
+          "openWork": "Device mic test script; retarget STRY0012 away from obsolete Grill Em."
+        }
+      ]
+    },
+    {
+      "id": "C2",
+      "title": "Release / Play / signing / privacy (org account state)",
+      "subcriteria": [
+        {
+          "id": "C2.1",
+          "text": "Upload signing secrets and release pipeline",
+          "evidenceRows": ["REQ0012", "STRY0017"],
+          "primaryRefs": [".github/workflows/android-release-aab.yml:84-98"],
+          "coverage": "account_status_unknown",
+          "openWork": "Parent confirms GitHub secrets + Play internal track state — audit does not verify org vault."
+        },
+        {
+          "id": "C2.2",
+          "text": "Play Console app registration",
+          "evidenceRows": ["REQ0013"],
+          "primaryRefs": ["app.json:22-24 android.package"],
+          "coverage": "account_status_unknown",
+          "openWork": "Reconcile tracker with user-reported internal draft — not observable in repo."
+        },
+        {
+          "id": "C2.3",
+          "text": "Privacy policy URL and in-app links",
+          "evidenceRows": ["REQ0015"],
+          "primaryRefs": [
+            "public/privacy/index.html",
+            "src/components/SiteLegalLinks.jsx:11-12"
+          ],
+          "coverage": "account_status_unknown",
+          "openWork": "Confirm Console Data safety URL matches deployed site."
+        },
+        {
+          "id": "C2.4",
+          "text": "Package id naming",
+          "evidenceRows": ["REQ0014"],
+          "primaryRefs": ["app.json:23"],
+          "coverage": "stale_tracker_mismatch",
+          "openWork": "Human resolves tracker title vs `app.pantsonfire.findtheliar` — no package rename from audit."
+        },
+        {
+          "id": "C2.5",
+          "text": "EAS / OTA",
+          "evidenceRows": ["REQ0016", "STRY0016"],
+          "primaryRefs": [
+            ".github/workflows/android-release-aab.yml:72-79 (expo prebuild + gradle)",
+            "glob: eas.json absent"
+          ],
+          "coverage": "deferred / partial",
+          "openWork": "Close as N/A if Gradle-only; else add eas.json + policy."
+        }
+      ]
+    },
+    {
+      "id": "C3",
+      "title": "Physical device & subjective UX (S24 cluster, audio sync, install proof)",
+      "subcriteria": [
+        {
+          "id": "C3.1",
+          "text": "Safe area / clipped UI / layout (DFCT0028-0034 cluster)",
+          "evidenceRows": ["DFCT0028", "DFCT0029", "DFCT0030", "DFCT0031", "DFCT0032", "DFCT0033", "DFCT0034", "TEST0002"],
+          "primaryRefs": [
+            "src/pof-components.css:3-6",
+            "src/App.jsx:10932-10943 category-choice-header pl-14",
+            "src/App.jsx:6187-6281 Final accusation",
+            "src/App.jsx:4689-4702 randomizeAllPlayersForTheme"
+          ],
+          "coverage": "blocked_device_external",
+          "openWork": "Device QA — irreducible in Linux CI."
+        },
+        {
+          "id": "C3.2",
+          "text": "Host voice lines vs captions (DFCT0025/0026)",
+          "evidenceRows": ["DFCT0025", "DFCT0026"],
+          "primaryRefs": ["src/data/hostVoiceLineMap.js", "public/assets/audio/host/"],
+          "coverage": "partial",
+          "openWork": "Manual AV sync check."
+        }
+      ]
+    },
+    {
+      "id": "C4",
+      "title": "Content editorial (non-deterministic)",
+      "subcriteria": [
+        {
+          "id": "C4.1",
+          "text": "UK English and Two Truths editorial (ENHC0017/0018)",
+          "evidenceRows": ["ENHC0017", "ENHC0018"],
+          "primaryRefs": ["src/data/packs/categoryPromptPacks.js", "src/data/twoTruthsOneFire/"],
+          "coverage": "partial",
+          "openWork": "Editorial checklist — no automated linguistic proof."
+        },
+        {
+          "id": "C4.2",
+          "text": "Prompt–mechanic fit (ENHC0020)",
+          "evidenceRows": ["ENHC0020"],
+          "primaryRefs": ["src/data/packs/categoryPromptPacks.js"],
+          "coverage": "partial",
+          "openWork": "Content tickets per round family."
+        }
+      ]
+    },
+    {
+      "id": "C5",
+      "title": "Obsolete tracker vs product (Grill Em)",
+      "subcriteria": [
+        {
+          "id": "C5.1",
+          "text": "REQ0006 / STRY0012",
+          "evidenceRows": ["REQ0006", "STRY0012"],
+          "primaryRefs": ["server/lobbyServer.js:403-456", "src/online/voicePartyTransport.js"],
+          "coverage": "missing",
+          "openWork": "Close or rewrite to LiveKit — implementation refs prove no Grill mode in routing."
+        }
+      ]
+    }
+  ],
+  "snapshotDoneItemsAnalysis": {
+    "totalDoneInSnapshot": 61,
+    "evidenceVerifiedAutomated": {
+      "count": 4,
+      "numbers": ["DFCT0035", "DFCT0042", "ENHC0023", "WTSK0004"],
+      "meaning": "Automated tests directly support closure claim (rate limits / CI job / prompt copy / font script)."
+    },
+    "evidenceHighButNotVerified": {
+      "count": 14,
+      "numbers": [
+        "DFCT0010",
+        "DFCT0012",
+        "DFCT0020",
+        "DFCT0023",
+        "DFCT0036",
+        "DFCT0039",
+        "DFCT0040",
+        "DFCT0043",
+        "ENHC0004",
+        "ENHC0005",
+        "ENHC0008",
+        "ENHC0011",
+        "STRY0015",
+        "WTSK0007"
+      ],
+      "meaning": "Strong repo anchors and/or high-confidence notes — still not independent review or full device/visual proof."
+    },
+    "notDemonstrablyCompleteInRepo": {
+      "count": 43,
+      "meaning": "Tracker snapshot.done true but evidence classification is partial, code_proven_partial (medium), blocked_device_external, deferred, account_status_unknown, stale_tracker_mismatch, or missing — see traceability-FULL.json per row."
+    }
+  },
+  "limitations": {
+    "independentCodeReview": "not run — Superpowers requesting-code-review not fulfilled",
+    "physicalDevices": "no S24, mic party, or Play install in audit environment",
+    "playOrgSecrets": "signing secrets and Console state not visible to agent",
+    "methodology": "Structured generator overrides + manual line anchoring — not substitute for human examiner"
+  }
+}

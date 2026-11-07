@@ -1,0 +1,241 @@
+{
+  "schemaVersion": 4,
+  "auditId": "POF-AUDIT-2026-11-06-JUBBA-FULL",
+  "status": "matrix_complete_evidence_quality_remediation_post_qa",
+  "branch": "cursor/ionos-web-deploy-6e4c",
+  "pr": 111,
+  "preliminaryCommit": "0b878f4",
+  "auditDeliverableCommits": [
+    "cbef5d48c4805833b2f74fdecb0acc2ddc434064",
+    "9fb745f749700ecdf684cad8678cedea4a0e5131",
+    "22508a64e4bbc513b79015080466a9e1ef6c6ba8",
+    "f73c735f2f0e6cda6e14890d06d55b79952606c2",
+    "0e1c36adce560d7118c43e2735cc42f6f4121e70"
+  ],
+  "qualityRemediation": {
+    "trigger": "Independent coordination QA on commit 09e7c1e (quality-assessment JSON in chat upload)",
+    "fixes": [
+      "Tightened ~30 broad App.jsx refs to functions/lines (RoundTypeChoiceGrid, CategoryChoiceGrid, HostIntroScreen, ResultsScreen, syncOnlineRoundFromSnapshot, etc.)",
+      "Eliminated 8 empty implementationRefs (added repo paths: process/EAS/memes category/Grill absence)",
+      "Replaced blocked_external_owner for REQ0012/13/15 with account_status_unknown; REQ0016 deferred; REQ0014 stale_tracker_mismatch",
+      "Methodology: generator overrides are structured account-in-repo — not independent human examination (not equated to review)",
+      "confidence: zero low-confidence rows after remediation (ENHC0021 raised to medium)"
+    ],
+    "criteriaMap": "docs/audit/2026-11-06-jubba-full-audit/audit-gap-criteria-2026-11-06.json"
+  },
+  "continuation": {
+    "batches": [
+      {
+        "id": "POF-AUDIT-2026-11-06-BATCH01",
+        "file": "docs/audit/2026-11-06-jubba-full-audit/evidence-batch-01.json",
+        "note": "Deep rows + conversation baseline + diagnostic tests"
+      },
+      {
+        "id": "POF-AUDIT-2026-11-06-BATCH02",
+        "file": "docs/audit/2026-11-06-jubba-full-audit/evidence-batch-02.json",
+        "generator": "scripts/audit/generateEvidenceBatch02.mjs",
+        "note": "Structured per-number evidence — regenerate with: node scripts/audit/generateEvidenceBatch02.mjs"
+      },
+      {
+        "id": "POF-AUDIT-2026-11-06-BATCH03",
+        "file": "docs/audit/2026-11-06-jubba-full-audit/evidence-batch-03.json",
+        "note": "Link overlays + REQ0017 precise line refs + review-as-page artifact paths"
+      }
+    ],
+    "evidenceMergeOrder": "Lexical: evidence-batch-01.json, evidence-batch-02.json, evidence-batch-03.json (later overrides earlier per item.number)"
+  },
+  "superpowers": {
+    "bundleFile": "docs/audit/2026-11-06-jubba-full-audit/SUPERPOWERS_SKILLS_BUNDLE.md",
+    "appliedWorkflows": [
+      "writing-plans (audit folder + batch evidence files)",
+      "systematic-debugging (selector fix; mobile harness diagnostic scope)",
+      "verification-before-completion (see testsExecuted)",
+      "requesting-code-review — NOT FULFILLED: no independent reviewer agent ran this audit"
+    ],
+    "notLoadedAsPlugin": true
+  },
+  "jubbaworldApiLimits": {
+    "commentsHistory": "403/404 per snapshot meta — acceptance from description/checklist only",
+    "emptyDescriptions": 26,
+    "inferredAcceptanceLabel": "acceptanceInferredFlag true where snapshot description empty or title-only inference noted in evidence rows"
+  },
+  "matrix": {
+    "source": "docs/audit/2026-11-06-jubba-full-audit/traceability-FULL.json",
+    "generator": "scripts/audit/buildJubbaWorldTraceability.mjs",
+    "schemaVersion": 3,
+    "jubbaWorldItems": 119,
+    "conversationRequirementRows": 10,
+    "matrixRowCount": 129,
+    "machineCheck": {
+      "uniqueItemNumbers": 119,
+      "matchesSnapshotReportedTotal": true,
+      "provenanceSnapshotCopy": "docs/audit/2026-11-06-jubba-full-audit/jubbaworld-snapshot-upload-provenance-8c20.json"
+    },
+    "itemClassificationCounts": {
+      "code_proven_partial": 34,
+      "partial": 59,
+      "blocked_device_external": 9,
+      "verified": 4,
+      "deferred": 6,
+      "missing": 3,
+      "account_status_unknown": 3,
+      "stale_tracker_mismatch": 1
+    },
+    "itemClassificationCountSumCheck": 119,
+    "conversationClassificationCounts": {
+      "partial": 9,
+      "verified": 1
+    },
+    "conversationClassificationCountSumCheck": 10,
+    "taxonomy": "Rows use evidenceClassification: code_proven_partial | partial | verified | missing | deferred | blocked_device_external | account_status_unknown | stale_tracker_mismatch — not generic 'untested'.",
+    "notes": {
+      "noKeywordHeuristics": "buildJubbaWorldTraceability.mjs merges evidence-batch-*.json only.",
+      "REQ0017": "missing server-side: buildAuthoritativeRound Hot Seat only — refs include App.jsx:9257-9273.",
+      "TEST0005": "Diagnostic documents Vite preview harness behaviour — see proposed-tracker-updates.json.",
+      "notIndependentReview": "Rows are repo-accounted — Superpowers requesting-code-review not fulfilled."
+    }
+  },
+  "snapshotDoneAnalysis": {
+    "source": "jubbaworld-snapshot-2026-11-06.json + traceability-FULL.json",
+    "doneCount": 61,
+    "verifiedAutomatedTestsDirectly": {
+      "count": 4,
+      "numbers": ["DFCT0035", "DFCT0042", "ENHC0023", "WTSK0004"],
+      "meaning": "Closure strongly supported by cited server tests or workflow lines in row notes."
+    },
+    "highConfidenceButNotIndependentlyVerified": {
+      "count": 14,
+      "numbers": [
+        "DFCT0010",
+        "DFCT0012",
+        "DFCT0020",
+        "DFCT0023",
+        "DFCT0036",
+        "DFCT0039",
+        "DFCT0040",
+        "DFCT0043",
+        "ENHC0004",
+        "ENHC0005",
+        "ENHC0008",
+        "ENHC0011",
+        "STRY0015",
+        "WTSK0007"
+      ],
+      "meaning": "Strong file anchors — still not third-party sign-off or full device proof."
+    },
+    "doneButNotDemonstrablyCompleteInRepo": {
+      "count": 43,
+      "meaning": "Snapshot done=true with evidenceClassification partial/code_proven_partial (medium)/blocked_device_external/deferred/account_status_* — see each row in traceability-FULL.json."
+    }
+  },
+  "parentTrackerAlreadyApplied": {
+    "note": "Parent-owned tracker notes — repo proposes only in proposed-tracker-updates.json (REQ0012-16 reconciliation, REQ0017, TEST0005, REQ0014, DFCT0040).",
+    "refs": [
+      "WTSK0002 / POF-DEC-001",
+      "ENHC0024",
+      "TEST0001",
+      "TEST0003",
+      "ENHC0025",
+      "TEST0004",
+      "TEST0005"
+    ]
+  },
+  "conversationRequirements": {
+    "count": 10,
+    "ids": [
+      "CONV-REQ-FONT-CHEWY",
+      "CONV-REQ-ALL-CAPS",
+      "CONV-REQ-GRAPHICS-APPROVED",
+      "CONV-REQ-PASS-PHONE-AND-ONLINE",
+      "CONV-REQ-VOICE-TURN-PHASE",
+      "CONV-REQ-REPORT-BLOCK-DELETE",
+      "CONV-REQ-AGE-13-PLUS",
+      "CONV-REQ-PROMPT-SOURCE-SELECTION",
+      "CONV-REQ-NO-LIVE-WITHOUT-APPROVAL",
+      "CONV-REQ-REVIEW-AS-PAGE"
+    ],
+    "evidenceSources": [
+      "docs/audit/2026-11-06-jubba-full-audit/evidence-batch-01.json → conversationRequirements",
+      "docs/audit/2026-11-06-jubba-full-audit/evidence-batch-03.json → CONV_REQ_REVIEW_AS_PAGE overlay"
+    ]
+  },
+  "testsExecuted": {
+    "npm_test": { "passed": 49, "failed": 0, "when": "2026-11-06 evidence remediation commit" },
+    "npm_run_test_server": {
+      "note": "Not re-run in this message — see AUDIT_TEST_LOG.md"
+    },
+    "npm_run_test_e2e": {
+      "note": "Not re-run — prior log 7 pass, 1 skip (Double Take, TEST0004); see AUDIT_TEST_LOG.md"
+    },
+    "mobile_dist_smoke": {
+      "passed": 2,
+      "failed": 0,
+      "tests": [
+        "tests/e2e/playwright/mobile-bundled-dist-smoke.spec.js",
+        "tests/e2e/playwright/mobile-preview-api-proxy-diagnostic.spec.js"
+      ],
+      "when": "2026-11-06 prior continuation",
+      "note": "Diagnostic proves preview harness /api auth shape — not production API health in isolation"
+    }
+  },
+  "prioritizedGaps": [
+    {
+      "id": "GAP-C1-ONLINE-PARITY",
+      "severity": "high",
+      "title": "Server round authority vs client matrix (REQ0009, REQ0017, STRY0010)",
+      "criteria": "C1.1",
+      "evidence": "server/storage/lobbyStore.js:353-378; client RoundTypeChoiceGrid + syncOnlineRoundFromSnapshot",
+      "dedup": "REQ0017 — no new server epic"
+    },
+    {
+      "id": "GAP-VOICE-DEVICE",
+      "severity": "medium",
+      "title": "LiveKit + mic party (TEST0003, CONV-REQ-VOICE-TURN-PHASE)",
+      "criteria": "C1.2",
+      "evidence": "server/lobbyServer.js:403-456; src/online/voicePartyTransport.js"
+    },
+    {
+      "id": "GAP-ORG-ACCOUNT",
+      "severity": "medium",
+      "title": "Play signing / app / privacy URLs — reconcile tracker vs user context",
+      "criteria": "C2.1–C2.5",
+      "evidence": "account_status_unknown rows REQ0012, REQ0013, REQ0015; REQ0016 deferred; REQ0014 stale_tracker_mismatch",
+      "dedup": "proposed-tracker-updates.json"
+    },
+    {
+      "id": "GAP-DEVICE-S24",
+      "severity": "medium",
+      "title": "DFCT0028-0034 cluster — physical device only",
+      "criteria": "C3.1",
+      "evidence": "blocked_device_external rows"
+    },
+    {
+      "id": "GAP-DOCS-CI",
+      "severity": "low",
+      "title": "docs/TEST_STRATEGY.md vs npm-test.yml",
+      "evidence": "proposed-new-work-tasks.json + DFCT0040"
+    }
+  ],
+  "artifactPaths": {
+    "primaryJson": [
+      "docs/audit/2026-11-06-jubba-full-audit/traceability-FULL.json",
+      "docs/audit/2026-11-06-jubba-full-audit/findings-FULL.json",
+      "docs/audit/2026-11-06-jubba-full-audit/audit-gap-criteria-2026-11-06.json",
+      "docs/audit/2026-11-06-jubba-full-audit/evidence-batch-01.json",
+      "docs/audit/2026-11-06-jubba-full-audit/evidence-batch-02.json",
+      "docs/audit/2026-11-06-jubba-full-audit/evidence-batch-03.json",
+      "docs/audit/2026-11-06-jubba-full-audit/jubbaworld-snapshot-2026-11-06.json",
+      "docs/audit/2026-11-06-jubba-full-audit/jubbaworld-snapshot-upload-provenance-8c20.json",
+      "docs/audit/2026-11-06-jubba-full-audit/proposed-tracker-updates.json",
+      "docs/audit/2026-11-06-jubba-full-audit/proposed-new-work-tasks.json",
+      "docs/audit/2026-11-06-jubba-full-audit/AUDIT_TEST_LOG.md"
+    ],
+    "generators": [
+      "scripts/audit/buildJubbaWorldTraceability.mjs",
+      "scripts/audit/generateEvidenceBatch02.mjs"
+    ],
+    "e2eScreenshots": "/opt/cursor/artifacts/jubba-audit-2026-11-06/e2e-shots/",
+    "storeGraphicsCopies": "/opt/cursor/artifacts/jubba-audit-2026-11-06/store-graphics/"
+  },
+  "honesty": "129 matrix rows are evidence-accounted in repo (file:line + test command pointers where applicable). This is structured audit trail work — not substitute for independent code review (requesting-code-review not fulfilled). Play/org state and physical devices remain irreducible blockers; no blanket verified claims for tracker Done. No merge/deploy/live payment changes."
+}

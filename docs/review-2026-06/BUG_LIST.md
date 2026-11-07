@@ -16,7 +16,7 @@ this review's changes.
 | 9 | Major | Dead duplicate Redis store would crash if used (undefined `MIN_PLAYERS`) | `server/storage/redisLobbyStore.js` | **REMOVED** |
 | 10 | Major | LiveKit voice tokens valid ~6 h (SDK default, no TTL) | `server/lobbyServer.js` | **FIXED** (15 m) |
 | 11 | Major | `party-voice:activity` spoofable by any socket (no session check) | `server/lobbyServer.js` | **FIXED** |
-| 12 | Major | 13 of 14 SFX files missing (silent failure; Grill 'Em feedback + reveal stingers absent) | `public/assets/sfx/` vs `src/App.jsx` refs | **OPEN — needs assets** |
+| 12 | Major | 13 of 14 SFX files missing (silent failure; reveal/voting stingers absent) | `public/assets/sfx/` vs `src/App.jsx` refs | **OPEN — needs assets** |
 | 13 | Major | Dodgy Audio / Clip Trap round types selectable but stubbed (no rules/flow) | `src/data/roundTypes.js`, `src/App.jsx` | **OPEN — hide or implement** |
 | 14 | Major | Online lobbies always play Hot Seat with a fixed 20-prompt bank regardless of settings | `server/storage/lobbyStore.js` `buildAuthoritativeRound` | **OPEN — by design for now; document in UI** |
 | 15 | Major | Stale lobbies never expire (Redis keys without TTL, memory map unbounded) | `server/storage/lobbyStore.js` | **FIXED** (24 h idle TTL + sweep) |

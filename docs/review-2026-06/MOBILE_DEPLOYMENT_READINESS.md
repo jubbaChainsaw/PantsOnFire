@@ -21,7 +21,7 @@ what exists, what's missing, and a concrete store roadmap.
 
 1. **app.json is incomplete**: no `ios.bundleIdentifier`, no
    `android.package`, no icons/splash/adaptive-icon, no permissions
-   (microphone is needed for Grill 'Em / voice party in the WebView →
+   (microphone is needed for online voice party / LiveKit in the WebView →
    `android.permission.RECORD_AUDIO`, `NSMicrophoneUsageDescription`).
 2. **No eas.json** — define `development`/`preview`/`production` build
    profiles; keep RevenueCat public SDK keys in EAS env config.
@@ -39,7 +39,7 @@ what exists, what's missing, and a concrete store roadmap.
    without network) or (b) bundling the Vite `dist/` into the app and loading
    from file/localhost server. For a party game played in basements, (b) or a
    cached hybrid is strongly recommended for pass-the-phone reliability.
-6. **WebView media permissions** — Grill 'Em uses mic/speech in the WebView;
+6. **WebView media permissions** — Online voice party uses the mic in the WebView;
    Android needs `onPermissionRequest` granting and iOS needs
    `mediaCapturePermissionGrantType` configuration in `react-native-webview`.
 
@@ -134,8 +134,9 @@ and scripts).
 - Identity: email + user id (Supabase) — account purposes.
 - Purchases: RevenueCat (linked to user id).
 - Voice: LiveKit real-time audio, not recorded/stored.
-- Speech recognition in Grill 'Em uses the device/browser engine — verify
-  what the WebView engine sends off-device and disclose if applicable.
+- Speech recognition for one-word / voice-party flows uses the device/browser
+  engine — verify what the WebView engine sends off-device and disclose if
+  applicable.
 - Analytics: none currently shipped (declare "no analytics" until added).
 - A privacy policy URL is required for both stores before any external
   testing track.

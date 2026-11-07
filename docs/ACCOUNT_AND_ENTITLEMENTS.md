@@ -35,7 +35,11 @@
 - Validate tokens server-side.
 - Validate purchases server-side.
 - Do not trust client unlock flags.
-- Log entitlement changes.
+
+Implementation: `server/entitlementsRoutes.js`, `server/stripeBillingRoutes.js`,
+Postgres or Redis-backed store (`server/pofEntitlementsStore.js`). There is
+**no persistent entitlement audit log** in code yet — "Log entitlement changes"
+and audit history remain future work.
 
 ## Future Improvements
 

@@ -1,6 +1,7 @@
 # Builds a debug APK with the Vite web client bundled under android_asset/pof-web.
-# Manual only — checks out the ref input (default feature branch) so main need not contain app changes.
-# Trigger: Actions → Android debug APK → Run workflow.
+# Manual: Actions → Android debug APK → Run workflow (pick branch / ref via `ref` input).
+# `workflow_dispatch` checks out `ref` when set; otherwise `github.ref` for the selected branch.
+# Branch-only escape hatch when API workflow_dispatch is unavailable (touches `.github/trigger-android-debug-apk` only).
 
 name: Android debug APK
 
@@ -11,6 +12,11 @@ on:
         description: Git ref to build (branch, tag, or SHA)
         required: false
         default: cursor/ionos-web-deploy-6e4c
+  push:
+    branches:
+      - cursor/ionos-web-deploy-6e4c
+    paths:
+      - .github/trigger-android-debug-apk
 
 permissions:
   contents: read
@@ -18,11 +24,18 @@ permissions:
 jobs:
   assemble-debug:
     runs-on: ubuntu-latest
+    env:
+      EXPO_PUBLIC_USE_BUNDLED_WEB: '1'
+      EXPO_PUBLIC_SHELL_VERSION: '0.1.0'
+      EXPO_PUBLIC_PRODUCTION_GAME_URL: https://www.pantsonfire.app/
+      EXPO_PUBLIC_ANDROID_VERSION_CODE: ${{ github.run_number }}
+      EXPO_PUBLIC_WEB_BUILD_SHA: ${{ github.sha }}
+      EXPO_PUBLIC_DEBUG_APK_BUILD: '1'
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.inputs.ref || 'cursor/ionos-web-deploy-6e4c' }}
+          ref: ${{ github.event.inputs.ref || github.ref }}
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -36,28 +49,64 @@ jobs:
           distribution: temurin
           java-version: '17'
 
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
+      - name: Accept Android SDK licenses
+        run: |
+          SDKM="$(find "${ANDROID_HOME}/cmdline-tools" -name sdkmanager -type f 2>/dev/null | head -1)"
+          if [ -z "$SDKM" ]; then
+            echo "sdkmanager not found under ${ANDROID_HOME}"
+            exit 1
+          fi
+          yes | "$SDKM" --licenses >/dev/null || true
 
       - name: Install dependencies
         run: npm ci
 
-      - name: Build bundled web (relative asset paths)
-        run: npx vite build --base ./ --outDir dist-android
+      - name: Build slim bundled web
+        env:
+          VITE_APP_BUILD_SHA: ${{ github.sha }}
+          VITE_APP_BUILD_STAMP: ${{ github.run_number }}-${{ github.sha }}
+        run: node scripts/buildMobileBundledWeb.mjs dist-android
+
+      - name: Verify dist-android asset references
+        run: node scripts/verifyDistAndroidAssets.mjs dist-android
+
+      - name: Smoke test mobile web bundle (Playwright)
+        run: npx playwright install chromium --with-deps && npm run test:mobile-dist-smoke
 
       - name: Expo prebuild (Android)
         run: npx expo prebuild --platform android --no-install
 
+      - name: Patch WebView DLC asset loader
+        run: node scripts/patch-rn-webview-asset-loader.mjs
+
       - name: Stage web bundle into Android assets
         run: node scripts/stageAndroidBundledWeb.mjs dist-android
 
+      - name: Verify Play Billing Library (>= 8.0.0)
+        run: bash scripts/verifyPlayBillingLibrary.sh
+
+      - name: Report bundled web size
+        run: |
+          du -sh dist-android
+          cat dist-android/mobile-trim-report.json || true
+
       - name: Assemble debug APK
         working-directory: android
-        run: ./gradlew assembleDebug --no-daemon
+        run: ./gradlew assembleDebug --no-daemon -PandroidVersionCode=${{ github.run_number }} -PandroidVersionName=1.0.3
+
+      - name: Collect APK for artifact
+        run: |
+          mkdir -p artifacts
+          cp android/app/build/outputs/apk/debug/app-debug.apk artifacts/pants-on-fire-debug.apk
+          ls -lh artifacts/pants-on-fire-debug.apk
+
+      - name: Verify embedded JS bundle in debug APK
+        run: node scripts/verifyAndroidEmbeddedBundle.mjs artifacts/pants-on-fire-debug.apk
 
       - name: Upload debug APK
         uses: actions/upload-artifact@v4
         with:
           name: pants-on-fire-debug-apk
-          path: android/app/build/outputs/apk/debug/app-debug.apk
+          path: artifacts/pants-on-fire-debug.apk
           if-no-files-found: error
+          compression-level: 6

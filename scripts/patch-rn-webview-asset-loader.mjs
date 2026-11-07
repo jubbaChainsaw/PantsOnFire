@@ -1,0 +1,148 @@
+#!/usr/bin/env node
+/**
+ * Patches react-native-webview to intercept appassets.androidplatform.net/dlc URLs.
+ * Run after `expo prebuild --platform android`.
+ */
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import path from 'node:path';
+
+const clientPath = path.resolve(
+  'node_modules/react-native-webview/android/src/main/java/com/reactnativecommunity/webview/RNCWebViewClient.java',
+);
+
+if (!existsSync(clientPath)) {
+  console.error('react-native-webview RNCWebViewClient.java not found — run npm ci first.');
+  process.exit(1);
+}
+
+let source = readFileSync(clientPath, 'utf8');
+
+if (source.includes('tryPofDlcIntercept')) {
+  console.log('WebView asset loader patch already applied.');
+  process.exit(0);
+}
+
+if (source.includes('PofDlcAssetLoader.shouldInterceptRequest')) {
+  source = source.replace(
+    /private WebResourceResponse tryPofDlcIntercept[\s\S]*?shouldInterceptRequest\(WebView view, String url\) \{[\s\S]*?\}\n/,
+    '',
+  );
+  source = source.replace(
+    /@Override\s+public WebResourceResponse shouldInterceptRequest\(WebView view, WebResourceRequest request\) \{[\s\S]*?return super\.shouldInterceptRequest\(view, request\);\s+\}/,
+    '',
+  );
+}
+
+const importBlock =
+  'import android.webkit.WebResourceRequest;\nimport android.webkit.WebResourceResponse;\n';
+
+if (!source.includes('WebResourceResponse')) {
+  source = source.replace(
+    'import android.webkit.WebResourceRequest;',
+    importBlock,
+  );
+}
+
+const hookMethod = `
+    private WebResourceResponse tryPofDlcIntercept(WebResourceRequest request) {
+        try {
+            Class<?> loader = Class.forName("app.pantsonfire.findtheliar.PofDlcAssetLoader");
+            java.lang.reflect.Method method =
+                loader.getMethod("shouldInterceptRequest", WebResourceRequest.class);
+            Object result = method.invoke(null, request);
+            return result instanceof WebResourceResponse ? (WebResourceResponse) result : null;
+        } catch (Throwable ignored) {
+            return null;
+        }
+    }
+
+    @Override
+    public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
+        WebResourceResponse dlcResponse = tryPofDlcIntercept(request);
+        if (dlcResponse != null) {
+            return dlcResponse;
+        }
+        return super.shouldInterceptRequest(view, request);
+    }
+
+    @Override
+    public WebResourceResponse shouldInterceptRequest(WebView view, String url) {
+        return super.shouldInterceptRequest(view, url);
+    }
+`;
+
+if (!source.includes('shouldInterceptRequest(WebView view, WebResourceRequest request)')) {
+  source = source.replace(
+    'public class RNCWebViewClient extends WebViewClient {',
+    `public class RNCWebViewClient extends WebViewClient {${hookMethod}`,
+  );
+}
+
+writeFileSync(clientPath, source);
+console.log('Patched RNCWebViewClient for DLC WebViewAssetLoader.');
+
+const templateLoader = path.resolve('native-android/PofDlcAssetLoader.kt');
+const destLoader = path.resolve(
+  'android/app/src/main/java/app/pantsonfire/findtheliar/PofDlcAssetLoader.kt',
+);
+if (existsSync(templateLoader)) {
+  mkdirSync(path.dirname(destLoader), { recursive: true });
+  writeFileSync(destLoader, readFileSync(templateLoader, 'utf8'));
+}
+
+const gradleTemplate = path.resolve('native-android/app.build.gradle');
+const gradleDest = path.resolve('android/app/build.gradle');
+if (existsSync(gradleTemplate) && existsSync(path.dirname(gradleDest))) {
+  writeFileSync(gradleDest, readFileSync(gradleTemplate, 'utf8'));
+  console.log('Applied native-android/app.build.gradle');
+}
+
+const releaseGradleProps = path.resolve('native-android/gradle.release.properties');
+const gradlePropsDest = path.resolve('android/gradle.properties');
+if (existsSync(releaseGradleProps) && existsSync(gradlePropsDest)) {
+  const existing = readFileSync(gradlePropsDest, 'utf8');
+  const patch = readFileSync(releaseGradleProps, 'utf8');
+  const lines = patch
+    .split('\n')
+    .map((line) => line.trim())
+    .filter((line) => line && !line.startsWith('#'));
+  let next = existing;
+  for (const line of lines) {
+    const key = line.split('=')[0];
+    if (new RegExp(`^${key.replace(/[.*+?^${}()|[\\]\\\\]/g, '\\\\$&')}=`, 'm').test(next)) {
+      next = next.replace(new RegExp(`^${key.replace(/[.*+?^${}()|[\\]\\\\]/g, '\\\\$&')}=.*$`, 'm'), line);
+    } else {
+      next += `\n${line}\n`;
+    }
+  }
+  writeFileSync(gradlePropsDest, next);
+  console.log('Applied native-android/gradle.release.properties');
+}
+
+const mainApp = path.resolve(
+  'android/app/src/main/java/app/pantsonfire/findtheliar/MainApplication.kt',
+);
+if (existsSync(mainApp)) {
+  let kt = readFileSync(mainApp, 'utf8');
+  if (!kt.includes('PofDlcAssetLoader.ensureInitialized')) {
+    kt = kt.replace(
+      'loadReactNative(this)',
+      'PofDlcAssetLoader.ensureInitialized(this)\n    loadReactNative(this)',
+    );
+    writeFileSync(mainApp, kt);
+  }
+}
+
+const buildGradle = path.resolve('android/app/build.gradle');
+if (existsSync(buildGradle)) {
+  let gradle = readFileSync(buildGradle, 'utf8');
+  if (!gradle.includes('androidx.webkit:webkit')) {
+    gradle = gradle.replace(
+      'implementation("com.facebook.react:react-android")',
+      'implementation("com.facebook.react:react-android")\n    implementation("androidx.webkit:webkit:1.14.0")',
+    );
+    writeFileSync(buildGradle, gradle);
+  }
+}
+
+console.log('MainApplication + webkit dependency updated (if needed).');

@@ -58,13 +58,14 @@ import {
   PICTURE_DLC_MANIFESTS,
   buildPictureRoundsFromManifest,
   validatePictureDlcManifest,
-} from './pictureDlcManifests';
+} from './pictureDlcManifests.js';
 import {
   NAME_AND_BLAME_ROUNDS as UPLOADED_NAME_AND_BLAME_ROUNDS,
   SOUND_CLUES_ROUNDS as UPLOADED_SOUND_CLUES_ROUNDS,
-} from './specialRoundPromptPools';
-import { CATEGORY_PROMPT_PACKS } from './packs/categoryPromptPacks';
-import { buildExpandedEntityPrompts, CATEGORY_GUESSABLE_ENTITY_POOLS } from './guessableEntityPools';
+} from './specialRoundPromptPools.js';
+import { CATEGORY_PROMPT_PACKS } from './packs/categoryPromptPacks.js';
+import { buildExpandedEntityPrompts, CATEGORY_GUESSABLE_ENTITY_POOLS } from './guessableEntityPools.js';
+import { buildTwoTruthsOneFireRoundsForCategory } from './twoTruthsOneFirePrompts.js';
 
 export const DEFAULT_CATEGORIES = CATEGORY_PROMPT_PACKS.map((categoryPack) => ({
   ...categoryPack,
@@ -451,6 +452,31 @@ export const OFFTOPIC_DEFENSE_ROUNDS = Object.fromEntries(
   DEFAULT_CATEGORIES.map((category) => [category.id, buildOffTopicRoundsForCategory(category)])
 );
 
+function getCategoryPerModePoolBenchmark(category) {
+  const id = category.id;
+  return Math.max(
+    (category.prompts || []).length,
+    (CHAIN_REACTION_ROUNDS[id] || []).length,
+    (OFFTOPIC_DEFENSE_ROUNDS[id] || []).length,
+    (SOUND_OFF_ROUNDS[id] || []).length,
+    (MEME_DECODER_ROUNDS[id] || []).length,
+  );
+}
+
+export const TWO_TRUTHS_ONE_FIRE_ROUNDS = Object.fromEntries(
+  DEFAULT_CATEGORIES.map((category) => {
+    const targetCount = getCategoryPerModePoolBenchmark(category);
+    const adultCount = Math.min(
+      CATEGORY_ADULT_ROUNDS_PER_CATEGORY,
+      Math.max(0, Math.floor(targetCount * (CATEGORY_ADULT_ROUNDS_PER_CATEGORY / CATEGORY_ROUNDS_PER_CATEGORY))),
+    );
+    return [
+      category.id,
+      buildTwoTruthsOneFireRoundsForCategory(category, targetCount, adultCount),
+    ];
+  }),
+);
+
 export const NOISE_OFF_ROUNDS = SOUND_OFF_ROUNDS;
 
 const OPINION_ADULT_ENTITIES_MAIN = [
@@ -553,12 +579,27 @@ OPINION_ROUNDS.push(
 
 function buildPicturePromptRounds() {
   return PICTURE_DLC_MANIFESTS
-    .filter((manifest) => validatePictureDlcManifest(manifest))
+    .filter(
+      (manifest) =>
+        validatePictureDlcManifest(manifest) &&
+        String(manifest.roundType || 'picture').trim() !== 'pairs',
+    )
+    .flatMap((manifest) => buildPictureRoundsFromManifest(manifest));
+}
+
+function buildPairsPromptRounds() {
+  return PICTURE_DLC_MANIFESTS
+    .filter(
+      (manifest) =>
+        validatePictureDlcManifest(manifest) &&
+        String(manifest.roundType || '').trim() === 'pairs',
+    )
     .flatMap((manifest) => buildPictureRoundsFromManifest(manifest));
 }
 
 export const MEDIA_ROUNDS = {
   picture: buildPicturePromptRounds(),
+  pairs: buildPairsPromptRounds(),
   sound: [
     { hint: 'Sound Clue', main: 'arcade-coin-drop', imposter: 'slot-machine-jingle', previewLabel: 'Audio round placeholder' },
     { hint: 'Sound Clue', main: 'lion-roar', imposter: 'tiger-growl', previewLabel: 'Audio round placeholder' },
@@ -650,251 +691,6 @@ function buildMediaBatch(type, adultOnly = false, count = 50) {
 MEDIA_ROUNDS.sound.push(...buildMediaBatch('sound', false, 50), ...buildMediaBatch('sound', true, 50));
 MEDIA_ROUNDS.video.push(...buildMediaBatch('video', false, 50), ...buildMediaBatch('video', true, 50));
 
-export const GRILL_EM_ROUNDS = [
-  {
-    hint: "AI Mystery Topic",
-    main: 'Retro arcade game cabinet',
-    imposter: 'Retro arcade game cabinet',
-    aiPrompt: 'You are describing a retro arcade game cabinet. Keep answers brief and vague.',
-    previewLabel: 'Players interrogate the AI: yes, no, kind of, not really applicable, or possibly.',
-  },
-  {
-    hint: "AI Mystery Topic",
-    main: 'Cheese pizza',
-    imposter: 'Cheese pizza',
-    aiPrompt: 'You are describing cheese pizza. Keep answers brief and vague.',
-    previewLabel: 'Players interrogate the AI: yes, no, kind of, not really applicable, or possibly.',
-  },
-  {
-    hint: "AI Mystery Topic",
-    main: 'House cat',
-    imposter: 'House cat',
-    aiPrompt: 'You are describing a house cat. Keep answers brief and vague.',
-    previewLabel: 'Players interrogate the AI: yes, no, kind of, not really applicable, or possibly.',
-  },
-  {
-    hint: "AI Mystery Topic",
-    main: 'Electric guitar',
-    imposter: 'Electric guitar',
-    aiPrompt: 'You are describing an electric guitar. Keep answers brief and vague.',
-    previewLabel: 'Players interrogate the AI: yes, no, kind of, not really applicable, or possibly.',
-  },
-  {
-    hint: "AI Mystery Topic",
-    main: 'Theme park rollercoaster',
-    imposter: 'Theme park rollercoaster',
-    aiPrompt: 'You are describing a theme park rollercoaster. Keep answers brief and vague.',
-    previewLabel: 'Players interrogate the AI: yes, no, kind of, not really applicable, or possibly.',
-  },
-  {
-    hint: "AI Mystery Topic",
-    main: 'Laptop computer',
-    imposter: 'Laptop computer',
-    aiPrompt: 'You are describing a laptop computer. Keep answers brief and vague.',
-    previewLabel: 'Players interrogate the AI: yes, no, kind of, not really applicable, or possibly.',
-  },
-  {
-    hint: "AI Mystery Topic",
-    main: 'Football stadium',
-    imposter: 'Football stadium',
-    aiPrompt: 'You are describing a football stadium. Keep answers brief and vague.',
-    previewLabel: 'Players interrogate the AI: yes, no, kind of, not really applicable, or possibly.',
-  },
-  {
-    hint: "AI Mystery Topic",
-    main: 'Banana smoothie',
-    imposter: 'Banana smoothie',
-    aiPrompt: 'You are describing a banana smoothie. Keep answers brief and vague.',
-    previewLabel: 'Players interrogate the AI: yes, no, kind of, not really applicable, or possibly.',
-  },
-  {
-    hint: "AI Mystery Topic",
-    main: 'Rainy day',
-    imposter: 'Rainy day',
-    aiPrompt: 'You are describing a rainy day. Keep answers brief and vague.',
-    previewLabel: 'Players interrogate the AI: yes, no, kind of, not really applicable, or possibly.',
-  },
-  {
-    hint: "AI Mystery Topic",
-    main: 'Zombie movie',
-    imposter: 'Zombie movie',
-    aiPrompt: 'You are describing a zombie movie. Keep answers brief and vague.',
-    previewLabel: 'Players interrogate the AI: yes, no, kind of, not really applicable, or possibly.',
-  },
-  {
-    hint: "AI Mystery Topic",
-    main: 'Haunted house',
-    imposter: 'Haunted house',
-    aiPrompt: 'You are describing a haunted house. Keep answers brief and vague.',
-    previewLabel: 'Players interrogate the AI: yes, no, kind of, not really applicable, or possibly.',
-  },
-  {
-    hint: "AI Mystery Topic",
-    main: 'Theme song',
-    imposter: 'Theme song',
-    aiPrompt: 'You are describing a TV theme song. Keep answers brief and vague.',
-    previewLabel: 'Players interrogate the AI: yes, no, kind of, not really applicable, or possibly.',
-  },
-  {
-    hint: "AI Mystery Topic",
-    main: 'Board game night',
-    imposter: 'Board game night',
-    aiPrompt: 'You are describing board game night. Keep answers brief and vague.',
-    previewLabel: 'Players interrogate the AI: yes, no, kind of, not really applicable, or possibly.',
-  },
-  {
-    hint: "AI Mystery Topic",
-    main: 'Alien planet',
-    imposter: 'Alien planet',
-    aiPrompt: 'You are describing an alien planet. Keep answers brief and vague.',
-    previewLabel: 'Players interrogate the AI: yes, no, kind of, not really applicable, or possibly.',
-  },
-  {
-    hint: 'AI Mystery Topic (18+)',
-    main: 'Nightclub',
-    imposter: 'Nightclub',
-    aiPrompt: 'You are describing a nightclub venue. Keep answers brief and vague.',
-    previewLabel: 'Players interrogate the AI: yes, no, kind of, not really applicable, or possibly.',
-    adultOnly: true,
-  },
-  {
-    hint: 'AI Mystery Topic (18+)',
-    main: 'Casino',
-    imposter: 'Casino',
-    aiPrompt: 'You are describing a casino venue. Keep answers brief and vague.',
-    previewLabel: 'Players interrogate the AI: yes, no, kind of, not really applicable, or possibly.',
-    adultOnly: true,
-  },
-];
-
-const GRILL_GUESSABLE_ENTITY_POOLS = {
-  person: [
-    'Taylor Swift',
-    'Elvis Presley',
-    'Freddie Mercury',
-    'David Attenborough',
-    'Albert Einstein',
-    'Usain Bolt',
-    'Adele',
-    'Beyonce',
-  ],
-  band: [
-    'The Beatles',
-    'Queen',
-    'Coldplay',
-    'Linkin Park',
-    'Nirvana',
-    'Arctic Monkeys',
-    'Metallica',
-    'Imagine Dragons',
-  ],
-  location: [
-    'London',
-    'Paris',
-    'New York',
-    'Tokyo',
-    'Sydney',
-    'Rome',
-    'Barcelona',
-    'Dubai',
-  ],
-  landmark: [
-    'Eiffel Tower',
-    'Big Ben',
-    'Statue of Liberty',
-    'Sydney Opera House',
-    'Great Wall of China',
-    'Taj Mahal',
-    'Golden Gate Bridge',
-    'Colosseum',
-  ],
-  animal: [
-    'Lion',
-    'Elephant',
-    'Dolphin',
-    'Penguin',
-    'Giraffe',
-    'Tiger',
-    'Koala',
-    'Wolf',
-  ],
-};
-
-function buildGuessableGrillRounds() {
-  const nounForType = {
-    person: 'person',
-    band: 'band',
-    location: 'location',
-    landmark: 'landmark',
-    animal: 'animal',
-  };
-  const rounds = [];
-  Object.entries(GRILL_GUESSABLE_ENTITY_POOLS).forEach(([entityType, entities]) => {
-    entities.forEach((entityName, index) => {
-      rounds.push({
-        hint: `AI Mystery Topic • ${entityType.toUpperCase()} ${index + 1}`,
-        main: `${entityType}: ${entityName}`,
-        imposter: `${entityType}: ${entityName}`,
-        aiPrompt: `You are describing the ${nounForType[entityType]} "${entityName}". Answer in short clues that are truthful, concise, and guessable. Avoid saying the exact name.`,
-        previewLabel: `Players interrogate the AI about a hidden ${entityType}.`,
-      });
-    });
-  });
-  return rounds;
-}
-
-GRILL_EM_ROUNDS.unshift(...buildGuessableGrillRounds());
-
-const GRILL_EXPANSION = {
-  regularTopics: [
-    'Snowy mountain cabin', 'Giant ferris wheel', 'Vintage motorcycle', 'Bowling alley', 'Sushi conveyor belt',
-    'Space rocket launch', 'Haunted carnival', 'City marathon', 'Comic convention', 'Roller disco rink',
-  ],
-  adultTopics: [
-    'Nightclub',
-    'Cocktail bar',
-    'Casino',
-    'VIP lounge',
-    'Rooftop party',
-    'Late-night diner',
-    'Beach club',
-    'Karaoke booth',
-    'Hotel suite',
-    'Festival campsite',
-    'Jazz club',
-    'Wine bar',
-    'Poker room',
-    'Private lounge',
-    'Pool party',
-    'Open mic stage',
-    'Penthouse lounge',
-    '24-hour cafe',
-    'Resort bar',
-    'Holiday hostel',
-  ],
-};
-
-function toGrillRound(topic, index, adultOnly = false) {
-  return {
-    hint: adultOnly ? `AI Mystery Topic (18+) ${index + 1}` : `AI Mystery Topic ${index + 1}`,
-    main: topic,
-    imposter: topic,
-    aiPrompt: `You are describing ${topic.toLowerCase()}. Keep answers brief, playful, and vague.`,
-    previewLabel: 'Players interrogate the AI: yes, no, kind of, not really applicable, or possibly.',
-    ...(adultOnly ? { adultOnly: true } : {}),
-  };
-}
-
-function buildGrillBatch(adultOnly = false, count = 50) {
-  const pool = adultOnly ? GRILL_EXPANSION.adultTopics : GRILL_EXPANSION.regularTopics;
-  return Array.from({ length: count }, (_, index) => toGrillRound(pool[index % pool.length], index, adultOnly));
-}
-
-GRILL_EM_ROUNDS.push(
-  ...buildGrillBatch(false, 50),
-  ...buildGrillBatch(true, 50)
-);
-
 const BANNED_WORD_STOPLIST = new Set([
   'the', 'and', 'for', 'with', 'from', 'into', 'your', 'this', 'that', 'are', 'was', 'were', 'they',
   'them', 'their', 'have', 'has', 'had', 'not', 'too', 'you', 'our', 'its', 'but', 'than', 'then',
@@ -949,6 +745,10 @@ function ensureBannedWordCoverage() {
       const key = `offtopic::${category.id}::${index}`;
       BANNED_WORD_BANK[key] = autoBannedWords(prompt, BANNED_WORD_BANK[key] || []);
     });
+    (TWO_TRUTHS_ONE_FIRE_ROUNDS[category.id] || []).forEach((prompt, index) => {
+      const key = `twotruths::${category.id}::${index}`;
+      BANNED_WORD_BANK[key] = autoBannedWords(prompt, BANNED_WORD_BANK[key] || []);
+    });
   });
   OPINION_ROUNDS.forEach((prompt, index) => {
     const key = `opinion::global::${index}`;
@@ -960,10 +760,6 @@ function ensureBannedWordCoverage() {
   });
   SOUND_CLUES_ROUNDS.forEach((prompt, index) => {
     const key = `noise::global::${index}`;
-    BANNED_WORD_BANK[key] = autoBannedWords(prompt, BANNED_WORD_BANK[key] || []);
-  });
-  GRILL_EM_ROUNDS.forEach((prompt, index) => {
-    const key = `grill::global::${index}`;
     BANNED_WORD_BANK[key] = autoBannedWords(prompt, BANNED_WORD_BANK[key] || []);
   });
   Object.keys(MEDIA_ROUNDS).forEach((type) => {

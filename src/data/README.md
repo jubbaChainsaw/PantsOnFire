@@ -18,6 +18,13 @@ Use explicit, domain-focused file names for data modules. Prefer names that desc
 - `names.js` — name pools and random name helper
 - `gameTextContent.js` — UI text/copy banks and copy picker
 
+## Additional modules (non-exhaustive)
+
+- `themeCatalog.js`, `themeHosts.js`, `themePersonas.js`, `themeAliases.js`
+- `hostVoiceLineMap.js`, `hostPersonaCallouts.js`, `ianPosterThemeVoice.js`
+- `guessableEntityPools.js`, `specialRoundPromptPools.js`
+- `dlc/` theme pack definitions under `src/data/dlc/`
+
 ## For future DLC packs
 
 - Use pack-oriented paths under `public/assets/graphic-packs/<type>/<pack-id>/...`.

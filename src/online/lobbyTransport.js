@@ -1,8 +1,15 @@
 import { io } from 'socket.io-client';
 import { getLobbyApiBase, getLobbyServerOrigin } from '../lib/lobbyApiEnv.js';
+import { getNativeHostingHeaders } from '../lib/nativeHostingCredentials.js';
 
-const LOBBY_SERVER_URL = getLobbyServerOrigin();
-const LOBBY_API_BASE = getLobbyApiBase();
+/** Resolve per call: module load can run before `window` exists; preview needs same-origin `/api` + Vite proxy. */
+function lobbyApiBase() {
+  return getLobbyApiBase();
+}
+
+function lobbyServerOrigin() {
+  return getLobbyServerOrigin();
+}
 
 function randomId(prefix = 'id') {
   return `${prefix}-${Math.random().toString(36).slice(2, 10)}-${Date.now().toString(36)}`;
@@ -16,10 +23,17 @@ function normalizeCode(lobbyCode) {
   return String(lobbyCode || '').trim().toUpperCase();
 }
 
-async function requestJson(path, { method = 'GET', body } = {}) {
-  const response = await fetch(`${LOBBY_API_BASE}${path}`, {
+async function requestJson(path, { method = 'GET', body, accessToken = '' } = {}) {
+  const headers = {
+    'Content-Type': 'application/json',
+    ...getNativeHostingHeaders(),
+  };
+  if (accessToken) {
+    headers.Authorization = `Bearer ${accessToken}`;
+  }
+  const response = await fetch(`${lobbyApiBase()}${path}`, {
     method,
-    headers: { 'Content-Type': 'application/json' },
+    headers,
     body: body === undefined ? undefined : JSON.stringify(body),
   });
   let payload = null;
@@ -53,10 +67,17 @@ export function createOnlinePlayer({ name, clientId, isHost = false }) {
   };
 }
 
-export async function createLobbyOnServer({ hostName, hostPlayer, maxPlayers, settings } = {}) {
+export async function createLobbyOnServer({
+  hostName,
+  hostPlayer,
+  maxPlayers,
+  settings,
+  accessToken = '',
+} = {}) {
   const payload = await requestJson('/lobbies', {
     method: 'POST',
     body: { hostName, hostPlayer, maxPlayers, settings },
+    accessToken,
   });
   return {
     lobby: payload?.lobby || null,
@@ -121,6 +142,28 @@ export async function startLobbyOnServer(lobbyCode, { hostClientId, sessionToken
   });
   return {
     lobby: payload?.lobby || null,
+    rotatedSessionToken: payload?.rotatedSessionToken || '',
+  };
+}
+
+export async function configureRoundOnServer(
+  lobbyCode,
+  { hostClientId, sessionToken, roundTypeId, categoryId = '', promptKey = '' } = {},
+) {
+  const normalizedCode = normalizeCode(lobbyCode);
+  const payload = await requestJson(`/lobbies/${encodeURIComponent(normalizedCode)}/round/configure`, {
+    method: 'POST',
+    body: {
+      hostClientId,
+      sessionToken,
+      roundTypeId: String(roundTypeId || '').trim(),
+      categoryId: String(categoryId || '').trim(),
+      promptKey: String(promptKey || '').trim(),
+    },
+  });
+  return {
+    lobby: payload?.lobby || null,
+    round: payload?.round || null,
     rotatedSessionToken: payload?.rotatedSessionToken || '',
   };
 }
@@ -191,6 +234,23 @@ export async function advanceRoundPhaseOnServer(lobbyCode, { playerId, sessionTo
   };
 }
 
+export async function submitOneWordTurnOnServer(
+  lobbyCode,
+  { playerId, sessionToken, action, word } = {},
+) {
+  const normalizedCode = normalizeCode(lobbyCode);
+  const payload = await requestJson(`/lobbies/${encodeURIComponent(normalizedCode)}/round/one-word`, {
+    method: 'POST',
+    body: { playerId, sessionToken, action, word },
+  });
+  return {
+    lobby: payload?.lobby || null,
+    round: payload?.round || null,
+    phase: payload?.phase || '',
+    rotatedSessionToken: payload?.rotatedSessionToken || '',
+  };
+}
+
 export async function submitRoundVotesOnServer(
   lobbyCode,
   { playerId, sessionToken, votesByPlayerId } = {}
@@ -211,6 +271,45 @@ export async function submitRoundVotesOnServer(
     rotatedSessionToken: payload?.rotatedSessionToken || '',
     votingComplete: Boolean(payload?.votingComplete),
     results: payload?.results || null,
+  };
+}
+
+export async function submitTwoTruthsSubmissionOnServer(
+  lobbyCode,
+  { playerId, sessionToken, submission } = {},
+) {
+  const normalizedCode = normalizeCode(lobbyCode);
+  const payload = await requestJson(
+    `/lobbies/${encodeURIComponent(normalizedCode)}/round/two-truths/submit`,
+    {
+      method: 'POST',
+      body: { playerId, sessionToken, submission: submission || {} },
+    },
+  );
+  return {
+    lobby: payload?.lobby || null,
+    round: payload?.round || null,
+    rotatedSessionToken: payload?.rotatedSessionToken || '',
+  };
+}
+
+export async function submitTwoTruthsAuthorVoteOnServer(
+  lobbyCode,
+  { playerId, sessionToken, authorId, lieIndex } = {},
+) {
+  const normalizedCode = normalizeCode(lobbyCode);
+  const payload = await requestJson(
+    `/lobbies/${encodeURIComponent(normalizedCode)}/round/two-truths/vote`,
+    {
+      method: 'POST',
+      body: { playerId, sessionToken, authorId, lieIndex },
+    },
+  );
+  return {
+    lobby: payload?.lobby || null,
+    round: payload?.round || null,
+    votingComplete: Boolean(payload?.votingComplete),
+    rotatedSessionToken: payload?.rotatedSessionToken || '',
   };
 }
 
@@ -249,7 +348,7 @@ export function createLobbyTransport({
   let currentSessionToken = String(sessionToken || '').trim();
   let closed = false;
   let lastSnapshot = null;
-  const socket = io(LOBBY_SERVER_URL || undefined, {
+  const socket = io(lobbyServerOrigin() || undefined, {
     transports: ['websocket', 'polling'],
   });
 
@@ -306,6 +405,10 @@ export function createLobbyTransport({
     if (closed || !payload) return;
     onEvent({ type: 'party-voice-activity', payload }, 'socket');
   });
+  socket.on('lobby:player-kicked', (payload) => {
+    if (closed || !payload) return;
+    onEvent({ type: 'player-kicked', payload }, 'socket');
+  });
   socket.emit('lobby:subscribe', {
     code: normalizedCode,
     playerId: normalizedPlayerId,
@@ -346,6 +449,7 @@ export function createLobbyTransport({
       socket.off('lobby:snapshot');
       socket.off('party-chat:message');
       socket.off('party-voice:activity');
+      socket.off('lobby:player-kicked');
       socket.disconnect();
     },
   };

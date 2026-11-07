@@ -1,0 +1,50 @@
+{
+  "schemaVersion": 1,
+  "auditBatchId": "POF-AUDIT-2026-11-06-BATCH03",
+  "generatedAt": "2026-11-06T19:30:00.000Z",
+  "purpose": "Merge overlays: link tracker rows, TEST0005 harness scope, REQ0017 evidence update payload pointers. Applied after batch-02 by buildJubbaWorldTraceability.mjs.",
+  "items": {
+    "REQ0017": {
+      "linksExistingTracker": ["STRY0013", "REQ0009", "ENHC0012", "TEST0004"],
+      "methodologyNote": "Existing JubbaWorld item REQ0017 — server `buildAuthoritativeRound` only emits Hot Seat (`roundTypeId: 'prompt'`). Client already implements Two Truths screens (`twotruths-input` / `twotruths-voting` / `twotruths-reveal` in App.jsx) but online authority + E2E unskip depend on REQ0017 + TEST0004.",
+      "implementationRefs": [
+        "server/storage/lobbyStore.js:353-410 buildAuthoritativeRound — roundTypeId: prompt",
+        "src/App.jsx:9257-9273 syncOnlineRoundFromSnapshot — twotruths-input / twotruths-voting / reveal branches"
+      ],
+      "nextAction": "Extend server round generator + lobby store for online Two Truths (use existing REQ0017); add server tests; then unblock Playwright online two-truths path (TEST0004)."
+    },
+    "REQ0009": {
+      "linksExistingTracker": ["REQ0017", "STRY0010", "ENHC0008", "ENHC0012", "STRY0023"],
+      "implementationRefs": [
+        "server/lobbyServer.js — create/join/resume/socket",
+        "server/lobbyServer.js:393-456 GET /health voice + POST /api/lobbies/:code/voice/token (LiveKit)",
+        "server/storage/lobbyStore.js:353-410 buildAuthoritativeRound (prompt-only online round)"
+      ],
+      "methodologyNote": "Online lobbies + voice token path exist; full “Jackbox-style” parity blocked until non-prompt round types on server (REQ0017 and related)."
+    },
+    "STRY0011": {
+      "testRefs": [
+        "tests/e2e/playwright/martin-smoke.spec.js (partial — home, rules)"
+      ]
+    },
+    "STRY0010": {
+      "testRefs": [
+        "tests/e2e/playwright/mobile-bundled-dist-smoke.spec.js — round-type icons list"
+      ]
+    },
+    "STRY0024": {
+      "testRefs": ["tests/e2e/playwright/mobile-bundled-dist-smoke.spec.js"]
+    }
+  },
+  "conversationRequirements": {
+    "CONV_REQ_REVIEW_AS_PAGE": {
+      "implementationRefs": [
+        "docs/audit/2026-11-06-jubba-full-audit/traceability-FULL.json",
+        "docs/audit/2026-11-06-jubba-full-audit/findings-FULL.json",
+        "docs/audit/2026-11-06-jubba-full-audit/evidence-batch-01.json",
+        "docs/audit/2026-11-06-jubba-full-audit/evidence-batch-02.json",
+        "docs/audit/2026-11-06-jubba-full-audit/evidence-batch-03.json"
+      ]
+    }
+  }
+}

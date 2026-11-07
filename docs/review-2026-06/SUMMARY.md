@@ -22,14 +22,17 @@ MOBILE_DEPLOYMENT_READINESS.md, BUG_LIST.md, TECHNICAL_DEBT_AND_ROADMAP.md.
 - Removed unused `issueOrReuseSessionToken` (the token-reuse footgun).
 
 ### Server — `server/lobbyServer.js`
-- Per-IP rate limiting on lobby create/join/resume/lookup and LiveKit token
-  endpoints; `trust proxy` enabled; `429 {error:'rate-limited'}` responses.
+- Per-IP rate limiting on lobby create/join/resume/lookup (including
+  `GET …/round` and `GET …/round/private`), and LiveKit token endpoints;
+  see `server/rateLimit.js`. `trust proxy` enabled; `429 {error:'rate-limited'}`.
 - LiveKit tokens issued with `ttl: '15m'`.
 - `party-voice:activity` now requires a valid player session token.
 - Join route passes the optional `sessionToken` through for seat reclaim and
   maps `client-id-in-use` to 409.
-- Entitlement store is Redis-backed when `REDIS_URL` is configured
-  (`pof:entitlements:<userId>`), Map fallback for dev.
+- Entitlement store is Redis-backed when `REDIS_URL` or `LOBBY_REDIS_URL` is
+  configured (same Redis client as the lobby store when used), key prefix
+  `ENTITLEMENTS_REDIS_KEY_PREFIX` (default `pof:entitlements:<userId>`); Map
+  fallback for dev. Postgres when `DATABASE_URL` is set.
 
 ### Server — `server/entitlementsRoutes.js`
 - RevenueCat webhook now **replaces** entitlement state from the subscriber

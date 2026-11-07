@@ -19,13 +19,13 @@ quality gap.
 ## Remaining issues by severity
 
 ### Critical (fix before the relevant playtest group)
-- **Missing SFX files (13 of 14)** — only `sfx/heartbeat-placeholder.wav`
-  exists; code references `fire-crackle.wav`, `imposter-found.wav`,
-  `imposter-announced.wav`, `card-flip.wav`, `heartbeat.mp3`, and 9
-  `sfx/byteblitz/*` files (Grill 'Em feedback). Failures are silent (no
-  crash), but reveal/voting moments lose their punch and Grill 'Em loses its
-  audio feedback loop. Generate or source these before Group 1 sessions, or
-  consciously accept silent fallback.
+- **Missing SFX files (13 of 14)** — only
+  `public/assets/sfx/heartbeat-placeholder.wav` exists; code references
+  `fire-crackle.wav`, `imposter-found.wav`, `imposter-announced.wav`,
+  `card-flip.wav`, `heartbeat.mp3`, and other paths under `public/assets/sfx/`.
+  Failures are silent (no crash), but reveal/voting moments lose punch.
+  Generate or source these before Group 1 sessions, or accept silent fallback.
+  *(Grill 'Em / ByteBlitz SFX are obsolete — that round type was removed.)*
 
 ### Major
 - **Online mode supports only one round type** — the server generates
@@ -68,7 +68,6 @@ quality gap.
 | Sound Off | ✅ | ❌ | |
 | Off Topic Defense | ✅ | ❌ | |
 | Chain Reaction | ✅ | ❌ | logo missing |
-| Grill 'Em | ✅ | ❌ | needs byteblitz SFX |
 | Dodgy Audio | ❌ | stub | hide or finish |
 | Clip Trap | ❌ | stub | hide or finish |
 

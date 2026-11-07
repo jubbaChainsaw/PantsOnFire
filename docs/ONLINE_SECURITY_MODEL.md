@@ -49,26 +49,29 @@ Never trust:
 - Client purchase state is display only.
 - Online entitlement checks should be validated server side.
 
-## Implemented Safeguards (June 2026)
+## Implemented Safeguards (June 2026, updated)
 
 - Private round data (liar identity, prompt pair) is redacted from public
   round payloads until the reveal phase.
 - Joins cannot claim host status or reclaim another player's seat without
   that seat's valid session token; reclaims rotate the token.
 - Session tokens and lobby codes are generated with `node:crypto`.
-- Per-IP rate limiting on lobby create/join/resume/lookup and voice-token
-  endpoints.
+- Per-IP rate limiting on lobby create/join/resume/lookup (including public
+  round read endpoints), and LiveKit voice-token issuance (`server/rateLimit.js`,
+  `server/lobbyServer.js`).
 - LiveKit voice tokens are issued with a 15-minute TTL and require a valid
   lobby session.
 - Voice-activity and chat socket events require a valid session token.
 - RevenueCat webhooks replace entitlement state (downgrades/refunds apply)
   and are verified with a constant-time secret comparison; entitlements
-  persist to Redis when configured.
-- Idle lobbies expire (24 h TTL in Redis, periodic sweep in memory).
+  persist to Postgres or Redis when configured.
+- Idle lobbies expire (24 h TTL in Redis by default, periodic sweep in memory).
+- Round phase advancement via `POST /api/lobbies/:code/round/phase/advance` is
+  host-only (`403` / `host-only`); the web client shows advance controls only
+  to the host.
 
 See `docs/review-2026-06/SECURITY_AUDIT.md` for the full audit, including
-open items (per-lobby locking, host-only phase advancement, clientId
-exposure in snapshots).
+open items (per-lobby locking, clientId exposure in snapshots).
 
 ## Production Recommendations
 

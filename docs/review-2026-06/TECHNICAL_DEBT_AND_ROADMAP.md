@@ -17,14 +17,15 @@ value):
 Each step should ship separately and keep pass-the-phone behaviour identical.
 
 ### 2. No test infrastructure existed (High — partially addressed)
-This review adds a dependency-free `node --test` suite (19 tests) covering
-server lobby/session/voting/scoring/redaction and entitlement mapping
-(`npm test`). Still missing:
+This review adds a dependency-free `node --test` suite covering server
+lobby/session/voting/scoring/redaction and entitlement mapping (`npm test` /
+`npm run test:server`; count grows with new tests). Still missing:
 - Client unit tests (needs vitest; pure game logic extraction above makes
   this cheap).
 - Socket.IO integration tests (spin up the server in-process).
-- A CI workflow running `npm test` + `npm run build` on PRs (there is a
-  `.github/workflows` dir — add a test job).
+- A CI workflow running `npm test` on every PR (workflows today:
+  `android-debug-apk.yml`, `android-release-aab.yml`, `deploy-ionos-web.yml`,
+  `media-validation.yml` — none run `npm test` by default).
 
 ### 3. Client/server duplication of game rules (Medium)
 Round phases, scoring, and prompt structures are implemented twice (App.jsx

@@ -1,0 +1,758 @@
+{
+  "ts": "2026-11-06T22:20:26.589480+00:00",
+  "frozenCorpusId": "df7269-modular-fragments-v1",
+  "corpusSha256": "e8b9c9c2365798927892c6c04cd4aa3c32dc82ddc37e38e2e6f20e31f8a72513",
+  "uniqueFragmentCount": 14,
+  "lineCount": 112,
+  "themeSlugSharedPaths": [
+    {
+      "themeSlug": "cops-and-robbers",
+      "themeNames": [
+        "Cops and Robbers",
+        "Cowboys",
+        "Gangsters"
+      ]
+    }
+  ],
+  "summary": {
+    "reuse": 12,
+    "generated_new": 2,
+    "complete_unique": 14,
+    "theme_rows": 112
+  },
+  "mapping": [
+    {
+      "scriptId": "banter_picker_prefix_v1",
+      "spokenText": "You're choosing the chaos this round.",
+      "tok": "you're choosing the chaos this round",
+      "themeRows": 8,
+      "stableFilenames": [
+        "default_banter_banter_picker_prefix_v1.mp3",
+        "murder-mystery_banter_banter_picker_prefix_v1.mp3",
+        "pirates_banter_banter_picker_prefix_v1.mp3",
+        "cops-and-robbers_banter_banter_picker_prefix_v1.mp3",
+        "ghosts-and-ghouls_banter_banter_picker_prefix_v1.mp3",
+        "cops-and-robbers_banter_banter_picker_prefix_v1.mp3",
+        "cops-and-robbers_banter_banter_picker_prefix_v1.mp3",
+        "wrestlers_banter_banter_picker_prefix_v1.mp3"
+      ],
+      "themeSlugs": [
+        "cops-and-robbers",
+        "default",
+        "ghosts-and-ghouls",
+        "murder-mystery",
+        "pirates",
+        "wrestlers"
+      ],
+      "themeNames": [
+        "Cops and Robbers",
+        "Cowboys",
+        "Default",
+        "Gangsters",
+        "Ghosts and Ghouls",
+        "Murder Mystery",
+        "Pirates",
+        "Wrestlers"
+      ],
+      "decision": "REUSE_COSMETIC",
+      "sourceCueId": "cue_banter_3a15e80390bd9255",
+      "sourceSpokenText": "you're choosing the chaos this round.",
+      "sourcePath": "/workspace/pof-ian-host-audio-2026-11-06/audio/cue_banter_3a15e80390bd9255.mp3",
+      "canonicalPath": "/workspace/pof-ian-host-audio-2026-11-06/audio/fragments/banter_picker_prefix_v1.mp3",
+      "mappedPaths": [
+        "/workspace/pof-ian-host-audio-2026-11-06/mapped/default_banter_banter_picker_prefix_v1.mp3",
+        "/workspace/pof-ian-host-audio-2026-11-06/mapped/murder-mystery_banter_banter_picker_prefix_v1.mp3",
+        "/workspace/pof-ian-host-audio-2026-11-06/mapped/pirates_banter_banter_picker_prefix_v1.mp3",
+        "/workspace/pof-ian-host-audio-2026-11-06/mapped/cops-and-robbers_banter_banter_picker_prefix_v1.mp3",
+        "/workspace/pof-ian-host-audio-2026-11-06/mapped/ghosts-and-ghouls_banter_banter_picker_prefix_v1.mp3",
+        "/workspace/pof-ian-host-audio-2026-11-06/mapped/cops-and-robbers_banter_banter_picker_prefix_v1.mp3",
+        "/workspace/pof-ian-host-audio-2026-11-06/mapped/cops-and-robbers_banter_banter_picker_prefix_v1.mp3",
+        "/workspace/pof-ian-host-audio-2026-11-06/mapped/wrestlers_banter_banter_picker_prefix_v1.mp3"
+      ],
+      "delta_exact_old": "you're choosing the chaos this round.",
+      "delta_exact_new": "You're choosing the chaos this round.",
+      "exactSha_old": "3a15e80390bd9255b3fd4770fe84dfc14b21be64f47e3afebaaafe62e2a880b4",
+      "exactSha_new": "b3e89c7945c5a26df7f77867fc3d36131af0d12c7e5abe61d4098c2b497c6f02"
+    },
+    {
+      "scriptId": "banter_picker_alright_lead_v2",
+      "spokenText": "Alright —",
+      "tok": "alright",
+      "themeRows": 8,
+      "stableFilenames": [
+        "default_banter_banter_picker_alright_lead_v2.mp3",
+        "murder-mystery_banter_banter_picker_alright_lead_v2.mp3",
+        "pirates_banter_banter_picker_alright_lead_v2.mp3",
+        "cops-and-robbers_banter_banter_picker_alright_lead_v2.mp3",
+        "ghosts-and-ghouls_banter_banter_picker_alright_lead_v2.mp3",
+        "cops-and-robbers_banter_banter_picker_alright_lead_v2.mp3",
+        "cops-and-robbers_banter_banter_picker_alright_lead_v2.mp3",
+        "wrestlers_banter_banter_picker_alright_lead_v2.mp3"
+      ],
+      "themeSlugs": [
+        "cops-and-robbers",
+        "default",
+        "ghosts-and-ghouls",
+        "murder-mystery",
+        "pirates",
+        "wrestlers"
+      ],
+      "themeNames": [
+        "Cops and Robbers",
+        "Cowboys",
+        "Default",
+        "Gangsters",
+        "Ghosts and Ghouls",
+        "Murder Mystery",
+        "Pirates",
+        "Wrestlers"
+      ],
+      "decision": "GENERATED_NEW",
+      "canonicalPath": "/workspace/pof-ian-host-audio-2026-11-06/audio/fragments/banter_picker_alright_lead_v2.mp3",
+      "mappedPaths": [
+        "/workspace/pof-ian-host-audio-2026-11-06/mapped/default_banter_banter_picker_alright_lead_v2.mp3",
+        "/workspace/pof-ian-host-audio-2026-11-06/mapped/murder-mystery_banter_banter_picker_alright_lead_v2.mp3",
+        "/workspace/pof-ian-host-audio-2026-11-06/mapped/pirates_banter_banter_picker_alright_lead_v2.mp3",
+        "/workspace/pof-ian-host-audio-2026-11-06/mapped/cops-and-robbers_banter_banter_picker_alright_lead_v2.mp3",
+        "/workspace/pof-ian-host-audio-2026-11-06/mapped/ghosts-and-ghouls_banter_banter_picker_alright_lead_v2.mp3",
+        "/workspace/pof-ian-host-audio-2026-11-06/mapped/wrestlers_banter_banter_picker_alright_lead_v2.mp3"
+      ],
+      "flow_id": "siRVzSu2OyN2AxmjjEnk",
+      "credits": 17.998199999999997,
+      "cdn_take1": "https://elevenlabsusercontent.com/database/workspace/a4ea0d4427154b96b4c0af3b70e1bd48/content_generation/HOqxaekR4Px5l069DERV/BHd08nJsBrQ4ReUYycXl/content.mp3?Expires=1794013200&KeyName=assets-cdn-key-1&Signature=DojAf6SMV_QOiNEuFOQCpBqy-xI="
+    },
+    {
+      "scriptId": "banter_picker_prefix_v2",
+      "spokenText": "Pick a mode, pick a category, try not to look guilty before we start.",
+      "tok": "pick a mode pick a category try not to look guilty before we start",
+      "themeRows": 8,
+      "stableFilenames": [
+        "default_banter_banter_picker_prefix_v2.mp3",
+        "murder-mystery_banter_banter_picker_prefix_v2.mp3",
+        "pirates_banter_banter_picker_prefix_v2.mp3",
+        "cops-and-robbers_banter_banter_picker_prefix_v2.mp3",
+        "ghosts-and-ghouls_banter_banter_picker_prefix_v2.mp3",
+        "cops-and-robbers_banter_banter_picker_prefix_v2.mp3",
+        "cops-and-robbers_banter_banter_picker_prefix_v2.mp3",
+        "wrestlers_banter_banter_picker_prefix_v2.mp3"
+      ],
+      "themeSlugs": [
+        "cops-and-robbers",
+        "default",
+        "ghosts-and-ghouls",
+        "murder-mystery",
+        "pirates",
+        "wrestlers"
+      ],
+      "themeNames": [
+        "Cops and Robbers",
+        "Cowboys",
+        "Default",
+        "Gangsters",
+        "Ghosts and Ghouls",
+        "Murder Mystery",
+        "Pirates",
+        "Wrestlers"
+      ],
+      "decision": "REUSE_COSMETIC",
+      "sourceCueId": "cue_banter_e21ee1930e7bb13d",
+      "sourceSpokenText": "pick a mode, pick a category, try not to look guilty before we start.",
+      "sourcePath": "/workspace/pof-ian-host-audio-2026-11-06/audio/cue_banter_e21ee1930e7bb13d.mp3",
+      "canonicalPath": "/workspace/pof-ian-host-audio-2026-11-06/audio/fragments/banter_picker_prefix_v2.mp3",
+      "mappedPaths": [
+        "/workspace/pof-ian-host-audio-2026-11-06/mapped/default_banter_banter_picker_prefix_v2.mp3",
+        "/workspace/pof-ian-host-audio-2026-11-06/mapped/murder-mystery_banter_banter_picker_prefix_v2.mp3",
+        "/workspace/pof-ian-host-audio-2026-11-06/mapped/pirates_banter_banter_picker_prefix_v2.mp3",
+        "/workspace/pof-ian-host-audio-2026-11-06/mapped/cops-and-robbers_banter_banter_picker_prefix_v2.mp3",
+        "/workspace/pof-ian-host-audio-2026-11-06/mapped/ghosts-and-ghouls_banter_banter_picker_prefix_v2.mp3",
+        "/workspace/pof-ian-host-audio-2026-11-06/mapped/cops-and-robbers_banter_banter_picker_prefix_v2.mp3",
+        "/workspace/pof-ian-host-audio-2026-11-06/mapped/cops-and-robbers_banter_banter_picker_prefix_v2.mp3",
+        "/workspace/pof-ian-host-audio-2026-11-06/mapped/wrestlers_banter_banter_picker_prefix_v2.mp3"
+      ],
+      "delta_exact_old": "pick a mode, pick a category, try not to look guilty before we start.",
+      "delta_exact_new": "Pick a mode, pick a category, try not to look guilty before we start.",
+      "exactSha_old": "e21ee1930e7bb13dbe04c0c522eafb254031e716574271c1921d9b9cc24a72e6",
+      "exactSha_new": "218b72127d2a07ec3a305b5959ccfc41dea187b307b0402d65d9dc4c325ba093"
+    },
+    {
+      "scriptId": "banter_picker_prefix_v3",
+      "spokenText": "The wheel of bad decisions stops here.",
+      "tok": "the wheel of bad decisions stops here",
+      "themeRows": 8,
+      "stableFilenames": [
+        "default_banter_banter_picker_prefix_v3.mp3",
+        "murder-mystery_banter_banter_picker_prefix_v3.mp3",
+        "pirates_banter_banter_picker_prefix_v3.mp3",
+        "cops-and-robbers_banter_banter_picker_prefix_v3.mp3",
+        "ghosts-and-ghouls_banter_banter_picker_prefix_v3.mp3",
+        "cops-and-robbers_banter_banter_picker_prefix_v3.mp3",
+        "cops-and-robbers_banter_banter_picker_prefix_v3.mp3",
+        "wrestlers_banter_banter_picker_prefix_v3.mp3"
+      ],
+      "themeSlugs": [
+        "cops-and-robbers",
+        "default",
+        "ghosts-and-ghouls",
+        "murder-mystery",
+        "pirates",
+        "wrestlers"
+      ],
+      "themeNames": [
+        "Cops and Robbers",
+        "Cowboys",
+        "Default",
+        "Gangsters",
+        "Ghosts and Ghouls",
+        "Murder Mystery",
+        "Pirates",
+        "Wrestlers"
+      ],
+      "decision": "REUSE_COSMETIC",
+      "sourceCueId": "cue_banter_9707c24ba6253afa",
+      "sourceSpokenText": "the wheel of bad decisions stops here.",
+      "sourcePath": "/workspace/pof-ian-host-audio-2026-11-06/audio/cue_banter_9707c24ba6253afa.mp3",
+      "canonicalPath": "/workspace/pof-ian-host-audio-2026-11-06/audio/fragments/banter_picker_prefix_v3.mp3",
+      "mappedPaths": [
+        "/workspace/pof-ian-host-audio-2026-11-06/mapped/default_banter_banter_picker_prefix_v3.mp3",
+        "/workspace/pof-ian-host-audio-2026-11-06/mapped/murder-mystery_banter_banter_picker_prefix_v3.mp3",
+        "/workspace/pof-ian-host-audio-2026-11-06/mapped/pirates_banter_banter_picker_prefix_v3.mp3",
+        "/workspace/pof-ian-host-audio-2026-11-06/mapped/cops-and-robbers_banter_banter_picker_prefix_v3.mp3",
+        "/workspace/pof-ian-host-audio-2026-11-06/mapped/ghosts-and-ghouls_banter_banter_picker_prefix_v3.mp3",
+        "/workspace/pof-ian-host-audio-2026-11-06/mapped/cops-and-robbers_banter_banter_picker_prefix_v3.mp3",
+        "/workspace/pof-ian-host-audio-2026-11-06/mapped/cops-and-robbers_banter_banter_picker_prefix_v3.mp3",
+        "/workspace/pof-ian-host-audio-2026-11-06/mapped/wrestlers_banter_banter_picker_prefix_v3.mp3"
+      ],
+      "delta_exact_old": "the wheel of bad decisions stops here.",
+      "delta_exact_new": "The wheel of bad decisions stops here.",
+      "exactSha_old": "9707c24ba6253afa34977d9f1b2ce66bd7819d391d8a7ac030be8a05a7549afc",
+      "exactSha_new": "192d7eb759079f14b18cb2abb75b90fd66f352084e8ed9ab5ab17b9bc6f80513"
+    },
+    {
+      "scriptId": "banter_reveal_suffix_singular_v1",
+      "spokenText": "Was bluffing the whole time.",
+      "tok": "was bluffing the whole time",
+      "themeRows": 8,
+      "stableFilenames": [
+        "default_banter_banter_reveal_suffix_singular_v1.mp3",
+        "murder-mystery_banter_banter_reveal_suffix_singular_v1.mp3",
+        "pirates_banter_banter_reveal_suffix_singular_v1.mp3",
+        "cops-and-robbers_banter_banter_reveal_suffix_singular_v1.mp3",
+        "ghosts-and-ghouls_banter_banter_reveal_suffix_singular_v1.mp3",
+        "cops-and-robbers_banter_banter_reveal_suffix_singular_v1.mp3",
+        "cops-and-robbers_banter_banter_reveal_suffix_singular_v1.mp3",
+        "wrestlers_banter_banter_reveal_suffix_singular_v1.mp3"
+      ],
+      "themeSlugs": [
+        "cops-and-robbers",
+        "default",
+        "ghosts-and-ghouls",
+        "murder-mystery",
+        "pirates",
+        "wrestlers"
+      ],
+      "themeNames": [
+        "Cops and Robbers",
+        "Cowboys",
+        "Default",
+        "Gangsters",
+        "Ghosts and Ghouls",
+        "Murder Mystery",
+        "Pirates",
+        "Wrestlers"
+      ],
+      "decision": "REUSE_COSMETIC",
+      "sourceCueId": "cue_banter_a71770cf93256a6d",
+      "sourceSpokenText": "was bluffing the whole time.",
+      "sourcePath": "/workspace/pof-ian-host-audio-2026-11-06/audio/cue_banter_a71770cf93256a6d.mp3",
+      "canonicalPath": "/workspace/pof-ian-host-audio-2026-11-06/audio/fragments/banter_reveal_suffix_singular_v1.mp3",
+      "mappedPaths": [
+        "/workspace/pof-ian-host-audio-2026-11-06/mapped/default_banter_banter_reveal_suffix_singular_v1.mp3",
+        "/workspace/pof-ian-host-audio-2026-11-06/mapped/murder-mystery_banter_banter_reveal_suffix_singular_v1.mp3",
+        "/workspace/pof-ian-host-audio-2026-11-06/mapped/pirates_banter_banter_reveal_suffix_singular_v1.mp3",
+        "/workspace/pof-ian-host-audio-2026-11-06/mapped/cops-and-robbers_banter_banter_reveal_suffix_singular_v1.mp3",
+        "/workspace/pof-ian-host-audio-2026-11-06/mapped/ghosts-and-ghouls_banter_banter_reveal_suffix_singular_v1.mp3",
+        "/workspace/pof-ian-host-audio-2026-11-06/mapped/cops-and-robbers_banter_banter_reveal_suffix_singular_v1.mp3",
+        "/workspace/pof-ian-host-audio-2026-11-06/mapped/cops-and-robbers_banter_banter_reveal_suffix_singular_v1.mp3",
+        "/workspace/pof-ian-host-audio-2026-11-06/mapped/wrestlers_banter_banter_reveal_suffix_singular_v1.mp3"
+      ],
+      "delta_exact_old": "was bluffing the whole time.",
+      "delta_exact_new": "Was bluffing the whole time.",
+      "exactSha_old": "a71770cf93256a6d7c0ffe17298bcf111807f5c62b2ff6a8fe709610914944c6",
+      "exactSha_new": "4e5ad35cc5cd71d6075681ed6e14661498244fd379034f9562f6bc2ea2b13edd"
+    },
+    {
+      "scriptId": "banter_reveal_suffix_singular_v2",
+      "spokenText": "Called it.",
+      "tok": "called it",
+      "themeRows": 8,
+      "stableFilenames": [
+        "default_banter_banter_reveal_suffix_singular_v2.mp3",
+        "murder-mystery_banter_banter_reveal_suffix_singular_v2.mp3",
+        "pirates_banter_banter_reveal_suffix_singular_v2.mp3",
+        "cops-and-robbers_banter_banter_reveal_suffix_singular_v2.mp3",
+        "ghosts-and-ghouls_banter_banter_reveal_suffix_singular_v2.mp3",
+        "cops-and-robbers_banter_banter_reveal_suffix_singular_v2.mp3",
+        "cops-and-robbers_banter_banter_reveal_suffix_singular_v2.mp3",
+        "wrestlers_banter_banter_reveal_suffix_singular_v2.mp3"
+      ],
+      "themeSlugs": [
+        "cops-and-robbers",
+        "default",
+        "ghosts-and-ghouls",
+        "murder-mystery",
+        "pirates",
+        "wrestlers"
+      ],
+      "themeNames": [
+        "Cops and Robbers",
+        "Cowboys",
+        "Default",
+        "Gangsters",
+        "Ghosts and Ghouls",
+        "Murder Mystery",
+        "Pirates",
+        "Wrestlers"
+      ],
+      "decision": "REUSE_COSMETIC",
+      "sourceCueId": "cue_banter_facff20e3a971426",
+      "sourceSpokenText": "— called it.",
+      "sourcePath": "/workspace/pof-ian-host-audio-2026-11-06/audio/cue_banter_facff20e3a971426.mp3",
+      "canonicalPath": "/workspace/pof-ian-host-audio-2026-11-06/audio/fragments/banter_reveal_suffix_singular_v2.mp3",
+      "mappedPaths": [
+        "/workspace/pof-ian-host-audio-2026-11-06/mapped/default_banter_banter_reveal_suffix_singular_v2.mp3",
+        "/workspace/pof-ian-host-audio-2026-11-06/mapped/murder-mystery_banter_banter_reveal_suffix_singular_v2.mp3",
+        "/workspace/pof-ian-host-audio-2026-11-06/mapped/pirates_banter_banter_reveal_suffix_singular_v2.mp3",
+        "/workspace/pof-ian-host-audio-2026-11-06/mapped/cops-and-robbers_banter_banter_reveal_suffix_singular_v2.mp3",
+        "/workspace/pof-ian-host-audio-2026-11-06/mapped/ghosts-and-ghouls_banter_banter_reveal_suffix_singular_v2.mp3",
+        "/workspace/pof-ian-host-audio-2026-11-06/mapped/cops-and-robbers_banter_banter_reveal_suffix_singular_v2.mp3",
+        "/workspace/pof-ian-host-audio-2026-11-06/mapped/cops-and-robbers_banter_banter_reveal_suffix_singular_v2.mp3",
+        "/workspace/pof-ian-host-audio-2026-11-06/mapped/wrestlers_banter_banter_reveal_suffix_singular_v2.mp3"
+      ],
+      "delta_exact_old": "— called it.",
+      "delta_exact_new": "Called it.",
+      "exactSha_old": "facff20e3a971426d90986dd40128157b9370320e8ddd8684a555f6e3188cfb8",
+      "exactSha_new": "72ee765b9f5c23144de09444c1abfe9f5105e39bbfd79ccf7a1591f600b381ce"
+    },
+    {
+      "scriptId": "banter_result_caught_v1",
+      "spokenText": "That round had actual detective energy. Shocking, honestly.",
+      "tok": "that round had actual detective energy shocking honestly",
+      "themeRows": 8,
+      "stableFilenames": [
+        "default_banter_banter_result_caught_v1.mp3",
+        "murder-mystery_banter_banter_result_caught_v1.mp3",
+        "pirates_banter_banter_result_caught_v1.mp3",
+        "cops-and-robbers_banter_banter_result_caught_v1.mp3",
+        "ghosts-and-ghouls_banter_banter_result_caught_v1.mp3",
+        "cops-and-robbers_banter_banter_result_caught_v1.mp3",
+        "cops-and-robbers_banter_banter_result_caught_v1.mp3",
+        "wrestlers_banter_banter_result_caught_v1.mp3"
+      ],
+      "themeSlugs": [
+        "cops-and-robbers",
+        "default",
+        "ghosts-and-ghouls",
+        "murder-mystery",
+        "pirates",
+        "wrestlers"
+      ],
+      "themeNames": [
+        "Cops and Robbers",
+        "Cowboys",
+        "Default",
+        "Gangsters",
+        "Ghosts and Ghouls",
+        "Murder Mystery",
+        "Pirates",
+        "Wrestlers"
+      ],
+      "decision": "REUSE_COSMETIC",
+      "sourceCueId": "cue_banter_fcd4c667d36bf4b9",
+      "sourceSpokenText": "that round had actual detective energy. shocking, honestly.",
+      "sourcePath": "/workspace/pof-ian-host-audio-2026-11-06/audio/cue_banter_fcd4c667d36bf4b9.mp3",
+      "canonicalPath": "/workspace/pof-ian-host-audio-2026-11-06/audio/fragments/banter_result_caught_v1.mp3",
+      "mappedPaths": [
+        "/workspace/pof-ian-host-audio-2026-11-06/mapped/default_banter_banter_result_caught_v1.mp3",
+        "/workspace/pof-ian-host-audio-2026-11-06/mapped/murder-mystery_banter_banter_result_caught_v1.mp3",
+        "/workspace/pof-ian-host-audio-2026-11-06/mapped/pirates_banter_banter_result_caught_v1.mp3",
+        "/workspace/pof-ian-host-audio-2026-11-06/mapped/cops-and-robbers_banter_banter_result_caught_v1.mp3",
+        "/workspace/pof-ian-host-audio-2026-11-06/mapped/ghosts-and-ghouls_banter_banter_result_caught_v1.mp3",
+        "/workspace/pof-ian-host-audio-2026-11-06/mapped/cops-and-robbers_banter_banter_result_caught_v1.mp3",
+        "/workspace/pof-ian-host-audio-2026-11-06/mapped/cops-and-robbers_banter_banter_result_caught_v1.mp3",
+        "/workspace/pof-ian-host-audio-2026-11-06/mapped/wrestlers_banter_banter_result_caught_v1.mp3"
+      ],
+      "delta_exact_old": "that round had actual detective energy. shocking, honestly.",
+      "delta_exact_new": "That round had actual detective energy. Shocking, honestly.",
+      "exactSha_old": "fcd4c667d36bf4b9d003ccee8d0b0ccab443f9e72cc576c62ed0c8a13431d702",
+      "exactSha_new": "818f32ddadd6384225e66ab10b1260230b5553de97ad4a1a4f86e9a80d60f3ee"
+    },
+    {
+      "scriptId": "banter_result_caught_v2",
+      "spokenText": "Clean vote — the table actually agreed. Suspiciously organised.",
+      "tok": "clean vote the table actually agreed suspiciously organised",
+      "themeRows": 8,
+      "stableFilenames": [
+        "default_banter_banter_result_caught_v2.mp3",
+        "murder-mystery_banter_banter_result_caught_v2.mp3",
+        "pirates_banter_banter_result_caught_v2.mp3",
+        "cops-and-robbers_banter_banter_result_caught_v2.mp3",
+        "ghosts-and-ghouls_banter_banter_result_caught_v2.mp3",
+        "cops-and-robbers_banter_banter_result_caught_v2.mp3",
+        "cops-and-robbers_banter_banter_result_caught_v2.mp3",
+        "wrestlers_banter_banter_result_caught_v2.mp3"
+      ],
+      "themeSlugs": [
+        "cops-and-robbers",
+        "default",
+        "ghosts-and-ghouls",
+        "murder-mystery",
+        "pirates",
+        "wrestlers"
+      ],
+      "themeNames": [
+        "Cops and Robbers",
+        "Cowboys",
+        "Default",
+        "Gangsters",
+        "Ghosts and Ghouls",
+        "Murder Mystery",
+        "Pirates",
+        "Wrestlers"
+      ],
+      "decision": "REUSE_COSMETIC",
+      "sourceCueId": "cue_banter_148319cef5dba973",
+      "sourceSpokenText": "clean vote — the table actually agreed. suspiciously organised.",
+      "sourcePath": "/workspace/pof-ian-host-audio-2026-11-06/audio/cue_banter_148319cef5dba973.mp3",
+      "canonicalPath": "/workspace/pof-ian-host-audio-2026-11-06/audio/fragments/banter_result_caught_v2.mp3",
+      "mappedPaths": [
+        "/workspace/pof-ian-host-audio-2026-11-06/mapped/default_banter_banter_result_caught_v2.mp3",
+        "/workspace/pof-ian-host-audio-2026-11-06/mapped/murder-mystery_banter_banter_result_caught_v2.mp3",
+        "/workspace/pof-ian-host-audio-2026-11-06/mapped/pirates_banter_banter_result_caught_v2.mp3",
+        "/workspace/pof-ian-host-audio-2026-11-06/mapped/cops-and-robbers_banter_banter_result_caught_v2.mp3",
+        "/workspace/pof-ian-host-audio-2026-11-06/mapped/ghosts-and-ghouls_banter_banter_result_caught_v2.mp3",
+        "/workspace/pof-ian-host-audio-2026-11-06/mapped/cops-and-robbers_banter_banter_result_caught_v2.mp3",
+        "/workspace/pof-ian-host-audio-2026-11-06/mapped/cops-and-robbers_banter_banter_result_caught_v2.mp3",
+        "/workspace/pof-ian-host-audio-2026-11-06/mapped/wrestlers_banter_banter_result_caught_v2.mp3"
+      ],
+      "delta_exact_old": "clean vote — the table actually agreed. suspiciously organised.",
+      "delta_exact_new": "Clean vote — the table actually agreed. Suspiciously organised.",
+      "exactSha_old": "148319cef5dba973453adc04a999c74040eb3dd3402d4463488f20aeda920b09",
+      "exactSha_new": "8608789f4b0e4a429390ce9f6cd2070749e9c6f8984c1524df2756948437d0aa"
+    },
+    {
+      "scriptId": "banter_result_escaped_v1",
+      "spokenText": "Somehow the lie walked out wearing flip-flops. Tough scene.",
+      "tok": "somehow the lie walked out wearing flip flops tough scene",
+      "themeRows": 8,
+      "stableFilenames": [
+        "default_banter_banter_result_escaped_v1.mp3",
+        "murder-mystery_banter_banter_result_escaped_v1.mp3",
+        "pirates_banter_banter_result_escaped_v1.mp3",
+        "cops-and-robbers_banter_banter_result_escaped_v1.mp3",
+        "ghosts-and-ghouls_banter_banter_result_escaped_v1.mp3",
+        "cops-and-robbers_banter_banter_result_escaped_v1.mp3",
+        "cops-and-robbers_banter_banter_result_escaped_v1.mp3",
+        "wrestlers_banter_banter_result_escaped_v1.mp3"
+      ],
+      "themeSlugs": [
+        "cops-and-robbers",
+        "default",
+        "ghosts-and-ghouls",
+        "murder-mystery",
+        "pirates",
+        "wrestlers"
+      ],
+      "themeNames": [
+        "Cops and Robbers",
+        "Cowboys",
+        "Default",
+        "Gangsters",
+        "Ghosts and Ghouls",
+        "Murder Mystery",
+        "Pirates",
+        "Wrestlers"
+      ],
+      "decision": "REUSE_COSMETIC",
+      "sourceCueId": "cue_banter_76013daaa86efa16",
+      "sourceSpokenText": "somehow the lie walked out wearing flip-flops. tough scene.",
+      "sourcePath": "/workspace/pof-ian-host-audio-2026-11-06/audio/cue_banter_76013daaa86efa16.mp3",
+      "canonicalPath": "/workspace/pof-ian-host-audio-2026-11-06/audio/fragments/banter_result_escaped_v1.mp3",
+      "mappedPaths": [
+        "/workspace/pof-ian-host-audio-2026-11-06/mapped/default_banter_banter_result_escaped_v1.mp3",
+        "/workspace/pof-ian-host-audio-2026-11-06/mapped/murder-mystery_banter_banter_result_escaped_v1.mp3",
+        "/workspace/pof-ian-host-audio-2026-11-06/mapped/pirates_banter_banter_result_escaped_v1.mp3",
+        "/workspace/pof-ian-host-audio-2026-11-06/mapped/cops-and-robbers_banter_banter_result_escaped_v1.mp3",
+        "/workspace/pof-ian-host-audio-2026-11-06/mapped/ghosts-and-ghouls_banter_banter_result_escaped_v1.mp3",
+        "/workspace/pof-ian-host-audio-2026-11-06/mapped/cops-and-robbers_banter_banter_result_escaped_v1.mp3",
+        "/workspace/pof-ian-host-audio-2026-11-06/mapped/cops-and-robbers_banter_banter_result_escaped_v1.mp3",
+        "/workspace/pof-ian-host-audio-2026-11-06/mapped/wrestlers_banter_banter_result_escaped_v1.mp3"
+      ],
+      "delta_exact_old": "somehow the lie walked out wearing flip-flops. tough scene.",
+      "delta_exact_new": "Somehow the lie walked out wearing flip-flops. Tough scene.",
+      "exactSha_old": "76013daaa86efa166f9b36e2acb11c79d15a204a9d3f7d5a4587cb7ba0dc4f2b",
+      "exactSha_new": "f632568951c96288b006de1ea513fde8a97abdfd6542a9a11f7e27ec135fa54f"
+    },
+    {
+      "scriptId": "banter_result_escaped_v2",
+      "spokenText": "The fib survived — not a compliment, just a fact.",
+      "tok": "the fib survived not a compliment just a fact",
+      "themeRows": 8,
+      "stableFilenames": [
+        "default_banter_banter_result_escaped_v2.mp3",
+        "murder-mystery_banter_banter_result_escaped_v2.mp3",
+        "pirates_banter_banter_result_escaped_v2.mp3",
+        "cops-and-robbers_banter_banter_result_escaped_v2.mp3",
+        "ghosts-and-ghouls_banter_banter_result_escaped_v2.mp3",
+        "cops-and-robbers_banter_banter_result_escaped_v2.mp3",
+        "cops-and-robbers_banter_banter_result_escaped_v2.mp3",
+        "wrestlers_banter_banter_result_escaped_v2.mp3"
+      ],
+      "themeSlugs": [
+        "cops-and-robbers",
+        "default",
+        "ghosts-and-ghouls",
+        "murder-mystery",
+        "pirates",
+        "wrestlers"
+      ],
+      "themeNames": [
+        "Cops and Robbers",
+        "Cowboys",
+        "Default",
+        "Gangsters",
+        "Ghosts and Ghouls",
+        "Murder Mystery",
+        "Pirates",
+        "Wrestlers"
+      ],
+      "decision": "REUSE_COSMETIC",
+      "sourceCueId": "cue_banter_f1a4a7ab25a1700d",
+      "sourceSpokenText": "the fib survived — not a compliment, just a fact.",
+      "sourcePath": "/workspace/pof-ian-host-audio-2026-11-06/audio/cue_banter_f1a4a7ab25a1700d.mp3",
+      "canonicalPath": "/workspace/pof-ian-host-audio-2026-11-06/audio/fragments/banter_result_escaped_v2.mp3",
+      "mappedPaths": [
+        "/workspace/pof-ian-host-audio-2026-11-06/mapped/default_banter_banter_result_escaped_v2.mp3",
+        "/workspace/pof-ian-host-audio-2026-11-06/mapped/murder-mystery_banter_banter_result_escaped_v2.mp3",
+        "/workspace/pof-ian-host-audio-2026-11-06/mapped/pirates_banter_banter_result_escaped_v2.mp3",
+        "/workspace/pof-ian-host-audio-2026-11-06/mapped/cops-and-robbers_banter_banter_result_escaped_v2.mp3",
+        "/workspace/pof-ian-host-audio-2026-11-06/mapped/ghosts-and-ghouls_banter_banter_result_escaped_v2.mp3",
+        "/workspace/pof-ian-host-audio-2026-11-06/mapped/cops-and-robbers_banter_banter_result_escaped_v2.mp3",
+        "/workspace/pof-ian-host-audio-2026-11-06/mapped/cops-and-robbers_banter_banter_result_escaped_v2.mp3",
+        "/workspace/pof-ian-host-audio-2026-11-06/mapped/wrestlers_banter_banter_result_escaped_v2.mp3"
+      ],
+      "delta_exact_old": "the fib survived — not a compliment, just a fact.",
+      "delta_exact_new": "The fib survived — not a compliment, just a fact.",
+      "exactSha_old": "f1a4a7ab25a1700d8f9b5e950037f49ef06dbdbd9a5ab718522a9ca93b8a2767",
+      "exactSha_new": "ce4b138b595851eb31c7eddfd1afde661fac873d44ba06b685764a0005c6aa6d"
+    },
+    {
+      "scriptId": "banter_result_chaos_v1",
+      "spokenText": "That was a chaotic round. Beautiful, but chaotic.",
+      "tok": "that was a chaotic round beautiful but chaotic",
+      "themeRows": 8,
+      "stableFilenames": [
+        "default_banter_banter_result_chaos_v1.mp3",
+        "murder-mystery_banter_banter_result_chaos_v1.mp3",
+        "pirates_banter_banter_result_chaos_v1.mp3",
+        "cops-and-robbers_banter_banter_result_chaos_v1.mp3",
+        "ghosts-and-ghouls_banter_banter_result_chaos_v1.mp3",
+        "cops-and-robbers_banter_banter_result_chaos_v1.mp3",
+        "cops-and-robbers_banter_banter_result_chaos_v1.mp3",
+        "wrestlers_banter_banter_result_chaos_v1.mp3"
+      ],
+      "themeSlugs": [
+        "cops-and-robbers",
+        "default",
+        "ghosts-and-ghouls",
+        "murder-mystery",
+        "pirates",
+        "wrestlers"
+      ],
+      "themeNames": [
+        "Cops and Robbers",
+        "Cowboys",
+        "Default",
+        "Gangsters",
+        "Ghosts and Ghouls",
+        "Murder Mystery",
+        "Pirates",
+        "Wrestlers"
+      ],
+      "decision": "REUSE_COSMETIC",
+      "sourceCueId": "cue_banter_e32a7a014deec7b4",
+      "sourceSpokenText": "that was a chaotic round. beautiful, but chaotic.",
+      "sourcePath": "/workspace/pof-ian-host-audio-2026-11-06/audio/cue_banter_e32a7a014deec7b4.mp3",
+      "canonicalPath": "/workspace/pof-ian-host-audio-2026-11-06/audio/fragments/banter_result_chaos_v1.mp3",
+      "mappedPaths": [
+        "/workspace/pof-ian-host-audio-2026-11-06/mapped/default_banter_banter_result_chaos_v1.mp3",
+        "/workspace/pof-ian-host-audio-2026-11-06/mapped/murder-mystery_banter_banter_result_chaos_v1.mp3",
+        "/workspace/pof-ian-host-audio-2026-11-06/mapped/pirates_banter_banter_result_chaos_v1.mp3",
+        "/workspace/pof-ian-host-audio-2026-11-06/mapped/cops-and-robbers_banter_banter_result_chaos_v1.mp3",
+        "/workspace/pof-ian-host-audio-2026-11-06/mapped/ghosts-and-ghouls_banter_banter_result_chaos_v1.mp3",
+        "/workspace/pof-ian-host-audio-2026-11-06/mapped/cops-and-robbers_banter_banter_result_chaos_v1.mp3",
+        "/workspace/pof-ian-host-audio-2026-11-06/mapped/cops-and-robbers_banter_banter_result_chaos_v1.mp3",
+        "/workspace/pof-ian-host-audio-2026-11-06/mapped/wrestlers_banter_banter_result_chaos_v1.mp3"
+      ],
+      "delta_exact_old": "that was a chaotic round. beautiful, but chaotic.",
+      "delta_exact_new": "That was a chaotic round. Beautiful, but chaotic.",
+      "exactSha_old": "e32a7a014deec7b420172799db807693b2aee5606fe5c353f77fce7fb61f90e6",
+      "exactSha_new": "9723f8bb389540ffb1c91cf9b4fddaa40eb5d0b1c08a756426bc759452afcfae"
+    },
+    {
+      "scriptId": "banter_wrap_v1",
+      "spokenText": "That's a wrap — crown the chaos and run it back.",
+      "tok": "that's a wrap crown the chaos and run it back",
+      "themeRows": 8,
+      "stableFilenames": [
+        "default_banter_banter_wrap_v1.mp3",
+        "murder-mystery_banter_banter_wrap_v1.mp3",
+        "pirates_banter_banter_wrap_v1.mp3",
+        "cops-and-robbers_banter_banter_wrap_v1.mp3",
+        "ghosts-and-ghouls_banter_banter_wrap_v1.mp3",
+        "cops-and-robbers_banter_banter_wrap_v1.mp3",
+        "cops-and-robbers_banter_banter_wrap_v1.mp3",
+        "wrestlers_banter_banter_wrap_v1.mp3"
+      ],
+      "themeSlugs": [
+        "cops-and-robbers",
+        "default",
+        "ghosts-and-ghouls",
+        "murder-mystery",
+        "pirates",
+        "wrestlers"
+      ],
+      "themeNames": [
+        "Cops and Robbers",
+        "Cowboys",
+        "Default",
+        "Gangsters",
+        "Ghosts and Ghouls",
+        "Murder Mystery",
+        "Pirates",
+        "Wrestlers"
+      ],
+      "decision": "REUSE_COSMETIC",
+      "sourceCueId": "cue_banter_815df462585bfa4f",
+      "sourceSpokenText": "that's a wrap — crown the chaos and run it back.",
+      "sourcePath": "/workspace/pof-ian-host-audio-2026-11-06/audio/cue_banter_815df462585bfa4f.mp3",
+      "canonicalPath": "/workspace/pof-ian-host-audio-2026-11-06/audio/fragments/banter_wrap_v1.mp3",
+      "mappedPaths": [
+        "/workspace/pof-ian-host-audio-2026-11-06/mapped/default_banter_banter_wrap_v1.mp3",
+        "/workspace/pof-ian-host-audio-2026-11-06/mapped/murder-mystery_banter_banter_wrap_v1.mp3",
+        "/workspace/pof-ian-host-audio-2026-11-06/mapped/pirates_banter_banter_wrap_v1.mp3",
+        "/workspace/pof-ian-host-audio-2026-11-06/mapped/cops-and-robbers_banter_banter_wrap_v1.mp3",
+        "/workspace/pof-ian-host-audio-2026-11-06/mapped/ghosts-and-ghouls_banter_banter_wrap_v1.mp3",
+        "/workspace/pof-ian-host-audio-2026-11-06/mapped/cops-and-robbers_banter_banter_wrap_v1.mp3",
+        "/workspace/pof-ian-host-audio-2026-11-06/mapped/cops-and-robbers_banter_banter_wrap_v1.mp3",
+        "/workspace/pof-ian-host-audio-2026-11-06/mapped/wrestlers_banter_banter_wrap_v1.mp3"
+      ],
+      "delta_exact_old": "that's a wrap — crown the chaos and run it back.",
+      "delta_exact_new": "That's a wrap — crown the chaos and run it back.",
+      "exactSha_old": "815df462585bfa4fd43a25b553e3929ac645dc25b9bf4e1f77d2e997b00f0d16",
+      "exactSha_new": "4e89318e0bc8a34c64062f57252c3cc5c4f8cdc60039b6360fdecfd57c35e2ba"
+    },
+    {
+      "scriptId": "banter_reveal_liar_is_prefix_v1",
+      "spokenText": "The liar is…",
+      "tok": "the liar is",
+      "themeRows": 8,
+      "stableFilenames": [
+        "default_banter_banter_reveal_liar_is_prefix_v1.mp3",
+        "murder-mystery_banter_banter_reveal_liar_is_prefix_v1.mp3",
+        "pirates_banter_banter_reveal_liar_is_prefix_v1.mp3",
+        "cops-and-robbers_banter_banter_reveal_liar_is_prefix_v1.mp3",
+        "ghosts-and-ghouls_banter_banter_reveal_liar_is_prefix_v1.mp3",
+        "cops-and-robbers_banter_banter_reveal_liar_is_prefix_v1.mp3",
+        "cops-and-robbers_banter_banter_reveal_liar_is_prefix_v1.mp3",
+        "wrestlers_banter_banter_reveal_liar_is_prefix_v1.mp3"
+      ],
+      "themeSlugs": [
+        "cops-and-robbers",
+        "default",
+        "ghosts-and-ghouls",
+        "murder-mystery",
+        "pirates",
+        "wrestlers"
+      ],
+      "themeNames": [
+        "Cops and Robbers",
+        "Cowboys",
+        "Default",
+        "Gangsters",
+        "Ghosts and Ghouls",
+        "Murder Mystery",
+        "Pirates",
+        "Wrestlers"
+      ],
+      "decision": "REUSE_COSMETIC",
+      "sourceCueId": "cue_banter_051f1f88d1754b37",
+      "sourceSpokenText": "the liar is",
+      "sourcePath": "/workspace/pof-ian-host-audio-2026-11-06/audio/cue_banter_051f1f88d1754b37.mp3",
+      "canonicalPath": "/workspace/pof-ian-host-audio-2026-11-06/audio/fragments/banter_reveal_liar_is_prefix_v1.mp3",
+      "mappedPaths": [
+        "/workspace/pof-ian-host-audio-2026-11-06/mapped/default_banter_banter_reveal_liar_is_prefix_v1.mp3",
+        "/workspace/pof-ian-host-audio-2026-11-06/mapped/murder-mystery_banter_banter_reveal_liar_is_prefix_v1.mp3",
+        "/workspace/pof-ian-host-audio-2026-11-06/mapped/pirates_banter_banter_reveal_liar_is_prefix_v1.mp3",
+        "/workspace/pof-ian-host-audio-2026-11-06/mapped/cops-and-robbers_banter_banter_reveal_liar_is_prefix_v1.mp3",
+        "/workspace/pof-ian-host-audio-2026-11-06/mapped/ghosts-and-ghouls_banter_banter_reveal_liar_is_prefix_v1.mp3",
+        "/workspace/pof-ian-host-audio-2026-11-06/mapped/cops-and-robbers_banter_banter_reveal_liar_is_prefix_v1.mp3",
+        "/workspace/pof-ian-host-audio-2026-11-06/mapped/cops-and-robbers_banter_banter_reveal_liar_is_prefix_v1.mp3",
+        "/workspace/pof-ian-host-audio-2026-11-06/mapped/wrestlers_banter_banter_reveal_liar_is_prefix_v1.mp3"
+      ],
+      "delta_exact_old": "the liar is",
+      "delta_exact_new": "The liar is…",
+      "exactSha_old": "051f1f88d1754b376327f1d1178b2339668d9c72b36c67bffec36804423f6e0b",
+      "exactSha_new": "951f3b5eff6470f3cf4178843c8061d6397abaf9121819e8423511495973272f"
+    },
+    {
+      "scriptId": "banter_reveal_plural_v1",
+      "spokenText": "The liars are…",
+      "tok": "the liars are",
+      "themeRows": 8,
+      "stableFilenames": [
+        "default_banter_banter_reveal_plural_v1.mp3",
+        "murder-mystery_banter_banter_reveal_plural_v1.mp3",
+        "pirates_banter_banter_reveal_plural_v1.mp3",
+        "cops-and-robbers_banter_banter_reveal_plural_v1.mp3",
+        "ghosts-and-ghouls_banter_banter_reveal_plural_v1.mp3",
+        "cops-and-robbers_banter_banter_reveal_plural_v1.mp3",
+        "cops-and-robbers_banter_banter_reveal_plural_v1.mp3",
+        "wrestlers_banter_banter_reveal_plural_v1.mp3"
+      ],
+      "themeSlugs": [
+        "cops-and-robbers",
+        "default",
+        "ghosts-and-ghouls",
+        "murder-mystery",
+        "pirates",
+        "wrestlers"
+      ],
+      "themeNames": [
+        "Cops and Robbers",
+        "Cowboys",
+        "Default",
+        "Gangsters",
+        "Ghosts and Ghouls",
+        "Murder Mystery",
+        "Pirates",
+        "Wrestlers"
+      ],
+      "decision": "GENERATED_NEW",
+      "canonicalPath": "/workspace/pof-ian-host-audio-2026-11-06/audio/fragments/banter_reveal_plural_v1.mp3",
+      "mappedPaths": [
+        "/workspace/pof-ian-host-audio-2026-11-06/mapped/default_banter_banter_reveal_plural_v1.mp3",
+        "/workspace/pof-ian-host-audio-2026-11-06/mapped/murder-mystery_banter_banter_reveal_plural_v1.mp3",
+        "/workspace/pof-ian-host-audio-2026-11-06/mapped/pirates_banter_banter_reveal_plural_v1.mp3",
+        "/workspace/pof-ian-host-audio-2026-11-06/mapped/cops-and-robbers_banter_banter_reveal_plural_v1.mp3",
+        "/workspace/pof-ian-host-audio-2026-11-06/mapped/ghosts-and-ghouls_banter_banter_reveal_plural_v1.mp3",
+        "/workspace/pof-ian-host-audio-2026-11-06/mapped/wrestlers_banter_banter_reveal_plural_v1.mp3"
+      ],
+      "flow_id": "w0G7x3SxcHFITafAMWr9",
+      "credits": 27.997200000000003,
+      "cdn_take1": "https://elevenlabsusercontent.com/database/workspace/a4ea0d4427154b96b4c0af3b70e1bd48/content_generation/w4SeoUY5QeosRv6Yv0Wt/920OfZMQiRffC0y5UyP7/content.mp3?Expires=1794013200&KeyName=assets-cdn-key-1&Signature=qlNYHHQKFlx0hh2fARA3oUPWx5c="
+    }
+  ],
+  "need_gen": [],
+  "note": "No Player placeholders. Old ledger/audio preserved. Cosmetic case/punct reuse only; 2 genuinely new fragments generating.",
+  "all_fragments_ready": true
+}

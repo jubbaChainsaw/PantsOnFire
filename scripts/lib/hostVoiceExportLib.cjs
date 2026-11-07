@@ -110,10 +110,12 @@ function collectRowsForTheme(themeName, voice, slug, voiceId, accentNotes, round
     prompt: 'hot-seat clues',
     opinion: 'truth-or-twisted debates',
     picture: 'flash-frame visuals',
+    pairs: 'double-take spot-the-difference',
     nameblame: 'name-and-blame callouts',
     noise: 'sound-off bluffs',
     offtopic: 'off-topic defenses',
     chain: 'chain reaction links',
+    twotruths: 'two-truths-one-fire fibs',
     grill: "Grill 'Em interrogations",
     meme: 'meme chaos',
   };
@@ -149,6 +151,7 @@ function loadIanPosterVoiceContext(repoRoot) {
   const dlcSrc = readFile(path.join(repoRoot, 'src', 'data', 'dlc', 'ianPosterDlcThemeVoice.js'));
   const aliasSrc = readFile(path.join(repoRoot, 'src', 'data', 'themeAliases.js'));
   const roundSrc = readFile(path.join(repoRoot, 'src', 'data', 'roundTypes.js'));
+  const doubleTakeSrc = readFile(path.join(repoRoot, 'src', 'data', 'doubleTakeRound.js'));
 
   const stripImports = (text) => text.replace(/import[\s\S]*?from ['"][^'"]+['"];\n/g, '');
 
@@ -165,11 +168,14 @@ function loadIanPosterVoiceContext(repoRoot) {
   const transformedAlias = aliasSrc
     .replace(/export function toCanonicalThemeName/g, 'function toCanonicalThemeName');
 
-  const transformedRound = roundSrc
+  const transformedDoubleTake = stripImports(doubleTakeSrc).replace(/\bexport const/g, 'const');
+
+  const transformedRound = stripImports(roundSrc)
     .replace(/export const ROUND_TYPES =/, 'const ROUND_TYPES =')
     .replace(/export const PASS_THE_PHONE_ROUND_TYPES[\s\S]*/, '');
 
   const script = `
+${transformedDoubleTake}
 ${transformedAlias}
 ${transformedDlc}
 ${transformedVoice}

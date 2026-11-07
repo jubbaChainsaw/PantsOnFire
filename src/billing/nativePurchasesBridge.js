@@ -27,3 +27,32 @@ export function requestNativeEntitlementsRefresh() {
     /* ignore */
   }
 }
+
+/**
+ * Start a native store purchase using Google Play / App Store product ids.
+ * @param {{ kind: 'tier'|'addon'|'dlc', productId: string }} params internal catalog id
+ * @returns {boolean} true if message was posted to native shell
+ */
+export function requestNativeStorePurchase({ kind, productId } = {}) {
+  const bridge = window.ReactNativeWebView;
+  if (!bridge?.postMessage) return false;
+  const normalizedKind = String(kind || '').trim();
+  const internalId = String(productId || '').trim();
+  if (!normalizedKind || !internalId) return false;
+  try {
+    bridge.postMessage(
+      JSON.stringify({
+        type: 'POF_PURCHASE',
+        kind: normalizedKind,
+        internalProductId: internalId,
+      }),
+    );
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+export function isNativeStorePurchaseAvailable() {
+  return Boolean(window.ReactNativeWebView?.postMessage);
+}

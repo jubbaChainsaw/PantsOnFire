@@ -1,0 +1,13 @@
+{
+  "minNativeShell": "0.1.0",
+  "requiredWebVersion": "0.1.0",
+  "webVersion": "0.1.0",
+  "webBuildSha": "",
+  "webBuildStamp": "",
+  "rollbackWebVersion": null,
+  "webKillSwitch": false,
+  "webDeployBlocked": false,
+  "forceBundledWeb": false,
+  "liveWebAllowed": true,
+  "notes": "Static fallback. Authoritative config is GET /api/shell-config on the lobby server after deploy."
+}

@@ -13,13 +13,14 @@
 - Hot Seat
 - Truth or Twisted
 - Flash Frame
+- Double Take
 - Name and Blame
 - Sound Off
 - Off Topic Defense
 - Chain Reaction
-- Grill Em
-- Dodgy Audio
-- Clip Trap
+- Two Truths, One Fire
+- Dodgy Audio (online)
+- Clip Trap (online)
 
 ## Themes & Content
 - Theme packs

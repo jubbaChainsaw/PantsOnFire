@@ -1,0 +1,749 @@
+{
+  "schemaVersion": 1,
+  "taskId": "t215u",
+  "generatedAt": "2026-11-06T20:56:04.060Z",
+  "gitCommit": "859ed18e322e28707716ec7cfc99a949d97fc93a",
+  "sourcePaths": [
+    "src/data/themePersonas.js",
+    "src/data/dlcPersonaRoster.json",
+    "src/data/dlcCuratedPersonas.js",
+    "src/data/names.js",
+    "src/data/themeAliases.js",
+    "src/data/themeCatalog.js",
+    "src/data/themes.js",
+    "src/data/hostPersonaCallouts.js (spoken full = strip decorative quotes only)"
+  ],
+  "counts": {
+    "personaRowsTotal": 950,
+    "distinctPersonaIds": 950,
+    "distinctSpokenFullStrings": 950,
+    "distinctSpokenFirstAddressStrings": 852,
+    "distinctMinimalUniqueSpokenStrings": 950,
+    "rowsFlaggedFirstNameHumanReview": 31
+  },
+  "characterTotalsBareName": {
+    "description": "Sum of string lengths (Unicode code units) for each strategy — bare spoken text only, no carrier phrase.",
+    "spokenFullSumChars": 12766,
+    "spokenFirstAddressSumChars": 6051,
+    "minimalUniqueSpokenSumChars": 6978
+  },
+  "optionalCarrierPhrase": {
+    "text": "Your turn, ",
+    "carrierCharLength": 11,
+    "note": "If each clip uses \"Your turn, \" before the name, multiply: per persona, add carrierCharLength to the chosen bare string length for script character input; sum over personas = sum(bare) + personaRowsTotal * carrierCharLength."
+  },
+  "duplicateGroups": {
+    "spokenFullHuman": [],
+    "spokenFirstAddress": [
+      {
+        "normalizedFirstAddress": "bandit",
+        "count": 2,
+        "personaIds": [
+          "animals-bandit-whiskers",
+          "cowboys-bandit-langtry"
+        ]
+      },
+      {
+        "normalizedFirstAddress": "biscuit",
+        "count": 2,
+        "personaIds": [
+          "animals-biscuit-howler",
+          "pirates-biscuit-tom"
+        ]
+      },
+      {
+        "normalizedFirstAddress": "luna",
+        "count": 2,
+        "personaIds": [
+          "animals-luna-fetch",
+          "wizards-and-witches-luna-frosthex"
+        ]
+      },
+      {
+        "normalizedFirstAddress": "shadow",
+        "count": 4,
+        "personaIds": [
+          "animals-shadow-wiggle",
+          "ninjas-shadow-blade",
+          "superheroes-shadow-bolt",
+          "wrestlers-shadow-slam"
+        ]
+      },
+      {
+        "normalizedFirstAddress": "nana",
+        "count": 2,
+        "personaIds": [
+          "anime-nana-pulse",
+          "fever-dream-2-nana-bigfoot"
+        ]
+      },
+      {
+        "normalizedFirstAddress": "ren",
+        "count": 2,
+        "personaIds": [
+          "anime-ren-kohai",
+          "spies-ren-reed"
+        ]
+      },
+      {
+        "normalizedFirstAddress": "shin",
+        "count": 2,
+        "personaIds": [
+          "anime-shin-drift",
+          "ninjas-shin-talon"
+        ]
+      },
+      {
+        "normalizedFirstAddress": "yuki",
+        "count": 2,
+        "personaIds": [
+          "anime-yuki-sensei",
+          "spies-yuki-echo"
+        ]
+      },
+      {
+        "normalizedFirstAddress": "bubbles",
+        "count": 2,
+        "personaIds": [
+          "carnival-bubbles-dazzle",
+          "fever-dream-1-bubbles-o-lantern"
+        ]
+      },
+      {
+        "normalizedFirstAddress": "fizz",
+        "count": 2,
+        "personaIds": [
+          "carnival-fizz-wonder",
+          "cartoons-fizz-widget"
+        ]
+      },
+      {
+        "normalizedFirstAddress": "glitter",
+        "count": 2,
+        "personaIds": [
+          "carnival-glitter-rumble",
+          "rock-stars-glitter-glam"
+        ]
+      },
+      {
+        "normalizedFirstAddress": "jester",
+        "count": 2,
+        "personaIds": [
+          "carnival-jester-bell",
+          "ghost-jester-grin"
+        ]
+      },
+      {
+        "normalizedFirstAddress": "buzz",
+        "count": 2,
+        "personaIds": [
+          "cartoons-buzz-doodad",
+          "rock-stars-buzz-headliner"
+        ]
+      },
+      {
+        "normalizedFirstAddress": "dusty",
+        "count": 2,
+        "personaIds": [
+          "cowboys-dusty-mcgraw",
+          "ghost-dusty-bones"
+        ]
+      },
+      {
+        "normalizedFirstAddress": "mara",
+        "count": 2,
+        "personaIds": [
+          "cowboys-mara-ellsworth",
+          "spies-mara-locke"
+        ]
+      },
+      {
+        "normalizedFirstAddress": "ranger",
+        "count": 2,
+        "personaIds": [
+          "cowboys-ranger-cassidy",
+          "military-ranger-tanker"
+        ]
+      },
+      {
+        "normalizedFirstAddress": "chrome",
+        "count": 3,
+        "personaIds": [
+          "cyberpunk-chrome-jack",
+          "rock-stars-chrome-groupie",
+          "wrestlers-chrome-king"
+        ]
+      },
+      {
+        "normalizedFirstAddress": "echo",
+        "count": 3,
+        "personaIds": [
+          "cyberpunk-echo-daemon",
+          "mythology-gods-and-legends-echo-dreamforge",
+          "rock-stars-echo-wild"
+        ]
+      },
+      {
+        "normalizedFirstAddress": "flux",
+        "count": 2,
+        "personaIds": [
+          "cyberpunk-flux-chrome",
+          "time-travelers-flux-looper"
+        ]
+      },
+      {
+        "normalizedFirstAddress": "ghost",
+        "count": 2,
+        "personaIds": [
+          "cyberpunk-ghost-hex",
+          "ninjas-ghost-fang"
+        ]
+      },
+      {
+        "normalizedFirstAddress": "hex",
+        "count": 3,
+        "personaIds": [
+          "cyberpunk-hex-blackout",
+          "monsters-hex-hiss",
+          "wizards-and-witches-hex-nightbloom"
+        ]
+      },
+      {
+        "normalizedFirstAddress": "nova",
+        "count": 6,
+        "personaIds": [
+          "cyberpunk-nova-override",
+          "drag-queens-nova-supreme",
+          "rock-stars-nova-roadie",
+          "sci-fi-nova-pulsar",
+          "spies-nova-cipher",
+          "superheroes-nova-surge"
+        ]
+      },
+      {
+        "normalizedFirstAddress": "patch",
+        "count": 2,
+        "personaIds": [
+          "cyberpunk-patch-portscan",
+          "post-apocalypse-patch-silo"
+        ]
+      },
+      {
+        "normalizedFirstAddress": "pixel",
+        "count": 2,
+        "personaIds": [
+          "cyberpunk-pixel-packet",
+          "fever-dream-2-pixel-pete"
+        ]
+      },
+      {
+        "normalizedFirstAddress": "pulse",
+        "count": 3,
+        "personaIds": [
+          "cyberpunk-pulse-vex",
+          "superheroes-pulse-strike",
+          "time-travelers-pulse-skipper"
+        ]
+      },
+      {
+        "normalizedFirstAddress": "razor",
+        "count": 2,
+        "personaIds": [
+          "cyberpunk-razor-drift",
+          "rock-stars-razor-screamer"
+        ]
+      },
+      {
+        "normalizedFirstAddress": "arthur",
+        "count": 2,
+        "personaIds": [
+          "default-arthur-old-tricks-bennett",
+          "murder-arthur-bellamy"
+        ]
+      },
+      {
+        "normalizedFirstAddress": "cleo",
+        "count": 2,
+        "personaIds": [
+          "default-cleo-checkmate",
+          "spies-cleo-vale"
+        ]
+      },
+      {
+        "normalizedFirstAddress": "edith",
+        "count": 2,
+        "personaIds": [
+          "default-edith-not-impressed-turner",
+          "murder-edith-pritchard"
+        ]
+      },
+      {
+        "normalizedFirstAddress": "ingrid",
+        "count": 2,
+        "personaIds": [
+          "default-ingrid-precision",
+          "vikings-ingrid-battleborn"
+        ]
+      },
+      {
+        "normalizedFirstAddress": "ivy",
+        "count": 2,
+        "personaIds": [
+          "default-ivy-double-booked",
+          "drag-queens-ivy-beat"
+        ]
+      },
+      {
+        "normalizedFirstAddress": "jett",
+        "count": 2,
+        "personaIds": [
+          "default-jett-greenhair",
+          "rock-stars-jett-hammer"
+        ]
+      },
+      {
+        "normalizedFirstAddress": "zara",
+        "count": 2,
+        "personaIds": [
+          "default-zara-glance-back",
+          "spies-zara-harrow"
+        ]
+      },
+      {
+        "normalizedFirstAddress": "electra",
+        "count": 2,
+        "personaIds": [
+          "drag-queens-electra-sparkle",
+          "mythology-gods-and-legends-electra-fatespin"
+        ]
+      },
+      {
+        "normalizedFirstAddress": "velvet",
+        "count": 2,
+        "personaIds": [
+          "drag-queens-velvet-fierce",
+          "ghost-velvet-fang"
+        ]
+      },
+      {
+        "normalizedFirstAddress": "bishop",
+        "count": 2,
+        "personaIds": [
+          "fever-dream-1-bishop-morel",
+          "flying-squad-bishop-skyward"
+        ]
+      },
+      {
+        "normalizedFirstAddress": "merlin",
+        "count": 2,
+        "personaIds": [
+          "fever-dream-1-merlin-taxdodge",
+          "wizards-and-witches-merlin-shadowoak"
+        ]
+      },
+      {
+        "normalizedFirstAddress": "the",
+        "count": 2,
+        "personaIds": [
+          "fever-dream-2-the-cowboy-cactus",
+          "wrestlers-the-crusher"
+        ]
+      },
+      {
+        "normalizedFirstAddress": "ace",
+        "count": 2,
+        "personaIds": [
+          "flying-squad-ace-vector",
+          "sports-ace-brooks"
+        ]
+      },
+      {
+        "normalizedFirstAddress": "blaze",
+        "count": 3,
+        "personaIds": [
+          "flying-squad-blaze-contrail",
+          "rock-stars-blaze-static",
+          "superheroes-blaze-prime"
+        ]
+      },
+      {
+        "normalizedFirstAddress": "comet",
+        "count": 2,
+        "personaIds": [
+          "flying-squad-comet-nighthawk",
+          "superheroes-comet-storm"
+        ]
+      },
+      {
+        "normalizedFirstAddress": "falcon",
+        "count": 2,
+        "personaIds": [
+          "flying-squad-falcon-stratton",
+          "superheroes-falcon-rush"
+        ]
+      },
+      {
+        "normalizedFirstAddress": "fox",
+        "count": 2,
+        "personaIds": [
+          "flying-squad-fox-wingate",
+          "ninjas-fox-ash"
+        ]
+      },
+      {
+        "normalizedFirstAddress": "nimbus",
+        "count": 2,
+        "personaIds": [
+          "flying-squad-nimbus-wingover",
+          "wizards-and-witches-nimbus-willowmist"
+        ]
+      },
+      {
+        "normalizedFirstAddress": "striker",
+        "count": 2,
+        "personaIds": [
+          "flying-squad-striker-turbine",
+          "sports-striker-park"
+        ]
+      },
+      {
+        "normalizedFirstAddress": "viper",
+        "count": 2,
+        "personaIds": [
+          "flying-squad-viper-goshawk",
+          "ninjas-viper-wraith"
+        ]
+      },
+      {
+        "normalizedFirstAddress": "wing",
+        "count": 2,
+        "personaIds": [
+          "flying-squad-wing-harrier",
+          "military-wing-tango"
+        ]
+      },
+      {
+        "normalizedFirstAddress": "marcus",
+        "count": 2,
+        "personaIds": [
+          "gangsters-marcus-low-slow-evans",
+          "spies-marcus-viper"
+        ]
+      },
+      {
+        "normalizedFirstAddress": "hollow",
+        "count": 2,
+        "personaIds": [
+          "ghost-hollow-annie",
+          "post-apocalypse-hollow-scav"
+        ]
+      },
+      {
+        "normalizedFirstAddress": "void",
+        "count": 2,
+        "personaIds": [
+          "ghost-void-walker",
+          "sci-fi-void-axiom"
+        ]
+      },
+      {
+        "normalizedFirstAddress": "wailer",
+        "count": 2,
+        "personaIds": [
+          "ghost-wailer-beth",
+          "monsters-wailer-fester"
+        ]
+      },
+      {
+        "normalizedFirstAddress": "percival",
+        "count": 2,
+        "personaIds": [
+          "medieval-percival-ashkeep",
+          "royalty-percival-montrose"
+        ]
+      },
+      {
+        "normalizedFirstAddress": "engineer",
+        "count": 2,
+        "personaIds": [
+          "military-engineer-overwatch",
+          "sci-fi-engineer-titan"
+        ]
+      },
+      {
+        "normalizedFirstAddress": "pilot",
+        "count": 2,
+        "personaIds": [
+          "military-pilot-ridge",
+          "sci-fi-pilot-proxima"
+        ]
+      },
+      {
+        "normalizedFirstAddress": "signal",
+        "count": 2,
+        "personaIds": [
+          "military-signal-grid",
+          "sci-fi-signal-eclipse"
+        ]
+      },
+      {
+        "normalizedFirstAddress": "bone",
+        "count": 2,
+        "personaIds": [
+          "monsters-bone-slither",
+          "wrestlers-bone-ripper"
+        ]
+      },
+      {
+        "normalizedFirstAddress": "fang",
+        "count": 2,
+        "personaIds": [
+          "monsters-fang-nora",
+          "rock-stars-fang-stage"
+        ]
+      },
+      {
+        "normalizedFirstAddress": "grim",
+        "count": 3,
+        "personaIds": [
+          "monsters-grim-gnash",
+          "wizards-and-witches-grim-wildwand",
+          "wrestlers-grim-lock"
+        ]
+      },
+      {
+        "normalizedFirstAddress": "cedric",
+        "count": 2,
+        "personaIds": [
+          "murder-cedric-vale",
+          "royalty-cedric-blackmere"
+        ]
+      },
+      {
+        "normalizedFirstAddress": "reginald",
+        "count": 2,
+        "personaIds": [
+          "murder-reginald-crowhurst",
+          "royalty-reginald-thornwick"
+        ]
+      },
+      {
+        "normalizedFirstAddress": "freya",
+        "count": 2,
+        "personaIds": [
+          "mythology-gods-and-legends-freya-earthshaper",
+          "vikings-freya-stormborn"
+        ]
+      },
+      {
+        "normalizedFirstAddress": "orion",
+        "count": 2,
+        "personaIds": [
+          "mythology-gods-and-legends-orion-stormbringer",
+          "spies-orion-wire"
+        ]
+      },
+      {
+        "normalizedFirstAddress": "cipher",
+        "count": 2,
+        "personaIds": [
+          "ninjas-cipher-fire",
+          "spies-cipher-mercer"
+        ]
+      },
+      {
+        "normalizedFirstAddress": "ember",
+        "count": 2,
+        "personaIds": [
+          "ninjas-ember-depth",
+          "wizards-and-witches-ember-ravencloak"
+        ]
+      },
+      {
+        "normalizedFirstAddress": "night",
+        "count": 2,
+        "personaIds": [
+          "ninjas-night-shuriken",
+          "wizards-and-witches-night-saltcircle"
+        ]
+      },
+      {
+        "normalizedFirstAddress": "steel",
+        "count": 2,
+        "personaIds": [
+          "ninjas-steel-crescent",
+          "wrestlers-steel-rose"
+        ]
+      },
+      {
+        "normalizedFirstAddress": "storm",
+        "count": 2,
+        "personaIds": [
+          "ninjas-storm-root",
+          "rock-stars-storm-overdrive"
+        ]
+      },
+      {
+        "normalizedFirstAddress": "barnacle",
+        "count": 2,
+        "personaIds": [
+          "pirates-barnacle-bill",
+          "under-the-sea-barnacle-pearl"
+        ]
+      },
+      {
+        "normalizedFirstAddress": "coral",
+        "count": 2,
+        "personaIds": [
+          "pirates-coral-red-tide-maeve",
+          "under-the-sea-coral-deep"
+        ]
+      },
+      {
+        "normalizedFirstAddress": "bolt",
+        "count": 2,
+        "personaIds": [
+          "post-apocalypse-bolt-patch",
+          "superheroes-bolt-mind"
+        ]
+      },
+      {
+        "normalizedFirstAddress": "spike",
+        "count": 2,
+        "personaIds": [
+          "post-apocalypse-spike-ash",
+          "rock-stars-spike-thunder"
+        ]
+      },
+      {
+        "normalizedFirstAddress": "warden",
+        "count": 3,
+        "personaIds": [
+          "post-apocalypse-warden-rift",
+          "sci-fi-warden-quasar",
+          "time-travelers-warden-clockhand"
+        ]
+      },
+      {
+        "normalizedFirstAddress": "axel",
+        "count": 2,
+        "personaIds": [
+          "rock-stars-axel-vandal",
+          "wrestlers-axel-crow"
+        ]
+      },
+      {
+        "normalizedFirstAddress": "felix",
+        "count": 2,
+        "personaIds": [
+          "royalty-felix-ellingford",
+          "spies-felix-frost"
+        ]
+      },
+      {
+        "normalizedFirstAddress": "orbit",
+        "count": 2,
+        "personaIds": [
+          "sci-fi-orbit-solstice",
+          "time-travelers-orbit-rider"
+        ]
+      },
+      {
+        "normalizedFirstAddress": "phase",
+        "count": 2,
+        "personaIds": [
+          "sci-fi-phase-parsec",
+          "time-travelers-phase-guard"
+        ]
+      },
+      {
+        "normalizedFirstAddress": "relay",
+        "count": 2,
+        "personaIds": [
+          "sci-fi-relay-corona",
+          "sports-relay-diaz"
+        ]
+      },
+      {
+        "normalizedFirstAddress": "shift",
+        "count": 2,
+        "personaIds": [
+          "sci-fi-shift-lumen",
+          "time-travelers-shift-anchor"
+        ]
+      },
+      {
+        "normalizedFirstAddress": "star",
+        "count": 3,
+        "personaIds": [
+          "sci-fi-star-nebula",
+          "superheroes-star-falcon",
+          "wizards-and-witches-star-dreamhex"
+        ]
+      },
+      {
+        "normalizedFirstAddress": "vector",
+        "count": 2,
+        "personaIds": [
+          "sci-fi-vector-drift",
+          "time-travelers-vector-watcher"
+        ]
+      },
+      {
+        "normalizedFirstAddress": "iron",
+        "count": 2,
+        "personaIds": [
+          "superheroes-iron-comet",
+          "wrestlers-iron-titan"
+        ]
+      },
+      {
+        "normalizedFirstAddress": "quantum",
+        "count": 2,
+        "personaIds": [
+          "superheroes-quantum-sentinel",
+          "time-travelers-quantum-voyager"
+        ]
+      },
+      {
+        "normalizedFirstAddress": "turbo",
+        "count": 2,
+        "personaIds": [
+          "superheroes-turbo-vortex",
+          "wrestlers-turbo-terry"
+        ]
+      },
+      {
+        "normalizedFirstAddress": "anchor",
+        "count": 2,
+        "personaIds": [
+          "time-travelers-anchor-binder",
+          "under-the-sea-anchor-surge"
+        ]
+      }
+    ]
+  },
+  "scopeNotes": {
+    "curatedAndDlcJson": "Finite known personas from curated arrays in themePersonas.js and DLC roster JSON (per theme pool).",
+    "proceduralThemes": "Themes without a curated pool use buildProceduralThemePersonas: PROCEDURAL_PERSONA_COUNT (25) × per NAME_POOLS entries in names.js — deterministic finite set per export.",
+    "userCustomNames": "Players can type display names in-app (e.g. setup / online). Those are unbounded and not included in this catalog — only selectable persona definitions.",
+    "hostPersonaCalloutThemes": "Ian Poster persona callouts (bundled MP3) are registered only for HOST_PERSONA_CALLOUT_THEME_NAMES in hostPersonaCallouts.js; this export lists all persona definitions regardless."
+  },
+  "clipCountBasis": {
+    "spokenFull": {
+      "distinctStrings": 950,
+      "clipsIfOnePerDistinctString": 950
+    },
+    "spokenFirstAddress": {
+      "distinctStrings": 852,
+      "clipsIfOnePerDistinctString": 852,
+      "caveat": "Ambiguous lobby collisions: two players can pick different personas that share the same spokenFirstAddress — short form clips would collide in the same session."
+    },
+    "minimalUniqueSpoken": {
+      "distinctStrings": 950,
+      "clipsIfOnePerDistinctString": 950,
+      "algorithm": "Per persona, extend prefix tokens from spoken full until the prefix is unique among all personas (same normalization as map lookup)."
+    }
+  },
+  "monetizationNote": "No pricing or currency estimates — parent uses vendor pricing separately."
+}

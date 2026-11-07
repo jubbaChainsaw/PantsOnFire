@@ -1,0 +1,104 @@
+[
+  {
+    "cueId": "cue_a050c39a014202ce",
+    "spokenText": "Discussion time!",
+    "isNewRoundCue": true,
+    "primaryFilenames": [
+      "cops-and-robbers_discussion_time_from_oneword.mp3",
+      "default_discussion_time_from_oneword.mp3",
+      "ghosts-and-ghouls_discussion_time_from_oneword.mp3",
+      "murder-mystery_discussion_time_from_oneword.mp3",
+      "pirates_discussion_time_from_oneword.mp3",
+      "wrestlers_discussion_time_from_oneword.mp3"
+    ],
+    "archivePath": "primary/cue_a050c39a014202ce.mp3",
+    "sha256": "50006b706e5b32d096790d77c86996a3aba0f7bbcddde4076512fefde44777f2",
+    "bytes": 43918,
+    "duration": "1.645714"
+  },
+  {
+    "cueId": "cue_1b9612975d380e05",
+    "spokenText": "Everyone writes three related items \u2014 two true, one fib. After the shuffle, hunt each lie and score.",
+    "isNewRoundCue": true,
+    "primaryFilenames": [
+      "cops-and-robbers_twotruths_rules_alt_instruction.mp3",
+      "default_twotruths_rules_alt_instruction.mp3",
+      "ghosts-and-ghouls_twotruths_rules_alt_instruction.mp3",
+      "murder-mystery_twotruths_rules_alt_instruction.mp3",
+      "pirates_twotruths_rules_alt_instruction.mp3",
+      "wrestlers_twotruths_rules_alt_instruction.mp3"
+    ],
+    "archivePath": "primary/cue_1b9612975d380e05.mp3",
+    "sha256": "12ee59fbebbf6adcbdf123d4fc49e0499c020c9ac6244b8ef6edd1774888ee27",
+    "bytes": 146318,
+    "duration": "8.045714"
+  },
+  {
+    "cueId": "cue_bef5f737d175615e",
+    "spokenText": "Submissions are locked and the lists are shuffled. Now vote the lie in every deck.",
+    "isNewRoundCue": true,
+    "primaryFilenames": [
+      "cops-and-robbers_twotruths_transition_voting.mp3",
+      "default_twotruths_transition_voting.mp3",
+      "ghosts-and-ghouls_twotruths_transition_voting.mp3",
+      "murder-mystery_twotruths_transition_voting.mp3",
+      "pirates_twotruths_transition_voting.mp3",
+      "wrestlers_twotruths_transition_voting.mp3"
+    ],
+    "archivePath": "primary/cue_bef5f737d175615e.mp3",
+    "sha256": "3e8087c3e1c496d53d13070793e5f7af51a5eb60fb91d4ea8c96c597cf2e9b3d",
+    "bytes": 110373,
+    "duration": "5.799184"
+  },
+  {
+    "cueId": "cue_704fb1ba6763aee2",
+    "spokenText": "Two Truths, One Fire. List three items, mark which line is the fib, then submit.",
+    "isNewRoundCue": true,
+    "primaryFilenames": [
+      "cops-and-robbers_twotruths_input_intro.mp3",
+      "default_twotruths_input_intro.mp3",
+      "ghosts-and-ghouls_twotruths_input_intro.mp3",
+      "murder-mystery_twotruths_input_intro.mp3",
+      "pirates_twotruths_input_intro.mp3",
+      "wrestlers_twotruths_input_intro.mp3"
+    ],
+    "archivePath": "primary/cue_704fb1ba6763aee2.mp3",
+    "sha256": "403c081b09a0263f475003d654d584db5a45b109ef96e1c4df94ec09fe45bcd1",
+    "bytes": 125838,
+    "duration": "6.765714"
+  },
+  {
+    "cueId": "cue_a0f1d27423bb921b",
+    "spokenText": "For each player, tap the line you think was the lie. Everyone votes on everyone.",
+    "isNewRoundCue": true,
+    "primaryFilenames": [
+      "cops-and-robbers_twotruths_voting_intro.mp3",
+      "default_twotruths_voting_intro.mp3",
+      "ghosts-and-ghouls_twotruths_voting_intro.mp3",
+      "murder-mystery_twotruths_voting_intro.mp3",
+      "pirates_twotruths_voting_intro.mp3",
+      "wrestlers_twotruths_voting_intro.mp3"
+    ],
+    "archivePath": "primary/cue_a0f1d27423bb921b.mp3",
+    "sha256": "4274225fefd15e2c51be68bf49c9579dd55c74050d1458922a3c8edf97b22d1d",
+    "bytes": 111627,
+    "duration": "5.877551"
+  },
+  {
+    "cueId": "cue_b7b82cc167a467c5",
+    "spokenText": "Here is the blaze \u2014 the fibs, the facts, and who spotted them.",
+    "isNewRoundCue": true,
+    "primaryFilenames": [
+      "cops-and-robbers_twotruths_reveal_intro.mp3",
+      "default_twotruths_reveal_intro.mp3",
+      "ghosts-and-ghouls_twotruths_reveal_intro.mp3",
+      "murder-mystery_twotruths_reveal_intro.mp3",
+      "pirates_twotruths_reveal_intro.mp3",
+      "wrestlers_twotruths_reveal_intro.mp3"
+    ],
+    "archivePath": "primary/cue_b7b82cc167a467c5.mp3",
+    "sha256": "b42bf61b5c86e477fb10568c3527c2ed8e105439dad37189cf383be03b336db0",
+    "bytes": 89893,
+    "duration": "4.519184"
+  }
+]

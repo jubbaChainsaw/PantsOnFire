@@ -106,6 +106,8 @@ export const THEME_META = {
   Royalty: { gradient: 'from-yellow-400 via-amber-500 to-purple-700', accent: 'text-yellow-100', musicPack: 'royal_fanfare', sfxPack: 'royal_chime', tone: 'grand-theatrical', hostStyle: 'herald' },
   Wrestlers: { gradient: 'from-red-500 via-orange-500 to-zinc-800', accent: 'text-orange-100', musicPack: 'wrestling_entrance', sfxPack: 'wrestling_bell', tone: 'arena-intense', hostStyle: 'ring-announcer' },
   Cyberpunk: { gradient: 'from-fuchsia-500 via-cyan-500 to-zinc-900', accent: 'text-cyan-200', musicPack: 'cyberpunk_synth', sfxPack: 'neon_glitch', tone: 'neon-rebel', hostStyle: 'street-hacker' },
+  'Fever Dream Vol. 1': { gradient: 'from-pink-500 via-teal-400 to-yellow-300', accent: 'text-pink-100', musicPack: 'carnival_calliope', sfxPack: 'crowd_cheer', tone: 'absurd-chaos', hostStyle: 'ringmaster', secret: true },
+  'Fever Dream Vol. 2': { gradient: 'from-orange-500 via-lime-400 to-violet-700', accent: 'text-lime-100', musicPack: 'carnival_calliope', sfxPack: 'crowd_cheer', tone: 'absurd-chaos', hostStyle: 'ringmaster', secret: true },
   Vikings: { gradient: 'from-slate-700 via-stone-500 to-amber-600', accent: 'text-amber-200', musicPack: 'viking_war_drums', sfxPack: 'shield_clang', tone: 'mythic-brawler', hostStyle: 'skald' },
   Ninjas: { gradient: 'from-zinc-900 via-violet-700 to-emerald-600', accent: 'text-emerald-200', musicPack: 'shadow_dojo', sfxPack: 'blade_swish', tone: 'stealth-chaos', hostStyle: 'sensei' },
   'Mythology (Gods & Legends)': { gradient: 'from-yellow-300 via-orange-500 to-sky-600', accent: 'text-yellow-100', musicPack: 'mythic_choir', sfxPack: 'thunder_crack', tone: 'epic-legendary', hostStyle: 'oracle' },

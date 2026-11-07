@@ -45,6 +45,17 @@ test('mapRevenueCatEntitlements maps tiers, addons and dlc packs', () => {
   assert.deepEqual(mapped.unlockedThemePackIds, ['ye-olde-baloney', 'beast-mode-deceit']);
 });
 
+test('mapRevenueCatEntitlements maps Google Play dlc product ids (underscores)', () => {
+  const mapped = mapRevenueCatEntitlements([
+    'dlc_pack_ye_olde_baloney',
+    'dlc_pack_rank_and_file_mostly_file',
+  ]);
+  assert.deepEqual(mapped.unlockedThemePackIds, [
+    'ye-olde-baloney',
+    'rank-and-file-mostly-file',
+  ]);
+});
+
 test('mapRevenueCatEntitlements keeps the highest tier', () => {
   const mapped = mapRevenueCatEntitlements(['local_liar', 'host_most']);
   assert.equal(mapped.tierId, 'host_most');
