@@ -9,6 +9,9 @@ import {
   submitVotesForPlayer,
   expectCorrectSpotTally,
   openHome,
+  readStoredOnlineSession,
+  expectResumeRotatesSessionToken,
+  expectStaleSessionTokenRejected,
 } from './e2e-twotruths-helpers.js';
 
 const SESSION_KEY = 'imposter-online-session-v1';
@@ -39,6 +42,9 @@ test.describe('Online Two Truths (multiplayer)', () => {
     const joiner2b = await j2Reconnect.newPage();
     await joiner2b.goto('/');
     await joiner2b.getByTestId('app-shell-ready').waitFor({ state: 'attached', timeout: 120_000 });
+    const staleJoiner2 = JSON.parse(storedSession);
+    await expectResumeRotatesSessionToken(joiner2b, staleJoiner2);
+    await expectStaleSessionTokenRejected(joiner2b, staleJoiner2);
     await joiner2b.getByTestId('twotruths-item-0').waitFor({ state: 'visible', timeout: 120_000 });
     await fillTwotruthsSubmission(joiner2b, SUBMISSION_LINES.j2, 2);
 
@@ -72,6 +78,9 @@ test.describe('Online Two Truths (multiplayer)', () => {
 
     await submitVotesForPlayer(host, 'correct');
 
+    const sessionBeforeDisconnect = await readStoredOnlineSession(joiner1);
+    expect(sessionBeforeDisconnect?.sessionToken).toBeTruthy();
+
     const midVoteState = test.info().outputPath('joiner1-mid-vote-storage.json');
     await j1Ctx.storageState({ path: midVoteState });
     await j1Ctx.close();
@@ -82,6 +91,8 @@ test.describe('Online Two Truths (multiplayer)', () => {
     const joiner1b = await j1Reconnect.newPage();
     await joiner1b.goto('/');
     await joiner1b.getByTestId('app-shell-ready').waitFor({ state: 'attached', timeout: 120_000 });
+    await expectResumeRotatesSessionToken(joiner1b, sessionBeforeDisconnect);
+    await expectStaleSessionTokenRejected(joiner1b, sessionBeforeDisconnect);
     await joiner1b.getByTestId('twotruths-voting-pass').waitFor({ state: 'visible', timeout: 120_000 });
     await submitVotesForPlayer(joiner1b, 'correct');
 

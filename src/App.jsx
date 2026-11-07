@@ -6443,6 +6443,7 @@ function ResultsScreen({
                 </h2>
                 <div
                   className={`mt-2 text-2xl sm:text-3xl font-black tracking-tight ${imposterCaught ? "text-yellow-300" : "text-fuchsia-400"}`}
+                  data-testid={imposterCaught ? "results-liar-caught" : "results-liar-escaped"}
                 >
                   {imposterCaught
                     ? "THE LIAR WAS CAUGHT 😤"

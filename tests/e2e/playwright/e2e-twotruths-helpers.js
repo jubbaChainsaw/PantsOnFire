@@ -186,6 +186,55 @@ export async function createThreePlayerLobby(browser, { runId = 'run' } = {}) {
   return { hostCtx, host, j1Ctx, joiner1, j2Ctx, joiner2, code };
 }
 
+export function readStoredOnlineSession(page) {
+  return page.evaluate((key) => {
+    const raw = localStorage.getItem(key);
+    return raw ? JSON.parse(raw) : null;
+  }, 'imposter-online-session-v1');
+}
+
+export async function expectResumeRotatesSessionToken(page, staleSession) {
+  const fresh = await readStoredOnlineSession(page);
+  expect(fresh?.sessionToken).toBeTruthy();
+  expect(staleSession?.sessionToken).toBeTruthy();
+  expect(fresh.sessionToken).not.toEqual(staleSession.sessionToken);
+  expect(fresh.lobbyCode).toEqual(staleSession.lobbyCode);
+  expect(fresh.playerId).toEqual(staleSession.playerId);
+}
+
+/** Resume with a pre-rotation token must be rejected (production resume protocol). */
+export async function expectStaleSessionTokenRejected(page, staleSession) {
+  const clientId = await page.evaluate(
+    () => localStorage.getItem('imposter-online-client-id-v1') || '',
+  );
+  const result = await page.evaluate(async (payload) => {
+    const res = await fetch(
+      `/api/lobbies/${encodeURIComponent(payload.lobbyCode)}/resume`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          playerId: payload.playerId,
+          sessionToken: payload.sessionToken,
+          clientId: payload.clientId,
+        }),
+      },
+    );
+    const body = await res.json().catch(() => ({}));
+    return {
+      status: res.status,
+      error: body?.error || body?.code || body?.message || '',
+    };
+  }, {
+    lobbyCode: staleSession.lobbyCode,
+    playerId: staleSession.playerId,
+    sessionToken: staleSession.sessionToken,
+    clientId,
+  });
+  expect(result.status).toBeGreaterThanOrEqual(400);
+  expect(String(result.error)).toMatch(/invalid-session|session|expired/i);
+}
+
 export const SUBMISSION_LINES = {
   host: ['Alpha true one', 'Alpha true two', 'Alpha lie'],
   j1: ['Beta true one', 'Beta true two', 'Beta lie'],

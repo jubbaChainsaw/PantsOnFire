@@ -4,6 +4,16 @@ function seedLocalStorage() {
   localStorage.setItem('pof-content-packs-prompt-dismissed-v1', 'true');
   localStorage.setItem('pof-e2e-force-round-type', 'pairs');
   localStorage.setItem(
+    'imposter-persona-profile-v1',
+    JSON.stringify({
+      realName: '',
+      username: '',
+      avatarSrc: '',
+      inGameName: '',
+      inGameBio: '',
+    }),
+  );
+  localStorage.setItem(
     'imposter-account-session-v2',
     JSON.stringify({
       userId: 'martin-smoke',
@@ -39,7 +49,9 @@ test.describe('Martin smoke — local game flow', () => {
     await expect(page.getByTestId('achievement-row-referral-fever-dream-2')).toBeVisible();
   });
 
-  test('Double Take full local round (pass-phone reveal → vote → results)', async ({ page }) => {
+  test('Double Take full local round (spot-difference reveal → unanimous vote → scoring)', async ({
+    page,
+  }) => {
     test.setTimeout(300_000);
     await page.addInitScript(seedLocalStorage);
     await page.goto('/');
@@ -61,32 +73,67 @@ test.describe('Martin smoke — local game flow', () => {
     await page.getByTestId('host-intro-skip').click({ timeout: 30_000 }).catch(() => {});
 
     const playerCount = 3;
-    let sawLiar = false;
-    let sawInnocent = false;
+    let liarName = '';
+    const innocentNames = [];
+    let truthNameCount = 0;
     for (let i = 0; i < playerCount; i += 1) {
       await page.getByTestId('reveal-ready').click({ timeout: 60_000 });
       await page.waitForTimeout(2600);
       const label = page.getByTestId('double-take-reveal-label');
       await expect(label).toBeVisible({ timeout: 30_000 });
-      const text = (await label.innerText()).trim();
-      if (/liar/i.test(text)) sawLiar = true;
-      else sawInnocent = true;
+      const revealText = (await label.innerText()).trim();
+      const passHeading = page.getByRole('heading', { name: /Pass the phone to/i });
+      await expect(passHeading).toBeVisible({ timeout: 15_000 });
+      const passLine = (await passHeading.innerText()).trim();
+      const passMatch = passLine.match(/Pass the phone to (.+)$/i);
+      const currentName = passMatch ? passMatch[1].trim() : '';
+      expect(currentName).toBeTruthy();
+      if (/you're the liar/i.test(revealText)) {
+        liarName = currentName;
+      } else {
+        truthNameCount += 1;
+        innocentNames.push(currentName);
+        await expect(revealText).toMatch(/your picture/i);
+      }
       await page.getByTestId('reveal-next').click({ timeout: 30_000 });
     }
-    expect(sawLiar || sawInnocent).toBe(true);
+    expect(truthNameCount).toBe(2);
+    expect(liarName).toBeTruthy();
 
     for (let i = 0; i < playerCount; i += 1) {
       await page.getByTestId('one-word-local-next').click({ timeout: 60_000 });
     }
     await page.getByTestId('discussion-continue').click({ timeout: 60_000 });
+    await expect(page.getByRole('heading', { name: /Vote now/i })).toBeVisible({
+      timeout: 60_000,
+    });
 
-    for (let round = 0; round < playerCount; round += 1) {
-      const chip = page.locator('[data-testid^="vote-for-"]').first();
-      if (await chip.isVisible({ timeout: 10_000 }).catch(() => false)) {
-        await chip.click();
-      }
+    const submitVotes = page.getByTestId('submit-votes');
+    await expect(submitVotes).toBeDisabled();
+
+    const decoyTarget = innocentNames[0];
+    expect(decoyTarget).toBeTruthy();
+
+    for (let i = 0; i < playerCount; i += 1) {
+      const passLineVote = await page
+        .locator('.pof-ui-copy')
+        .filter({ hasText: 'Pass the phone to' })
+        .innerText();
+      const voterName =
+        (passLineVote.match(/Pass the phone to\s+(.+?)\s*\./) || [])[1]?.trim() || '';
+      expect(voterName).toBeTruthy();
+      const targetName = voterName === liarName ? decoyTarget : liarName;
+      await page.getByRole('button', { name: targetName, exact: true }).click({
+        timeout: 30_000,
+      });
     }
-    await page.getByTestId('submit-votes').click({ timeout: 30_000 });
+    await expect(submitVotes).toBeEnabled({ timeout: 15_000 });
+    await submitVotes.click();
+
     await expect(page.getByTestId('results-screen-root')).toBeVisible({ timeout: 90_000 });
+    await expect(page.getByTestId('results-liar-caught')).toBeVisible();
+    await expect(page.getByTestId('double-take-pairs-reveal')).toBeVisible();
+    await expect(page.getByText(/VOTE HIT \+1/)).toHaveCount(2);
+    await expect(page.getByText(/VOTE HIT \+0/)).toHaveCount(1);
   });
 });
