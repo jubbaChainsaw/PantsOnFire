@@ -43,6 +43,20 @@ export async function seedLocalAccount(page, tierId = 'host_most') {
   ]);
 }
 
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../..');
+const defaultAuditShotRoot = path.join(repoRoot, 'public/assets/ui/neon/apk-verify');
+
+/** Directory for audit screenshots (override with POF_AUDIT_SHOT_ROOT). */
+export function resolveAuditShotRoot() {
+  const root = process.env.POF_AUDIT_SHOT_ROOT || defaultAuditShotRoot;
+  fs.mkdirSync(root, { recursive: true });
+  return root;
+}
+
 /** @param {import('@playwright/test').Page} page */
 export async function openLocalGameSetup(page) {
   const play = page.getByRole('button', { name: 'Play', exact: true });

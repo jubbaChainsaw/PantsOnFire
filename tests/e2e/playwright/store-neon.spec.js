@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
-import { seedLocalAccount } from './helpers.js';
+import { resolveAuditShotRoot, seedLocalAccount } from './helpers.js';
 
-const SHOP_SHOTS = process.env.POF_AUDIT_SHOT_ROOT || '/workspace/public/assets/ui/neon/apk-verify';
+const SHOP_SHOTS = resolveAuditShotRoot();
 
 test.use({ viewport: { width: 390, height: 844 } });
 

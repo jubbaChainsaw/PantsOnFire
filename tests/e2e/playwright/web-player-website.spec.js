@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
-import { seedLocalAccount } from './helpers.js';
+import { resolveAuditShotRoot, seedLocalAccount } from './helpers.js';
 
-const SHOTS = process.env.POF_AUDIT_SHOT_ROOT || '/workspace/public/assets/ui/neon/apk-verify';
+const SHOTS = resolveAuditShotRoot();
 const HOST_BASE = 'http://127.0.0.1:4173';
 const WEB_BASE = 'http://127.0.0.1:4176';
 
